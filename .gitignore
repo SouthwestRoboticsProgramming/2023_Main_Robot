@@ -1,1 +1,40 @@
+# Build output
+*build/
 .gradle/
+
+# IntelliJ IDEA Project Files
+.idea/
+*.iml
+
+# VSCode Project Files
+.vscode/
+
+# Compiled Python
+*.pyc
+*__pycache__/
+*.so
+
+# Compiled Java
+*.class
+
+# Log Files
+*.log
+
+# Tests
+Vision/Test.py
+
+# WPI Settings
+.OutlineViewer/
+
+# Emacs temporary files
+*~
+
+# ImGui storage files
+**/layout.ini
+**/imgui.ini
+**/simgui.json
+**/simgui-ds.json
+
+# NetworkTables storage
+**/networktables.ini
+**/networktables.ini.bak
