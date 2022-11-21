@@ -19,7 +19,7 @@ jobs:
       uses: srggrs/assign-one-project-github-action@1.2.1
       if: github.event.action == 'opened'
       with:
-        project: 'https://github.com/srggrs/assign-one-project-github-action/projects/2'
+        project: 'https://github.com/orgs/SouthwestRoboticsProgramming/projects/2/views/1'
 
     - name: Assign issues and pull requests with `bug` label to project 3
       uses: srggrs/assign-one-project-github-action@1.2.1
