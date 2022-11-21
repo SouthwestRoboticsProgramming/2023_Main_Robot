@@ -1,0 +1,40 @@
+# Build output
+*target/
+*build/
+.gradle/
+
+# IntelliJ IDEA Project Files
+.idea/
+*.iml
+
+# VSCode Project Files
+.vscode/
+
+# Compiled Python
+*.pyc
+*__pycache__/
+*.so
+
+# Compiled Java
+*.class
+
+# Log Files
+*.log
+
+# Tests
+Vision/Test.py
+
+# WPI Settings
+.OutlineViewer/
+
+# Emacs temporary files
+*~
+
+# ImGui storage files
+**/layout.ini
+**/imgui.ini
+
+# Maven shade output
+**/dependency-reduced-pom.xml
+Robot_Template/Template/networktables.ini
+Robot_Template/Template/networktables.ini.bak
