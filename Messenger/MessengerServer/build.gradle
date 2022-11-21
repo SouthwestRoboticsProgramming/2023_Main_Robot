@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+group 'com.swrobotics'
+version '2023'
+
+compileJava {
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.swrobotics.messenger.server.MessengerServerMain'
+    }
+}
