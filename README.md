@@ -10,4 +10,4 @@ This repository stores all of the code for 2129's 2023 robot.
 - AprilTag vision
 - Code style checker
 - Automated checks
-- Pull requests and constantly working `master` branch
+- Pull requests and constantly working `main` branch
