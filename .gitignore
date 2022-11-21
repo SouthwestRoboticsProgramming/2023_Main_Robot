@@ -1,5 +1,4 @@
 # Build output
-*target/
 *build/
 .gradle/
 
@@ -33,8 +32,9 @@ Vision/Test.py
 # ImGui storage files
 **/layout.ini
 **/imgui.ini
+**/simgui.json
+**/simgui-ds.json
 
-# Maven shade output
-**/dependency-reduced-pom.xml
-Robot_Template/Template/networktables.ini
-Robot_Template/Template/networktables.ini.bak
+# NetworkTables storage
+**/networktables.ini
+**/networktables.ini.bak
