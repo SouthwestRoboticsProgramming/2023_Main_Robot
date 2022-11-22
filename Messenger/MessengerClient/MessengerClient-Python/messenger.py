@@ -20,93 +20,92 @@ class MessageBuilder:
     Allows easy storage of data into a message.
     """
 
-    def __init__(self, client, type):
+    def __init__(self, client, message_type):
         self.client = client
-        self.type = type
+        self.message_type = message_type
         self.buffer = b''
-        pass
 
     def send(self):
         """
-        Sends the message with the type and data.
+        Sends the message with the message_type and data.
         """
-        self.client._send_message(self.type, self.buffer)
+        self.client._send_message(self.message_type, self.buffer)
 
-    def add_boolean(self, b):
+    def add_boolean(self, boolean):
         """
         Adds a boolean to this message
 
-        :param b: boolean to add
+        :param boolean: boolean to add
         :return: self
         """
 
-        self.buffer += struct.pack('>?', b)
+        self.buffer += struct.pack('>?', boolean)
         return self
 
-    def add_string(self, s):
+    def add_string(self, string):
         """
         Adds a string to this message
 
-        :param s: string to add
+        :param string: string to add
         :return: self
         """
 
-        self.buffer += _encode_string(s)
+        self.buffer += _encode_string(string)
         return self
 
-    def add_char(self, c):
+    def add_char(self, character):
         """
         Adds a character to this message
 
-        :param c: character to add
+        :param character: character to add
         :return: self
         """
 
-        self.buffer += struct.pack('>c', c)
+        self.buffer += struct.pack('>c', character)
         return self
 
-    def add_byte(self, b):
+    def add_byte(self, byte):
         """
         Adds a byte to this message
 
-        :param b: byte to add
+        :param byte: byte to add
         :return: self
         """
 
-        self.buffer += struct.pack('>b', b)
+        self.buffer += struct.pack('>b', byte)
         return self
 
-    def add_short(self, s):
+    def add_short(self, short):
         """
         Adds a short to this message
 
-        :param s: short to add
+        :param short: short to add
         :return: self
         """
 
-        self.buffer += struct.pack('>s', s)
+        self.buffer += struct.pack('>s', short)
         return self
 
-    def add_int(self, i):
+    def add_int(self, integer):
         """
         Adds an int to this message
 
-        :param i: int to add
+        :param integer: int to add
         :return: self
         """
 
-        self.buffer += struct.pack('>i', i)
+        self.buffer += struct.pack('>i', integer)
         return self
 
-    def add_long(self, l):
+    def add_long(self, long_int):
         """
         Adds a long to this message
 
-        :param l: long to add
+        :param long_int: long to add
         :return: self
         """
 
-        self.buffer += struct.pack('>q', l)
+        self.buffer += struct.pack('>q', long_int)
         return self
 
     def add_float(self, f):
@@ -120,26 +119,26 @@ class MessageBuilder:
         self.buffer += struct.pack('>f', f)
         return self
 
-    def add_double(self, d):
+    def add_double(self, double):
         """
         Adds a double to this message
 
-        :param d: double to add
+        :param double: double to add
         :return: self
         """
 
-        self.buffer += struct.pack('>d', d)
+        self.buffer += struct.pack('>d', double)
         return self
 
-    def add_raw(self, b):
+    def add_raw(self, data):
         """
         Adds raw data to this message
 
-        :param b: data to add
+        :param data: data to add
         :return: self
         """
 
-        self.buffer += b
+        self.buffer += data
         return self
 
 
@@ -301,11 +300,11 @@ def _connect_thread(msg):
     msg.connect_thread = None
 
 
-def _encode_string(str):
+def _encode_string(string):
     # Encodes a string into a length-prefixed UTF-8 bytes object
 
-    encoded_len = struct.pack(">h", len(str))
-    return encoded_len + str.encode("utf-8")
+    encoded_len = struct.pack(">h", len(string))
+    return encoded_len + string.encode("utf-8")
 
 
 class WildcardHandler:
@@ -315,21 +314,21 @@ class WildcardHandler:
         self.pattern = pattern
         self.handler = handler
 
-    def handle(self, type, data):
-        if type.startswith(self.pattern):
-            self.handler(type, MessageReader(data))
+    def handle(self, message_type, data):
+        if message_type.startswith(self.pattern):
+            self.handler(message_type, MessageReader(data))
 
 
 class DirectHandler:
-    # Handles simple patterns (type must match exactly)
+    # Handles simple patterns (message_type must match exactly)
 
-    def __init__(self, type, handler):
-        self.type = type
+    def __init__(self, message_type, handler):
+        self.message_type = message_type
         self.handler = handler
 
-    def handle(self, type, data):
-        if self.type == type:
-            self.handler(type, MessageReader(data))
+    def handle(self, message_type, data):
+        if self.message_type == message_type:
+            self.handler(message_type, MessageReader(data))
 
 
 class MessengerClient:
@@ -423,63 +422,59 @@ class MessengerClient:
         self._disconnect_socket()
         self.connected = False
 
-    def prepare(self, type):
+    def prepare(self, message_type):
         """
         Prepares to send a message. This returns a MessageBuilder,
         which allows you to add data to the message.
 
-        :param type: type of the message to send
+        :param message_type: message_type of the message to send
         :return: builder to add data
         """
 
-        return MessageBuilder(self, type)
+        return MessageBuilder(self, message_type)
 
-    def send(self, type):
+    def send(self, message_type):
         """
         Immediately sends a message with no data.
 
-        :param type: type of the message to send
+        :param message_type: message_type of the message to send
         """
-        self._send_message(type, b'')
+        self._send_message(message_type, b'')
 
-    def add_handler(self, type, handler):
+    def add_handler(self, message_type, handler):
         """
         Registers a message handler to handle incoming messages.
-        If the type ends in '*', the handler will be invoked for all messages
+        If the message_type ends in '*', the handler will be invoked for all messages
         that match the content before. For example, "Foo*" would match a
-        message of type "Foo2", while "Foo" would only match messages of
-        type "Foo".
+        message of message_type "Foo2", while "Foo" would only match messages of
+        message_type "Foo".
 
         The handler parameter should be a function with two parameters:
-        the type of message as a string, and a MessageReader to read data
+        the message_type of message as a string, and a MessageReader to read data
         from the message.
 
-        :param type: type of message to listen to
+        :param message_type: message_type of message to listen to
         :param handler: handler to invoke
         """
 
-        if type.endswith('*'):
-            h = WildcardHandler(type[0:len(type) - 1], handler)
+        if message_type.endswith('*'):
+            handler = WildcardHandler(message_type[:-1], handler)
         else:
-            h = DirectHandler(type, handler)
-        self.handlers.append(h)
+            handler = DirectHandler(message_type, handler)
+        self.handlers.append(handler)
 
-        if type not in self.listening:
-            self.listening.append(type)
+        if message_type not in self.listening:
+            self.listening.append(message_type)
             if self.connected:
-                self._listen(type)
+                self._listen(message_type)
 
     def _available(self):
         readable = select.select([self.socket], [], [], 0)[0]
 
-        for sock in readable:
-            if sock == self.socket:
-                return True
+        return any(sock == self.socket for sock in readable)
 
-        return False
-
-    def _listen(self, type):
-        self.prepare(_LISTEN).add_string(type).send()
+    def _listen(self, message_type):
+        self.prepare(_LISTEN).add_string(message_type).send()
 
     def _handle_error(self):
         self._disconnect_socket()
@@ -506,13 +501,13 @@ class MessengerClient:
                 return
             total += send
 
-    def _send_message(self, type, data):
+    def _send_message(self, message_type, data):
         if not self.connected:
             return
 
-        encoded_type = _encode_string(type)
+        encoded_message_type = _encode_string(message_type)
         encoded_data_len = struct.pack(">i", len(data))
-        encoded = encoded_type + encoded_data_len + data
+        encoded = encoded_message_type + encoded_data_len + data
 
         # packet_len = struct.pack(">i", len(encoded))
         # packet = packet_len + encoded
@@ -526,13 +521,13 @@ class MessengerClient:
         self.connect_thread.start()
 
     def _read_message(self):
-        type_len = struct.unpack('>h', self._read(2))[0]
-        message_type = self._read(type_len).decode('utf-8')
+        message_type_len = struct.unpack('>h', self._read(2))[0]
+        message_message_type = self._read(message_type_len).decode('utf-8')
         data_len = struct.unpack('>i', self._read(4))[0]
         message_data = self._read(data_len)
 
         for handler in self.handlers:
-            handler.handle(message_type, message_data)
+            handler.handle(message_message_type, message_data)
 
     def _disconnect_socket(self):
         if self.connect_thread is not None:
