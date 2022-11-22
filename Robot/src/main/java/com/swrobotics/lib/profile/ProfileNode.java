@@ -2,6 +2,7 @@ package com.swrobotics.lib.profile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents one section of code that was profiled.
@@ -15,6 +16,8 @@ public final class ProfileNode {
     private long startTime, pauseTime;
 
     public ProfileNode(String name, ProfileNode parent) {
+        Objects.requireNonNull(parent, "Nodes must be scheduled with a parent connection"); // Force correct usage
+        
         this.name = name;
         this.parent = parent;
         children = new ArrayList<>();
@@ -23,6 +26,8 @@ public final class ProfileNode {
     }
 
     public ProfileNode(String name, ProfileNode parent, long accumulator, long total) {
+        Objects.requireNonNull(parent, "Nodes must be scheduled with a parent connection"); // Force correct usage
+
         this.name = name;
         this.parent = parent;
         children = new ArrayList<>();
