@@ -352,7 +352,7 @@ public final class Scheduler {
      * Unregisters a {@code Command}, causing it to be cancelled if
      * it is currently running. If the command is running, its
      * execution will be immediately stopped, and the
-     * {@link Command#end(boolean)) method will be called.
+     * {@link Command#end(boolean)} method will be called.
      *
      * This method will print a warning and have no effect if the
      * command is not currently scheduled.
