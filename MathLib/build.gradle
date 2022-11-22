@@ -1,0 +1,17 @@
+plugins {
+    id 'java-library'
+//    id 'edu.wpi.first.GradleRIO' version '2022.4.1'
+}
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+group 'com.swrobotics'
+version '2023'
+
+dependencies {
+//    api wpi.java.deps.wpilib()
+    api 'edu.wpi.first.wpimath:wpimath-java:2022.4.1'
+    api 'edu.wpi.first.wpiutil:wpiutil-java:2022.4.1'
+    api 'org.ejml:ejml-simple:0.41'
+}

@@ -1,1 +1,14 @@
 rootProject.name = '2023_Main_Robot'
+include 'MathLib'
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+
+        // WPILib release repo
+        maven {
+            url 'https://frcmaven.wpi.edu/artifactory/release'
+        }
+    }
+}
