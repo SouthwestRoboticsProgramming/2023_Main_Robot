@@ -1,10 +1,16 @@
 package com.swrobotics.messenger.client;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,18 +32,20 @@ public final class MessengerClient {
     private static final String UNLISTEN = "_Unlisten";
     private static final String DISCONNECT = "_Disconnect";
 
+    private static final long TIMEOUT = 1000L; // Timeout in milliseconds
+
     private String host;
     private int port;
     private String name;
+
+    private Selector selector;
+    private SocketChannel channel;
+    private SelectionKey selectKey;
 
     private final AtomicBoolean connected;
     private final ScheduledExecutorService executor;
     private final ScheduledFuture<?> heartbeatFuture;
     private Thread connectThread;
-
-    private Socket socket;
-    private DataInputStream in;
-    private DataOutputStream out;
 
     private final Set<String> listening;
     private final Set<Handler> handlers;
@@ -57,7 +65,9 @@ public final class MessengerClient {
         this.port = port;
         this.name = name;
 
-        socket = null;
+        selector = null;
+        channel = null;
+        selectKey = null;
         connected = new AtomicBoolean(false);
 
         executor = Executors.newSingleThreadScheduledExecutor();
@@ -107,13 +117,46 @@ public final class MessengerClient {
         connectThread = new Thread(() -> {
             while (!connected.get() && !Thread.interrupted()) {
                 try {
-                    socket = new Socket();
-                    socket.setSoTimeout(1000);
-                    socket.connect(new InetSocketAddress(host, port), 1000);
-                    in = new DataInputStream(socket.getInputStream());
-                    out = new DataOutputStream(socket.getOutputStream());
-                    out.writeUTF(name);
+                    System.out.println("Opening");
+                    selector = Selector.open();
+                    channel = SocketChannel.open();
+                    channel.configureBlocking(false);
+                    System.out.println("Connecting");
+                    if (!channel.connect(new InetSocketAddress(host, port))) {
+                        // We reach here if not immediately connected
+                        selectKey = channel.register(selector, SelectionKey.OP_CONNECT | SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 
+                        selector.select(TIMEOUT);
+                        if (selectKey.isConnectable()) {
+                            channel.finishConnect();
+//                            selectKey.cancel();
+                        } else {
+                            throw new IOException("Connection timed out: " + host + ":" + port);
+                        }
+                    }
+
+                    System.out.println("Setting up");
+//                    selectKey = channel.register(selector, SelectionKey.OP_WRITE);
+
+//                    socket = new Socket();
+//                    socket.setSoTimeout(1000);
+//                    socket.connect(new InetSocketAddress(host, port), TIMEOUT);
+//                    in = new DataInputStream(socket.getInputStream());
+//                    out = new DataOutputStream(socket.getOutputStream());
+
+                    // Send name
+                    System.out.println("Sending name");
+                    ByteArrayOutputStream b = new ByteArrayOutputStream();
+                    new DataOutputStream(b).writeUTF(name);
+                    byte[] data = b.toByteArray();
+                    ByteBuffer buf = ByteBuffer.allocate(data.length);
+                    buf.put(data);
+                    buf.flip();
+                    sendWithTimeout(buf);
+
+//                    out.writeUTF(name);
+
+                    System.out.println("Good");
                     connected.set(true);
 
                     for (String listen : listening) {
@@ -153,10 +196,25 @@ public final class MessengerClient {
         connectThread = null;
 
         try {
-            socket.close();
+            channel.close();
+            selectKey.cancel();
+            selector.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private ByteBuffer blockingRead(int count) throws IOException {
+        long startTime = System.currentTimeMillis();
+        ByteBuffer buf = ByteBuffer.allocate(count);
+        while (buf.remaining() > 0) {
+            if (System.currentTimeMillis() - startTime > TIMEOUT)
+                throw new IOException("Read timed out");
+
+            channel.read(buf);
+        }
+        buf.flip();
+        return buf;
     }
 
     /**
@@ -168,19 +226,50 @@ public final class MessengerClient {
             return;
 
         try {
-            while (in.available() > 0) {
-                String type = in.readUTF();
-                int dataSize = in.readInt();
-                byte[] data = new byte[dataSize];
-                in.readFully(data);
+            while (true) {
+                selector.selectNow();
+                if (!selectKey.isReadable())
+                    break;
+
+                ByteBuffer typeLenBuf = blockingRead(2);
+                int typeLen = typeLenBuf.get(0) << 8 | typeLenBuf.get(1);
+                System.out.println("Type len: " + typeLen);
+                ByteBuffer typeBuf = blockingRead(typeLen);
+                byte[] typeData = new byte[typeLen];
+                typeBuf.get(typeData);
+                String type = new String(typeData, StandardCharsets.UTF_8);
+
+                ByteBuffer dataLenBuf = blockingRead(4);
+                int dataLen = dataLenBuf.get(0) << 24 |
+                        dataLenBuf.get(1) << 16 |
+                        dataLenBuf.get(2) << 8 |
+                        dataLenBuf.get(3);
+                ByteBuffer dataBuf = blockingRead(dataLen);
+                byte[] data = new byte[dataLen];
+                dataBuf.get(data);
 
                 for (Handler handler : handlers) {
                     handler.handle(type, data);
                 }
             }
         } catch (IOException e) {
-            handleError(e);
+            e.printStackTrace();
         }
+
+//        try {
+//            while (in.available() > 0) {
+//                String type = in.readUTF();
+//                int dataSize = in.readInt();
+//                byte[] data = new byte[dataSize];
+//                in.readFully(data);
+//
+//                for (Handler handler : handlers) {
+//                    handler.handle(type, data);
+//                }
+//            }
+//        } catch (IOException e) {
+//            handleError(e);
+//        }
     }
 
     /**
@@ -265,13 +354,40 @@ public final class MessengerClient {
         if (!connected.get())
             return;
 
-        synchronized (out) {
-            try {
-                out.writeUTF(type);
-                out.writeInt(data.length);
-                out.write(data);
-            } catch (IOException e) {
-                handleError(e);
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        DataOutputStream d = new DataOutputStream(b);
+        try {
+            d.writeUTF(type);
+            d.writeInt(data.length);
+            d.write(data);
+
+            byte[] packet = b.toByteArray();
+            ByteBuffer buf = ByteBuffer.allocate(packet.length);
+            buf.put(packet);
+            buf.flip();
+
+            sendWithTimeout(buf);
+        } catch (IOException e) {
+            handleError(e);
+        }
+//        synchronized (out) {
+//            try {
+//                out.writeUTF(type);
+//                out.writeInt(data.length);
+//                out.write(data);
+//            } catch (IOException e) {
+//                handleError(e);
+//            }
+//        }
+    }
+
+    private void sendWithTimeout(ByteBuffer data) throws IOException {
+        synchronized (channel) {
+            int written = channel.write(data);
+            if (written == 0) {
+                selector.select(TIMEOUT);
+                if (!selectKey.isWritable())
+                    throw new IOException("Write timed out");
             }
         }
     }

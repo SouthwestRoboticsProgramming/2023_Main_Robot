@@ -55,6 +55,10 @@ public final class RemoteClient implements Client, Runnable {
         switch (type) {
             case HEARTBEAT: {
                 lastHeartbeatTime = System.currentTimeMillis();
+
+                // Fix for issue #4: Send heartbeat back to the client so it can
+                // detect if the server goes down
+                sendMessage(new Message(HEARTBEAT, new byte[0]));
                 break;
             }
             case LISTEN: {

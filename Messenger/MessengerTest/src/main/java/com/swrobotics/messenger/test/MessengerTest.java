@@ -31,11 +31,17 @@ public final class MessengerTest {
             System.out.println("Wildcard: " + reader.readInt());
         });
 
+        byte[] randomGarbage = new byte[1<<19]; // Giant message
+        for (int i = 0; i < randomGarbage.length; i++) {
+            randomGarbage[i] = (byte) (Math.random() * 256);
+        }
+
         int i = 0;
         while (true) {
             System.out.println("Writing");
             msg.prepare("Test")
                     .addInt(i++)
+                    //.addRaw(randomGarbage)
                     .send();
 
             sleepWithRead(msg, 1);
