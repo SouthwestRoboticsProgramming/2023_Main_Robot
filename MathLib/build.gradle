@@ -1,0 +1,35 @@
+plugins {
+    id 'java-library'
+}
+
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+group 'com.swrobotics'
+version '2023'
+
+dependencies {
+    api 'edu.wpi.first.wpimath:wpimath-java:2022.4.1'
+    api 'edu.wpi.first.wpiutil:wpiutil-java:2022.4.1'
+    api 'org.ejml:ejml-simple:0.41'
+
+    testImplementation 'junit:junit:4.13'
+}
+
+test {
+    useJUnit()
+
+    testLogging {
+        events TestLogEvent.FAILED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STANDARD_OUT
+        exceptionFormat TestExceptionFormat.FULL
+        showExceptions true
+        showCauses true
+        showStackTraces true
+    }
+}
