@@ -1,4 +1,4 @@
-package com.swrobotics.messenger.client2.impl;
+package com.swrobotics.messenger.client.impl;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

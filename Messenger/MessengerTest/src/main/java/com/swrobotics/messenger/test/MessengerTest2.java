@@ -1,6 +1,6 @@
 package com.swrobotics.messenger.test;
 
-import com.swrobotics.messenger.client2.MessengerClient;
+import com.swrobotics.messenger.client.MessengerClient;
 
 public class MessengerTest2 {
     public static void main(String[] args) throws Exception {

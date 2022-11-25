@@ -1,6 +1,6 @@
-package com.swrobotics.messenger.client2.impl;
+package com.swrobotics.messenger.client.impl;
 
-import com.swrobotics.messenger.client2.MessengerClient;
+import com.swrobotics.messenger.client.MessengerClient;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 

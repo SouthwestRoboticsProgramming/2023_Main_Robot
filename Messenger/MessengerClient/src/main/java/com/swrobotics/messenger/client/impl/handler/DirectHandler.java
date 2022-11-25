@@ -1,7 +1,7 @@
-package com.swrobotics.messenger.client2.impl.handler;
+package com.swrobotics.messenger.client.impl.handler;
 
-import com.swrobotics.messenger.client2.MessageHandler;
-import com.swrobotics.messenger.client2.MessageReader;
+import com.swrobotics.messenger.client.MessageHandler;
+import com.swrobotics.messenger.client.MessageReader;
 
 public final class DirectHandler implements Handler {
     private final String targetType;

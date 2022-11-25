@@ -1,4 +1,4 @@
-package com.swrobotics.messenger.client2.impl;
+package com.swrobotics.messenger.client.impl;
 
 public enum MessageDecodeState {
     TYPE_LENGTH,
