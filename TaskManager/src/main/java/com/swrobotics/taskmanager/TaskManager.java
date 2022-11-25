@@ -49,7 +49,7 @@ public final class TaskManager {
         try {
             return tasksGson.fromJson(new FileReader(TASKS_FILE), TASKS_MAP_TYPE);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to load tasks file");
+            throw new RuntimeException("Failed to load tasks file", e);
         }
     }
 

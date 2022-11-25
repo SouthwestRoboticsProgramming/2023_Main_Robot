@@ -1,1 +1,10 @@
-{}
+{
+  "Test": {
+    "workingDirectory": "tasks/test",
+    "command": [
+      "bash",
+      "test.sh"
+    ],
+    "enabled": true
+  }
+}
