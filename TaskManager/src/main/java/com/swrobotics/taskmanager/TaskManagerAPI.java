@@ -86,6 +86,8 @@ public final class TaskManagerAPI {
         msgStdErr        = prefix + MSG_STDERR;
 
         tasksRoot = config.getTasksRoot();
+        if (!tasksRoot.exists())
+            tasksRoot.mkdirs();
 
         msg.addHandler(msgListFiles,  this::onListFiles);
         msg.addHandler(msgReadFile,   this::onReadFile);
