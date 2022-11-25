@@ -90,6 +90,9 @@ public final class MathUtil {
      * @see java.lang.Math#floorMod
      */
     public static double floorMod(double x, double y) {
+        if (y == 0)
+            throw new ArithmeticException("Divide by zero");
+
         return x - Math.floor(x / y) * y;
     }
 
@@ -108,6 +111,9 @@ public final class MathUtil {
     }
 
     public static double deadband(double val, double band) {
+        if (band < 0)
+            throw new IllegalArgumentException("Deadband must be greater than or equal to zero");
+
         double abs = Math.abs(val);
         if (abs < band) return 0;
         return Math.copySign(map(abs, band, 1, 0, 1), val);
