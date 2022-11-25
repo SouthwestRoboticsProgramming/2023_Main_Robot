@@ -37,18 +37,4 @@ public interface Angle {
      * @return negated angle
      */
     Angle negate();
-
-    /**
-     * Gets the sine of this angle.
-     *
-     * @return sine
-     */
-    double sin();
-
-    /**
-     * Gets the cosine of this angle.
-     *
-     * @return cosine
-     */
-    double cos();
 }

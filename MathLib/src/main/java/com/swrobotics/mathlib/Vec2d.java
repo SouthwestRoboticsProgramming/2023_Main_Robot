@@ -46,8 +46,8 @@ public final class Vec2d {
      * @param mag magnitude
      */
     public Vec2d(Angle angle, double mag) {
-        x = angle.cos() * mag;
-        y = angle.sin() * mag;
+        x = angle.ccw().cos() * mag;
+        y = angle.ccw().sin() * mag;
     }
 
     /**
@@ -484,8 +484,8 @@ public final class Vec2d {
      * @return dest
      */
     public Vec2d rotateBy(Angle angle, Vec2d dest) {
-        double sin = angle.sin();
-        double cos = angle.cos();
+        double sin = angle.ccw().sin();
+        double cos = angle.ccw().cos();
 
         double nx = x * cos - y * sin;
         double ny = x * sin + y * cos;
