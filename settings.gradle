@@ -1,2 +1,5 @@
 rootProject.name = '2023_Main_Robot'
 include 'Robot'
+include 'Messenger:MessengerClient'
+include 'Messenger:MessengerServer'
+include 'Messenger:MessengerTest'
