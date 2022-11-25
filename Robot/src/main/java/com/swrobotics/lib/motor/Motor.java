@@ -4,8 +4,8 @@ import java.util.function.Supplier;
 
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.encoder.OutputFilter;
-import com.swrobotics.lib.math.Angle;
-import com.swrobotics.lib.math.MathUtil;
+import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.lib.motor.calc.PIDCalculator;
 import com.swrobotics.lib.motor.calc.PositionCalculator;
 import com.swrobotics.lib.motor.calc.VelocityCalculator;
