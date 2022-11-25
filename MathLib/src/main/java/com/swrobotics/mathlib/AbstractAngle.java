@@ -215,14 +215,12 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
         return create(-rad);
     }
 
-    @Override
     public double sin() {
         if (cacheSin < -1.5)
             cacheSin = Math.sin(rad);
         return cacheSin;
     }
 
-    @Override
     public double cos() {
         if (cacheCos < -1.5)
             cacheCos = Math.cos(rad);
