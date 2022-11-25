@@ -232,7 +232,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
         AbstractAngle<?> that = (AbstractAngle<?>) o;
 
         return this.ccw().rad() == that.ccw().rad();
