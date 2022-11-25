@@ -1,181 +1,281 @@
 package com.swrobotics.messenger.client;
 
-import com.swrobotics.messenger.client.impl.*;
-import com.swrobotics.messenger.client.impl.handler.DirectHandler;
-import com.swrobotics.messenger.client.impl.handler.Handler;
-import com.swrobotics.messenger.client.impl.handler.WildcardHandler;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import io.netty.handler.timeout.WriteTimeoutHandler;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-// FIXME: Reconnect if connection lost
+/**
+ * Represents a connection to the Messenger server.
+ * This can be used to send messages between processes.
+ *
+ * @author rmheuer
+ */
 public final class MessengerClient {
-    private static final int TIMEOUT = 2;
+    private static final String HEARTBEAT = "_Heartbeat";
+    private static final String LISTEN = "_Listen";
+    private static final String UNLISTEN = "_Unlisten";
+    private static final String DISCONNECT = "_Disconnect";
 
-    private final EventLoopGroup workerGroup;
-    private final Queue<Message> incomingMessageQueue;
-    private Channel channel;
-
-    private final List<Handler> handlers;
-    private final List<String> listening;
+    private static final long TIMEOUT = 4000L;
 
     private String host;
     private int port;
     private String name;
 
-    private long prevHeartbeatTimestamp;
-    private boolean shouldReconnect;
-    private boolean isReconnecting;
+    private final AtomicBoolean connected;
+    private final ScheduledExecutorService executor;
+    private final ScheduledFuture<?> heartbeatFuture;
+    private Thread connectThread;
 
-    private ScheduledFuture<?> reconnectFuture;
+    private final Thread watchdogThread;
 
+    private Socket socket;
+    private DataInputStream in;
+    private DataOutputStream out;
+
+    private final Set<String> listening;
+    private final Set<Handler> handlers;
+
+    private Exception lastConnectFailException;
+
+    private long prevServerHeartbeatTimestamp;
+
+    /**
+     * Creates a new instance and attempts to connect to a
+     * Messenger server at the given address.
+     *
+     * @param host server host
+     * @param port server port
+     * @param name unique string used in logging 
+     */
     public MessengerClient(String host, int port, String name) {
-        workerGroup = new NioEventLoopGroup();
-        incomingMessageQueue = new ConcurrentLinkedQueue<>();
-
-        handlers = new ArrayList<>();
-        listening = new ArrayList<>();
-
         this.host = host;
         this.port = port;
         this.name = name;
 
-        shouldReconnect = true;
-        isReconnecting = false;
+        socket = null;
+        connected = new AtomicBoolean(false);
 
-        connect();
+        executor = Executors.newSingleThreadScheduledExecutor();
+        heartbeatFuture = executor.scheduleAtFixedRate(() -> {
+            sendMessage(HEARTBEAT, new byte[0]);
+        }, 0, 1, TimeUnit.SECONDS);
+
+        listening = Collections.synchronizedSet(new HashSet<>());
+        handlers = new HashSet<>();
+
+        lastConnectFailException = null;
+
+        startConnectThread();
+        watchdogThread = startWatchdog();
     }
 
-    private void closeCurrentChannel() {
+    /**
+     * Attempts to reconnect to a different Messenger server at
+     * a given address.
+     *
+     * @param host server host
+     * @param port server port
+     * @param name unique string used in logging
+     */
+    public void reconnect(String host, int port, String name) {
+        this.host = host;
+        this.port = port;
+        this.name = name;
+
+        send(DISCONNECT);
+        disconnectSocket();
+        connected.set(false);
+
+        startConnectThread();
+    }
+
+    /**
+     * Gets the last exception thrown when attempting to connect.
+     * If no attempts have failed, this will return {@code null}.
+     *
+     * @return last connection exception
+     */
+    public Exception getLastConnectionException() {
+        return lastConnectFailException;
+    }
+
+    private void startConnectThread() {
+        connectThread = new Thread(() -> {
+            while (!connected.get() && !Thread.interrupted()) {
+                try {
+                    socket = new Socket();
+                    socket.setSoTimeout(1000);
+                    socket.connect(new InetSocketAddress(host, port), 1000);
+                    in = new DataInputStream(socket.getInputStream());
+                    out = new DataOutputStream(socket.getOutputStream());
+                    out.writeUTF(name);
+
+                    connected.set(true);
+
+                    for (String listen : listening) {
+                        listen(listen);
+                    }
+                } catch (Exception e) {
+                    lastConnectFailException = e;
+                    System.err.println("Messenger connection failed (" + e.getClass().getSimpleName() + ": " + e.getMessage() + ")");
+                }
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+
+            connectThread = null;
+        }, "Messenger Reconnect Thread");
+
+        connectThread.start();
+    }
+
+    private Thread startWatchdog() {
+        prevServerHeartbeatTimestamp = -1;
+        Thread thr = new Thread(() -> {
+            while (!Thread.interrupted()) {
+                if (prevServerHeartbeatTimestamp != -1 && connected.get()) {
+                    if (System.currentTimeMillis() - prevServerHeartbeatTimestamp > TIMEOUT) {
+                        System.err.println("Messenger watchdog: Force-closing socket due to server timeout");
+                        if (!socket.isClosed()) {
+                            disconnectSocket();
+                        }
+                    }
+                }
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        });
+        thr.start();
+        return thr;
+    }
+
+    private void handleError(IOException e) {
+        disconnectSocket();
+
+        System.err.println("Messenger connection lost:");
+        e.printStackTrace();
+
+        connected.set(false);
+        startConnectThread();
+    }
+
+    private void disconnectSocket() {
+        if (connectThread != null)
+            connectThread.interrupt();
+        connectThread = null;
+
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        prevServerHeartbeatTimestamp = -1;
+    }
+
+    /**
+     * Reads all incoming messages. If not connected, this will do
+     * nothing. Message handlers will be invoked from this method.
+     */
+    public void readMessages() {
         if (!isConnected())
             return;
 
-        channel.writeAndFlush(new Message(MessengerClientHandler.DISCONNECT, new byte[0]));
-        channel.close();
         try {
-            channel.closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+            while (in.available() > 0) {
+                String type = in.readUTF();
+                int dataSize = in.readInt();
+                byte[] data = new byte[dataSize];
+                in.readFully(data);
 
-    private void connect() {
-        if (!shouldReconnect)
-            return;
-
-        Bootstrap b = new Bootstrap();
-        b.group(workerGroup);
-        b.channel(NioSocketChannel.class);
-        b.option(ChannelOption.SO_KEEPALIVE, true);
-        b.handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel ch) {
-                ch.pipeline().addLast(
-                        new ReadTimeoutHandler(TIMEOUT),
-                        new WriteTimeoutHandler(TIMEOUT),
-                        new ClientIdentifierEncoder(),
-                        new MessageEncoder(),
-                        new MessageDecoder(),
-                        new MessengerClientHandler(MessengerClient.this, new ClientIdentifier(name), incomingMessageQueue, listening),
-                        new ConnectionExceptionHandler(MessengerClient.this)
-                );
+                if (type.equals(HEARTBEAT)) {
+                    prevServerHeartbeatTimestamp = System.currentTimeMillis();
+                } else {
+                    for (Handler handler : handlers) {
+                        handler.handle(type, data);
+                    }
+                }
             }
-        });
-
-        ChannelFuture f = b.connect(host, port);
-        try {
-            f.await(TIMEOUT * 1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        channel = f.channel();
-        if (!f.isSuccess()) {
-            System.err.println("Messenger connection failed");
-            f.cancel(false);
-            reconnectFuture = workerGroup.schedule((Runnable) this::reconnect, 1, TimeUnit.SECONDS);
-        }
-
-        prevHeartbeatTimestamp = System.currentTimeMillis();
-    }
-
-    public void reconnect() {
-        if (isReconnecting) {
-            return;
-        }
-
-        isReconnecting = true;
-
-        closeCurrentChannel();
-        connect();
-
-        isReconnecting = false;
-        reconnectFuture = null;
-    }
-
-    public void reconnect(String host, int port, String name) {
-        closeCurrentChannel();
-        if (isReconnecting)
-            reconnectFuture.cancel(true);
-
-        this.host = host;
-        this.port = port;
-        this.name = name;
-        connect();
-    }
-
-    public void readMessages() {
-        if (!isConnected()) {
-            return;
-        }
-
-        // Fix for issue #4: Reconnect if the server hasn't responded to a heartbeat for a while
-        if (System.currentTimeMillis() - prevHeartbeatTimestamp > TIMEOUT * 1000) {
-            System.err.println("Messenger server timed out");
-            reconnect();
-        }
-
-        Message msg;
-        while ((msg = incomingMessageQueue.poll()) != null) {
-            if (msg.getType().equals(MessengerClientHandler.HEARTBEAT)) {
-                prevHeartbeatTimestamp = System.currentTimeMillis();
-            }
-
-            for (Handler handler : handlers) {
-                handler.handle(msg.getType(), msg.getData());
-            }
+        } catch (IOException e) {
+            handleError(e);
         }
     }
 
+    /**
+     * Gets whether this client is currently connected to a server.
+     *
+     * @return connected
+     */
     public boolean isConnected() {
-        return channel.isActive();
+        return connected.get();
     }
 
+    /**
+     * Disconnects from the current server. After this method is called,
+     * this object should no longer be used. If you want to change servers,
+     * use {@link #reconnect}.
+     */
+    public void disconnect() {
+        send(DISCONNECT);
+
+        heartbeatFuture.cancel(false);
+        executor.shutdown();
+
+        disconnectSocket();
+        connected.set(false);
+
+        watchdogThread.interrupt();
+    }
+
+    /**
+     * Prepares to send a message. This returns a {@link MessageBuilder},
+     * which allows you to add data to the message.
+     *
+     * @param type type of the message to send
+     * @return builder to add data
+     */
     public MessageBuilder prepare(String type) {
         return new MessageBuilder(this, type);
     }
 
+    /**
+     * Immediately sends a message with no data.
+     *
+     * @param type type of the message to send
+     */
     public void send(String type) {
         sendMessage(type, new byte[0]);
     }
 
-    void sendMessage(String type, byte[] data) {
-        if (!isConnected())
-            return;
-        channel.writeAndFlush(new Message(type, data));
-    }
-
+    /**
+     * Registers a {@link MessageHandler} to handle incoming messages.
+     * If the type ends in '*', the handler will be invoked for all messages
+     * that match the content before. For example, "Foo*" would match a
+     * message of type "Foo2", while "Foo" would only match messages of
+     * type "Foo".
+     *
+     * @param type type of message to listen to
+     * @param handler handler to invoke
+     */
     public void addHandler(String type, MessageHandler handler) {
         Handler h;
         if (type.endsWith("*")) {
@@ -188,25 +288,70 @@ public final class MessengerClient {
         if (!listening.contains(type)) {
             listening.add(type);
 
-            if (isConnected()) {
+            if (connected.get()) {
                 listen(type);
             }
         }
     }
 
-    public void listen(String type) {
-        prepare(MessengerClientHandler.LISTEN)
+    private void listen(String type) {
+        prepare(LISTEN)
                 .addString(type)
                 .send();
     }
 
-    public void disconnect() {
-        shouldReconnect = false;
+    void sendMessage(String type, byte[] data) {
+        if (!connected.get())
+            return;
 
-        if (isConnected()) {
-            closeCurrentChannel();
+        synchronized (out) {
+            try {
+                out.writeUTF(type);
+                out.writeInt(data.length);
+                out.write(data);
+            } catch (IOException e) {
+                handleError(e);
+            }
+        }
+    }
+
+    private interface Handler {
+        void handle(String type, byte[] data);
+    }
+
+    // Handles simple patterns (type must match exactly)
+    private static final class DirectHandler implements Handler {
+        private final String targetType;
+        private final MessageHandler handler;
+
+        public DirectHandler(String targetType, MessageHandler handler) {
+            this.targetType = targetType;
+            this.handler = handler;
         }
 
-        workerGroup.shutdownGracefully();
+        @Override
+        public void handle(String type, byte[] data) {
+            if (type.equals(targetType)) {
+                handler.handle(type, new MessageReader(data));
+            }
+        }
+    }
+
+    // Handles wildcard patterns (i.e. patterns that end in '*')
+    private static final class WildcardHandler implements Handler {
+        private final String targetPrefix;
+        private final MessageHandler handler;
+
+        public WildcardHandler(String targetPrefix, MessageHandler handler) {
+            this.targetPrefix = targetPrefix;
+            this.handler = handler;
+        }
+
+        @Override
+        public void handle(String type, byte[] data) {
+            if (type.startsWith(targetPrefix)) {
+                handler.handle(type, new MessageReader(data));
+            }
+        }
     }
 }
