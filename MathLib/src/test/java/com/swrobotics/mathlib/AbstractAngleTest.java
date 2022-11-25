@@ -2,7 +2,6 @@ package com.swrobotics.mathlib;
 
 import org.junit.Test;
 
-import static org.ejml.UtilEjml.assertTrue;
 import static org.junit.Assert.*;
 
 public abstract class AbstractAngleTest<T extends AbstractAngle<T>> {
