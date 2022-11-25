@@ -4,6 +4,9 @@ import java.util.function.Supplier;
 
 import com.swrobotics.lib.schedule.Scheduler;
 import com.swrobotics.lib.schedule.Subsystem;
+import com.swrobotics.mathlib.MathUtil;
+
+import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
 
 /**
  * Represents a generic motor. This class is intended to provide
@@ -15,15 +18,16 @@ public abstract class Motor implements Subsystem {
      * Describes ways to control the motor to a target
      */
     private enum ControlMode {
-        PERCENT,
-        VOLTAGE;
+        PERCENT;
     }
     
     private ControlMode controlMode;
+    private Runnable runOnPeriodic;
 
-    private boolean inverted; // If the motor and encoder should function backwards
-    private double neutralDeadband; // All outputs below this value are assumed to be zero
-    private double nominalOutput; // All outputs below this value, but above the neutral deadband are upgraded to this value
+    private boolean inverted = false; // If the motor and encoder should function backwards
+    private double neutralDeadband = 0.01; // All outputs below this value are assumed to be zero
+    private double nominalOutput = 0.0; // All outputs below this value, but above the neutral deadband are upgraded to this value
+    private double maxVoltage = 12.0;
 
     /**
      * Creates a new {@code Motor} instance that belongs to a specified {@link Subsystem}.
@@ -34,10 +38,6 @@ public abstract class Motor implements Subsystem {
         /* Schedule it as a subsystem so that it can continue to target a setpoint,
         even not when being called */
         Scheduler.get().addSubsystem(parent, this);
-
-        inverted = false;
-        neutralDeadband = 0.01;
-        nominalOutput = 0.0;
 
         percent(0);
     }
@@ -50,7 +50,7 @@ public abstract class Motor implements Subsystem {
      */
     public void percent(double percent) {
         controlMode = ControlMode.PERCENT;
-        controlModeImpl = () -> percentImpl(percent);
+        runOnPeriodic = () -> percentFiltered(percent); // Keep going to percent out, even when this is not called
     }
 
     /**
@@ -118,17 +118,33 @@ public abstract class Motor implements Subsystem {
     }
 
     /**
-     * Actually sets the motor's percent output. This should be implemented
-     * by all motor types to be able to control them. A percent output of 1
-     * should be full speed clockwise, a percent output of -1 should be full
-     * speed counterclockwise, and a percent output of 0 should be stopped.
-     * The provided percent output will never exceed this range.
-     * 
-     * @param percent percent output from -1 to 1
+     * Get the currently set maximum voltage. No demands will exceed this value.
+     * @return
      */
-    protected abstract void setPercentOutInternal(double percent);
+    public double getMaximumVoltage() {
+        return maxVoltage;
+    }
 
-    private void setPercentOutFiltered(double percent) {
+    /**
+     * Set the maximum voltage that {@code percent()} is allowed to run at.
+     * @param maxVoltage
+     */
+    public void setMaximumVoltage(double maxVoltage) {
+        this.maxVoltage = maxVoltage;
+    }
+
+    /**
+     * Actually sets the motor's voltage output. This should be impolemented
+     * by all motor types to be able to control them. A voltage output of 12
+     * should be full speed clockwise, a voltage output of -12 should be full
+     * speed counterclockwise, and a voltage output of 0 should be stopped.
+     * @param voltage
+     */
+    protected abstract void  setVoltageInternal(double voltage);
+
+    /* Filtering and setting output */
+
+    private void percentFiltered(double percent) {
         if (inverted) percent = -percent;
 
         // Apply neutral deadband
@@ -138,28 +154,19 @@ public abstract class Motor implements Subsystem {
         if (percent != 0 && Math.abs(percent) < nominalOutput) {
             percent = Math.signum(percent) * nominalOutput;
         }
+
+        // Clamp output
+        percent = MathUtil.clamp(percent, -1, 1);
+
+        // Apply voltage
+        double voltage = percent * maxVoltage;
         
-        setPercentOutInternal(MathUtil.clamp(percent, -1, 1));
-    }
-
-    // Implementation of percent output control mode
-    private void percentImpl(double percent) {
-        setPercentOutFiltered(percent);
-    }
-
-    // Implementation of position control mode (used for position() and hold())
-    private void positionImpl(Supplier<Angle> angleGetter, Angle angle) {
-        setPercentOutFiltered(positionCalc.calculate(angleGetter.get(), angle));
-    }
-
-    // Implementation of velocity control mode (used for velocity() and halt())
-    private void velocityImpl(Supplier<Angle> velocityGetter, Angle velocity) {
-        setPercentOutFiltered(velocityCalc.calculate(velocityGetter.get(), velocity));
+        setVoltageInternal(voltage);
     }
 
     @Override
     public void periodic() {
         // Run the currently set control mode implementation
-        controlModeImpl.run();
+        runOnPeriodic.run();
     }
 }
