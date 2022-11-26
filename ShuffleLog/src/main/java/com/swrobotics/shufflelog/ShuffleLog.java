@@ -1,10 +1,12 @@
 package com.swrobotics.shufflelog;
 
+import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.profiler.Profiler;
 import com.swrobotics.shufflelog.tool.MenuBarTool;
 import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.data.DataLogTool;
 import com.swrobotics.shufflelog.tool.data.NetworkTablesTool;
+import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
 import com.swrobotics.shufflelog.tool.profile.ShuffleLogProfilerTool;
 import imgui.ImGui;
 import imgui.ImGuiIO;
@@ -31,7 +33,9 @@ public final class ShuffleLog extends PApplet {
     private final List<Tool> addedTools = new ArrayList<>();
     private final List<Tool> removedTools = new ArrayList<>();
 
+    // Things shared between tools
     private final ExecutorService threadPool = Executors.newFixedThreadPool(4);
+    private MessengerClient messenger;
 
     private long startTime;
 
@@ -64,6 +68,7 @@ public final class ShuffleLog extends PApplet {
         }
 
         tools.add(new MenuBarTool());
+        tools.add(new MessengerTool(this));
         tools.add(new ShuffleLogProfilerTool(this));
         DataLogTool dataLog = new DataLogTool(this);
         tools.add(dataLog);
@@ -114,6 +119,14 @@ public final class ShuffleLog extends PApplet {
 
     public ExecutorService getThreadPool() {
         return threadPool;
+    }
+
+    public MessengerClient getMessenger() {
+        return messenger;
+    }
+
+    public void setMessenger(MessengerClient messenger) {
+        this.messenger = messenger;
     }
 
     public static void main(String[] args) {
