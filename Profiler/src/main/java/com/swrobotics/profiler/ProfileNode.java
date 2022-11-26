@@ -1,4 +1,4 @@
-package com.swrobotics.lib.profile;
+package com.swrobotics.profiler;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,10 +1,10 @@
 package com.swrobotics.lib.wpilib;
 
-import com.swrobotics.lib.profile.Profiler;
 import com.swrobotics.lib.schedule.Scheduler;
 import com.swrobotics.lib.time.Duration;
 import com.swrobotics.lib.time.Repeater;
 import com.swrobotics.lib.time.TimeUnit;
+import com.swrobotics.profiler.Profiler;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.RobotBase;
