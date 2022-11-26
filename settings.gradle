@@ -5,3 +5,5 @@ include 'Messenger:MessengerServer'
 include 'Messenger:MessengerTest'
 include 'MathLib'
 include 'Robot'
+include 'ShuffleLog'
+
