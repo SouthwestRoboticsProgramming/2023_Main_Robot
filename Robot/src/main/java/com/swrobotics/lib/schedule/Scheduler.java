@@ -4,8 +4,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 
 import java.util.*;
 
-import com.swrobotics.lib.profile.Profiler;
 import com.swrobotics.lib.wpilib.RobotState;
+import com.swrobotics.profiler.Profiler;
 
 /**
  * The {@code Scheduler} is the core of the robot code. It runs
