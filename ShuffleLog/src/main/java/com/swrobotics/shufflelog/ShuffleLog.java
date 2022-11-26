@@ -3,6 +3,8 @@ package com.swrobotics.shufflelog;
 import com.swrobotics.profiler.Profiler;
 import com.swrobotics.shufflelog.tool.MenuBarTool;
 import com.swrobotics.shufflelog.tool.Tool;
+import com.swrobotics.shufflelog.tool.data.DataLogTool;
+import com.swrobotics.shufflelog.tool.data.NetworkTablesTool;
 import com.swrobotics.shufflelog.tool.profile.ShuffleLogProfilerTool;
 import imgui.ImGui;
 import imgui.ImGuiIO;
@@ -15,9 +17,12 @@ import processing.core.PFont;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public final class ShuffleLog extends PApplet {
     private static final String LAYOUT_FILE = "layout.ini";
+    private static final int THREAD_POOL_SIZE = 4;
 
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
@@ -25,6 +30,8 @@ public final class ShuffleLog extends PApplet {
     private final List<Tool> tools = new ArrayList<>();
     private final List<Tool> addedTools = new ArrayList<>();
     private final List<Tool> removedTools = new ArrayList<>();
+
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(4);
 
     private long startTime;
 
@@ -58,6 +65,9 @@ public final class ShuffleLog extends PApplet {
 
         tools.add(new MenuBarTool());
         tools.add(new ShuffleLogProfilerTool(this));
+        DataLogTool dataLog = new DataLogTool(this);
+        tools.add(dataLog);
+        tools.add(new NetworkTablesTool(threadPool, dataLog));
 
         startTime = System.currentTimeMillis();
     }
@@ -100,6 +110,10 @@ public final class ShuffleLog extends PApplet {
 
     public double getTimestamp() {
         return (System.currentTimeMillis() - startTime) / 1000.0;
+    }
+
+    public ExecutorService getThreadPool() {
+        return threadPool;
     }
 
     public static void main(String[] args) {
