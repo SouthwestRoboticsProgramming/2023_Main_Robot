@@ -22,7 +22,7 @@ public final class ProfileNode {
         total = 0;
     }
 
-    ProfileNode(String name, ProfileNode parent, long accumulator, long total) {
+    public ProfileNode(String name, ProfileNode parent, long accumulator, long total) {
         this.name = name;
         this.parent = parent;
         children = new ArrayList<>();

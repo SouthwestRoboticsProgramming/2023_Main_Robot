@@ -41,6 +41,7 @@ static def lwjglModule(module) {
 
 dependencies {
     implementation project(':Messenger:MessengerClient')
+    implementation project(':Profiler')
 
     implementation "org.praxislive.libp5x:processing-core:${P5X_VERSION}"
     implementation("org.praxislive.libp5x:processing-lwjgl:${P5X_VERSION}") {
