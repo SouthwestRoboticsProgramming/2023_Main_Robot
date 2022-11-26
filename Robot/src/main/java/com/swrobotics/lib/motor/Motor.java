@@ -27,6 +27,9 @@ public abstract class Motor implements Subsystem {
     private double nominalOutput = 0.0; // All outputs below this value, but above the neutral deadband are upgraded to this value
     private double maxVoltage = 12.0;
 
+     /** Current output of the motor in percent (Updated by {@code percentFiltered()}) */
+    private double currentOutput = 0.0;
+
     /**
      * Creates a new {@code Motor} instance that belongs to a specified {@link Subsystem}.
      * 
@@ -136,6 +139,22 @@ public abstract class Motor implements Subsystem {
     }
 
     /**
+     * Get the mode that the motor is currently using
+     * @return Mode that the motor is currently using
+     */
+    public ControlMode getControlMode() {
+        return controlMode;
+    }
+
+    /**
+     * Get the percentage of max power that the motor is currently being sent
+     * @return Percentage of maximum power currently being sent
+     */
+    public double getCurrentPercentOutput() {
+        return currentOutput;
+    }
+
+    /**
      * Actually sets the motor's voltage output. This should be impolemented
      * by all motor types to be able to control them. A voltage output of 12
      * should be full speed clockwise, a voltage output of -12 should be full
@@ -159,6 +178,8 @@ public abstract class Motor implements Subsystem {
 
         // Clamp output
         percent = MathUtil.clamp(percent, -1, 1);
+
+        currentOutput = percent;
 
         // Apply voltage
         double voltage = percent * maxVoltage;
