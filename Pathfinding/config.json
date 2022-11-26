@@ -1,0 +1,16 @@
+{
+  "messenger": {
+    "host": "localhost",
+    "port": 5805,
+    "name": "Pathfinder"
+  },
+  "field": {
+    "width": 8.2296,
+    "height": 16.4592,
+    "cellSize": 0.1524,
+    "originX": 0.5,
+    "originY": 0.5
+  },
+  "gridFile": "grids.json",
+  "finderType": "THETA_STAR"
+}

@@ -1,0 +1,9 @@
+{
+  "robot": {
+    "type": "CIRCLE",
+    "x": 0.0,
+    "y": 0.0,
+    "radius": 0.5
+  },
+  "grids": []
+}
