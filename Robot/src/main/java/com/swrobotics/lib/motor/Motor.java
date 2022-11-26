@@ -6,8 +6,6 @@ import com.swrobotics.lib.schedule.Scheduler;
 import com.swrobotics.lib.schedule.Subsystem;
 import com.swrobotics.mathlib.MathUtil;
 
-import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
-
 /**
  * Represents a generic motor. This class is intended to provide
  * a common interface between various types of motors, to make it
@@ -51,6 +49,10 @@ public abstract class Motor implements Subsystem {
     public void percent(double percent) {
         controlMode = ControlMode.PERCENT;
         runOnPeriodic = () -> percentFiltered(percent); // Keep going to percent out, even when this is not called
+    }
+
+    public void percent(Supplier<Double> percent) {
+        percent(() -> percent.get());
     }
 
     /**
