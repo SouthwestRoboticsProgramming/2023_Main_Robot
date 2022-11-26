@@ -1,4 +1,4 @@
-package com.swrobotics.lib.profile;
+package com.swrobotics.profiler;
 
 /**
  * A tool to measure how long each part of the code takes to run.

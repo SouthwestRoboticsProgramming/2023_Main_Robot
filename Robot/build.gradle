@@ -49,6 +49,7 @@ def includeDesktopSupport = true
 // Also defines JUnit 4.
 dependencies {
     implementation project(':Messenger:MessengerClient')
+    implementation project(':Profiler')
 
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
