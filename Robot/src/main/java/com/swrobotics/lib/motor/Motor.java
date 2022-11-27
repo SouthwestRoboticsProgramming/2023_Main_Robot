@@ -155,13 +155,13 @@ public abstract class Motor implements Subsystem {
     }
 
     /**
-     * Actually sets the motor's voltage output. This should be impolemented
-     * by all motor types to be able to control them. A voltage output of 12
-     * should be full speed clockwise, a voltage output of -12 should be full
-     * speed counterclockwise, and a voltage output of 0 should be stopped.
+     * Actually sets the motor's percent output. This should be impolemented
+     * by all motor types to be able to control them. A percent output of 1
+     * should be full speed clockwise, a percent output of -1 should be full
+     * speed counterclockwise, and a percent output of 0 should be stopped.
      * @param voltage
      */
-    protected abstract void  setVoltageInternal(double voltage);
+    protected abstract void percentInternal(double voltage);
 
     /* Filtering and setting output */
 
@@ -180,11 +180,7 @@ public abstract class Motor implements Subsystem {
         percent = MathUtil.clamp(percent, -1, 1);
 
         currentOutput = percent;
-
-        // Apply voltage
-        double voltage = percent * maxVoltage;
-        
-        setVoltageInternal(voltage);
+        percentInternal(percent);
     }
 
     @Override
