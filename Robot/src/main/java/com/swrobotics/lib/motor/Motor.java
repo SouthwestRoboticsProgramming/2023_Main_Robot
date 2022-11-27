@@ -159,9 +159,9 @@ public abstract class Motor implements Subsystem {
      * by all motor types to be able to control them. A percent output of 1
      * should be full speed clockwise, a percent output of -1 should be full
      * speed counterclockwise, and a percent output of 0 should be stopped.
-     * @param voltage
+     * @param percent
      */
-    protected abstract void percentInternal(double voltage);
+    protected abstract void percentInternal(double percent);
 
     /* Filtering and setting output */
 

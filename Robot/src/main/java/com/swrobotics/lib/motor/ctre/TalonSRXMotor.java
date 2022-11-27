@@ -1,13 +1,12 @@
 package com.swrobotics.lib.motor.ctre;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.lib.schedule.Subsystem;
+import com.swrobotics.lib.wpilib.AbstractRobot;
 
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 
 /**
@@ -37,7 +36,8 @@ public class TalonSRXMotor extends Motor {
 
     @Override
     public void periodic() {
-        if (RobotBase.isSimulation()) {
+        super.periodic();
+        if (AbstractRobot.isSimulation()) {
             // Update the amount of power that the simulated motor is getting
             sim.setBusVoltage(RobotController.getBatteryVoltage());
         }
