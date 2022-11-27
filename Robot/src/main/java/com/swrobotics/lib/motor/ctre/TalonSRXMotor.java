@@ -7,6 +7,9 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.lib.schedule.Subsystem;
 
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
+
 /**
  * A class that improves the functionality of the TalonSRX
  */
@@ -33,8 +36,10 @@ public class TalonSRXMotor extends Motor {
     }
 
     @Override
-    public void simulationPeriodic() {
-        
+    public void periodic() {
+        if (RobotBase.isSimulation()) {
+            // Update the amount of power that the simulated motor is getting
+            sim.setBusVoltage(RobotController.getBatteryVoltage());
+        }
     }
-    
 }
