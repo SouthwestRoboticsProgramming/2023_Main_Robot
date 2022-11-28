@@ -10,6 +10,8 @@ import com.swrobotics.lib.swerve.SwerveModule;
 import com.swrobotics.lib.wpilib.AbstractRobot;
 import com.swrobotics.mathlib.Vec2d;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+
 public final class Robot extends AbstractRobot {
     private static final double PERIODIC_PER_SECOND = 50;
 
@@ -29,6 +31,7 @@ public final class Robot extends AbstractRobot {
         Scheduler sch = Scheduler.get();
 
         sch.addSubsystem(drive);
+        drive.setChassisSpeeds(new ChassisSpeeds(1, 1, Math.PI / 4));
     }
 
 

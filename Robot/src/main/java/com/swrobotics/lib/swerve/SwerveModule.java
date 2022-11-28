@@ -18,6 +18,9 @@ public class SwerveModule {
     private final Encoder driveEncoder;
     private final Encoder turnEncoder;
     private final Translation2d position;
+
+    // Temporary
+    private SwerveModuleState state;
     
     public SwerveModule(Motor drive, Motor turn, Encoder encoder, Vec2d position) {
         this.drive = drive;
@@ -49,13 +52,15 @@ public class SwerveModule {
     }
 
     public void setState(SwerveModuleState state) {
-        
+        this.state = state;
     }
 
     public SwerveModuleState getState() {
         // Velocity
         if (AbstractRobot.get().isDisabled()) {return new SwerveModuleState();}
 
-        return new SwerveModuleState(1.5, new Rotation2d(0));
+        if (state == null) {return new SwerveModuleState();}
+
+        return state; // Output is exactly the same as input
     }
 }
