@@ -2,6 +2,7 @@ package com.swrobotics.lib.swerve;
 
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.motor.Motor;
+import com.swrobotics.lib.wpilib.AbstractRobot;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CoordinateConversions;
 import com.swrobotics.mathlib.Vec2d;
@@ -53,8 +54,8 @@ public class SwerveModule {
 
     public SwerveModuleState getState() {
         // Velocity
+        if (AbstractRobot.get().isDisabled()) {return new SwerveModuleState();}
 
-
-        return new SwerveModuleState(1.5, new Rotation2d(45));
+        return new SwerveModuleState(1.5, new Rotation2d(0));
     }
 }
