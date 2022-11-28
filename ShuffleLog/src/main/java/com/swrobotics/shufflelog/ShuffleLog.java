@@ -94,7 +94,7 @@ public final class ShuffleLog extends PApplet {
         imGuiGlfw.newFrame();
         ImGui.newFrame();
         Profiler.pop();
-        
+
         background(210);
         ImGui.dockSpaceOverViewport();
 

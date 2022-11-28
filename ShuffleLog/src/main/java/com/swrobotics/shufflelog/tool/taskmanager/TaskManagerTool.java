@@ -48,8 +48,8 @@ public final class TaskManagerTool implements Tool {
     public static final String MSG_TASKS       = ":Tasks";
 
     // Logging
-    public static final String MSG_STDOUT = ":StdOut:";
-    public static final String MSG_STDERR = ":StdErr:";
+    public static final String MSG_STDOUT_PREFIX = ":StdOut:";
+    public static final String MSG_STDERR_PREFIX = ":StdErr:";
 
     private final ShuffleLog log;
     private final MessengerClient msg;
@@ -82,6 +82,8 @@ public final class TaskManagerTool implements Tool {
         msg.addHandler(name + MSG_WRITE_CONFIRM, this::onWriteConfirm);
         msg.addHandler(name + MSG_MOVE_CONFIRM, this::onMoveConfirm);
         msg.addHandler(name + MSG_TASKS, this::onTasks);
+        msg.addHandler(name + MSG_STDOUT_PREFIX + "*", this::onStdOut);
+        msg.addHandler(name + MSG_STDERR_PREFIX + "*", this::onStdErr);
 
         mkdirName = new ImString(64);
         logTools = new HashMap<>();
@@ -388,16 +390,28 @@ public final class TaskManagerTool implements Tool {
         createLocalFile(path, false);
     }
 
+    private TaskLogTool getLog(String task) {
+        return logTools.computeIfAbsent(task, (n) -> new TaskLogTool(n, log));
+    }
+
+    private void onStdOut(String type, MessageReader reader) {
+        getLog(type.substring(name.length() + MSG_STDOUT_PREFIX.length())).addEntry(false, reader.readString());
+    }
+
+    private void onStdErr(String type, MessageReader reader) {
+        getLog(type.substring(name.length() + MSG_STDERR_PREFIX.length())).addEntry(true, reader.readString());
+    }
+
     private void showTasks() {
         Task deletion = null;
         for (Task task : tasks) {
             String name = task.name.get();
-            pushID(name);
+            pushID(task.uuid);
 
             boolean open = collapsingHeader(name);
             if (beginPopupContextItem("task_ctx")) {
                 if (selectable("Open Log")) {
-                    TaskLogTool tool = logTools.computeIfAbsent(name, (n) -> new TaskLogTool(this.name, n, log));
+                    TaskLogTool tool = getLog(name);
                     if (!tool.isOpen()) {
                         tool.setOpen();
                         log.addTool(tool);

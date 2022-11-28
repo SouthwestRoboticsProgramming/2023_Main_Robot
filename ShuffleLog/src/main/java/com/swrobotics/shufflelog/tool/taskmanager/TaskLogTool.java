@@ -1,6 +1,5 @@
 package com.swrobotics.shufflelog.tool.taskmanager;
 
-import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.Tool;
 import imgui.flag.ImGuiCol;
@@ -30,13 +29,11 @@ public final class TaskLogTool implements Tool {
 
     private final List<Entry> log;
 
-    public TaskLogTool(String prefix, String taskName, ShuffleLog shuffleLog) {
+    public TaskLogTool(String taskName, ShuffleLog shuffleLog) {
         this.taskName = taskName;
         this.shuffleLog = shuffleLog;
         open = new ImBoolean(false);
 
-        shuffleLog.getMessenger().addHandler(prefix + TaskManagerTool.MSG_STDOUT + taskName, this::onStdOut);
-        shuffleLog.getMessenger().addHandler(prefix + TaskManagerTool.MSG_STDERR + taskName, this::onStdErr);
         log = new ArrayList<>();
     }
 
@@ -48,19 +45,12 @@ public final class TaskLogTool implements Tool {
         return open.get();
     }
 
-    private void addEntry(Entry entry) {
+    public void addEntry(boolean err, String message) {
+        Entry entry = new Entry(err, message);
         log.add(entry);
         if (log.size() > MAX_LOG_HISTORY) {
             log.remove(0);
         }
-    }
-
-    private void onStdOut(String type, MessageReader reader) {
-        addEntry(new Entry(false, reader.readString()));
-    }
-
-    private void onStdErr(String type, MessageReader reader) {
-        addEntry(new Entry(true, reader.readString()));
     }
 
     @Override
@@ -82,7 +72,6 @@ public final class TaskLogTool implements Tool {
 
         if (!open.get()) {
             shuffleLog.removeTool(this);
-            // TODO: Probably should remove handler from Messenger here
         }
     }
 }

@@ -3,11 +3,15 @@ package com.swrobotics.shufflelog.tool.taskmanager;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
 
+import java.util.UUID;
+
 public final class Task {
     public static final int EDIT_NAME = 1;
     public static final int EDIT_WORK_DIR = 2;
     public static final int EDIT_CMD = 4;
     public static final int EDIT_ENABLE = 8;
+
+    public final String uuid;
 
     public ImString name;
     public ImString workingDirectory;
@@ -17,6 +21,8 @@ public final class Task {
     public boolean edited;
 
     public Task(String name, String workingDirectory, String command, boolean enabled) {
+        this.uuid = UUID.randomUUID().toString();
+
         this.name = new ImString(64);
         this.workingDirectory = new ImString(128);
         this.command = new ImString(256);
