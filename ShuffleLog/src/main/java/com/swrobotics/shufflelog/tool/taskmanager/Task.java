@@ -19,6 +19,8 @@ public final class Task {
     public ImBoolean enabled;
 
     public boolean edited;
+    public boolean nameEdited;
+    public String syncedName;
 
     public Task(String name, String workingDirectory, String command, boolean enabled) {
         this.uuid = UUID.randomUUID().toString();
@@ -31,5 +33,13 @@ public final class Task {
         this.name.set(name);
         this.workingDirectory.set(workingDirectory);
         this.command.set(command);
+
+        syncedName = name;
+    }
+
+    public void markSynced() {
+        edited = false;
+        nameEdited = false;
+        syncedName = name.get();
     }
 }

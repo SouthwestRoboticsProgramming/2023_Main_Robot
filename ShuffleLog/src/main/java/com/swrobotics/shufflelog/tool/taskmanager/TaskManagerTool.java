@@ -408,7 +408,7 @@ public final class TaskManagerTool implements Tool {
             String name = task.name.get();
             pushID(task.uuid);
 
-            boolean open = collapsingHeader(name);
+            boolean open = treeNode(task.uuid, name);
             if (beginPopupContextItem("task_ctx")) {
                 if (selectable("Open Log")) {
                     TaskLogTool tool = getLog(name);
@@ -438,7 +438,8 @@ public final class TaskManagerTool implements Tool {
                     text("Name:");
                     tableNextColumn();
                     setNextItemWidth(-1);
-                    task.edited |= inputText("##task_name", task.name);
+                    task.nameEdited |= inputText("##task_name", task.name);
+                    task.edited |= task.nameEdited;
 
                     tableNextColumn();
                     text("Working Dir:");
@@ -470,6 +471,12 @@ public final class TaskManagerTool implements Tool {
 
                 beginDisabled(!task.edited);
                 if (button("Save")) {
+                    if (task.nameEdited) {
+                        msg.prepare(this.name + MSG_DELETE_TASK)
+                                .addString(task.syncedName)
+                                .send();
+                    }
+
                     MessageBuilder builder = msg.prepare(this.name + MSG_CREATE_TASK);
                     builder.addString(task.name.get());
                     builder.addString(task.workingDirectory.get());
@@ -480,11 +487,12 @@ public final class TaskManagerTool implements Tool {
                     builder.addBoolean(task.enabled.get());
                     builder.send();
 
-                    task.edited = false;
+                    task.markSynced();
                 }
                 endDisabled();
 
                 unindent();
+                treePop();
             }
 
             popID();

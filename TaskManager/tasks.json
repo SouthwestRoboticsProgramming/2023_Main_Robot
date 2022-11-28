@@ -1,5 +1,5 @@
 {
-  "Test": {
+  "Test Task 2": {
     "workingDirectory": "tasks/test",
     "command": [
       "bash",
