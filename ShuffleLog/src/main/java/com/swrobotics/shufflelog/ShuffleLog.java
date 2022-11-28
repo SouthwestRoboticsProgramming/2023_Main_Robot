@@ -8,6 +8,7 @@ import com.swrobotics.shufflelog.tool.data.DataLogTool;
 import com.swrobotics.shufflelog.tool.data.NetworkTablesTool;
 import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
 import com.swrobotics.shufflelog.tool.profile.ShuffleLogProfilerTool;
+import com.swrobotics.shufflelog.tool.taskmanager.TaskManagerTool;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.extension.implot.ImPlot;
@@ -73,6 +74,7 @@ public final class ShuffleLog extends PApplet {
         DataLogTool dataLog = new DataLogTool(this);
         tools.add(dataLog);
         tools.add(new NetworkTablesTool(threadPool, dataLog));
+        tools.add(new TaskManagerTool(this, "TaskManager"));
 
         startTime = System.currentTimeMillis();
     }
@@ -81,12 +83,18 @@ public final class ShuffleLog extends PApplet {
     public void draw() {
         Profiler.beginMeasurements("Root");
 
+        if (messenger != null) {
+            Profiler.push("Read Messages");
+            messenger.readMessages();
+            Profiler.pop();
+        }
+
         Profiler.push("Begin GUI frame");
         imGuiGlfw.flushEvents();
         imGuiGlfw.newFrame();
         ImGui.newFrame();
         Profiler.pop();
-
+        
         background(210);
         ImGui.dockSpaceOverViewport();
 
@@ -111,6 +119,14 @@ public final class ShuffleLog extends PApplet {
         Profiler.pop();
 
         Profiler.endMeasurements();
+    }
+
+    public void addTool(Tool tool) {
+        addedTools.add(tool);
+    }
+
+    public void removeTool(Tool tool) {
+        removedTools.add(tool);
     }
 
     public double getTimestamp() {
