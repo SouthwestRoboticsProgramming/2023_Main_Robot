@@ -96,7 +96,8 @@ public class SwerveDrive implements Subsystem {
             ChassisSpeeds simulatedSpeeds = getChassisSpeeds();
             // Set gyroscope based on rotational velocity
             double currentAngle = Math.toRadians(gyro.getAngle());
-            gyro.setYaw(Math.toDegrees(currentAngle + simulatedSpeeds.omegaRadiansPerSecond / 50)); // TODO: No magic number
+            System.out.println("Current: " + currentAngle + " Delta: " + simulatedSpeeds.omegaRadiansPerSecond / 50);
+            gyroSim.setRawHeading(Math.toDegrees(-currentAngle + simulatedSpeeds.omegaRadiansPerSecond / 50)); // TODO: No magic number
         }
 
         odometry.update(gyro.getRotation2d(), getModuleStates());
