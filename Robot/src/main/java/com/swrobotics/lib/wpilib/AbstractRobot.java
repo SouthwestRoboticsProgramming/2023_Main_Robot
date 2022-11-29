@@ -36,6 +36,7 @@ public abstract class AbstractRobot extends RobotBase {
     private final double periodicPerSecond;
 
     private volatile boolean running;
+    private RobotState prevState = null;
 
     /**
      * Initializes the robot and the library.
@@ -57,6 +58,17 @@ public abstract class AbstractRobot extends RobotBase {
      */
     protected abstract void addSubsystems();
 
+    // Override these to use them
+    public void periodic() {}
+    public void disabledInit() {}
+    public void disabledPeriodic() {}
+    public void autonomousInit() {}
+    public void autonomousPeriodic() {}
+    public void teleopInit() {}
+    public void teleopPeriodic() {}
+    public void testInit() {}
+    public void testPeriodic() {}
+
     @Override
     public final void startCompetition() {
         running = true;
@@ -72,6 +84,22 @@ public abstract class AbstractRobot extends RobotBase {
                     Profiler.beginMeasurements("Root");
 
                     RobotState state = getCurrentState();
+                    if (state != prevState) {
+                        switch (state) {
+                            case DISABLED: disabledInit(); break;
+                            case AUTONOMOUS: autonomousInit(); break;
+                            case TELEOP: teleopInit(); break;
+                            case TEST: testInit(); break;
+                        }
+                    }
+                    prevState = state;
+                    periodic();
+                    switch (state) {
+                        case DISABLED: disabledPeriodic(); break;
+                        case AUTONOMOUS: autonomousPeriodic(); break;
+                        case TELEOP: teleopPeriodic(); break;
+                        case TEST: testPeriodic(); break;
+                    }
                     Scheduler.get().periodicState(state);
 
                     Profiler.endMeasurements();
