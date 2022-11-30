@@ -2,8 +2,12 @@ package com.swrobotics.lib.motor;
 
 import java.util.function.Supplier;
 
+import com.swrobotics.lib.encoder.Encoder;
+import com.swrobotics.lib.motor.calc.PositionCalculator;
+import com.swrobotics.lib.motor.calc.VelocityCalculator;
 import com.swrobotics.lib.schedule.Scheduler;
 import com.swrobotics.lib.schedule.Subsystem;
+import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.MathUtil;
 
 /**
@@ -16,11 +20,18 @@ public abstract class Motor implements Subsystem {
      * Describes ways to control the motor to a target
      */
     private enum ControlMode {
-        PERCENT;
+        PERCENT,
+        POSITION,
+        VELOCITY;
     }
     
     private ControlMode controlMode;
     private Runnable runOnPeriodic;
+
+    private Encoder encoder;
+
+    private PositionCalculator positionCalculator;
+    private VelocityCalculator velocityCalculator;
 
     private boolean inverted = false; // If the motor and encoder should function backwards
     private double neutralDeadband = 0.01; // All outputs below this value are assumed to be zero
@@ -63,6 +74,65 @@ public abstract class Motor implements Subsystem {
      * completely disables the motor output.
      */
     public void stop() { percent(0); }
+
+    public void position(Supplier<Angle> currentAngle, Angle targetAngle) {
+
+        if (positionCalculator == null) {
+            throw new IllegalStateException("Cannot set position, no position calculator is set");
+        }
+
+        // Reset the calculator when starting a new position session.
+        if (controlMode != ControlMode.POSITION) positionCalculator.reset();
+
+        controlMode = ControlMode.POSITION;
+        runOnPeriodic = () -> runPosition(currentAngle, targetAngle);;
+    }
+    
+    public void position(Angle target) {
+        if (encoder == null) {
+            throw new IllegalStateException("Cannot set position, no encoder is set");
+        }
+
+        position(encoder::getAngle, target);
+    }
+
+    public void velocity(Supplier<Angle> current, Angle target) {
+        if (velocityCalculator == null) {
+            throw new IllegalStateException("Cannot set velocity, no velocity calculator is set");
+        }
+
+        if (controlMode != ControlMode.VELOCITY) velocityCalculator.reset();
+
+        controlMode = ControlMode.VELOCITY;
+        runOnPeriodic = () -> runVelocity(current, target);
+    }
+
+    public void velocity(Angle target) {
+        if (encoder == null) {
+            throw new IllegalStateException("Cannot set position, no encoder is set");
+        }
+
+        velocity(encoder::getVelocity, target);
+    }
+
+    /* Implementations to be called by runOnPeriodic() */
+    private void runPosition(Supplier<Angle> current, Angle target) {
+        percentFiltered(positionCalculator.calculate(current.get(), target));
+    }
+
+    private void runVelocity(Supplier<Angle> current, Angle target) {
+        percentFiltered(velocityCalculator.calculate(current.get(), target));
+    }
+
+    /* Getters and setters */
+
+    public void setEncoder(Encoder encoder) {
+        this.encoder = encoder;
+    };
+
+    public Encoder getEncoder() {
+        return encoder;
+    }
 
     /**
      * Gets whether the motor's output is currently inverted.
@@ -155,7 +225,7 @@ public abstract class Motor implements Subsystem {
     }
 
     /**
-     * Actually sets the motor's percent output. This should be impolemented
+     * Actually sets the motor's percent output. This should be implemented
      * by all motor types to be able to control them. A percent output of 1
      * should be full speed clockwise, a percent output of -1 should be full
      * speed counterclockwise, and a percent output of 0 should be stopped.
