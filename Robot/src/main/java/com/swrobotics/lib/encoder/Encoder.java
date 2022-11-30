@@ -8,11 +8,6 @@ import com.swrobotics.mathlib.Angle;
  * A class that allows all types of encoders to work in the same manner.
  */
 public abstract class Encoder implements Supplier<Angle> {
-    /** An enum that describes which direction on the encoder should read as positive */
-    public enum Invert {
-        CW_POSITIVE,
-        CCW_POSITIVE
-    }
 
     private Angle offset = Angle.ZERO; // Applied by subtracting
     private boolean inverted = false;
@@ -21,8 +16,8 @@ public abstract class Encoder implements Supplier<Angle> {
     protected abstract Angle getVelocityImpl();
 
     public Angle getRawAngle() {
-        if (inverted) return getRawAngleImpl().cw();
-        return getRawAngleImpl().ccw();
+        if (inverted) return getRawAngleImpl().negate();
+        return getRawAngleImpl();
     }
 
     public Angle getVelocity() {
@@ -48,11 +43,11 @@ public abstract class Encoder implements Supplier<Angle> {
     }
 
     /**
-     * Set the way that the motor should be inverted
-     * @param invert Which direction should read positive
+     * Set if the motor should be inverted
+     * @param inverted If the motor should be inverted
      */
-    public void setInverted(Invert invert) {
-        inverted = invert == Invert.CW_POSITIVE;
+    public void setInverted(boolean inverted) {
+        this.inverted = inverted;
     }
 
     @Override
