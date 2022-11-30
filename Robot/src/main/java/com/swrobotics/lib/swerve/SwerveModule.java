@@ -10,11 +10,19 @@ import com.swrobotics.mathlib.Vec2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class SwerveModule {
 
     private final Motor drive;
+    private final double driveGearRatio;
+    private FlywheelSim driveSim;
+
     private final Motor turn;
+    private final double turnGearRatio;
+    private FlywheelSim turnSim;
+
     private final Encoder driveEncoder;
     private final Encoder turnEncoder;
     private final Translation2d position;
@@ -22,9 +30,15 @@ public class SwerveModule {
     // Temporary
     private SwerveModuleState state;
     
-    public SwerveModule(Motor drive, Motor turn, Encoder encoder, Vec2d position) {
+    public SwerveModule(Motor drive, Motor turn, Encoder encoder, Vec2d position, double driveGearRatio, double turnGearRatio) {
         this.drive = drive;
+        this.driveGearRatio = driveGearRatio;
+
         this.turn = turn;
+        this.turnGearRatio = turnGearRatio;
+
+        state = new SwerveModuleState(); // Default state is forward, stopped
+
         turnEncoder = encoder;
         // driveEncoder = drive.getEncoder();
         driveEncoder = new Encoder() {
@@ -57,10 +71,20 @@ public class SwerveModule {
 
     public SwerveModuleState getState() {
         // Velocity
-        if (AbstractRobot.get().isDisabled()) {return new SwerveModuleState();}
+        if (AbstractRobot.get().isDisabled()) { return new SwerveModuleState(); }
 
-        if (state == null) {return new SwerveModuleState();}
+        if (state == null) { return new SwerveModuleState(); }
+
+        // Simulate state using FlywheelSim
+        if (AbstractRobot.isSimulation()) {
+            
+        }
 
         return state; // Output is exactly the same as input
+    }
+
+    public void configureSimulation(DCMotor driveMotorType, double driveMOI, DCMotor turnMotorType, double turnMOI) {
+        driveSim = new FlywheelSim(driveMotorType, driveGearRatio, driveMOI);
+        turnSim = new FlywheelSim(turnMotorType, turnGearRatio, turnMOI);
     }
 }

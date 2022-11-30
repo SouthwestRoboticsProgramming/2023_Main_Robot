@@ -1,11 +1,11 @@
 package com.swrobotics.lib.swerve;
 
-import com.ctre.phoenix.sensors.BasePigeonSimCollection;
-import com.ctre.phoenix.sensors.WPI_PigeonIMU;
+import com.swrobotics.lib.gyro.Gyroscope;
 import com.swrobotics.lib.schedule.Subsystem;
 import com.swrobotics.lib.wpilib.AbstractRobot;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
+import com.swrobotics.mathlib.CoordinateConversions;
 import com.swrobotics.mathlib.Vec2d;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -15,14 +15,15 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveDrive implements Subsystem {
 
     // Temporary
-    private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(0);
-    private final BasePigeonSimCollection gyroSim = gyro.getSimCollection();
+    private final Gyroscope gyro;
+    private final XboxController controller = new XboxController(0);
 
     private final SwerveModule[] modules;
     private final SwerveDriveKinematics kinematics;
@@ -31,7 +32,9 @@ public class SwerveDrive implements Subsystem {
     // Temporary 
     private final Field2d fieldSim = new Field2d();
 
-    public SwerveDrive(SwerveModule... modules) {
+    public SwerveDrive(Gyroscope gyro, SwerveModule... modules) {
+        this.gyro = gyro;
+
         // Temporary
         SmartDashboard.putData("Field", fieldSim);
 
@@ -51,7 +54,7 @@ public class SwerveDrive implements Subsystem {
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
-        // Convert target body motion into indevidual wheel states
+        // Convert target body motion into individual wheel states
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds); // TODO: Center of rotation
 
         // Set the modules to target these states
@@ -78,11 +81,11 @@ public class SwerveDrive implements Subsystem {
     }
 
     public Vec2d getPosition() {
-        return new Vec2d(10, 10);
+        return CoordinateConversions.fromWPICoords(getPose().getTranslation());
     }
 
     public Angle getRotation() {
-        return CCWAngle.ZERO;
+        return CoordinateConversions.fromWPIAngle(getPose().getRotation());
     }
 
     public Pose2d getPose() {
@@ -91,16 +94,21 @@ public class SwerveDrive implements Subsystem {
 
     @Override
     public void periodic() {
+        double x = controller.getLeftX() * 3.0;
+        double y = -controller.getLeftY() * 3.0;
+        double rotation = -controller.getRightX() * 2 * Math.PI;
+
+        setChassisSpeeds(new ChassisSpeeds(y, -x, rotation));
+
         // Update odometry with simulated position
         if (AbstractRobot.isSimulation()) {
             ChassisSpeeds simulatedSpeeds = getChassisSpeeds();
             // Set gyroscope based on rotational velocity
-            double currentAngle = Math.toRadians(gyro.getAngle());
-            System.out.println("Current: " + currentAngle + " Delta: " + simulatedSpeeds.omegaRadiansPerSecond / 50);
-            gyroSim.setRawHeading(Math.toDegrees(-currentAngle + simulatedSpeeds.omegaRadiansPerSecond / 50)); // TODO: No magic number
+            Angle currentAngle = gyro.getAngle();
+            gyro.setAngle(currentAngle.ccw().add(CCWAngle.rad(simulatedSpeeds.omegaRadiansPerSecond / 50))); // TODO: No magic number
         }
 
-        odometry.update(gyro.getRotation2d(), getModuleStates());
+        odometry.update(new Rotation2d(gyro.getAngle().ccw().rad()), getModuleStates());
         fieldSim.setRobotPose(getPose());
     }
 }
