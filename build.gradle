@@ -1,0 +1,10 @@
+allprojects {
+    repositories {
+        mavenCentral()
+
+        // WPILib release repo
+        maven {
+            url 'https://frcmaven.wpi.edu/artifactory/release'
+        }
+    }
+}
