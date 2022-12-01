@@ -1,6 +1,7 @@
 package com.swrobotics.lib.swerve;
 
 import com.swrobotics.lib.gyro.Gyroscope;
+import com.swrobotics.lib.schedule.Scheduler;
 import com.swrobotics.lib.schedule.Subsystem;
 import com.swrobotics.lib.wpilib.AbstractRobot;
 import com.swrobotics.mathlib.Angle;
@@ -44,6 +45,9 @@ public class SwerveDrive implements Subsystem {
         Translation2d[] modulePositions = new Translation2d[modules.length];
         for (int i = 0; i < modules.length; i++) {
             modulePositions[i] = modules[i].getPosition();
+
+            // Schedule the module
+            Scheduler.get().addSubsystem(this, modules[i]);
         }
 
         // Construct kinematics that describe how the drive should move

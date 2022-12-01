@@ -126,6 +126,14 @@ public abstract class Motor implements Subsystem {
 
     /* Getters and setters */
 
+    public void setPositionCalculator(PositionCalculator calculator) {
+        positionCalculator = calculator;
+    }
+
+    public void setVelocityCalculator(VelocityCalculator calculator) {
+        velocityCalculator = calculator;
+    }
+
     public void setEncoder(Encoder encoder) {
         this.encoder = encoder;
     };
