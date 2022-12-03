@@ -14,6 +14,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
@@ -23,6 +25,8 @@ public class SwerveModule implements Subsystem {
     private final double driveGearRatio;
     private final double metersToRadians;
     private FlywheelSim driveSim;
+
+    private final double wheelRadiusMeters;
 
     private final Motor turn;
     private final double turnGearRatio;
@@ -48,7 +52,8 @@ public class SwerveModule implements Subsystem {
     public SwerveModule(Motor drive, Motor turn, Encoder encoder, Vec2d position, double driveGearRatio, double turnGearRatio, double wheelRadiusMeters) {
         this.drive = drive;
         this.driveGearRatio = driveGearRatio;
-        metersToRadians = 1.0 / (driveGearRatio * wheelRadiusMeters);
+        metersToRadians = driveGearRatio / wheelRadiusMeters;
+        this.wheelRadiusMeters = wheelRadiusMeters;
 
         this.turn = turn;
         this.turnGearRatio = turnGearRatio;
@@ -74,6 +79,8 @@ public class SwerveModule implements Subsystem {
             
         };
 
+        System.out.println(metersToRadians);
+
         drive.setEncoder(driveEncoder);
 
         // Convert from local coordinates to global coordinates
@@ -85,14 +92,20 @@ public class SwerveModule implements Subsystem {
     }
 
     public void setState(SwerveModuleState state) {
-        targetState = state;
+        var optimized = SwerveModuleState.optimize(state, targetState.angle);
 
-        AbsoluteAngle targetVelocity = AbsoluteAngle.rad(
-            state.speedMetersPerSecond * metersToRadians
+        targetState = optimized;
+
+        AbsoluteAngle targetVelocity = AbsoluteAngle.rot(
+            optimized.speedMetersPerSecond
         );
 
+        // Current and target velocities are: rots = meters / second
+        AbsoluteAngle currentVelocity = AbsoluteAngle.rot(driveSim.getAngularVelocityRadPerSec()
+                    * (wheelRadiusMeters * 2 * Math.PI) / (driveGearRatio));
+
         // Set the motors to outputs
-        drive.velocity(targetVelocity);
+        drive.velocity(() -> currentVelocity, targetVelocity);
         // TODO: Rotation
     }
 
@@ -100,7 +113,9 @@ public class SwerveModule implements Subsystem {
 
         // Simulate state using FlywheelSim
         if (AbstractRobot.isSimulation() && driveSim != null) {
-            double driveVelocity = driveSim.getAngularVelocityRadPerSec() / metersToRadians;
+            double driveVelocity = driveSim.getAngularVelocityRadPerSec();
+
+            // System.out.println(driveVelocity);
 
             // Temporary
             return new SwerveModuleState(driveVelocity, targetState.angle);
@@ -110,8 +125,12 @@ public class SwerveModule implements Subsystem {
     }
 
     public void configureSimulation(DCMotor driveMotorType, double driveMOI, DCMotor turnMotorType, double turnMOI) {
-        driveSim = new FlywheelSim(driveMotorType, 1 / driveGearRatio, driveMOI);
+        // driveSim = new FlywheelSim(driveMotorType, 1 / driveGearRatio, driveMOI);
         turnSim = new FlywheelSim(turnMotorType, 1 / turnGearRatio, turnMOI);
+
+        driveSim = new FlywheelSim(
+            LinearSystemId.identifyVelocitySystem(2, 1.24),
+            driveMotorType, driveGearRatio);
     }
 
     @Override
@@ -121,14 +140,14 @@ public class SwerveModule implements Subsystem {
         double batteryVoltage = RobotController.getBatteryVoltage();
 
         // Calculate voltages given current calculated outputs
-        double driveVoltage = drive.getCurrentPercentOutput() * batteryVoltage;
+        double driveVoltage = drive.getCurrentPercentOutput() / Units.feetToMeters(14) * batteryVoltage;
         double turnVoltage = turn.getCurrentPercentOutput() * batteryVoltage;
 
         // Simulate the system under those voltages
         driveSim.setInputVoltage(driveVoltage);
         turnSim.setInputVoltage(turnVoltage);
 
-        System.out.println("Drive Voltage: " + driveVoltage);
+        System.out.println("Target Velocity: " + targetState.speedMetersPerSecond + " Simulated Velocity: " + getState().speedMetersPerSecond + " Output: " + drive.getCurrentPercentOutput());
 
         // Update the motor timestep for accurate calculations.
         driveSim.update(0.02);

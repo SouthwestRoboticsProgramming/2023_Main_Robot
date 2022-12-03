@@ -24,7 +24,8 @@ public final class PIDCalculator extends PIDController implements PositionCalcul
 
     @Override
     public double calculate(Angle currentAngle, Angle targetAngle) {
-        return this.calculate(currentAngle.cw().deg(), targetAngle.cw().deg());
+        // System.out.println(currentAngle.cw().rad() + "     " + targetAngle.cw().rad());
+        return this.calculate(currentAngle.cw().rad(), targetAngle.cw().rad()); // DO NOT CHANGE UNITS
     }
 
 }

@@ -4,17 +4,22 @@ import com.swrobotics.lib.encoder.CANCoderEncoder;
 import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.lib.motor.calc.PIDCalculator;
+import com.swrobotics.lib.motor.calc.VelocityCalculator;
 import com.swrobotics.lib.motor.ctre.TalonSRXMotor;
 import com.swrobotics.lib.schedule.Scheduler;
 import com.swrobotics.lib.swerve.SwerveDrive;
 import com.swrobotics.lib.swerve.SwerveModule;
 import com.swrobotics.lib.wpilib.AbstractRobot;
+import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.control.Input;
 import com.swrobotics.robot.control.XboxInput;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 
 public final class Robot extends AbstractRobot {
     private static final double PERIODIC_PER_SECOND = 50;
@@ -43,16 +48,33 @@ public final class Robot extends AbstractRobot {
     // Temporary
     private SwerveModule getSwerveModule(Vec2d position) {
 
-        double driveGearRatio = 1 / 8.14; // From Swerve Drive Specialties
+        PIDController pid = new PIDController(2.3, 0, 0);
+        SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.587, 2.3, 0.0917);
+
+        double driveGearRatio = 8.14; // From Swerve Drive Specialties
         double turnGearRatio = 150.0 / 7.0; // From openalliance build thread
-        double wheelRadiusMeters = 0.05; // From measurement
+        double wheelRadiusMeters = Units.inchesToMeters(2.0); // From measurement
 
         Motor driveMotor = new TalonSRXMotor(drive, 0);
         Motor turnMotor = new TalonSRXMotor(drive, 1);
         CANCoderEncoder encoder = new CANCoderEncoder(2);
 
         driveMotor.setVelocityCalculator(
-            new PIDCalculator(0.0001, 0, 0)
+            new VelocityCalculator() {
+
+                @Override
+                public void reset() {
+                    pid.reset();
+                }
+
+                @Override
+                public double calculate(Angle currentVelocity, Angle targetVelocity) {
+                    double pidOutput = pid.calculate(currentVelocity.abs().rot(), targetVelocity.abs().rot());
+                    double feedOutput = feedforward.calculate(targetVelocity.abs().rot());
+                    return pidOutput + feedOutput;
+                }
+                
+            }
         );
 
         SwerveModule module = new SwerveModule(
@@ -64,7 +86,7 @@ public final class Robot extends AbstractRobot {
             turnGearRatio,
             wheelRadiusMeters);
 
-        module.configureSimulation(DCMotor.getFalcon500(1), 0.025, DCMotor.getFalcon500(1), 0.004096955);
+        module.configureSimulation(DCMotor.getFalcon500(1), 0.0025, DCMotor.getFalcon500(1), 0.004096955);
 
         return module;
 

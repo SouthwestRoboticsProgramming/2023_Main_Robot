@@ -100,7 +100,12 @@ public class SwerveDrive implements Subsystem {
     public void periodic() {
         double x = controller.getLeftX() * 3.0;
         double y = -controller.getLeftY() * 3.0;
-        double rotation = -controller.getRightX() * 2 * Math.PI;
+        // double rotation = -controller.getRightX() * 2 * Math.PI;
+
+        if (Math.abs(x) < 0.1) {x = 0;}
+        if (Math.abs(y) < 0.1) {y = 0;}
+
+        double rotation = 0;
 
         setChassisSpeeds(new ChassisSpeeds(y, -x, rotation));
 
@@ -113,6 +118,9 @@ public class SwerveDrive implements Subsystem {
         }
 
         odometry.update(new Rotation2d(gyro.getAngle().ccw().rad()), getModuleStates());
-        fieldSim.setRobotPose(getPose());
+        
+        Pose2d pose = getPose();
+        double metersToFeet = 3.28084;
+        fieldSim.setRobotPose(pose.getX() * metersToFeet, pose.getY() * metersToFeet, pose.getRotation());
     }
 }
