@@ -22,105 +22,105 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveDrive implements Subsystem {
 
-    // Temporary
-    private final Gyroscope gyro;
-    private final XboxController controller = new XboxController(0);
+    // // Temporary
+    // private final Gyroscope gyro;
+    // private final XboxController controller = new XboxController(0);
 
-    private final SwerveModule[] modules;
-    private final SwerveDriveKinematics kinematics;
-    private final SwerveDriveOdometry odometry;
+    // private final SwerveModule[] modules;
+    // private final SwerveDriveKinematics kinematics;
+    // private final SwerveDriveOdometry odometry;
 
-    // Temporary 
-    private final Field2d fieldSim = new Field2d();
+    // // Temporary 
+    // private final Field2d fieldSim = new Field2d();
 
-    public SwerveDrive(Gyroscope gyro, SwerveModule... modules) {
-        this.gyro = gyro;
+    // public SwerveDrive(Gyroscope gyro, SwerveModule... modules) {
+    //     this.gyro = gyro;
 
-        // Temporary
-        SmartDashboard.putData("Field", fieldSim);
+    //     // Temporary
+    //     SmartDashboard.putData("Field", fieldSim);
 
-        this.modules = modules;
+    //     this.modules = modules;
 
-        // Extract positions of modules for kinematics
-        Translation2d[] modulePositions = new Translation2d[modules.length];
-        for (int i = 0; i < modules.length; i++) {
-            modulePositions[i] = modules[i].getPosition();
+    //     // Extract positions of modules for kinematics
+    //     Translation2d[] modulePositions = new Translation2d[modules.length];
+    //     for (int i = 0; i < modules.length; i++) {
+    //         modulePositions[i] = modules[i].getPosition();
 
-            // Schedule the module
-            Scheduler.get().addSubsystem(this, modules[i]);
-        }
+    //         // Schedule the module
+    //         Scheduler.get().addSubsystem(this, modules[i]);
+    //     }
 
-        // Construct kinematics that describe how the drive should move
-        kinematics = new SwerveDriveKinematics(modulePositions);
+    //     // Construct kinematics that describe how the drive should move
+    //     kinematics = new SwerveDriveKinematics(modulePositions);
 
-        // Construct odometry to estimate the pose of the robot using wheel speeds and angles
-        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d()); // TODO: Starting position
-    }
+    //     // Construct odometry to estimate the pose of the robot using wheel speeds and angles
+    //     odometry = new SwerveDriveOdometry(kinematics, new Rotation2d()); // TODO: Starting position
+    // }
 
-    public void setChassisSpeeds(ChassisSpeeds speeds) {
-        // Convert target body motion into individual wheel states
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds); // TODO: Center of rotation
+    // public void setChassisSpeeds(ChassisSpeeds speeds) {
+    //     // Convert target body motion into individual wheel states
+    //     SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds); // TODO: Center of rotation
 
-        // Set the modules to target these states
-        for (int i = 0; i < modules.length; i++) {
-            modules[i].setState(states[i]);
-        }
-    }
+    //     // Set the modules to target these states
+    //     for (int i = 0; i < modules.length; i++) {
+    //         modules[i].setState(states[i]);
+    //     }
+    // }
 
-    public ChassisSpeeds getChassisSpeeds() {
-        // Read modules states from the modules
-        SwerveModuleState[] states = getModuleStates();
-        // System.out.println(states[0]);
+    // public ChassisSpeeds getChassisSpeeds() {
+    //     // Read modules states from the modules
+    //     SwerveModuleState[] states = getModuleStates();
+    //     // System.out.println(states[0]);
 
-        // Kinematics calculates how the robot should be moving
-        return kinematics.toChassisSpeeds(states);
-    }
+    //     // Kinematics calculates how the robot should be moving
+    //     return kinematics.toChassisSpeeds(states);
+    // }
 
-    public SwerveModuleState[] getModuleStates() {
-        SwerveModuleState[] states = new SwerveModuleState[modules.length];
-        for (int i = 0; i < modules.length; i++) {
-            states[i] = modules[i].getState();
-        }
-        return states;
-    }
+    // public SwerveModuleState[] getModuleStates() {
+    //     SwerveModuleState[] states = new SwerveModuleState[modules.length];
+    //     for (int i = 0; i < modules.length; i++) {
+    //         states[i] = modules[i].getState();
+    //     }
+    //     return states;
+    // }
 
-    public Vec2d getPosition() {
-        return CoordinateConversions.fromWPICoords(getPose().getTranslation());
-    }
+    // public Vec2d getPosition() {
+    //     return CoordinateConversions.fromWPICoords(getPose().getTranslation());
+    // }
 
-    public Angle getRotation() {
-        return CoordinateConversions.fromWPIAngle(getPose().getRotation());
-    }
+    // public Angle getRotation() {
+    //     return CoordinateConversions.fromWPIAngle(getPose().getRotation());
+    // }
 
-    public Pose2d getPose() {
-        return odometry.getPoseMeters();
-    }
+    // public Pose2d getPose() {
+    //     return odometry.getPoseMeters();
+    // }
 
-    @Override
-    public void periodic() {
-        double x = controller.getLeftX() * 3.0;
-        double y = -controller.getLeftY() * 3.0;
-        // double rotation = -controller.getRightX() * 2 * Math.PI;
+    // @Override
+    // public void periodic() {
+    //     double x = controller.getLeftX() * 3.0;
+    //     double y = -controller.getLeftY() * 3.0;
+    //     // double rotation = -controller.getRightX() * 2 * Math.PI;
 
-        if (Math.abs(x) < 0.1) {x = 0;}
-        if (Math.abs(y) < 0.1) {y = 0;}
+    //     if (Math.abs(x) < 0.1) {x = 0;}
+    //     if (Math.abs(y) < 0.1) {y = 0;}
 
-        double rotation = 0;
+    //     double rotation = 0;
 
-        setChassisSpeeds(new ChassisSpeeds(y, -x, rotation));
+    //     setChassisSpeeds(new ChassisSpeeds(y, -x, rotation));
 
-        // Update odometry with simulated position
-        if (AbstractRobot.isSimulation()) {
-            ChassisSpeeds simulatedSpeeds = getChassisSpeeds();
-            // Set gyroscope based on rotational velocity
-            Angle currentAngle = gyro.getAngle();
-            gyro.setAngle(currentAngle.ccw().add(CCWAngle.rad(simulatedSpeeds.omegaRadiansPerSecond / 50))); // TODO: No magic number
-        }
+    //     // Update odometry with simulated position
+    //     if (AbstractRobot.isSimulation()) {
+    //         ChassisSpeeds simulatedSpeeds = getChassisSpeeds();
+    //         // Set gyroscope based on rotational velocity
+    //         Angle currentAngle = gyro.getAngle();
+    //         gyro.setAngle(currentAngle.ccw().add(CCWAngle.rad(simulatedSpeeds.omegaRadiansPerSecond / 50))); // TODO: No magic number
+    //     }
 
-        odometry.update(new Rotation2d(gyro.getAngle().ccw().rad()), getModuleStates());
+    //     odometry.update(new Rotation2d(gyro.getAngle().ccw().rad()), getModuleStates());
         
-        Pose2d pose = getPose();
-        double metersToFeet = 3.28084;
-        fieldSim.setRobotPose(pose.getX() * metersToFeet, pose.getY() * metersToFeet, pose.getRotation());
-    }
+    //     Pose2d pose = getPose();
+    //     double metersToFeet = 3.28084;
+    //     fieldSim.setRobotPose(pose.getX() * metersToFeet, pose.getY() * metersToFeet, pose.getRotation());
+    // }
 }
