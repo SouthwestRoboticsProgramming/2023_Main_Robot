@@ -14,7 +14,7 @@ public class PigeonGyroscope extends Gyroscope {
 
     @Override
     protected Angle getRawAngleImpl() {
-        return CCWAngle.deg(gyro.getFusedHeading());
+        return CCWAngle.deg(gyro.getYaw());
     }
     
 }

@@ -25,6 +25,10 @@ public abstract class Gyroscope implements Supplier<Angle> {
         offset = getRawAngle().ccw().sub(newAngle.ccw());
     }
 
+    public void offsetBy(Angle amount) {
+        offset = offset.cw().add(amount.cw());
+    }
+
     public Angle getAngle() {
         return getRawAngle().ccw().sub(offset.ccw());
     }

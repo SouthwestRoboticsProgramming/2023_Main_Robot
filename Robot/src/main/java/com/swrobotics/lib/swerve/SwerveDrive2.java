@@ -2,6 +2,8 @@ package com.swrobotics.lib.swerve;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.kauailabs.navx.frc.AHRS;
+import com.swrobotics.lib.gyro.Gyroscope;
+import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.lib.schedule.Scheduler;
 import com.swrobotics.lib.schedule.Subsystem;
 
@@ -15,6 +17,7 @@ import com.swrobotics.lib.schedule.Subsystem;
 
 import com.swrobotics.lib.swerve.Constants.*;
 import com.swrobotics.lib.wpilib.AbstractRobot;
+import com.swrobotics.mathlib.CCWAngle;
 
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
@@ -29,6 +32,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -73,10 +77,7 @@ public class SwerveDrive2 implements Subsystem {
         new SwerveModule(3, new TalonFX(Constants.backRightTurningMotor), new TalonFX(Constants.backRightDriveMotor), 0, true, false) //true
     };
 
-    private AHRS mNavX = new AHRS(SerialPort.Port.kMXP);
-
-    int navXSim = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
-    double simYaw = 0;
+    private final Gyroscope mNavX = new PigeonGyroscope(0);
 
     public SwerveDrive2(PowerDistribution pdp) {
         m_pdp = pdp;
@@ -94,14 +95,9 @@ public class SwerveDrive2 implements Subsystem {
         }
     }
 
-
-    public AHRS getNavX() {
-        return mNavX;
-    }
-
-    public double getGyroRate() {
-        return mNavX.getRate();
-    }
+    // public double getGyroRate() { // TODO: Add gyro velocity
+    //     return mNavX.getRate();
+    // }
 
     /**
      * Returns the angle of the robot as a Rotation2d.
@@ -117,9 +113,9 @@ public class SwerveDrive2 implements Subsystem {
      *
      * @return The turn rate of the robot, in degrees per second
      */
-    public double getTurnRate() {
-        return mNavX.getRate();
-    }
+    // public double getTurnRate() {
+    //     return mNavX.getRate();
+    // }
 
     /**
      * Returns the heading of the robot in degrees.
@@ -128,9 +124,10 @@ public class SwerveDrive2 implements Subsystem {
      */
     public double getHeadingDegrees() {
         try {
-            return Math.IEEEremainder(-mNavX.getAngle(), 360);
+            System.out.println(mNavX.getAngle().cw().deg());
+            return mNavX.getAngle().cw().deg();
         } catch (Exception e) {
-            System.out.println("Cannot Get NavX Heading");
+            System.out.println("Cannot Get NavX Heading " + e.getStackTrace());
             return 0;
         }
     }
@@ -148,7 +145,7 @@ public class SwerveDrive2 implements Subsystem {
      * Zeroes the heading of the robot.
      */
     public void zeroHeading() {
-        mNavX.reset();
+        // mNavX.reset();
     }
 
 
@@ -262,9 +259,7 @@ public class SwerveDrive2 implements Subsystem {
             var chassisSpeed = DriveConstants.kDriveKinematics.toChassisSpeeds(moduleStates);
             double chassisRotationSpeed = chassisSpeed.omegaRadiansPerSecond;
     
-            simYaw += chassisRotationSpeed * 0.02;
-            SimDouble angle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(navXSim, "Yaw"));
-            angle.set(-Units.radiansToDegrees(simYaw));
+            mNavX.offsetBy(CCWAngle.rad(chassisRotationSpeed *  (1 / AbstractRobot.get().getPeriodicPerSecond())));
         }
     }
 
