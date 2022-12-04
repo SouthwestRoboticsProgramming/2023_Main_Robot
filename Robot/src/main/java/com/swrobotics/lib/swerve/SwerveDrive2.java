@@ -222,36 +222,10 @@ public class SwerveDrive2 implements Subsystem {
             mSwerveModules[2].getState(),
             mSwerveModules[3].getState()
         );
-        // Update module positions based on the chassis' position, but keep the module heading
-        for (int i = 0; i < mSwerveModules.length; i++) {
-            var modulePositionFromChassis = DriveConstants.modulePositions[i].rotateBy(getHeadingRotation2d()).plus(getPose().getTranslation());
-            mSwerveModules[i].setPose(new Pose2d(modulePositionFromChassis, mSwerveModules[i].getHeading().plus(getHeadingRotation2d())));
-        }
-
-//        m_odometry.addVisionMeasurement(SimulationReferencePose.getRobotFieldPose(), Timer.getFPGATimestamp() + 0.2);
-
-//        System.out.println("Swerve Pose: " + getPose());
-//        System.out.println("Field Pose: " + SimulationReferencePose.getRobotFieldPose());
     }
 
     public void resetOdometry(Pose2d pose, Rotation2d rotation) {
         m_odometry.resetPosition(pose, rotation);
-
-        for(int i = 0; i < mSwerveModules.length; i++) {
-            mSwerveModules[i].setPose(pose);
-            mSwerveModules[i].resetEncoders();
-        }
-    }
-
-    private void updateSmartDashboard() {
-        // SmartDashboardTab.putNumber("SwerveDrive","Chassis Angle",getHeadingDegrees());
-        // for(int i = 0; i < mSwerveModules.length; i++) {
-        //     SmartDashboardTab.putNumber("SwerveDrive", "Swerve Module " + i + " Angle", mSwerveModules[i].getState().angle.getDegrees());
-        //     SmartDashboardTab.putNumber("SwerveDrive", "Swerve Module " + i + " Speed", mSwerveModules[i].getState().speedMetersPerSecond);
-        // }
-
-        // SmartDashboardTab.putNumber("SwerveDrive", "X coordinate", getPose().getX());
-        // SmartDashboardTab.putNumber("SwerveDrive", "Y coordinate", getPose().getY());
     }
 
     @Override
@@ -276,7 +250,6 @@ public class SwerveDrive2 implements Subsystem {
 
         // sampleTrajectory();
         updateOdometry();
-        updateSmartDashboard();
 
         if (AbstractRobot.isSimulation()) {
             SwerveModuleState[] moduleStates = {
@@ -295,6 +268,7 @@ public class SwerveDrive2 implements Subsystem {
         }
     }
 
+    // TODO: Remove
     private double deadband(double value, double deadband) {
         if (Math.abs(value) < deadband) {
             return 0;
@@ -303,15 +277,6 @@ public class SwerveDrive2 implements Subsystem {
         return value;
     }
 
-    public Pose2d[] getModulePoses() {
-        Pose2d[] modulePoses = {
-            mSwerveModules[0].getPose(),
-            mSwerveModules[1].getPose(),
-            mSwerveModules[2].getPose(),
-            mSwerveModules[3].getPose()
-        };
-        return modulePoses;
-    }
 
     // private void sampleTrajectory() {
     //     if(DriverStation.getInstance().isAutonomous()) {

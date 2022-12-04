@@ -91,8 +91,6 @@ public class SwerveModule implements Subsystem {
           kDriveMotorGearRatio
   );
 
-  Pose2d swerveModulePose = new Pose2d();
-
   public SwerveModule(int moduleNumber, TalonFX TurningMotor, TalonFX driveMotor, double zeroOffset, boolean invertTurn, boolean invertThrottle) {
     mModuleNumber = moduleNumber;
     mTurningMotor = TurningMotor;
@@ -246,13 +244,6 @@ public class SwerveModule implements Subsystem {
   public void setBrakeMode(boolean mode) { // True is brake, false is coast
     mDriveMotor.setNeutralMode(mode ? NeutralMode.Brake : NeutralMode.Coast);
     mTurningMotor.setNeutralMode(NeutralMode.Brake);
-  }
-  public Pose2d getPose() {
-    return swerveModulePose;
-  }
-
-  public void setPose(Pose2d pose) {
-    swerveModulePose = pose;
   }
 
   private void updateSmartDashboard() {
