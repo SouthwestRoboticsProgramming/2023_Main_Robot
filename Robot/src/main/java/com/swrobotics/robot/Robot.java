@@ -34,7 +34,7 @@ public final class Robot extends AbstractRobot {
     // //     getSwerveModule(new Vec2d(3, -3))
     // // );
 
-    private final SwerveDrive2 drive = new SwerveDrive2(new PowerDistribution());
+    private final SwerveDrive2 drive = new SwerveDrive2();
 
     public Robot() {
 	    super(PERIODIC_PER_SECOND);

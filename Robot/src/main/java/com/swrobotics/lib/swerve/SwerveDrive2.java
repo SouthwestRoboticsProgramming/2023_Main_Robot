@@ -1,7 +1,6 @@
 package com.swrobotics.lib.swerve;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.kauailabs.navx.frc.AHRS;
 import com.swrobotics.lib.gyro.Gyroscope;
 import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.lib.schedule.Scheduler;
@@ -19,8 +18,6 @@ import com.swrobotics.lib.swerve.Constants.*;
 import com.swrobotics.lib.wpilib.AbstractRobot;
 import com.swrobotics.mathlib.CCWAngle;
 
-import edu.wpi.first.hal.SimDouble;
-import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -29,10 +26,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -47,8 +41,6 @@ public class SwerveDrive2 implements Subsystem {
     private final double throttle = 0.8;
     private final double turningThrottle = 0.5;
 
-    private int navXDebug = 0;
-
     private final SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(DriveConstants.kDriveKinematics, getHeadingRotation2d());
 //    private final SwerveDrivePoseEstimator m_odometry = new SwerveDrivePoseEstimator(
 //        getRotation(),
@@ -57,8 +49,6 @@ public class SwerveDrive2 implements Subsystem {
 //        VecBuilder.fill(0.1, 0.1, 0.1),
 //        VecBuilder.fill(0.05),
 //        VecBuilder.fill(0.1, 0.1, 0.1));
-
-    PowerDistribution m_pdp;
 
     private double m_trajectoryTime;
     private Trajectory currentTrajectory;
@@ -77,10 +67,9 @@ public class SwerveDrive2 implements Subsystem {
         new SwerveModule(3, new TalonFX(Constants.backRightTurningMotor), new TalonFX(Constants.backRightDriveMotor), 0, true, false) //true
     };
 
-    private final Gyroscope mNavX = new PigeonGyroscope(0);
+    private final Gyroscope gyro = new PigeonGyroscope(0);
 
-    public SwerveDrive2(PowerDistribution pdp) {
-        m_pdp = pdp;
+    public SwerveDrive2() {
 
         SmartDashboard.putData("Field", field);
 
@@ -124,8 +113,8 @@ public class SwerveDrive2 implements Subsystem {
      */
     public double getHeadingDegrees() {
         try {
-            System.out.println(mNavX.getAngle().cw().deg());
-            return mNavX.getAngle().cw().deg();
+            System.out.println(gyro.getAngle().cw().deg());
+            return gyro.getAngle().cw().deg();
         } catch (Exception e) {
             System.out.println("Cannot Get NavX Heading " + e.getStackTrace());
             return 0;
@@ -259,7 +248,7 @@ public class SwerveDrive2 implements Subsystem {
             var chassisSpeed = DriveConstants.kDriveKinematics.toChassisSpeeds(moduleStates);
             double chassisRotationSpeed = chassisSpeed.omegaRadiansPerSecond;
     
-            mNavX.offsetBy(CCWAngle.rad(chassisRotationSpeed *  (1 / AbstractRobot.get().getPeriodicPerSecond())));
+            gyro.offsetBy(CCWAngle.rad(chassisRotationSpeed *  (1 / AbstractRobot.get().getPeriodicPerSecond())));
         }
     }
 
