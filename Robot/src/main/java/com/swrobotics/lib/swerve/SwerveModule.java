@@ -11,13 +11,16 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.swrobotics.lib.encoder.CANCoderEncoder;
 import com.swrobotics.lib.schedule.Subsystem;
 import com.swrobotics.lib.wpilib.AbstractRobot;
+import com.swrobotics.mathlib.AbsoluteAngle;
+import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.CCWAngle;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -30,11 +33,12 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
-import static com.swrobotics.lib.swerve.Constants.*;
 import static com.swrobotics.lib.swerve.Constants.ModuleConstants.*;
 
 public class SwerveModule implements Subsystem {
   int mModuleNumber;
+
+    private SwerveModuleState outputState = new SwerveModuleState();
 
   public final TalonFX mTurningMotor;
   public final TalonFX mDriveMotor;
@@ -71,10 +75,11 @@ public class SwerveModule implements Subsystem {
   private double simTurnEncoderDistance;
   private double simThrottleEncoderDistance;
 
-  private Encoder simulationTurnEncoder;
-  private Encoder simulationThrottleEncoder;
-  private EncoderSim simulationTurnEncoderSim;
-  private EncoderSim simulationThrottleEncoderSim;
+//   private Encoder simulationTurnEncoder;
+//   private Encoder simulationThrottleEncoder;
+
+  private com.swrobotics.lib.encoder.Encoder turnEncoder;
+  private com.swrobotics.lib.encoder.Encoder simulationThrottleEncoderSim;
 
   private final FlywheelSim moduleRotationSimModel = new FlywheelSim(
 //          LinearSystemId.identifyVelocitySystem(kvVoltSecondsPerRadian, kaVoltSecondsSquaredPerRadian),
@@ -129,28 +134,29 @@ public class SwerveModule implements Subsystem {
     if(RobotBase.isSimulation()) {
       switch (moduleNumber) {
         case 3:
-          simulationTurnEncoder = new Encoder(15, 14);
-          simulationThrottleEncoder = new Encoder(0, 1);
+        //   simulationTurnEncoder = new Encoder(15, 14);
+        //   simulationThrottleEncoder = new Encoder(0, 1);
           break;
         case 2:
-          simulationTurnEncoder = new Encoder(13, 12);
-          simulationThrottleEncoder = new Encoder(2, 3);
+        //   simulationTurnEncoder = new Encoder(13, 12);
+        //   simulationThrottleEncoder = new Encoder(2, 3);
           break;
         case 1:
-          simulationTurnEncoder = new Encoder(11, 10);
-          simulationThrottleEncoder = new Encoder(4, 5);
+        //   simulationTurnEncoder = new Encoder(11, 10);
+        //   simulationThrottleEncoder = new Encoder(4, 5);
           break;
         case 0:
-          simulationTurnEncoder = new Encoder(9, 8);
-          simulationThrottleEncoder = new Encoder(6, 7);
+        //   simulationTurnEncoder = new Encoder(9, 8);
+        //   simulationThrottleEncoder = new Encoder(6, 7);
           break;
       }
 
-      simulationTurnEncoder.setDistancePerPulse(kTurningEncoderDistancePerPulse);
-      simulationThrottleEncoder.setDistancePerPulse(kDriveEncoderDistancePerPulse);
+    //   simulationTurnEncoder.setDistancePerPulse(kTurningEncoderDistancePerPulse);
+    //   simulationThrottleEncoder.setDistancePerPulse(kDriveEncoderDistancePerPulse);
 
-      simulationTurnEncoderSim = new EncoderSim(simulationTurnEncoder);
-      simulationThrottleEncoderSim = new EncoderSim(simulationThrottleEncoder);
+      turnEncoder = new CANCoderEncoder(0);
+    //   simulationThrottleEncoderSim = new EncoderSim(simulationThrottleEncoder);
+    simulationThrottleEncoderSim = new CANCoderEncoder(1);
     }
   }
 
@@ -160,8 +166,9 @@ public class SwerveModule implements Subsystem {
   public void resetEncoders() {
     mTurningMotor.setSelectedSensorPosition(0);
     mDriveMotor.setSelectedSensorPosition(0);
-    simulationTurnEncoder.reset();
-    simulationThrottleEncoder.reset();
+    turnEncoder.setAngle(Angle.ZERO);
+    // simulationThrottleEncoder.reset();
+    simulationThrottleEncoderSim.setAngle(Angle.ZERO);
   }
 
   public Rotation2d getHeading() {
@@ -177,7 +184,8 @@ public class SwerveModule implements Subsystem {
     if(RobotBase.isReal())
       return mTurningMotor.getSelectedSensorPosition() * Constants.ModuleConstants.kTurningEncoderDistancePerPulse;
     else
-      return simulationTurnEncoder.getDistance();
+    //   return turnEncoder.getAngle().abs().rad();
+    return outputState.angle.getRadians();
   }
 
   public double getTurnAngle() {
@@ -194,7 +202,8 @@ public class SwerveModule implements Subsystem {
     if(RobotBase.isReal())
       return mDriveMotor.getSelectedSensorVelocity() * Constants.ModuleConstants.kDriveEncoderDistancePerPulse * 10;
     else
-      return simulationThrottleEncoder.getRate();
+      return simulationThrottleEncoderSim.getVelocity().ccw().rad();
+    // return outputState.speedMetersPerSecond;
   }
 
   /**
@@ -212,11 +221,13 @@ public class SwerveModule implements Subsystem {
    * @param state Desired state with speed and angle.
    */
   public void setDesiredState(SwerveModuleState state) {
-    SwerveModuleState outputState = SwerveModuleState.optimize(state, new Rotation2d(getTurningRadians()));
+    outputState = SwerveModuleState.optimize(state, new Rotation2d(getTurningRadians()));
 
     // Calculate the drive output from the drive PID controller.
     m_driveOutput = m_drivePIDController.calculate(
             getVelocity(), outputState.speedMetersPerSecond);
+
+    System.out.println("Current: " + getVelocity() + " Target: " + outputState.speedMetersPerSecond);
 
     double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
 
@@ -263,12 +274,14 @@ public class SwerveModule implements Subsystem {
     moduleThrottleSimModel.update(0.02);
 
     simTurnEncoderDistance += moduleRotationSimModel.getAngularVelocityRadPerSec() * 0.02;
-    simulationTurnEncoderSim.setDistance(simTurnEncoderDistance);
-    simulationTurnEncoderSim.setRate(moduleRotationSimModel.getAngularVelocityRadPerSec());
+    // simulationTurnEncoderSim.setDistance(simTurnEncoderDistance);
+    turnEncoder.setAngle(AbsoluteAngle.rad(simTurnEncoderDistance / kTurningMotorGearRatio));
+    // simulationTurnEncoderSim.setRate(moduleRotationSimModel.getAngularVelocityRadPerSec());
+    turnEncoder.setVelocity(AbsoluteAngle.rad(moduleRotationSimModel.getAngularVelocityRadPerSec() / kTurningMotorGearRatio));
 
     simThrottleEncoderDistance += moduleThrottleSimModel.getAngularVelocityRadPerSec() * 0.02;
-    simulationThrottleEncoderSim.setDistance(simThrottleEncoderDistance);
-    simulationThrottleEncoderSim.setRate(moduleThrottleSimModel.getAngularVelocityRadPerSec());
+    // simulationThrottleEncoderSim.setAngle(CCWAngle.rad(simThrottleEncoderDistance));
+    simulationThrottleEncoderSim.setVelocity(CCWAngle.rad(moduleThrottleSimModel.getAngularVelocityRadPerSec()));
     }
   }
 }

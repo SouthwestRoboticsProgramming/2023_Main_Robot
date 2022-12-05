@@ -6,6 +6,7 @@ import com.ctre.phoenix.sensors.CANCoderConfiguration;
 import com.ctre.phoenix.sensors.CANCoderStatusFrame;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix.sensors.SensorTimeBase;
+import com.swrobotics.lib.wpilib.AbstractRobot;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CWAngle;
 
@@ -57,11 +58,13 @@ public class CANCoderEncoder extends Encoder{
 
     @Override
     public Angle getRawAngleImpl() {
+        if (AbstractRobot.isSimulation()) {return Angle.ZERO;}
         return CWAngle.deg(encoder.getAbsolutePosition());
     }
 
     @Override
     public Angle getVelocityImpl() {
+        if (AbstractRobot.isSimulation()) {return Angle.ZERO;}
         return CWAngle.deg(encoder.getVelocity());
     }
 }

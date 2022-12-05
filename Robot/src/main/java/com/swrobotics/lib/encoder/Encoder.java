@@ -9,7 +9,9 @@ import com.swrobotics.mathlib.Angle;
  */
 public abstract class Encoder implements Supplier<Angle> {
 
-    private Angle offset = Angle.ZERO; // Applied by subtracting
+    private Angle positionOffset = Angle.ZERO; // Applied by subtracting
+    private Angle velocityOffset = Angle.ZERO; // Applied by subtracting
+    
     private boolean inverted = false;
     
     protected abstract Angle getRawAngleImpl();
@@ -20,9 +22,14 @@ public abstract class Encoder implements Supplier<Angle> {
         return getRawAngleImpl();
     }
 
+    public Angle getRawVelocity() {
+        if (inverted) return getVelocityImpl().negate();
+        return getVelocityImpl();
+    
+    }
+
     public Angle getVelocity() {
-        if (inverted) return getVelocityImpl().cw();
-        return getVelocityImpl().ccw();
+        return getRawVelocity().ccw().sub(velocityOffset.ccw());
     }
 
     /**
@@ -31,11 +38,19 @@ public abstract class Encoder implements Supplier<Angle> {
      * @param newAngle
      */
     public void setAngle(Angle newAngle) {
-        offset = getRawAngle().ccw().sub(newAngle.ccw());
+        positionOffset = getRawAngle().ccw().sub(newAngle.ccw());
     }
 
     public Angle getAngle() {
-        return getRawAngle().ccw().sub(offset.ccw());
+        return getRawAngle().ccw().sub(positionOffset.ccw());
+    }
+
+    public void setVelocity(Angle newVelocity) {
+        velocityOffset = getRawVelocity().ccw().sub(newVelocity.ccw());
+    }
+
+    public void setVelocityOffset(Angle offset) {
+        velocityOffset = offset;
     }
 
     public boolean getInverted() {

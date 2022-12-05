@@ -113,7 +113,6 @@ public class SwerveDrive2 implements Subsystem {
      */
     public double getHeadingDegrees() {
         try {
-            System.out.println(gyro.getAngle().cw().deg());
             return gyro.getAngle().cw().deg();
         } catch (Exception e) {
             System.out.println("Cannot Get NavX Heading " + e.getStackTrace());
@@ -163,7 +162,7 @@ public class SwerveDrive2 implements Subsystem {
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
         xSpeed *= DriveConstants.kMaxSpeedMetersPerSecond;
         ySpeed *= DriveConstants.kMaxSpeedMetersPerSecond;
-        rot *= kMaxAngularSpeed;
+        // rot *= kMaxAngularSpeed;
 
         var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
                 fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -231,12 +230,13 @@ public class SwerveDrive2 implements Subsystem {
         double rot = deadband(controller.getRightX(), 0.2);
 
         drive(
-            y, -x, -rot,
+            y, -x, /*-rot*/ - 0.25,
             true);
 
         // sampleTrajectory();
         updateOdometry();
 
+        
         if (AbstractRobot.isSimulation()) {
             SwerveModuleState[] moduleStates = {
                 mSwerveModules[0].getState(),
@@ -244,10 +244,12 @@ public class SwerveDrive2 implements Subsystem {
                 mSwerveModules[2].getState(),
                 mSwerveModules[3].getState()
             };
-    
+            
             var chassisSpeed = DriveConstants.kDriveKinematics.toChassisSpeeds(moduleStates);
             double chassisRotationSpeed = chassisSpeed.omegaRadiansPerSecond;
-    
+
+            System.out.println(chassisRotationSpeed);
+            
             gyro.offsetBy(CCWAngle.rad(chassisRotationSpeed *  (1 / AbstractRobot.get().getPeriodicPerSecond())));
         }
     }
