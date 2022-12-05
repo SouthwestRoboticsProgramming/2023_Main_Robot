@@ -15,6 +15,7 @@ import com.swrobotics.lib.encoder.CANCoderEncoder;
 import com.swrobotics.lib.schedule.Subsystem;
 import com.swrobotics.lib.wpilib.AbstractRobot;
 import com.swrobotics.mathlib.AbsoluteAngle;
+import com.swrobotics.mathlib.AbstractAngle;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 
@@ -75,11 +76,8 @@ public class SwerveModule implements Subsystem {
   private double simTurnEncoderDistance;
   private double simThrottleEncoderDistance;
 
-//   private Encoder simulationTurnEncoder;
-//   private Encoder simulationThrottleEncoder;
-
+  private com.swrobotics.lib.encoder.Encoder driveEncoder;
   private com.swrobotics.lib.encoder.Encoder turnEncoder;
-  private com.swrobotics.lib.encoder.Encoder simulationThrottleEncoderSim;
 
   private final FlywheelSim moduleRotationSimModel = new FlywheelSim(
 //          LinearSystemId.identifyVelocitySystem(kvVoltSecondsPerRadian, kaVoltSecondsSquaredPerRadian),
@@ -131,32 +129,37 @@ public class SwerveModule implements Subsystem {
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
     // Setup dummy encoders for simulation
-    if(RobotBase.isSimulation()) {
-      switch (moduleNumber) {
-        case 3:
-        //   simulationTurnEncoder = new Encoder(15, 14);
-        //   simulationThrottleEncoder = new Encoder(0, 1);
-          break;
-        case 2:
-        //   simulationTurnEncoder = new Encoder(13, 12);
-        //   simulationThrottleEncoder = new Encoder(2, 3);
-          break;
-        case 1:
-        //   simulationTurnEncoder = new Encoder(11, 10);
-        //   simulationThrottleEncoder = new Encoder(4, 5);
-          break;
-        case 0:
-        //   simulationTurnEncoder = new Encoder(9, 8);
-        //   simulationThrottleEncoder = new Encoder(6, 7);
-          break;
-      }
+    if (AbstractRobot.isSimulation()) {
 
-    //   simulationTurnEncoder.setDistancePerPulse(kTurningEncoderDistancePerPulse);
-    //   simulationThrottleEncoder.setDistancePerPulse(kDriveEncoderDistancePerPulse);
+        // Simulate drive encoder
+        driveEncoder = new com.swrobotics.lib.encoder.Encoder() {
 
-      turnEncoder = new CANCoderEncoder(0);
-    //   simulationThrottleEncoderSim = new EncoderSim(simulationThrottleEncoder);
-    simulationThrottleEncoderSim = new CANCoderEncoder(1);
+            @Override
+            protected Angle getRawAngleImpl() {
+                return Angle.ZERO;
+            }
+
+            @Override
+            protected Angle getVelocityImpl() {
+                return Angle.ZERO;
+            }
+        };
+        
+        // Simulate turn encoder
+        turnEncoder = new com.swrobotics.lib.encoder.Encoder() {
+
+            @Override
+            protected Angle getRawAngleImpl() {
+                // TODO Auto-generated method stub
+                return Angle.ZERO;
+            }
+
+            @Override
+            protected Angle getVelocityImpl() {
+                // TODO Auto-generated method stub
+                return Angle.ZERO;
+            }
+        };
     }
   }
 
@@ -166,9 +169,9 @@ public class SwerveModule implements Subsystem {
   public void resetEncoders() {
     mTurningMotor.setSelectedSensorPosition(0);
     mDriveMotor.setSelectedSensorPosition(0);
+
     turnEncoder.setAngle(Angle.ZERO);
-    // simulationThrottleEncoder.reset();
-    simulationThrottleEncoderSim.setAngle(Angle.ZERO);
+    driveEncoder.setAngle(Angle.ZERO);
   }
 
   public Rotation2d getHeading() {
@@ -184,8 +187,9 @@ public class SwerveModule implements Subsystem {
     if(RobotBase.isReal())
       return mTurningMotor.getSelectedSensorPosition() * Constants.ModuleConstants.kTurningEncoderDistancePerPulse;
     else
-    //   return turnEncoder.getAngle().abs().rad();
-    return outputState.angle.getRadians();
+        return turnEncoder.getAngle().abs().rad();
+    //   return turnEncoder.getDistance();
+    // return outputState.angle.getRadians();
   }
 
   public double getTurnAngle() {
@@ -202,7 +206,7 @@ public class SwerveModule implements Subsystem {
     if(RobotBase.isReal())
       return mDriveMotor.getSelectedSensorVelocity() * Constants.ModuleConstants.kDriveEncoderDistancePerPulse * 10;
     else
-      return simulationThrottleEncoderSim.getVelocity().ccw().rad();
+      return driveEncoder.getVelocity().ccw().rad();
     // return outputState.speedMetersPerSecond;
   }
 
@@ -267,21 +271,23 @@ public class SwerveModule implements Subsystem {
     updateSmartDashboard();
 
     if (AbstractRobot.isSimulation()) {
-      moduleRotationSimModel.setInputVoltage(m_turnOutput / kMaxModuleAngularSpeedRadiansPerSecond * RobotController.getBatteryVoltage());
-    moduleThrottleSimModel.setInputVoltage(m_driveOutput / Constants.DriveConstants.kMaxSpeedMetersPerSecond * RobotController.getBatteryVoltage());
+        moduleRotationSimModel.setInputVoltage(m_turnOutput / kMaxModuleAngularSpeedRadiansPerSecond * RobotController.getBatteryVoltage());
+        moduleThrottleSimModel.setInputVoltage(m_driveOutput / Constants.DriveConstants.kMaxSpeedMetersPerSecond * RobotController.getBatteryVoltage());
 
-    moduleRotationSimModel.update(0.02);
-    moduleThrottleSimModel.update(0.02);
+        moduleRotationSimModel.update(0.02);
+        moduleThrottleSimModel.update(0.02);
 
-    simTurnEncoderDistance += moduleRotationSimModel.getAngularVelocityRadPerSec() * 0.02;
-    // simulationTurnEncoderSim.setDistance(simTurnEncoderDistance);
-    turnEncoder.setAngle(AbsoluteAngle.rad(simTurnEncoderDistance / kTurningMotorGearRatio));
-    // simulationTurnEncoderSim.setRate(moduleRotationSimModel.getAngularVelocityRadPerSec());
-    turnEncoder.setVelocity(AbsoluteAngle.rad(moduleRotationSimModel.getAngularVelocityRadPerSec() / kTurningMotorGearRatio));
+        // Amount of time that each cycle of the RoboRIO runs for
+        double periodicPeriod = 1 / AbstractRobot.get().getPeriodicPerSecond();
 
-    simThrottleEncoderDistance += moduleThrottleSimModel.getAngularVelocityRadPerSec() * 0.02;
-    // simulationThrottleEncoderSim.setAngle(CCWAngle.rad(simThrottleEncoderDistance));
-    simulationThrottleEncoderSim.setVelocity(CCWAngle.rad(moduleThrottleSimModel.getAngularVelocityRadPerSec()));
+        // Simulate distances using velocities
+        simTurnEncoderDistance += moduleRotationSimModel.getAngularVelocityRadPerSec() * periodicPeriod;
+        simThrottleEncoderDistance += moduleThrottleSimModel.getAngularVelocityRadPerSec() * periodicPeriod;
+
+        turnEncoder.setAngle(AbsoluteAngle.rad(simTurnEncoderDistance));
+        turnEncoder.setVelocity(AbsoluteAngle.rad(moduleRotationSimModel.getAngularVelocityRadPerSec() / kTurningMotorGearRatio));
+
+        driveEncoder.setVelocity(CCWAngle.rad(moduleThrottleSimModel.getAngularVelocityRadPerSec()));
     }
   }
 }

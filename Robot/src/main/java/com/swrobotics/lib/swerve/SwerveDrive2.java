@@ -230,7 +230,7 @@ public class SwerveDrive2 implements Subsystem {
         double rot = deadband(controller.getRightX(), 0.2);
 
         drive(
-            y, -x, /*-rot*/ - 0.25,
+            y, -x, /*-rot*/ - Math.PI,
             true);
 
         // sampleTrajectory();
