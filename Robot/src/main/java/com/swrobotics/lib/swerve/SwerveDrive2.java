@@ -37,18 +37,7 @@ public class SwerveDrive2 implements Subsystem {
 
     public static final double kMaxAngularSpeed = DriveConstants.kMaxChassisRotationSpeed; // 3 meters per second
 
-    private boolean isFieldOriented;
-    private final double throttle = 0.8;
-    private final double turningThrottle = 0.5;
-
     private final SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(DriveConstants.kDriveKinematics, getHeadingRotation2d());
-//    private final SwerveDrivePoseEstimator m_odometry = new SwerveDrivePoseEstimator(
-//        getRotation(),
-//        new Pose2d(),
-//        kDriveKinematics,
-//        VecBuilder.fill(0.1, 0.1, 0.1),
-//        VecBuilder.fill(0.05),
-//        VecBuilder.fill(0.1, 0.1, 0.1));
 
     private double m_trajectoryTime;
     private Trajectory currentTrajectory;
@@ -113,7 +102,7 @@ public class SwerveDrive2 implements Subsystem {
      */
     public double getHeadingDegrees() {
         try {
-            return gyro.getAngle().cw().deg();
+            return gyro.getAngle().ccw().deg();
         } catch (Exception e) {
             System.out.println("Cannot Get NavX Heading " + e.getStackTrace());
             return 0;
@@ -125,7 +114,7 @@ public class SwerveDrive2 implements Subsystem {
      */
     public void resetEncoders() {
         for (int i = 0; i < 4; i++){
-            mSwerveModules[i].resetEncoders();
+            mSwerveModules[i].reset();
         }
     }
 
@@ -230,7 +219,7 @@ public class SwerveDrive2 implements Subsystem {
         double rot = deadband(controller.getRightX(), 0.2);
 
         drive(
-            y, -x, /*-rot*/ - Math.PI,
+            y, -x, /*-rot*/ 0.01,
             true);
 
         // sampleTrajectory();
@@ -248,7 +237,7 @@ public class SwerveDrive2 implements Subsystem {
             var chassisSpeed = DriveConstants.kDriveKinematics.toChassisSpeeds(moduleStates);
             double chassisRotationSpeed = chassisSpeed.omegaRadiansPerSecond;
 
-            System.out.println(chassisRotationSpeed);
+            System.out.println(gyro.getAngle());
             
             gyro.offsetBy(CCWAngle.rad(chassisRotationSpeed *  (1 / AbstractRobot.get().getPeriodicPerSecond())));
         }
