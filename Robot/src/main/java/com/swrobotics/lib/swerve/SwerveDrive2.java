@@ -166,12 +166,6 @@ public class SwerveDrive2 implements Subsystem {
         mSwerveModules[3].setDesiredState(swerveModuleStates[3]);
     }
 
-    public void setSwerveDriveNeutralMode(boolean mode) {
-        for(int i = 0; i < mSwerveModules.length; i++) {
-            mSwerveModules[i].setBrakeMode(mode);
-        }
-    }
-
     /**
      * Sets the swerve ModuleStates.
      *
