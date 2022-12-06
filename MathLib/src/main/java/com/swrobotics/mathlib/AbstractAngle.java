@@ -2,6 +2,8 @@ package com.swrobotics.mathlib;
 
 import java.util.Objects;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+
 /**
  * Implements the operations common to all types of angle, but depend on the
  * specific type. This class exists to avoid having the type parameter in Angle,
@@ -57,6 +59,15 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      */
     public double rot() {
         return rad() / MathUtil.TAU;
+    }
+
+    /**
+     * Gets the angle as a Rotation2d
+     * 
+     * @return Rotation2d
+     */
+    public Rotation2d rotation2d() {
+        return new Rotation2d(rad);
     }
 
     /**
