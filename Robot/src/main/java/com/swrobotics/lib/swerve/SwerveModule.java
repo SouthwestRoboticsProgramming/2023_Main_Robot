@@ -169,9 +169,9 @@ public class SwerveModule implements Subsystem {
 			return mTurningMotor.getSelectedSensorPosition()
 					* Constants.ModuleConstants.kTurningEncoderDistancePerPulse;
 		else
-			return turnEncoder.getAngle().abs().rad();
+			// return turnEncoder.getAngle().abs().rad();
 		// return turnEncoder.getDistance();
-		// return outputState.angle.getRadians();
+		return outputState.angle.getRadians();
 	}
 
 	public double getTurnAngle() {
