@@ -1,5 +1,7 @@
 package com.swrobotics.lib.time;
 
+import java.util.Objects;
+
 /**
  * Represents a specific moment in time.
  */
@@ -62,5 +64,27 @@ public final class Timestamp {
      */
     public Timestamp addNanos(double nanos) {
         return new Timestamp(nanoTime + nanos);
+    }
+
+    /**
+     * Gets the represented time in nanoseconds.
+     *
+     * @return time in nanoseconds
+     */
+    public double getNanoTime() {
+        return nanoTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Timestamp timestamp = (Timestamp) o;
+        return Double.compare(timestamp.nanoTime, nanoTime) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nanoTime);
     }
 }

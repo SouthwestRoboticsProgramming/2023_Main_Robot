@@ -45,6 +45,10 @@ wpi.java.debugJni = false
 // Set this to true to enable desktop support.
 def includeDesktopSupport = true
 
+test {
+   useJUnit()
+}
+
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
 // Also defines JUnit 4.
 dependencies {
@@ -69,6 +73,7 @@ dependencies {
     simulationRelease wpi.sim.enableRelease()
 
     testImplementation 'junit:junit:4.13.1'
+    testImplementation 'org.mockito:mockito-core:2.+'
 }
 
 // Simulation configuration (e.g. environment variables).

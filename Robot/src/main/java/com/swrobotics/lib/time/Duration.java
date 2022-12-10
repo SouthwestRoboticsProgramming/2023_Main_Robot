@@ -39,12 +39,32 @@ public final class Duration {
     }
 
     /**
+     * Gets the amount of time represented in a different unit.
+     *
+     * @param unit unit to get time in
+     * @return amount of time
+     */
+    public double getCountInUnit(TimeUnit unit) {
+        return count * this.unit.getDurationNanos() / unit.getDurationNanos();
+    }
+
+    /**
+     * Converts this amount of time to a different unit.
+     *
+     * @param newUnit unit to convert to
+     * @return converted duration
+     */
+    public Duration convertUnit(TimeUnit newUnit) {
+        return new Duration(getCountInUnit(newUnit), newUnit);
+    }
+
+    /**
      * Gets the amount of time this duration represents in nanoseconds.
      * 
      * @return time in nanoseconds
      */
     public double getDurationNanos() {
-        return count * unit.getDurationNanos();
+        return getCountInUnit(TimeUnit.NANOSECONDS);
     }
 
     @Override
