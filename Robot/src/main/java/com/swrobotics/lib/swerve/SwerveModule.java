@@ -6,6 +6,9 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoder;
+import com.swrobotics.mathlib.AbsoluteAngle;
+import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.CCWAngle;
 
 import edu.wpi.first.math.geometry.Translation2d;
 
@@ -19,6 +22,8 @@ public final class SwerveModule {
     private final TalonFX turn;
     private final TalonFX drive;
     private final CANCoder encoder;
+
+    private final double driveEncoderToAngle;
 
     public SwerveModule(int turn, int drive, int encoder, double offset, Translation2d position) {
         this.position = position;
@@ -43,11 +48,17 @@ public final class SwerveModule {
         this.encoder.configMagnetOffset(offset);
         this.encoder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
 
+        driveEncoderToAngle = TALON_FX_ENCODER_TICKS_PER_ROTATION * TURN_MOTOR_GEAR_RATIO / (Math.PI * 2);
+
         calibrateTurn();
     }
 
-    private double angleToDriveEncoderPosition(double angle) {
-        return angle / 360.0 * TALON_FX_ENCODER_TICKS_PER_ROTATION * TURN_MOTOR_GEAR_RATIO;
+    private double turnEncoderPositionToAngle(double pos) {
+        return pos / driveEncoderToAngle;
+    }
+
+    private double angleToTurnEncoderPosition(double angle) {
+        return angle * driveEncoderToAngle;
     }
 
     public double getCurrentEncoderAngle() {
@@ -55,25 +66,45 @@ public final class SwerveModule {
     }
 
     private void calibrateTurn() {
-        double encoderAngle = this.encoder.getAbsolutePosition();
-        this.turn.setSelectedSensorPosition(angleToDriveEncoderPosition(encoderAngle));
+        double encoderAngle = Math.toRadians(this.encoder.getAbsolutePosition());
+        this.turn.setSelectedSensorPosition(angleToTurnEncoderPosition(encoderAngle));
     }
 
     long lastCalibTime = -1;
 
     // Angle in ccw rad, 0 forward
-    public void set(double velocity, double angle) {
-        if (angle > Math.PI * 2)
-            angle -= Math.PI * 2;
-        if (angle < 0)
-            angle += Math.PI * 2;
+    public void set(double velocity, double angleRad) {
+        Angle current = CCWAngle.rad(turnEncoderPositionToAngle(turn.getSelectedSensorPosition()));
 
-        // if (lastCalibTime == -1 ||System.currentTimeMillis() - lastCalibTime > 1000) {
-        //     lastCalibTime = System.currentTimeMillis();
-        //     calibrateTurn();
-        // }
+        Angle angle = CCWAngle.rad(angleRad);
+        Angle invAngle = angle.ccw().add(CCWAngle.deg(180));
+        double absDiff = angle.ccw().getAbsDiff(current.ccw()).ccw().rad();
+        double invAbsDiff = invAngle.ccw().getAbsDiff(current.ccw()).ccw().rad();
+        
+        Angle target;
+        if (invAbsDiff < absDiff) {
+            target = invAngle;
+            velocity = -velocity;
+        } else {
+            target = angle;
+        }
 
-        double targetTurnEncoderPosition = angleToDriveEncoderPosition(Math.toDegrees(angle));
+
+        double currentAngleRadiansMod = current.ccw().rad() % (2.0 * Math.PI);
+        if (currentAngleRadiansMod < 0.0) {
+            currentAngleRadiansMod += 2.0 * Math.PI;
+        }
+
+        // The reference angle has the range [0, 2pi) but the Falcon's encoder can go above that
+        double adjustedReferenceAngleRadians = target.ccw().rad() + current.ccw().rad() - currentAngleRadiansMod;
+        if (target.ccw().rad() - currentAngleRadiansMod > Math.PI) {
+            adjustedReferenceAngleRadians -= 2.0 * Math.PI;
+        } else if (target.ccw().rad() - currentAngleRadiansMod < -Math.PI) {
+            adjustedReferenceAngleRadians += 2.0 * Math.PI;
+        }
+
+
+        double targetTurnEncoderPosition = angleToTurnEncoderPosition(adjustedReferenceAngleRadians);
         turn.set(TalonFXControlMode.Position, targetTurnEncoderPosition);
         drive.set(TalonFXControlMode.PercentOutput, velocity);
 
