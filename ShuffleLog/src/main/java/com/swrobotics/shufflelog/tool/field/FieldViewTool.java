@@ -51,14 +51,13 @@ public final class FieldViewTool extends ViewportTool {
     private final ImInt viewMode;
 
     public FieldViewTool(ShuffleLog log) {
-        // Be in 3d mode
+        // Be in 3d rendering mode
         super(log, "Field View", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse, P3D);
 
         MessengerClient msg = log.getMessenger();
         layers = new ArrayList<>();
-//        layers.add(new FieldImageLayer());
         layers.add(new MeterGridLayer());
-//        layers.add(new FieldVectorLayer());
+        layers.add(new FieldVectorLayer());
 //        layers.add(new PathfindingLayer(msg));
 //        layers.add(new TagTrackerLayer(this, msg));
 
@@ -97,7 +96,7 @@ public final class FieldViewTool extends ViewportTool {
             float halfW = (float) g.width / scale / 2;
             float halfH = (float) g.height / scale / 2;
             projection = new Matrix4f().ortho(-halfW, halfW, -halfH, halfH,
-                    -50, 50);
+                    50, -50);
         }
         view = new Matrix4f()
                 .translate(new Vector3f(cameraTargetX.get(), cameraTargetY.get(), cameraTargetZ.get()))
@@ -233,9 +232,11 @@ public final class FieldViewTool extends ViewportTool {
                     cameraRotY.set(cameraRotY.getTarget() - deltaX * 0.007f);
                 }
 
-                float scroll = io.getMouseWheel();
-                float scale = 1 + scroll * -0.05f;
-                cameraDist.set(cameraDist.getTarget() * scale);
+                if (viewMode.get() == MODE_3D) {
+                    float scroll = io.getMouseWheel();
+                    float scale = 1 + scroll * -0.05f;
+                    cameraDist.set(cameraDist.getTarget() * scale);
+                }
             }
 
             ImGui.tableNextColumn();
