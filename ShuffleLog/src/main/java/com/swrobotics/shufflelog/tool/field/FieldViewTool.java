@@ -5,6 +5,7 @@ import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.math.Matrix4f;
 import com.swrobotics.shufflelog.math.Vector3f;
 import com.swrobotics.shufflelog.tool.ViewportTool;
+import com.swrobotics.shufflelog.tool.field.tag.TagTrackerLayer;
 import com.swrobotics.shufflelog.util.SmoothFloat;
 import imgui.ImGui;
 import imgui.ImGuiIO;
@@ -59,7 +60,7 @@ public final class FieldViewTool extends ViewportTool {
         layers.add(new MeterGridLayer());
         layers.add(new FieldVectorLayer());
 //        layers.add(new PathfindingLayer(msg));
-//        layers.add(new TagTrackerLayer(this, msg));
+        layers.add(new TagTrackerLayer(this, msg));
 
         cameraRotX = new SmoothFloat(SMOOTH, 0);
         cameraRotY = new SmoothFloat(SMOOTH, 0);
