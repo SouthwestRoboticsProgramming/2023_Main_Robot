@@ -1,6 +1,14 @@
 {
-  "Test": {
+  "Test Task 2": {
     "workingDirectory": "tasks/test",
+    "command": [
+      "bash",
+      "test.sh"
+    ],
+    "enabled": true
+  },
+  "The thing": {
+    "workingDirectory": "tasks/somthing",
     "command": [
       "bash",
       "test.sh"
