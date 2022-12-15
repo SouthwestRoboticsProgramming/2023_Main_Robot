@@ -3,6 +3,7 @@ package com.swrobotics.shufflelog.tool.field;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.math.Matrix4f;
+import com.swrobotics.shufflelog.math.Vector2f;
 import com.swrobotics.shufflelog.math.Vector3f;
 import com.swrobotics.shufflelog.tool.ViewportTool;
 import com.swrobotics.shufflelog.tool.field.path.PathfindingLayer;
@@ -52,6 +53,9 @@ public final class FieldViewTool extends ViewportTool {
 
     private final ImInt viewMode;
 
+    private Vector2f cursorPos;
+    private float orthoScale;
+
     public FieldViewTool(ShuffleLog log) {
         // Be in 3d rendering mode
         super(log, "Field View", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse, P3D);
@@ -60,7 +64,7 @@ public final class FieldViewTool extends ViewportTool {
         layers = new ArrayList<>();
         layers.add(new MeterGridLayer());
         layers.add(new FieldVectorLayer());
-        layers.add(new PathfindingLayer(msg));
+        layers.add(new PathfindingLayer(msg, this));
         layers.add(new TagTrackerLayer(this, msg));
 
         cameraRotX = new SmoothFloat(SMOOTH, 0);
@@ -74,6 +78,13 @@ public final class FieldViewTool extends ViewportTool {
         gizmoMode = Mode.WORLD;
 
         viewMode = new ImInt(MODE_2D);
+    }
+
+    // Can be null
+    public Vector2f getCursorPos() {
+        if (viewMode.get() != MODE_2D)
+            return null;
+        return cursorPos;
     }
 
     private float calcReqScale(float px, float field) {
@@ -94,6 +105,7 @@ public final class FieldViewTool extends ViewportTool {
             float scaleX = calcReqScale(g.width, (float) WIDTH);
             float scaleY = calcReqScale(g.height, (float) HEIGHT);
             float scale = Math.min(scaleX, scaleY);
+            orthoScale = scale;
 
             float halfW = (float) g.width / scale / 2;
             float halfH = (float) g.height / scale / 2;
@@ -195,6 +207,17 @@ public final class FieldViewTool extends ViewportTool {
                     gizmoTarget.setTransform(Matrix4f.fromColumnMajor(transArr));
                 }
                 gizmoConsumesMouse = ImGuizmo.isOver();
+            }
+
+            ImVec2 mouse = ImGui.getIO().getMousePos();
+            float mouseX = mouse.x - x;
+            float mouseY = mouse.y - y;
+
+            if (viewMode.get() == MODE_2D) {
+                cursorPos = new Vector2f(
+                        (mouseX - size.x / 2) / orthoScale,
+                        -(mouseY - size.y / 2) / orthoScale
+                );
             }
 
             if (hovered && !gizmoConsumesMouse) {

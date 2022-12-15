@@ -3,8 +3,10 @@ package com.swrobotics.shufflelog.tool.field.path;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
+import com.swrobotics.shufflelog.math.Vector2f;
 import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.tool.field.FieldLayer;
+import com.swrobotics.shufflelog.tool.field.FieldViewTool;
 import com.swrobotics.shufflelog.tool.field.path.grid.BitfieldGrid;
 import com.swrobotics.shufflelog.tool.field.path.grid.Grid;
 import com.swrobotics.shufflelog.tool.field.path.grid.GridUnion;
@@ -33,6 +35,7 @@ public final class PathfindingLayer implements FieldLayer {
     private static final String MSG_GET_FIELD_INFO = "Pathfinder:GetFieldInfo";
     private static final String MSG_GET_GRIDS = "Pathfinder:GetGrids";
     private static final String MSG_GET_CELL_DATA = "Pathfinder:GetCellData";
+    private static final String MSG_GET_ROBOT_SHAPE = "Pathfinder:GetRobotShape";
     private static final String MSG_ADD_GRID = "Pathfinder:AddGrid";
     private static final String MSG_REMOVE_GRID = "Pathfinder:RemoveGrid";
     private static final String MSG_ADD_SHAPE = "Pathfinder:AddShape";
@@ -42,11 +45,14 @@ public final class PathfindingLayer implements FieldLayer {
     private static final String MSG_FIELD_INFO = "Pathfinder:FieldInfo";
     private static final String MSG_GRIDS = "Pathfinder:Grids";
     private static final String MSG_CELL_DATA = "Pathfinder:CellData";
+    private static final String MSG_ROBOT_SHAPE = "Pathfinder:RobotShape";
 
     private final MessengerClient msg;
+    private final FieldViewTool tool;
     private final Cooldown reqFieldInfoCooldown;
     private final Cooldown reqGridsCooldown;
     private final Cooldown reqCellDataCooldown;
+    private final Cooldown reqRobotShapeCooldown;
 
     private final ImBoolean showGridLines;
     private final ImBoolean showGridCells;
@@ -60,17 +66,22 @@ public final class PathfindingLayer implements FieldLayer {
     private Grid grid;
     private BitfieldGrid cellData;
     private boolean needsRefreshCellData;
+    private Shape robotShape;
 
     private double startX, startY;
     private double goalX, goalY;
 
     private FieldNode hoveredNode;
 
-    public PathfindingLayer(MessengerClient msg) {
+    private PathFollowerTest follower = new PathFollowerTest();
+
+    public PathfindingLayer(MessengerClient msg, FieldViewTool tool) {
         this.msg = msg;
+        this.tool = tool;
         reqFieldInfoCooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
         reqGridsCooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
         reqCellDataCooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
+        reqRobotShapeCooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
 
         msg.addHandler(MSG_PATH, this::onPath);
         msg.addHandler(MSG_FIELD_INFO, this::onFieldInfo);
@@ -78,6 +89,7 @@ public final class PathfindingLayer implements FieldLayer {
         msg.addHandler(MSG_CELL_DATA, this::onCellData);
         msg.addHandler(MSG_SET_POS, this::onSetPos);
         msg.addHandler(MSG_SET_GOAL, this::onSetGoal);
+        msg.addHandler(MSG_ROBOT_SHAPE, this::onRobotShape);
 
         showGridLines = new ImBoolean(false);
         showGridCells = new ImBoolean(true);
@@ -91,6 +103,7 @@ public final class PathfindingLayer implements FieldLayer {
         grid = null;
         cellData = null;
         needsRefreshCellData = true;
+        robotShape = null;
     }
 
     private void onPath(String type, MessageReader reader) {
@@ -139,6 +152,10 @@ public final class PathfindingLayer implements FieldLayer {
         goalY = reader.readDouble();
     }
 
+    private void onRobotShape(String type, MessageReader reader) {
+        robotShape = Shape.read(reader);
+    }
+
     @Override
     public String getName() {
         return "Pathfinding";
@@ -152,6 +169,9 @@ public final class PathfindingLayer implements FieldLayer {
         if (needsRefreshCellData && reqCellDataCooldown.request()) {
             msg.send(MSG_GET_CELL_DATA);
         }
+        if (robotShape == null && reqRobotShapeCooldown.request()) {
+            msg.send(MSG_GET_ROBOT_SHAPE);
+        }
         if (fieldInfo == null) {
             if (reqFieldInfoCooldown.request())
                 msg.send(MSG_GET_FIELD_INFO);
@@ -159,14 +179,27 @@ public final class PathfindingLayer implements FieldLayer {
         }
 
         // Wavy ends go wheeeeeeee (for testing latency)
+//        msg.prepare(MSG_SET_POS)
+//                .addDouble(3 * Math.sin((System.currentTimeMillis() % 1000) / 1000.0 * Math.PI * 2))
+//                .addDouble(-6)
+//                .send();
         msg.prepare(MSG_SET_POS)
-                .addDouble(3 * Math.sin((System.currentTimeMillis() % 1000) / 1000.0 * Math.PI * 2))
-                .addDouble(-6)
+                .addDouble(follower.getX())
+                .addDouble(follower.getY())
                 .send();
-        msg.prepare(MSG_SET_GOAL)
-                .addDouble(3 * Math.cos(((System.currentTimeMillis() * 1.253) % 1000 / 1000.0) * Math.PI * 2))
-                .addDouble(6)
-                .send();
+
+        Vector2f cursor = tool.getCursorPos();
+        if (cursor != null) {
+            msg.prepare(MSG_SET_GOAL)
+                    .addDouble(cursor.x)
+                    .addDouble(cursor.y)
+                    .send();
+        }
+
+//        msg.prepare(MSG_SET_GOAL)
+//                .addDouble(3 * Math.cos(((System.currentTimeMillis() * 0.2) % 1000 / 1000.0) * Math.PI * 2))
+//                .addDouble(6 * Math.sin(((System.currentTimeMillis() * 0.2) % 1000 / 1000.0) * Math.PI * 2))
+//                .send();
 
         boolean lines = showGridLines.get();
         boolean cells = showGridCells.get();
@@ -252,16 +285,33 @@ public final class PathfindingLayer implements FieldLayer {
             g.ellipse((float) goalX, (float) goalY, 0.10f*strokeMul, 0.10f*strokeMul);
             g.popMatrix();
         }
+
+        follower.setPath(this.path);
+        followerStatus = follower.go();
+
+        if (robotShape != null)
+            drawShape(
+                    g,
+                    robotShape,
+                    strokeMul,
+                    g.color(255, 0, 255),
+                    g.color(255, 0, 255, 128),
+                    (float) follower.getX(),
+                    (float) follower.getY()
+            );
     }
 
-    private void drawShape(PGraphics g, Shape shape, float strokeMul, int fg, int bg) {
+    String followerStatus = "";
+
+    private void drawShape(PGraphics g, Shape shape, float strokeMul, int fg, int bg) { drawShape(g, shape, strokeMul, fg, bg, 0, 0); }
+    private void drawShape(PGraphics g, Shape shape, float strokeMul, int fg, int bg, float ox, float oy) {
         if (shape instanceof Circle) {
             Circle c = (Circle) shape;
             g.ellipseMode(PConstants.CENTER);
             g.noFill();
 
-            float x = (float) c.x.get();
-            float y = (float) c.y.get();
+            float x = (float) c.x.get() + ox;
+            float y = (float) c.y.get() + oy;
             float d = (float) (2 * c.radius.get());
 
             g.strokeWeight(4 * strokeMul);
@@ -272,8 +322,8 @@ public final class PathfindingLayer implements FieldLayer {
             g.ellipse(x, y, d, d);
         } else if (shape instanceof Rectangle) {
             Rectangle r = (Rectangle) shape;
-            float x = (float) r.x.get();
-            float y = (float) r.y.get();
+            float x = (float) r.x.get() + ox;
+            float y = (float) r.y.get() + oy;
             float w = (float) r.width.get();
             float h = (float) r.height.get();
             float rot = (float) r.rotation.get();
@@ -498,6 +548,8 @@ public final class PathfindingLayer implements FieldLayer {
         checkbox("Show grid cells", showGridCells);
         checkbox("Show shapes", showShapes);
         checkbox("Show path", showPath);
+        separator();
+        text(followerStatus);
         separator();
         if (grid != null) {
             if (beginTable("grids", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable)) {

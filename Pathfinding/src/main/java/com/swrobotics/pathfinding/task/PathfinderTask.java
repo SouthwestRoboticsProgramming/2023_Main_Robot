@@ -37,6 +37,7 @@ public final class PathfinderTask {
     private static final String MSG_GET_FIELD_INFO = "Pathfinder:GetFieldInfo";
     private static final String MSG_GET_GRIDS = "Pathfinder:GetGrids";
     private static final String MSG_GET_CELL_DATA = "Pathfinder:GetCellData";
+    private static final String MSG_GET_ROBOT_SHAPE = "Pathfinder:GetRobotShape";
     private static final String MSG_ADD_GRID = "Pathfinder:AddGrid";
     private static final String MSG_REMOVE_GRID = "Pathfinder:RemoveGrid";
     private static final String MSG_ADD_SHAPE = "Pathfinder:AddShape";
@@ -46,6 +47,7 @@ public final class PathfinderTask {
     private static final String MSG_FIELD_INFO = "Pathfinder:FieldInfo";
     private static final String MSG_GRIDS = "Pathfinder:Grids";
     private static final String MSG_CELL_DATA = "Pathfinder:CellData";
+    private static final String MSG_ROBOT_SHAPE = "Pathfinder:RobotShape";
 
     private final MessengerClient msg;
     private final Field field;
@@ -89,6 +91,7 @@ public final class PathfinderTask {
         msg.addHandler(MSG_GET_FIELD_INFO, this::onGetFieldInfo);
         msg.addHandler(MSG_GET_GRIDS, this::onGetGrids);
         msg.addHandler(MSG_GET_CELL_DATA, this::onGetCellData);
+        msg.addHandler(MSG_GET_ROBOT_SHAPE, this::onGetRobotShape);
 
         pathfinder.setStart(new Point(0, 0));
         pathfinder.setGoal(new Point(0, 0));
@@ -290,6 +293,12 @@ public final class PathfinderTask {
 
         MessageBuilder builder = msg.prepare(MSG_CELL_DATA);
         out.writeToMessengerNoTypeId(builder);
+        builder.send();
+    }
+
+    private void onGetRobotShape(String type, MessageReader reader) {
+        MessageBuilder builder = msg.prepare(MSG_ROBOT_SHAPE);
+        robot.writeToMessenger(builder);
         builder.send();
     }
 
