@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,6 +85,7 @@ public final class TaskManagerTool implements Tool {
         msg.addHandler(name + MSG_TASKS, this::onTasks);
         msg.addHandler(name + MSG_STDOUT_PREFIX + "*", this::onStdOut);
         msg.addHandler(name + MSG_STDERR_PREFIX + "*", this::onStdErr);
+        msg.addHandler(name + MSG_FILE_CONTENT, this::onFileContent);
 
         mkdirName = new ImString(64);
         logTools = new HashMap<>();
@@ -258,6 +260,11 @@ public final class TaskManagerTool implements Tool {
                         .send();
                 closeCurrentPopup();
             }
+            if (selectable("Edit")) {
+                msg.prepare(name + MSG_READ_FILE)
+                        .addString(file.getFullPath())
+                        .send();
+            }
             endPopup();
         }
         if (beginDragDropSource()) {
@@ -400,6 +407,20 @@ public final class TaskManagerTool implements Tool {
 
     private void onStdErr(String type, MessageReader reader) {
         getLog(type.substring(name.length() + MSG_STDERR_PREFIX.length())).addEntry(true, reader.readString());
+    }
+
+    private void onFileContent(String type, MessageReader reader) {
+        String filePath = reader.readString();
+        boolean success = reader.readBoolean();
+        if (!success)
+            return;
+
+        int dataLen = reader.readInt();
+        byte[] data = reader.readRaw(dataLen);
+        String dataStr = new String(data, StandardCharsets.UTF_8);
+
+        FileEditorTool editor = new FileEditorTool(filePath, dataStr, msg, name + MSG_WRITE_FILE, log);
+        log.addTool(editor);
     }
 
     private void showTasks() {
