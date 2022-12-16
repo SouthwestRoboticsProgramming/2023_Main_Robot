@@ -1,16 +1,12 @@
 package com.swrobotics.robot;
 
 import com.swrobotics.lib.schedule.Scheduler;
-import com.swrobotics.lib.swerve.SwerveDrive;
 import com.swrobotics.lib.schedule.Subsystem;
 import com.swrobotics.lib.wpilib.AbstractRobot;
 import com.swrobotics.messenger.client.MessengerClient;
 
-
 public final class Robot extends AbstractRobot {
     private static final double PERIODIC_PER_SECOND = 50;
-
-    private final SwerveDrive drive = new SwerveDrive();
 
     public Robot() {
 	    super(PERIODIC_PER_SECOND);
@@ -18,9 +14,20 @@ public final class Robot extends AbstractRobot {
     
     @Override
     protected final void addSubsystems() {
-        Scheduler sch = Scheduler.get();
+        MessengerClient msg = new MessengerClient("10.21.29.3", 5805, "RIO");
 
-        sch.addSubsystem(drive);
-        // drive.setChassisSpeeds(new ChassisSpeeds(1, 1, Math.PI / 4));
+        Scheduler.get().addSubsystem(new Subsystem() {
+            @Override
+            public void periodic() {
+                msg.prepare("Something")
+                        .addDouble(Math.random())
+                        .addInt(83)
+                        .send();
+
+                msg.readMessages();
+
+                System.out.println("Messenger: " + msg.isConnected());
+            }
+        });
     }
 }

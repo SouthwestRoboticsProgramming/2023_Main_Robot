@@ -6,6 +6,11 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
+compileJava {
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
+}
+
 def ROBOT_MAIN_CLASS = "com.swrobotics.robot.Main"
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
@@ -52,7 +57,6 @@ test {
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
 // Also defines JUnit 4.
 dependencies {
-    implementation project(':MathLib')
     implementation project(':Messenger:MessengerClient')
     implementation project(':Profiler')
 
