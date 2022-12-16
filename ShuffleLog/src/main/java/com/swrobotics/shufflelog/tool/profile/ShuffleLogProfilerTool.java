@@ -4,11 +4,10 @@ import com.swrobotics.profiler.MemoryStats;
 import com.swrobotics.profiler.ProfileNode;
 import com.swrobotics.profiler.Profiler;
 import com.swrobotics.shufflelog.ShuffleLog;
+import imgui.ImGui;
 import imgui.flag.ImGuiTableFlags;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
-
-import static imgui.ImGui.*;
 
 public final class ShuffleLogProfilerTool extends ProfilerTool {
     private final String vendor, renderer, version, glslVersion;
@@ -25,32 +24,32 @@ public final class ShuffleLogProfilerTool extends ProfilerTool {
 
     @Override
     protected void showHeader() {
-        text("OpenGL info:");
-        if (beginTable("header", 2, ImGuiTableFlags.SizingStretchProp)) {
-            tableNextColumn();
-            text("Vendor:");
-            tableNextColumn();
-            text(vendor);
+        ImGui.text("OpenGL info:");
+        if (ImGui.beginTable("header", 2, ImGuiTableFlags.SizingStretchProp)) {
+            ImGui.tableNextColumn();
+            ImGui.text("Vendor:");
+            ImGui.tableNextColumn();
+            ImGui.text(vendor);
 
-            tableNextColumn();
-            text("Renderer:");
-            tableNextColumn();
-            text(renderer);
+            ImGui.tableNextColumn();
+            ImGui.text("Renderer:");
+            ImGui.tableNextColumn();
+            ImGui.text(renderer);
 
-            tableNextColumn();
-            text("Version:");
-            tableNextColumn();
-            text(version);
+            ImGui.tableNextColumn();
+            ImGui.text("Version:");
+            ImGui.tableNextColumn();
+            ImGui.text(version);
 
-            tableNextColumn();
-            text("GLSL Version:");
-            tableNextColumn();
-            text(glslVersion);
+            ImGui.tableNextColumn();
+            ImGui.text("GLSL Version:");
+            ImGui.tableNextColumn();
+            ImGui.text(glslVersion);
 
-            endTable();
+            ImGui.endTable();
         }
 
-        separator();
+        ImGui.separator();
     }
 
     @Override

@@ -25,7 +25,7 @@ public abstract class BooleanDataPlot extends DataPlot<Boolean> {
             DataPoint<Boolean> point = history.get(i);
             times[i] = point.getTime();
             values[i] = point.getValue() ? 1 : 0;
-        };
+        }
 
         ImPlot.plotDigital(showName ? name : "", times, values, times.length);
     }

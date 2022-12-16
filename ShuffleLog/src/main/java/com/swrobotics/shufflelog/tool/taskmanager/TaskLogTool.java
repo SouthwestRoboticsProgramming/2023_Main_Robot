@@ -10,8 +10,6 @@ import imgui.type.ImBoolean;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imgui.ImGui.*;
-
 public final class TaskLogTool implements Tool {
     private static final int MAX_LOG_HISTORY = 100;
 
@@ -58,20 +56,20 @@ public final class TaskLogTool implements Tool {
     @Override
     public void process() {
         ImGui.setNextWindowSize(350, 350, ImGuiCond.Appearing);
-        if (begin("Task Log [" + taskName + "]", open)) {
+        if (ImGui.begin("Task Log [" + taskName + "]", open)) {
             for (Entry entry : log) {
                 if (entry.isErr)
-                    pushStyleColor(ImGuiCol.Text, 1, 0, 0, 1);
-                text(entry.line);
+                    ImGui.pushStyleColor(ImGuiCol.Text, 1, 0, 0, 1);
+                ImGui.text(entry.line);
                 if (entry.isErr)
-                    popStyleColor();
+                    ImGui.popStyleColor();
             }
 
             // Autoscroll
-            if (getScrollY() >= getScrollMaxY())
-                setScrollHereY(1.0f);
+            if (ImGui.getScrollY() >= ImGui.getScrollMaxY())
+                ImGui.setScrollHereY(1.0f);
         }
-        end();
+        ImGui.end();
 
         if (!open.get()) {
             shuffleLog.removeTool(this);

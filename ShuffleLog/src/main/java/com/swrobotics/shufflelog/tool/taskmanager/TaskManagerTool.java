@@ -8,6 +8,7 @@ import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.util.Cooldown;
 import com.swrobotics.shufflelog.util.FileChooser;
+import imgui.ImGui;
 import imgui.ImGuiViewport;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.flag.ImGuiTableFlags;
@@ -24,8 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static imgui.ImGui.*;
 
 public final class TaskManagerTool implements Tool {
     // Filesystem API
@@ -153,16 +152,16 @@ public final class TaskManagerTool implements Tool {
     private void showDirectory(RemoteDirectory dir, boolean isRoot) {
         String dirName = isRoot ? "Tasks Root" : dir.getName();
 
-        boolean open = treeNodeEx(dirName, ImGuiTreeNodeFlags.SpanFullWidth | (isRoot ? ImGuiTreeNodeFlags.DefaultOpen : 0));
-        if (beginDragDropSource()) {
-            text(dirName);
-            setDragDropPayload("TM_" + name + "_DRAG_DIR", dir);
-            endDragDropSource();
+        boolean open = ImGui.treeNodeEx(dirName, ImGuiTreeNodeFlags.SpanFullWidth | (isRoot ? ImGuiTreeNodeFlags.DefaultOpen : 0));
+        if (ImGui.beginDragDropSource()) {
+            ImGui.text(dirName);
+            ImGui.setDragDropPayload("TM_" + name + "_DRAG_DIR", dir);
+            ImGui.endDragDropSource();
         }
-        if (beginDragDropTarget()) {
-            RemoteNode node = acceptDragDropPayload("TM_" + name + "_DRAG_FILE");
+        if (ImGui.beginDragDropTarget()) {
+            RemoteNode node = ImGui.acceptDragDropPayload("TM_" + name + "_DRAG_FILE");
             if (node == null)
-                node = acceptDragDropPayload("TM_" + name + "_DRAG_DIR");
+                node = ImGui.acceptDragDropPayload("TM_" + name + "_DRAG_DIR");
 
             if (node != null && !isChild(node, dir)) {
                 String dstPath = dir.getFullPath();
@@ -175,70 +174,70 @@ public final class TaskManagerTool implements Tool {
                         .send();
             }
 
-            endDragDropTarget();
+            ImGui.endDragDropTarget();
         }
 
-        pushID(dir.getName());
+        ImGui.pushID(dir.getName());
 
         boolean openNewDirPopup = false;
-        if (beginPopupContextItem("context_menu")) {
-            if (!isRoot && selectable("Delete")) {
+        if (ImGui.beginPopupContextItem("context_menu")) {
+            if (!isRoot && ImGui.selectable("Delete")) {
                 msg.prepare(name + MSG_DELETE_FILE)
                         .addString(dir.getFullPath())
                         .send();
-                closeCurrentPopup();
+                ImGui.closeCurrentPopup();
             }
-            if (selectable("New directory")) {
-                closeCurrentPopup();
+            if (ImGui.selectable("New directory")) {
+                ImGui.closeCurrentPopup();
                 openNewDirPopup = true;
             }
-            if (selectable("Upload file(s)")) {
-                closeCurrentPopup();
+            if (ImGui.selectable("Upload file(s)")) {
+                ImGui.closeCurrentPopup();
                 FileChooser.chooseFileOrFolder((file) -> uploadFile(file, dir.getFullPath()));
             }
-            if (selectable("Refresh")) {
-                closeCurrentPopup();
+            if (ImGui.selectable("Refresh")) {
+                ImGui.closeCurrentPopup();
                 dir.setNeedsRefreshContent(true);
             }
-            endPopup();
+            ImGui.endPopup();
         }
 
         if (openNewDirPopup) {
             mkdirName.set("");
-            openPopup("New Directory");
+            ImGui.openPopup("New Directory");
         }
 
-        if (beginPopupModal("New Directory", ImGuiWindowFlags.NoMove)) {
+        if (ImGui.beginPopupModal("New Directory", ImGuiWindowFlags.NoMove)) {
             // Center the popup
-            ImGuiViewport vp = getWindowViewport();
-            setWindowPos(vp.getCenterX() - getWindowWidth() / 2, vp.getCenterY() - getWindowHeight() / 2);
+            ImGuiViewport vp = ImGui.getWindowViewport();
+            ImGui.setWindowPos(vp.getCenterX() - ImGui.getWindowWidth() / 2, vp.getCenterY() - ImGui.getWindowHeight() / 2);
 
-            text("New directory name:");
-            setNextItemWidth(300);
-            boolean submit = inputText("##name", mkdirName, ImGuiInputTextFlags.EnterReturnsTrue);
-            setItemDefaultFocus();
+            ImGui.text("New directory name:");
+            ImGui.setNextItemWidth(300);
+            boolean submit = ImGui.inputText("##name", mkdirName, ImGuiInputTextFlags.EnterReturnsTrue);
+            ImGui.setItemDefaultFocus();
 
-            setNextItemWidth(300);
-            submit |= button("Create");
+            ImGui.setNextItemWidth(300);
+            submit |= ImGui.button("Create");
 
             if (submit) {
                 String path = isRoot ? mkdirName.get() : (dir.getFullPath() + "/" + mkdirName.get());
                 msg.prepare(name + MSG_MKDIR)
                         .addString(path)
                         .send();
-                closeCurrentPopup();
+                ImGui.closeCurrentPopup();
             }
 
-            endPopup();
+            ImGui.endPopup();
         }
 
-        popID();
+        ImGui.popID();
 
         if (open) {
             if (dir.needsRefreshContent()) {
-                indent(getTreeNodeToLabelSpacing());
-                textDisabled("Fetching...");
-                unindent(getTreeNodeToLabelSpacing());
+                ImGui.indent(ImGui.getTreeNodeToLabelSpacing());
+                ImGui.textDisabled("Fetching...");
+                ImGui.unindent(ImGui.getTreeNodeToLabelSpacing());
 
                 if (reqContentCooldown.request()) {
                     msg.prepare(name + MSG_LIST_FILES)
@@ -250,33 +249,33 @@ public final class TaskManagerTool implements Tool {
                     showNode(node);
                 }
             }
-            treePop();
+            ImGui.treePop();
         }
     }
 
     private void showFile(RemoteFile file) {
-        treeNodeEx(file.getName(), ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Leaf);
-        pushID(file.getName());
-        if (beginPopupContextItem()) {
-            if (selectable("Delete")) {
+        ImGui.treeNodeEx(file.getName(), ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Leaf);
+        ImGui.pushID(file.getName());
+        if (ImGui.beginPopupContextItem()) {
+            if (ImGui.selectable("Delete")) {
                 msg.prepare(name + MSG_DELETE_FILE)
                         .addString(file.getFullPath())
                         .send();
-                closeCurrentPopup();
+                ImGui.closeCurrentPopup();
             }
-            if (selectable("Edit")) {
+            if (ImGui.selectable("Edit")) {
                 msg.prepare(name + MSG_READ_FILE)
                         .addString(file.getFullPath())
                         .send();
             }
-            endPopup();
+            ImGui.endPopup();
         }
-        if (beginDragDropSource()) {
-            text(file.getName());
-            setDragDropPayload("TM_" + this.name + "_DRAG_FILE", file);
-            endDragDropSource();
+        if (ImGui.beginDragDropSource()) {
+            ImGui.text(file.getName());
+            ImGui.setDragDropPayload("TM_" + this.name + "_DRAG_FILE", file);
+            ImGui.endDragDropSource();
         }
-        popID();
+        ImGui.popID();
     }
 
     private void showNode(RemoteNode node) {
@@ -431,71 +430,71 @@ public final class TaskManagerTool implements Tool {
         Task deletion = null;
         for (Task task : tasks) {
             String name = task.name.get();
-            pushID(task.uuid);
+            ImGui.pushID(task.uuid);
 
-            boolean open = treeNode(task.uuid, name);
-            if (beginPopupContextItem("task_ctx")) {
-                if (selectable("Open Log")) {
+            boolean open = ImGui.treeNode(task.uuid, name);
+            if (ImGui.beginPopupContextItem("task_ctx")) {
+                if (ImGui.selectable("Open Log")) {
                     TaskLogTool tool = getLog(name);
                     if (!tool.isOpen()) {
                         tool.setOpen();
                         log.addTool(tool);
                     }
                 }
-                if (selectable("Delete")) {
+                if (ImGui.selectable("Delete")) {
                     msg.prepare(this.name + MSG_DELETE_TASK)
                             .addString(name)
                             .send();
                     deletion = task;
-                    closeCurrentPopup();
+                    ImGui.closeCurrentPopup();
                 }
-                endPopup();
+                ImGui.endPopup();
             }
             if (task.edited) {
-                sameLine();
-                textDisabled("- Edited");
+                ImGui.sameLine();
+                ImGui.textDisabled("- Edited");
             }
 
             if (open) {
-                indent();
-                if (beginTable("params_layout", 2, ImGuiTableFlags.SizingStretchProp)) {
-                    tableNextColumn();
-                    text("Name:");
-                    tableNextColumn();
-                    setNextItemWidth(-1);
-                    task.nameEdited |= inputText("##task_name", task.name);
+                ImGui.indent();
+                if (ImGui.beginTable("params_layout", 2, ImGuiTableFlags.SizingStretchProp)) {
+                    ImGui.tableNextColumn();
+                    ImGui.text("Name:");
+                    ImGui.tableNextColumn();
+                    ImGui.setNextItemWidth(-1);
+                    task.nameEdited |= ImGui.inputText("##task_name", task.name);
                     task.edited |= task.nameEdited;
 
-                    tableNextColumn();
-                    text("Working Dir:");
-                    tableNextColumn();
-                    setNextItemWidth(-1);
-                    task.edited |= inputText("##task_workingDir", task.workingDirectory);
-                    if (beginDragDropTarget()) {
-                        RemoteDirectory payload = acceptDragDropPayload("TM_" + this.name + "_DRAG_DIR");
+                    ImGui.tableNextColumn();
+                    ImGui.text("Working Dir:");
+                    ImGui.tableNextColumn();
+                    ImGui.setNextItemWidth(-1);
+                    task.edited |= ImGui.inputText("##task_workingDir", task.workingDirectory);
+                    if (ImGui.beginDragDropTarget()) {
+                        RemoteDirectory payload = ImGui.acceptDragDropPayload("TM_" + this.name + "_DRAG_DIR");
                         if (payload != null) {
                             task.workingDirectory.set(payload.getFullPath());
                             task.edited = true;
                         }
-                        endDragDropTarget();
+                        ImGui.endDragDropTarget();
                     }
 
-                    tableNextColumn();
-                    text("Command:");
-                    tableNextColumn();
-                    setNextItemWidth(-1);
-                    task.edited |= inputText("##task_cmd", task.command);
+                    ImGui.tableNextColumn();
+                    ImGui.text("Command:");
+                    ImGui.tableNextColumn();
+                    ImGui.setNextItemWidth(-1);
+                    task.edited |= ImGui.inputText("##task_cmd", task.command);
 
-                    tableNextColumn();
-                    text("Enabled:");
-                    tableNextColumn();
-                    task.edited |= checkbox("##task_enabled", task.enabled);
+                    ImGui.tableNextColumn();
+                    ImGui.text("Enabled:");
+                    ImGui.tableNextColumn();
+                    task.edited |= ImGui.checkbox("##task_enabled", task.enabled);
 
-                    endTable();
+                    ImGui.endTable();
                 }
 
-                beginDisabled(!task.edited);
-                if (button("Save")) {
+                ImGui.beginDisabled(!task.edited);
+                if (ImGui.button("Save")) {
                     if (task.nameEdited) {
                         msg.prepare(this.name + MSG_DELETE_TASK)
                                 .addString(task.syncedName)
@@ -514,20 +513,20 @@ public final class TaskManagerTool implements Tool {
 
                     task.markSynced();
                 }
-                endDisabled();
+                ImGui.endDisabled();
 
-                unindent();
-                treePop();
+                ImGui.unindent();
+                ImGui.treePop();
             }
 
-            popID();
+            ImGui.popID();
         }
         if (deletion != null)
             tasks.remove(deletion);
 
-        spacing();
+        ImGui.spacing();
 
-        if (button("Add new task")) {
+        if (ImGui.button("Add new task")) {
             String name = "New Task";
             int i = 0;
             while (taskExists(name)) {
@@ -573,24 +572,24 @@ public final class TaskManagerTool implements Tool {
 
     @Override
     public void process() {
-        if (begin("Task Manager [" + name + "]")) {
+        if (ImGui.begin("Task Manager [" + name + "]")) {
             if (!receivedTasks && reqTasksCooldown.request()) {
                 msg.send(name + MSG_LIST_TASKS);
             }
 
-            if (beginTable("tm_layout", 2, ImGuiTableFlags.BordersInner)) {
-                tableNextColumn();
-                tableHeader("Tasks:");
-                tableNextColumn();
-                tableHeader("Files:");
+            if (ImGui.beginTable("tm_layout", 2, ImGuiTableFlags.BordersInner)) {
+                ImGui.tableNextColumn();
+                ImGui.tableHeader("Tasks:");
+                ImGui.tableNextColumn();
+                ImGui.tableHeader("Files:");
 
-                tableNextColumn();
+                ImGui.tableNextColumn();
                 showTasks();
-                tableNextColumn();
+                ImGui.tableNextColumn();
                 showDirectory(remoteRoot, true);
-                endTable();
+                ImGui.endTable();
             }
         }
-        end();
+        ImGui.end();
     }
 }

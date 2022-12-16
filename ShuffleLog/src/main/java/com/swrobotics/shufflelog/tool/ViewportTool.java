@@ -1,11 +1,11 @@
 package com.swrobotics.shufflelog.tool;
 
+import imgui.ImGui;
 import imgui.ImVec2;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.opengl.PGraphicsOpenGL;
 
-import static imgui.ImGui.*;
 import static processing.core.PConstants.P2D;
 
 public abstract class ViewportTool implements Tool {
@@ -43,7 +43,7 @@ public abstract class ViewportTool implements Tool {
     }
 
     protected final void drawViewport() {
-        ImVec2 size = getContentRegionAvail();
+        ImVec2 size = ImGui.getContentRegionAvail();
         drawViewport(size.x, size.y, true);
     }
 
@@ -70,9 +70,9 @@ public abstract class ViewportTool implements Tool {
 
             if (texId != -1) {
                 if (blockEvents)
-                    imageButton(texId, w, h, 0, 1, 1, 0, 0);
+                    ImGui.imageButton(texId, w, h, 0, 1, 1, 0, 0);
                 else
-                    image(texId, w, h, 0, 1, 1, 0);
+                    ImGui.image(texId, w, h, 0, 1, 1, 0);
             }
 
             pTexture = texId;
@@ -85,9 +85,9 @@ public abstract class ViewportTool implements Tool {
 
     @Override
     public void process() {
-        if (begin(title, windowFlags)) {
+        if (ImGui.begin(title, windowFlags)) {
             drawGuiContent();
         }
-        end();
+        ImGui.end();
     }
 }

@@ -6,11 +6,6 @@ import imgui.type.ImString;
 import java.util.UUID;
 
 public final class Task {
-    public static final int EDIT_NAME = 1;
-    public static final int EDIT_WORK_DIR = 2;
-    public static final int EDIT_CMD = 4;
-    public static final int EDIT_ENABLE = 8;
-
     public final String uuid;
 
     public ImString name;

@@ -4,13 +4,12 @@ import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.StreamUtil;
 import com.swrobotics.shufflelog.tool.Tool;
+import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiTableFlags;
 import imgui.type.ImInt;
 import imgui.type.ImString;
-
-import static imgui.ImGui.*;
 
 public final class MessengerTool implements Tool {
     private final MessengerClient msg;
@@ -31,47 +30,47 @@ public final class MessengerTool implements Tool {
     }
 
     private void fancyLabel(String label) {
-        tableNextColumn();
-        text(label);
-        tableNextColumn();
-        setNextItemWidth(-1);
+        ImGui.tableNextColumn();
+        ImGui.text(label);
+        ImGui.tableNextColumn();
+        ImGui.setNextItemWidth(-1);
     }
 
     private void showConnectionParams() {
         boolean changed = false;
-        if (beginTable("conn_layout", 2, ImGuiTableFlags.SizingStretchProp)) {
+        if (ImGui.beginTable("conn_layout", 2, ImGuiTableFlags.SizingStretchProp)) {
             fancyLabel("Host:");
-            changed = inputText("##conn_host", host);
+            changed = ImGui.inputText("##conn_host", host);
 
             fancyLabel("Port:");
-            changed |= inputInt("##conn_port", port);
+            changed |= ImGui.inputInt("##conn_port", port);
 
             fancyLabel("Name:");
-            changed |= inputText("##conn_name", name);
+            changed |= ImGui.inputText("##conn_name", name);
 
-            separator();
+            ImGui.separator();
 
-            tableNextColumn();
-            text("Status:");
-            tableNextColumn();
+            ImGui.tableNextColumn();
+            ImGui.text("Status:");
+            ImGui.tableNextColumn();
             boolean connected = msg.isConnected();
             if (connected) {
-                pushStyleColor(ImGuiCol.Text, 0.0f, 1.0f, 0.0f, 1.0f);
-                text("Connected");
+                ImGui.pushStyleColor(ImGuiCol.Text, 0.0f, 1.0f, 0.0f, 1.0f);
+                ImGui.text("Connected");
             } else {
-                pushStyleColor(ImGuiCol.Text, 1.0f, 0.0f, 0.0f, 1.0f);
-                text("Not connected");
+                ImGui.pushStyleColor(ImGuiCol.Text, 1.0f, 0.0f, 0.0f, 1.0f);
+                ImGui.text("Not connected");
 
                 Exception e = msg.getLastConnectionException();
-                if (e != null && isItemHovered()) {
-                    beginTooltip();
-                    text(StreamUtil.getStackTrace(e));
-                    endTooltip();
+                if (e != null && ImGui.isItemHovered()) {
+                    ImGui.beginTooltip();
+                    ImGui.text(StreamUtil.getStackTrace(e));
+                    ImGui.endTooltip();
                 }
             }
-            popStyleColor();
+            ImGui.popStyleColor();
 
-            endTable();
+            ImGui.endTable();
         }
 
         if (changed)
@@ -80,12 +79,12 @@ public final class MessengerTool implements Tool {
 
     @Override
     public void process() {
-        if (begin("Messenger")) {
-            setWindowPos(50, 50, ImGuiCond.FirstUseEver);
-            setWindowSize(500, 450, ImGuiCond.FirstUseEver);
+        if (ImGui.begin("Messenger")) {
+            ImGui.setWindowPos(50, 50, ImGuiCond.FirstUseEver);
+            ImGui.setWindowSize(500, 450, ImGuiCond.FirstUseEver);
 
             showConnectionParams();
         }
-        end();
+        ImGui.end();
     }
 }

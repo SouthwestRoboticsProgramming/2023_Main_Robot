@@ -15,6 +15,7 @@ import com.swrobotics.shufflelog.tool.field.path.shape.Circle;
 import com.swrobotics.shufflelog.tool.field.path.shape.Rectangle;
 import com.swrobotics.shufflelog.tool.field.path.shape.Shape;
 import com.swrobotics.shufflelog.util.Cooldown;
+import imgui.ImGui;
 import imgui.flag.ImGuiTableFlags;
 import imgui.flag.ImGuiTreeNodeFlags;
 import imgui.type.ImBoolean;
@@ -22,8 +23,6 @@ import processing.core.PConstants;
 import processing.core.PGraphics;
 
 import java.util.*;
-
-import static imgui.ImGui.*;
 
 public final class PathfindingLayer implements FieldLayer {
     // Main API
@@ -365,27 +364,27 @@ public final class PathfindingLayer implements FieldLayer {
             flags |= ImGuiTreeNodeFlags.DefaultOpen;
         }
 
-        tableNextColumn();
-        boolean open = treeNodeEx(id, flags);
-        if (isItemHovered()) hoveredNode = grid;
-        tableNextColumn();
-        textDisabled(union.getId().toString());
+        ImGui.tableNextColumn();
+        boolean open = ImGui.treeNodeEx(id, flags);
+        if (ImGui.isItemHovered()) hoveredNode = grid;
+        ImGui.tableNextColumn();
+        ImGui.textDisabled(union.getId().toString());
 
         if (open) {
             for (Grid grid : union.getChildren()) {
                 showGrid(grid, false);
             }
-            treePop();
+            ImGui.treePop();
         }
     }
 
     private void showBitfieldGrid(BitfieldGrid grid) {
         String id = "Bitfield Grid##" + grid.getId();
-        tableNextColumn();
-        treeNodeEx(id, ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
-        if (isItemHovered()) hoveredNode = grid;
-        tableNextColumn();
-        textDisabled(grid.getId().toString());
+        ImGui.tableNextColumn();
+        ImGui.treeNodeEx(id, ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
+        if (ImGui.isItemHovered()) hoveredNode = grid;
+        ImGui.tableNextColumn();
+        ImGui.textDisabled(grid.getId().toString());
     }
 
     private void showShapeGrid(ShapeGrid grid, boolean isRoot) {
@@ -395,12 +394,12 @@ public final class PathfindingLayer implements FieldLayer {
             flags |= ImGuiTreeNodeFlags.DefaultOpen;
         }
 
-        tableNextColumn();
-        boolean open = treeNodeEx(id, flags);
-        if (isItemHovered()) hoveredNode = grid;
-        if (beginPopupContextItem()) {
+        ImGui.tableNextColumn();
+        boolean open = ImGui.treeNodeEx(id, flags);
+        if (ImGui.isItemHovered()) hoveredNode = grid;
+        if (ImGui.beginPopupContextItem()) {
             Shape addedShape = null;
-            if (selectable("Add Circle")) {
+            if (ImGui.selectable("Add Circle")) {
                 Circle c = new Circle(UUID.randomUUID());
                 c.register(this);
                 c.x.set(0);
@@ -408,7 +407,7 @@ public final class PathfindingLayer implements FieldLayer {
                 c.radius.set(1);
                 addedShape = c;
             }
-            if (selectable("Add Rectangle")) {
+            if (ImGui.selectable("Add Rectangle")) {
                 Rectangle r = new Rectangle(UUID.randomUUID());
                 r.register(this);
                 r.x.set(0);
@@ -429,16 +428,16 @@ public final class PathfindingLayer implements FieldLayer {
                 needsRefreshCellData = true;
             }
 
-            endPopup();
+            ImGui.endPopup();
         }
-        tableNextColumn();
-        textDisabled(grid.getId().toString());
+        ImGui.tableNextColumn();
+        ImGui.textDisabled(grid.getId().toString());
 
         if (open) {
             for (Shape shape : new ArrayList<>(grid.getShapes())) {
                 showShape(grid, shape);
             }
-            treePop();
+            ImGui.treePop();
         }
     }
 
@@ -461,34 +460,34 @@ public final class PathfindingLayer implements FieldLayer {
     }
 
     private void fieldHeader(String name) {
-        tableNextColumn();
-        alignTextToFramePadding();
-        treeNodeEx(name, ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
-        tableNextColumn();
-        setNextItemWidth(-1);
+        ImGui.tableNextColumn();
+        ImGui.alignTextToFramePadding();
+        ImGui.treeNodeEx(name, ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+        ImGui.tableNextColumn();
+        ImGui.setNextItemWidth(-1);
     }
 
     private void showCircle(ShapeGrid grid, Circle circle) {
         String id = "Circle##" + circle.getId();
 
-        tableNextColumn();
-        boolean open = treeNodeEx(id, ImGuiTreeNodeFlags.SpanFullWidth);
-        if (isItemHovered()) hoveredNode = circle;
-        if (beginPopupContextItem()) {
-            if (selectable("Delete")) {
+        ImGui.tableNextColumn();
+        boolean open = ImGui.treeNodeEx(id, ImGuiTreeNodeFlags.SpanFullWidth);
+        if (ImGui.isItemHovered()) hoveredNode = circle;
+        if (ImGui.beginPopupContextItem()) {
+            if (ImGui.selectable("Delete")) {
                 removeShape(grid, circle);
             }
-            endPopup();
+            ImGui.endPopup();
         }
-        tableNextColumn();
-        textDisabled(circle.getId().toString());
+        ImGui.tableNextColumn();
+        ImGui.textDisabled(circle.getId().toString());
 
         if (open) {
             boolean changed;
 
-            fieldHeader("X"); changed = inputDouble("##x", circle.x);
-            fieldHeader("Y"); changed |= inputDouble("##y", circle.y);
-            fieldHeader("Radius"); changed |= inputDouble("##radius", circle.radius);
+            fieldHeader("X"); changed = ImGui.inputDouble("##x", circle.x);
+            fieldHeader("Y"); changed |= ImGui.inputDouble("##y", circle.y);
+            fieldHeader("Radius"); changed |= ImGui.inputDouble("##radius", circle.radius);
 
             if (changed) {
                 MessageBuilder builder = msg.prepare(MSG_ALTER_SHAPE);
@@ -497,32 +496,32 @@ public final class PathfindingLayer implements FieldLayer {
                 needsRefreshCellData = true;
             }
 
-            treePop();
+            ImGui.treePop();
         }
     }
 
     private void showRectangle(ShapeGrid grid, Rectangle rect) {
         String id = "Rectangle##" + rect.getId();
 
-        tableNextColumn();
-        boolean open = treeNodeEx(id, ImGuiTreeNodeFlags.SpanFullWidth);
-        if (isItemHovered()) hoveredNode = rect;
-        if (beginPopupContextItem()) {
-            if (selectable("Delete")) {
+        ImGui.tableNextColumn();
+        boolean open = ImGui.treeNodeEx(id, ImGuiTreeNodeFlags.SpanFullWidth);
+        if (ImGui.isItemHovered()) hoveredNode = rect;
+        if (ImGui.beginPopupContextItem()) {
+            if (ImGui.selectable("Delete")) {
                 removeShape(grid, rect);
             }
-            endPopup();
+            ImGui.endPopup();
         }
-        tableNextColumn();
-        textDisabled(rect.getId().toString());
+        ImGui.tableNextColumn();
+        ImGui.textDisabled(rect.getId().toString());
 
         if (open) {
             boolean changed;
-            fieldHeader("X"); changed = inputDouble("##x", rect.x);
-            fieldHeader("Y"); changed |= inputDouble("##y", rect.y);
-            fieldHeader("Width"); changed |= inputDouble("##width", rect.width);
-            fieldHeader("Height"); changed |= inputDouble("##height", rect.height);
-            fieldHeader("Rotation"); changed |= inputDouble("##rotation", rect.rotation);
+            fieldHeader("X"); changed = ImGui.inputDouble("##x", rect.x);
+            fieldHeader("Y"); changed |= ImGui.inputDouble("##y", rect.y);
+            fieldHeader("Width"); changed |= ImGui.inputDouble("##width", rect.width);
+            fieldHeader("Height"); changed |= ImGui.inputDouble("##height", rect.height);
+            fieldHeader("Rotation"); changed |= ImGui.inputDouble("##rotation", rect.rotation);
 
             if (changed) {
                 MessageBuilder builder = msg.prepare(MSG_ALTER_SHAPE);
@@ -531,7 +530,7 @@ public final class PathfindingLayer implements FieldLayer {
                 needsRefreshCellData = true;
             }
 
-            treePop();
+            ImGui.treePop();
         }
     }
 
@@ -544,18 +543,18 @@ public final class PathfindingLayer implements FieldLayer {
 
     @Override
     public void showGui() {
-        checkbox("Show grid lines", showGridLines);
-        checkbox("Show grid cells", showGridCells);
-        checkbox("Show shapes", showShapes);
-        checkbox("Show path", showPath);
-        separator();
-        text(followerStatus);
-        separator();
+        ImGui.checkbox("Show grid lines", showGridLines);
+        ImGui.checkbox("Show grid cells", showGridCells);
+        ImGui.checkbox("Show shapes", showShapes);
+        ImGui.checkbox("Show path", showPath);
+        ImGui.separator();
+        ImGui.text(followerStatus);
+        ImGui.separator();
         if (grid != null) {
-            if (beginTable("grids", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable)) {
+            if (ImGui.beginTable("grids", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable)) {
                 hoveredNode = null;
                 showGrid(grid, true);
-                endTable();
+                ImGui.endTable();
             }
         }
     }
