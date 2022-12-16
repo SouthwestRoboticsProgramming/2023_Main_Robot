@@ -196,6 +196,10 @@ public final class TaskManagerTool implements Tool {
                 closeCurrentPopup();
                 FileChooser.chooseFileOrFolder((file) -> uploadFile(file, dir.getFullPath()));
             }
+            if (selectable("Refresh")) {
+                closeCurrentPopup();
+                dir.setNeedsRefreshContent(true);
+            }
             endPopup();
         }
 
