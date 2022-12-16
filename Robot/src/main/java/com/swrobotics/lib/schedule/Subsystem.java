@@ -19,7 +19,7 @@ public interface Subsystem {
     /**
      * Called by the scheduler when this subsystem or its parent
      * is suspended. The default behavior is to call the
-     * {@link #onRemove) method.
+     * {@link #onRemove()} method.
      */
     default void suspend() { onRemove(); }
 

@@ -4,8 +4,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 
 import java.util.*;
 
-import com.swrobotics.lib.profile.Profiler;
 import com.swrobotics.lib.wpilib.RobotState;
+import com.swrobotics.profiler.Profiler;
 
 /**
  * The {@code Scheduler} is the core of the robot code. It runs
@@ -352,7 +352,7 @@ public final class Scheduler {
      * Unregisters a {@code Command}, causing it to be cancelled if
      * it is currently running. If the command is running, its
      * execution will be immediately stopped, and the
-     * {@link Command#end(boolean)) method will be called.
+     * {@link Command#end(boolean)} method will be called.
      *
      * This method will print a warning and have no effect if the
      * command is not currently scheduled.

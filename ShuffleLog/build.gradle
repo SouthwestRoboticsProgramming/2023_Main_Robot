@@ -1,0 +1,134 @@
+// Add a build dependency on Packr to build native executables
+buildscript {
+    dependencies {
+        classpath files("build-libs/packr-all-4.0.0.jar")
+    }
+}
+
+import com.badlogicgames.packr.*;
+
+plugins {
+    id 'java'
+}
+
+group 'com.swrobotics'
+version '2023'
+
+compileJava {
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
+}
+
+def WPILIB_VERSION = '2022.4.1'
+def P5X_VERSION = '0.353.0-beta-3'
+def LWJGL_VERSION = '3.3.1'
+def IMGUI_VERSION = '1.86.4'
+
+static def lwjglModule(module) {
+    def prefix = 'org.lwjgl:lwjgl'
+    if (module != null) prefix += '-' + module
+
+    return [
+            prefix,
+            prefix + '::natives-linux',
+            prefix + '::natives-linux-arm64',
+            prefix + '::natives-linux-arm32',
+            prefix + '::natives-macos',
+            prefix + '::natives-windows',
+            prefix + '::natives-windows-x86'
+    ]
+}
+
+dependencies {
+    implementation project(':Messenger:MessengerClient')
+    implementation project(':Profiler')
+
+    implementation "org.praxislive.libp5x:processing-core:${P5X_VERSION}"
+    implementation("org.praxislive.libp5x:processing-lwjgl:${P5X_VERSION}") {
+        exclude group: 'org.lwjgl'
+    }
+
+    implementation "io.github.spair:imgui-java-binding:${IMGUI_VERSION}"
+    implementation "io.github.spair:imgui-java-natives-linux:${IMGUI_VERSION}"
+    implementation "io.github.spair:imgui-java-natives-macos:${IMGUI_VERSION}"
+    implementation "io.github.spair:imgui-java-natives-windows:${IMGUI_VERSION}"
+    implementation("io.github.spair:imgui-java-lwjgl3:${IMGUI_VERSION}") {
+        exclude group: 'org.lwjgl'
+    }
+
+    implementation platform("org.lwjgl:lwjgl-bom:${LWJGL_VERSION}")
+    implementation lwjglModule(null)
+    implementation lwjglModule('assimp')
+    implementation lwjglModule('glfw')
+    implementation lwjglModule('opengl')
+    implementation lwjglModule('stb')
+
+    implementation "edu.wpi.first.ntcore:ntcore-java:${WPILIB_VERSION}"
+    implementation "edu.wpi.first.wpiutil:wpiutil-java:${WPILIB_VERSION}"
+    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:windowsx86"
+    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:windowsx86-64"
+    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:linuxx86-64"
+    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:linuxraspbian"
+    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:osxx86-64"
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.swrobotics.shufflelog.ShuffleLog'
+    }
+
+    from {
+        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+def JRE_LINUX_X64 = "OpenJDK11U-jre_x64_linux_hotspot_11.0.17_8.tar.gz"
+def JRE_WINDOWS_X64 = "OpenJDK11U-jre_x64_windows_hotspot_11.0.17_8.zip"
+
+static boolean deleteDirectory(File directoryToBeDeleted) {
+    File[] allContents = directoryToBeDeleted.listFiles()
+    if (allContents != null) {
+        for (File file : allContents) {
+            deleteDirectory(file)
+        }
+    }
+    return directoryToBeDeleted.delete()
+}
+
+static void packForPlatform(platform, jre) {
+    def JRE_DOWNLOAD_ROOT = "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.17%2B8/"
+
+    System.out.println((Object) "Packing executable for ${platform} with jre ${jre}")
+
+    def workingPath = System.getProperty("user.dir")
+    def workingDir = new File(workingPath)
+
+    def s = File.separator
+    def outDir = new File(workingDir, "ShuffleLog${s}build${s}pack${s}${platform}")
+    deleteDirectory(outDir)
+    outDir.mkdirs()
+
+    def packConfig = new PackrConfig(
+            platform,
+            (JRE_DOWNLOAD_ROOT + jre).toString(),
+            "ShuffleLog-${platform}".toString(),
+            Arrays.asList("${workingPath}${s}ShuffleLog${s}build${s}libs${s}ShuffleLog-2023.jar".toString()),
+            'com.swrobotics.shufflelog.ShuffleLog'.toString(),
+            outDir
+    )
+    packConfig.vmArgs = new ArrayList<>()
+    packConfig.jrePath = "jre"
+
+    new Packr().pack(packConfig)
+}
+
+tasks.register("pack") {
+    dependsOn "jar"
+    doLast {
+        packForPlatform(PackrConfig.Platform.Windows64, JRE_WINDOWS_X64)
+        packForPlatform(PackrConfig.Platform.Linux64, JRE_LINUX_X64)
+    }
+}
