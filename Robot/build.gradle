@@ -59,6 +59,7 @@ test {
 dependencies {
     implementation project(':Messenger:MessengerClient')
     implementation project(':Profiler')
+    implementation project(':MathLib')
 
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
