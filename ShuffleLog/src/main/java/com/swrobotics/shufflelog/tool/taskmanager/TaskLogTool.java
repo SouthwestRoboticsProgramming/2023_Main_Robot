@@ -2,7 +2,9 @@ package com.swrobotics.shufflelog.tool.taskmanager;
 
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.Tool;
+import imgui.ImGui;
 import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiCond;
 import imgui.type.ImBoolean;
 
 import java.util.ArrayList;
@@ -55,6 +57,7 @@ public final class TaskLogTool implements Tool {
 
     @Override
     public void process() {
+        ImGui.setNextWindowSize(350, 350, ImGuiCond.Appearing);
         if (begin("Task Log [" + taskName + "]", open)) {
             for (Entry entry : log) {
                 if (entry.isErr)
