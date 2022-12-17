@@ -61,7 +61,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private Rotation2d gyroOffset = new Rotation2d(); // Subtracted to get angle
 
     // Create a field sim to view where the odometry thinks we are
-    private final Field2d field = new Field2d();
+    public final Field2d field = new Field2d();
 
     private final SwerveModule[] modules = new SwerveModule[] {
         new SwerveModule(5, 9, 1,   225.0 + 180, new Translation2d(1, 1)), // Front left

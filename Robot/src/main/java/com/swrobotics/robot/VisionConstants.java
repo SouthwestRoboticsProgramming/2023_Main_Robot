@@ -42,6 +42,8 @@ public class VisionConstants {
     public static final Pose3d WINDOW_POSE = new Pose3d(0.0, ROOM_HEIGHT / 2, 0.2, new Rotation3d(0.0, 0.0, 0.0));
     public static final int WINDOW_ID = 1;
 
+    public static final Pose3d TEST_POSE = new Pose3d(10.0 , ROOM_HEIGHT / 2, 0.2, new Rotation3d());
+
     public static final SimVisionTarget WINDOW_TARGET = new SimVisionTarget(
         WINDOW_POSE, TARGET_WIDTH, TARGET_HEIGHT, WINDOW_ID);
 
