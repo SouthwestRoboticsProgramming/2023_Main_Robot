@@ -5,12 +5,12 @@ public final class CollisionChecks {
         double dx = obj.getX() - (robot.getX() + robotX);
         double dy = obj.getY() - (robot.getY() + robotY);
 
-        double radiusTotalSqr = obj.getRadius() + robot.getRadius();
+        double radiusTotalSqr = obj.getRadius() + robot.getRadius() * (obj.isInverted() ? -1 : 1);
         radiusTotalSqr *= radiusTotalSqr;
 
         double distanceSqr = dx * dx + dy * dy;
 
-        return distanceSqr <= radiusTotalSqr;
+        return (distanceSqr <= radiusTotalSqr) ^ obj.isInverted();
     }
 
     public static boolean checkRectangleVsCircleRobot(Rectangle obj, Circle robot, double robotX, double robotY) {
@@ -24,6 +24,25 @@ public final class CollisionChecks {
 
         double halfWidth = obj.getWidth() / 2.0;
         double halfHeight = obj.getHeight() / 2.0;
+
+        if (obj.isInverted()) {
+            // Inverted rectangles are a special case
+
+            // If point is outside rectangle, it collides
+            if (Math.abs(relativeX) > halfWidth || Math.abs(relativeY) > halfHeight)
+                return true;
+
+            // Find the closest distance to an edge
+            double nx = halfWidth + relativeX;
+            double px = halfWidth - relativeX;
+            double ny = halfHeight + relativeY;
+            double py = halfHeight - relativeY;
+            double min = Math.min(Math.min(nx, px), Math.min(ny, py));
+
+            // If edge is closer than radius, collides
+            return min <= robot.getRadius();
+        }
+
         double closestX = Math.max(-halfWidth, Math.min(relativeX, halfWidth));
         double closestY = Math.max(-halfHeight, Math.min(relativeY, halfHeight));
 

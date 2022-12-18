@@ -18,7 +18,8 @@ public final class Rectangle extends Shape {
     private final double height;
     private final double rotation;
 
-    public Rectangle(double x, double y, double width, double height, double rotation) {
+    public Rectangle(double x, double y, double width, double height, double rotation, boolean inverted) {
+        super(inverted);
         this.x = x;
         this.y = y;
         this.width = width;
@@ -71,7 +72,8 @@ public final class Rectangle extends Shape {
             double w = obj.get("width").getAsDouble();
             double h = obj.get("height").getAsDouble();
             double r = obj.get("rotation").getAsDouble();
-            return new Rectangle(x, y, w, h, r);
+            boolean inverted = obj.has("inverted") && obj.get("inverted").getAsBoolean();
+            return new Rectangle(x, y, w, h, r, inverted);
         }
 
         @Override
@@ -83,6 +85,7 @@ public final class Rectangle extends Shape {
             obj.addProperty("width", src.width);
             obj.addProperty("height", src.height);
             obj.addProperty("rotation", src.rotation);
+            obj.addProperty("inverted", src.isInverted());
             return obj;
         }
     }
