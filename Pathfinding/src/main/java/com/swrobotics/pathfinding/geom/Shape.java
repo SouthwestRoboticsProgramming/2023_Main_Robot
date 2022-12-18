@@ -15,9 +15,11 @@ import java.util.UUID;
 public abstract class Shape {
     private UUID id;
     private ShapeGrid parent;
+    private final boolean inverted;
 
-    public Shape() {
+    public Shape(boolean inverted) {
         id = UUID.randomUUID();
+        this.inverted = inverted;
     }
 
     public abstract boolean collidesWith(RobotShape robot, double robotX, double robotY);
@@ -25,6 +27,7 @@ public abstract class Shape {
     public void writeToMessenger(MessageBuilder builder) {
         builder.addLong(id.getMostSignificantBits());
         builder.addLong(id.getLeastSignificantBits());
+        builder.addBoolean(inverted);
     }
 
     public void register(PathfinderTask task) {
@@ -45,6 +48,10 @@ public abstract class Shape {
 
     public void setParent(ShapeGrid parent) {
         this.parent = parent;
+    }
+
+    public boolean isInverted() {
+        return inverted;
     }
 
     public static final class Serializer implements JsonDeserializer<Shape> {

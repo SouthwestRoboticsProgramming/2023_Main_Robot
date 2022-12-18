@@ -4,6 +4,7 @@ import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.shufflelog.tool.field.path.FieldNode;
 import com.swrobotics.shufflelog.tool.field.path.PathfindingLayer;
+import imgui.type.ImBoolean;
 
 import java.util.UUID;
 
@@ -12,9 +13,11 @@ public abstract class Shape implements FieldNode {
     public static final byte RECTANGLE = 1;
 
     private final UUID id;
+    public final ImBoolean inverted;
 
-    public Shape(UUID id) {
+    public Shape(UUID id, boolean inverted) {
         this.id = id;
+        this.inverted = new ImBoolean(inverted);
     }
 
     public UUID getId() {
@@ -31,14 +34,16 @@ public abstract class Shape implements FieldNode {
         long idLsb = reader.readLong();
         UUID id = new UUID(idMsb, idLsb);
 
+        boolean inverted = reader.readBoolean();
+
         byte type = reader.readByte();
         Shape shape;
         switch (type) {
             case CIRCLE:
-                shape = new Circle(id);
+                shape = new Circle(id, inverted);
                 break;
             case RECTANGLE:
-                shape = new Rectangle(id);
+                shape = new Rectangle(id, inverted);
                 break;
             default:
                 throw new RuntimeException("Unknown type id: " + type);
@@ -51,5 +56,6 @@ public abstract class Shape implements FieldNode {
     public void write(MessageBuilder builder) {
         builder.addLong(id.getMostSignificantBits());
         builder.addLong(id.getLeastSignificantBits());
+        builder.addBoolean(inverted.get());
     }
 }
