@@ -13,6 +13,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.LightCommand;
+import com.swrobotics.robot.commands.LightTest;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Vision;
@@ -71,6 +72,15 @@ public class RobotContainer {
         Command blankAuto = new InstantCommand();
         Command printAuto = new PrintCommand("Auto chooser is working!");
 
+        Command justLights = new LightCommand(m_lights, Color.BLUE, 0.2).andThen(
+            new LightCommand(m_lights, Color.GOLD, 1),
+            new LightCommand(m_lights, Color.GREEN, 2),
+            new LightCommand(m_lights, Color.WHITE, 3),
+            new LightCommand(m_lights, Color.RAINBOW, 5.0)
+        );
+
+        // Command justLights = new LightTest(m_lights);
+
         // Generate drive commands using PathPlanner
         HashMap<String, Command> eventMap = new HashMap<>();
 
@@ -93,6 +103,7 @@ public class RobotContainer {
         Command doorToWindow = builder.fullAuto(getPath("Door to Window"));
 
         m_drivetrainSubsystem.showTrajectory(getPath("Door to Window").get(0));
+        // m_drivetrainSubsystem.showTrajectory(getPath("Small Path").get(0));
 
         // Create a chooser to select the autonomous
         autoSelector= new SendableChooser<>();
@@ -104,6 +115,7 @@ public class RobotContainer {
         autoSelector.addOption("Light Show", lightShow);
         autoSelector.addOption("Tiny Auto", tinyAuto);
         autoSelector.addOption("Door to Window", doorToWindow);
+        autoSelector.addOption("Just lights", justLights);
         SmartDashboard.putData(autoSelector);
     }
 
@@ -154,6 +166,6 @@ public class RobotContainer {
     }
 
     private static ArrayList<PathPlannerTrajectory> getPath(String name) {
-        return PathPlanner.loadPathGroup(name, new PathConstraints(4.0, 3.0)); // FIXME: Add throws and catch
+        return PathPlanner.loadPathGroup(name, new PathConstraints(0.2, 0.1)); // FIXME: Add throws and catch
     }
 }

@@ -13,6 +13,7 @@ import com.ctre.phoenix.sensors.SensorTimeBase;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public class SwerveModule {
@@ -20,7 +21,7 @@ public class SwerveModule {
 
     private static final int TALON_FX_ENCODER_TICKS_PER_ROTATION = 2048;
     private static final double DRIVE_MOTOR_GEAR_RATIO = 8.14;
-    private static final double WHEEL_DIAMETER_METERS = 0.1016;
+    private static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(4.0);
     private static final double TURN_MOTOR_GEAR_RATIO = 12.8;
     private static final double MAX_VELOCITY = 4.0;
 
@@ -50,6 +51,8 @@ public class SwerveModule {
         driveConfig.slot0.kI = 0;
         driveConfig.slot0.kD = 0;
         driveConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
+        driveConfig.peakOutputForward = 0.1;
+        driveConfig.peakOutputReverse = -0.1;
 
         this.turn = new TalonFX(turn);
         this.turn.configAllSettings(turnConfig);
@@ -70,11 +73,13 @@ public class SwerveModule {
         setState(new SwerveModuleState());
 
         turnEncoderToAngle = TALON_FX_ENCODER_TICKS_PER_ROTATION * TURN_MOTOR_GEAR_RATIO / (Math.PI * 2);
-        driveEncoderVelocityToMPS = ((600.0 / 2048.0) / DRIVE_MOTOR_GEAR_RATIO * WHEEL_DIAMETER_METERS * Math.PI) / 60; // Copied from Citrus Circuits
+        // driveEncoderVelocityToMPS = ((600.0 / 2048.0) / DRIVE_MOTOR_GEAR_RATIO * WHEEL_DIAMETER_METERS * Math.PI) / 60; // Copied from Citrus Circuits
+        driveEncoderVelocityToMPS = 1 / ((2048 * 10) * Math.PI * WHEEL_DIAMETER_METERS);
         calibrateWithAbsoluteEncoder();
     }
 
     public void setState(SwerveModuleState state) {
+        System.out.println(state.speedMetersPerSecond);
         // Optimize direction
         // SwerveModuleState outputState = optimize(state);
         // SwerveModuleState outputState = SwerveModuleState.optimize(state, getAngle());
@@ -85,7 +90,9 @@ public class SwerveModule {
         double turnUnits = toNativeTurnUnits(outputState.angle);
 
         turn.set(TalonFXControlMode.Position, turnUnits);
-        drive.set(TalonFXControlMode.PercentOutput, outputState.speedMetersPerSecond / MAX_VELOCITY * 0.1);
+
+        double driveOutput = outputState.speedMetersPerSecond / MAX_VELOCITY;
+        drive.set(TalonFXControlMode.PercentOutput, driveOutput);
 
     }
 
@@ -233,7 +240,9 @@ public class SwerveModule {
     }
 
     private double fromNativeDriveUnits(double units) {
-        return units * driveEncoderVelocityToMPS;
+        return units / ((2048 / 10) * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
+
+        // 2048 should equal
     }
 
 }

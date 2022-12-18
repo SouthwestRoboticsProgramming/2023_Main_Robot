@@ -32,4 +32,8 @@ public class Lights {
     public void setColor(Color color) {
         lights.set(color.getValue());
     }
+
+    public void setDebug(double value) {
+        lights.set(value);
+    }
 }

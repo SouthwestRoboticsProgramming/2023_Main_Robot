@@ -16,6 +16,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -33,9 +34,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
      * This is a measure of how fast the robot should be able to drive in a straight
      * line.
      */
-    public static final double MAX_VELOCITY_METERS_PER_SECOND = 6380.0 / 60.0 *
-            SdsModuleConfigurations.MK3_STANDARD.getDriveReduction() *
-            SdsModuleConfigurations.MK3_STANDARD.getWheelDiameter() * Math.PI;
+    // public static final double MAX_VELOCITY_METERS_PER_SECOND = 6380.0 / 60.0 *
+    //         SdsModuleConfigurations.MK3_STANDARD.getDriveReduction() *
+    //         SdsModuleConfigurations.MK3_STANDARD.getWheelDiameter() * Math.PI;
+
+    public static final double MAX_VELOCITY_METERS_PER_SECOND = 4.0;
     /**
      * The maximum angular velocity of the robot in radians per second.
      * <p>
@@ -80,10 +83,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
         printEncoderOffsets();
 
-        odometry = new SwerveDriveOdometry(kinematics, getGyroscopeRotation());
+        // FIXME: Change back to getGyroscopeRotation
+        odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation());
     }
 
     public Rotation2d getGyroscopeRotation() {
+        if (RobotBase.isSimulation()) {
+            return getPose().getRotation();
+        }
         return gyro.getRotation2d().minus(gyroOffset);
     }
 
@@ -133,6 +140,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
         return states;
     }
 
+    private void doNotResetPose(Pose2d pose) {}
+
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {
         // Create the AutoBuilder. This only needs to be created once when robot code
         // starts, not every time you want to create an auto command. A good place to
@@ -141,7 +150,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 this::getPose, // Pose2d supplier
                 this::resetPose, // Pose2d consumer, used to reset odometry at the beginning of auto
                 kinematics, // SwerveDriveKinematics
-                new PIDConstants(5.0, 0.0, 0.0), // PID constants to correct for translation error (used to create the X
+                new PIDConstants(3.0, 0.0, 0.0), // PID constants to correct for translation error (used to create the X
                                                  // and Y PID controllers)
                 new PIDConstants(0.5, 0.0, 0.0), // PID constants to correct for rotation error (used to create the
                                                  // rotation controller)
@@ -174,15 +183,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // Freshly estimated the new rotation based off of the wheels
+        if (RobotBase.isSimulation()) {
+            ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
+            gyroOffset = gyroOffset.plus(new Rotation2d(-estimatedChassis.omegaRadiansPerSecond * 0.02));
+            odometry.update(gyroOffset, getModuleStates());
+        } else {
+            odometry.update(getGyroscopeRotation(), getModuleStates());
+        }
         
-        odometry.update(getGyroscopeRotation(), getModuleStates());
         
         field.setRobotPose(getPose());
-    }
-    
-    @Override
-    public void simulationPeriodic() {
-        ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
-        gyroOffset = gyroOffset.plus(new Rotation2d(-estimatedChassis.omegaRadiansPerSecond * 0.02));
     }
 }
