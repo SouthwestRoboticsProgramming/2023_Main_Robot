@@ -16,12 +16,14 @@ public class LightCommand extends TimedCommand {
 
     @Override
     public void initialize() {
+        super.initialize();
         lights.setColor(color);
         System.out.println("Lights at color: " + color);
     }
 
     @Override
     public void end(boolean interrupted) {
+        super.end(interrupted);
         lights.setColor(Color.OFF);
     }
     

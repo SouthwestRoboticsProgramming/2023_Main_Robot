@@ -71,7 +71,7 @@ public final class GridsFile {
             return GSON.fromJson(new FileReader(file), GridsFile.class);
         } catch (FileNotFoundException e) {
             GridsFile def = new GridsFile();
-            def.robot = new Circle(0, 0, 0.5);
+            def.robot = new Circle(0, 0, 0.5, false);
             def.grids = new ArrayList<>();
 
             System.err.println("Grids file not found, saving default");

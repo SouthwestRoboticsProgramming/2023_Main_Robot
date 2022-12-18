@@ -178,10 +178,6 @@ public final class PathfindingLayer implements FieldLayer {
         }
 
         // Wavy ends go wheeeeeeee (for testing latency)
-//        msg.prepare(MSG_SET_POS)
-//                .addDouble(3 * Math.sin((System.currentTimeMillis() % 1000) / 1000.0 * Math.PI * 2))
-//                .addDouble(-6)
-//                .send();
         msg.prepare(MSG_SET_POS)
                 .addDouble(follower.getX())
                 .addDouble(follower.getY())
@@ -194,11 +190,6 @@ public final class PathfindingLayer implements FieldLayer {
                     .addDouble(cursor.y)
                     .send();
         }
-
-//        msg.prepare(MSG_SET_GOAL)
-//                .addDouble(3 * Math.cos(((System.currentTimeMillis() * 0.2) % 1000 / 1000.0) * Math.PI * 2))
-//                .addDouble(6 * Math.sin(((System.currentTimeMillis() * 0.2) % 1000 / 1000.0) * Math.PI * 2))
-//                .send();
 
         boolean lines = showGridLines.get();
         boolean cells = showGridCells.get();
@@ -400,7 +391,7 @@ public final class PathfindingLayer implements FieldLayer {
         if (ImGui.beginPopupContextItem()) {
             Shape addedShape = null;
             if (ImGui.selectable("Add Circle")) {
-                Circle c = new Circle(UUID.randomUUID());
+                Circle c = new Circle(UUID.randomUUID(), false);
                 c.register(this);
                 c.x.set(0);
                 c.y.set(0);
@@ -408,7 +399,7 @@ public final class PathfindingLayer implements FieldLayer {
                 addedShape = c;
             }
             if (ImGui.selectable("Add Rectangle")) {
-                Rectangle r = new Rectangle(UUID.randomUUID());
+                Rectangle r = new Rectangle(UUID.randomUUID(), false);
                 r.register(this);
                 r.x.set(0);
                 r.y.set(0);
@@ -457,6 +448,7 @@ public final class PathfindingLayer implements FieldLayer {
                 .addLong(shape.getId().getMostSignificantBits())
                 .addLong(shape.getId().getLeastSignificantBits())
                 .send();
+        needsRefreshCellData = true;
     }
 
     private void fieldHeader(String name) {
@@ -485,9 +477,10 @@ public final class PathfindingLayer implements FieldLayer {
         if (open) {
             boolean changed;
 
-            fieldHeader("X"); changed = ImGui.inputDouble("##x", circle.x);
-            fieldHeader("Y"); changed |= ImGui.inputDouble("##y", circle.y);
-            fieldHeader("Radius"); changed |= ImGui.inputDouble("##radius", circle.radius);
+            fieldHeader("X");        changed =  ImGui.inputDouble("##x", circle.x);
+            fieldHeader("Y");        changed |= ImGui.inputDouble("##y", circle.y);
+            fieldHeader("Radius");   changed |= ImGui.inputDouble("##radius", circle.radius);
+            fieldHeader("Inverted"); changed |= ImGui.checkbox("##inverted", circle.inverted);
 
             if (changed) {
                 MessageBuilder builder = msg.prepare(MSG_ALTER_SHAPE);
@@ -517,11 +510,12 @@ public final class PathfindingLayer implements FieldLayer {
 
         if (open) {
             boolean changed;
-            fieldHeader("X"); changed = ImGui.inputDouble("##x", rect.x);
-            fieldHeader("Y"); changed |= ImGui.inputDouble("##y", rect.y);
-            fieldHeader("Width"); changed |= ImGui.inputDouble("##width", rect.width);
-            fieldHeader("Height"); changed |= ImGui.inputDouble("##height", rect.height);
+            fieldHeader("X");        changed  = ImGui.inputDouble("##x", rect.x);
+            fieldHeader("Y");        changed |= ImGui.inputDouble("##y", rect.y);
+            fieldHeader("Width");    changed |= ImGui.inputDouble("##width", rect.width);
+            fieldHeader("Height");   changed |= ImGui.inputDouble("##height", rect.height);
             fieldHeader("Rotation"); changed |= ImGui.inputDouble("##rotation", rect.rotation);
+            fieldHeader("Inverted"); changed |= ImGui.checkbox("##inverted", rect.inverted);
 
             if (changed) {
                 MessageBuilder builder = msg.prepare(MSG_ALTER_SHAPE);

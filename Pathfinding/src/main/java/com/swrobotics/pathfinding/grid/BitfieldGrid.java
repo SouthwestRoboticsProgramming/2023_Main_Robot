@@ -8,7 +8,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.swrobotics.messenger.client.MessageBuilder;
-import com.swrobotics.pathfinding.Point;
 
 import java.lang.reflect.Type;
 import java.util.Base64;
