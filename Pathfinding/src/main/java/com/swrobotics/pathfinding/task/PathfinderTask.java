@@ -195,20 +195,21 @@ public final class PathfinderTask {
     }
 
     private void alterShape(ShapeGrid grid, UUID shapeId, MessageReader reader) {
+        boolean inverted = reader.readBoolean();
         byte typeId = reader.readByte();
         Shape shape;
         if (typeId == ShapeType.CIRCLE.getTypeId()) {
             double x = reader.readDouble();
             double y = reader.readDouble();
             double radius = reader.readDouble();
-            shape = new Circle(x, y, radius);
+            shape = new Circle(x, y, radius, inverted);
         } else if (typeId == ShapeType.RECTANGLE.getTypeId()) {
             double x = reader.readDouble();
             double y = reader.readDouble();
             double width = reader.readDouble();
             double height = reader.readDouble();
             double rotation = reader.readDouble();
-            shape = new Rectangle(x, y, width, height, rotation);
+            shape = new Rectangle(x, y, width, height, rotation, inverted);
         } else {
             return;
         }

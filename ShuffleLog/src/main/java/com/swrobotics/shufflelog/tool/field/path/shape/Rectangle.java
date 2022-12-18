@@ -13,8 +13,8 @@ public final class Rectangle extends Shape {
     public final ImDouble height;
     public final ImDouble rotation;
 
-    public Rectangle(UUID id) {
-        super(id);
+    public Rectangle(UUID id, boolean inverted) {
+        super(id, inverted);
 
         x = new ImDouble();
         y = new ImDouble();
