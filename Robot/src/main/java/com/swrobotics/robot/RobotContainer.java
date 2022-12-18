@@ -12,6 +12,7 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
+import com.swrobotics.robot.commands.FollowPathCommand;
 import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
@@ -94,6 +95,8 @@ public class RobotContainer {
 
         m_drivetrainSubsystem.showTrajectory(getPath("Door to Window").get(0));
 
+        Command pathTest = new FollowPathCommand(m_drivetrainSubsystem, m_lights);
+
         // Create a chooser to select the autonomous
         autoSelector= new SendableChooser<>();
         autoSelector.setDefaultOption("No Auto", blankAuto);
@@ -104,6 +107,7 @@ public class RobotContainer {
         autoSelector.addOption("Light Show", lightShow);
         autoSelector.addOption("Tiny Auto", tinyAuto);
         autoSelector.addOption("Door to Window", doorToWindow);
+        autoSelector.addOption("Follow Path", pathTest);
         SmartDashboard.putData(autoSelector);
     }
 

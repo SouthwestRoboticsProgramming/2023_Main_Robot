@@ -124,4 +124,14 @@ public final class MathUtil {
         if (min >= max)
             throw new IllegalArgumentException("Minimum must not be greater than maximum");
     }
+
+    /**
+     * Helper function to square a number.
+     *
+     * @param in number to square
+     * @return in^2
+     */
+    public static double square(double in) {
+        return in * in;
+    }
 }
