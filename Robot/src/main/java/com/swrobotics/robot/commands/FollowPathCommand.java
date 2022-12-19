@@ -38,9 +38,9 @@ public final class FollowPathCommand extends CommandBase {
     static {
         // Basic path
         path.add(new Vec2d(0, 0));
-        path.add(new Vec2d(1, 0));
-        path.add(new Vec2d(1, 1));
-        path.add(new Vec2d(2, 1));
+        path.add(new Vec2d(0.5, 0));
+        path.add(new Vec2d(0.5, 0.5));
+        path.add(new Vec2d(1, 0.5));
 
         // Test long distance vs steps
 //        path.add(new Vec2d(0, 0));
@@ -57,7 +57,7 @@ public final class FollowPathCommand extends CommandBase {
 
     // Speed at which the robot tries to go
     // TODO-Mason: Might want to adjust this before running it inside house
-    private static final double VELOCITY = 1;
+    private static final double VELOCITY = 0.3;
 
     // Position tolerance in meters, must be larger than pathfinding tile
     private static final double TOLERANCE = 0.175;
@@ -77,7 +77,7 @@ public final class FollowPathCommand extends CommandBase {
         addRequirements(drive);
 
         turnPID = new ProfiledPIDController(
-                6, 0, 0, // Seems like these work in simulator
+                2, 0, 0, // Seems like these work in simulator
                 new TrapezoidProfile.Constraints(6.28, 3.14)
         );
         turnPID.enableContinuousInput(-Math.PI, Math.PI);
@@ -87,6 +87,7 @@ public final class FollowPathCommand extends CommandBase {
 
     @Override
     public void initialize() {
+        drive.resetPose(new Pose2d());
         turnPID.reset(drive.getPose().getRotation().getRadians());
     }
 

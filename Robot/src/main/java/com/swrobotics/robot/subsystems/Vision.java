@@ -61,6 +61,10 @@ public class Vision extends SubsystemBase {
 
         SmartDashboard.putBoolean("Target Found", false);
 
+        if (drive.isMoving()) {
+            return;
+        }
+
         var results = camera.getLatestResult();
         if (!results.hasTargets()) {
             return;
@@ -69,6 +73,7 @@ public class Vision extends SubsystemBase {
         // If the target was racked really poorly, don't use it
         double ambiguity = results.getBestTarget().getPoseAmbiguity();
         if (ambiguity > MAX_AMBIGUITY || ambiguity < 0) {
+            System.out.println("Too ambiguous");
             return;
         }
 

@@ -140,6 +140,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
         return states;
     }
 
+    private static final double IS_MOVING_THRESH = 0.1;
+
+    public boolean isMoving() {
+        ChassisSpeeds currentMovement = kinematics.toChassisSpeeds(getModuleStates());
+        Translation2d translation = new Translation2d(currentMovement.vxMetersPerSecond, currentMovement.vyMetersPerSecond);
+        double chassisVelocity = translation.getNorm();
+        return chassisVelocity > IS_MOVING_THRESH;
+    }
+
     private void doNotResetPose(Pose2d pose) {}
 
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {
