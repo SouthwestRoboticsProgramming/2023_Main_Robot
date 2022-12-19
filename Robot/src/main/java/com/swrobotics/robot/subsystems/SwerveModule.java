@@ -79,12 +79,11 @@ public class SwerveModule {
     }
 
     public void setState(SwerveModuleState state) {
-        System.out.println(state.speedMetersPerSecond);
         // Optimize direction
         // SwerveModuleState outputState = optimize(state);
         // SwerveModuleState outputState = SwerveModuleState.optimize(state, getAngle());
         // SwerveModuleState outputState = state;
-        SwerveModuleState outputState = optimize2(state.speedMetersPerSecond, state.angle.getRadians());
+        SwerveModuleState outputState = optimize(state.speedMetersPerSecond, state.angle.getRadians());
         targetState = outputState;
 
         double turnUnits = toNativeTurnUnits(outputState.angle);
@@ -131,45 +130,7 @@ public class SwerveModule {
         // turn.setSelectedSensorPosition(toNativeTurnUnits(new Rotation2d))
     }
 
-    private SwerveModuleState optimize(SwerveModuleState rawState) {
-        double targetVelocity = rawState.speedMetersPerSecond;
-        Rotation2d targetAngle = rawState.angle; // CCW, 0 Forward
-
-        Rotation2d currentAngle = getAngle();
-
-        // If the module is closer to the opposite angle, do that one instead
-        Rotation2d invertedAngle = targetAngle.plus(Rotation2d.fromDegrees(180));
-        double differenceRad = Math.abs(targetAngle.minus(currentAngle).getRadians());
-        double oppositeDifferenceRad = Math.abs(invertedAngle.minus(currentAngle).getRadians());
-
-        Rotation2d outputAngle = targetAngle;
-        if (oppositeDifferenceRad < differenceRad) {
-            outputAngle = invertedAngle;
-            // Invert velocity to reflect change in angle
-            targetVelocity = -targetVelocity;
-        }
-
-        // Convert current angle to match target angle
-        double currentAngleRadiansMod = currentAngle.getRadians() % (2.0 * Math.PI);
-        if (currentAngleRadiansMod < 0.0) {
-            currentAngleRadiansMod += 2.0 * Math.PI;
-        }
-
-        // Prepare the position to be sent to the falcon
-        double adjustedOutputAngleRad = outputAngle.getRadians() + currentAngle.getRadians() - currentAngleRadiansMod;
-        if (outputAngle.getRadians() - currentAngleRadiansMod > Math.PI) {
-            adjustedOutputAngleRad -= 2.0 * Math.PI;
-        } else if (outputAngle.getRadians() - currentAngleRadiansMod < -Math.PI) {
-            adjustedOutputAngleRad += 2.0 * Math.PI;
-        }
-
-        Rotation2d finalAngle = new Rotation2d(adjustedOutputAngleRad);
-        double finalVelocity = targetVelocity; // Only processed by potentially inverting
-
-        return new SwerveModuleState(finalVelocity, finalAngle);
-    }
-
-    private SwerveModuleState optimize2(double velocity, double angleRad) {
+    private SwerveModuleState optimize(double velocity, double angleRad) {
         Rotation2d current = getAngle(); // Difference in unpacking SwerveModuleState
 
         Rotation2d targetAngle = new Rotation2d(angleRad);
