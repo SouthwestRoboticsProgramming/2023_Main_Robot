@@ -24,14 +24,14 @@ public class VisionConstants {
 
 
     /* Vision targets */
-    private static final double ROOM_WIDTH = Units.inchesToMeters(223.0);
+    private static final double ROOM_WIDTH = Units.inchesToMeters(283.0);
     private static final double ROOM_HEIGHT = Units.inchesToMeters(125.0);
 
     // private static final double ROOM_WIDTH = 5;
     // private static final double ROOM_HEIGHT = 5;
 
-    public static final double TARGET_WIDTH = Units.inchesToMeters(8.5); // FIXME: Measure
-    public static final double TARGET_HEIGHT = Units.inchesToMeters(11.0); // FIXME: Measure
+    public static final double TARGET_WIDTH = Units.inchesToMeters(6.5);
+    public static final double TARGET_HEIGHT = Units.inchesToMeters(6.5);
 
     public static final Pose3d DOOR_POSE = new Pose3d(ROOM_WIDTH, ROOM_HEIGHT / 2, 0.2, new Rotation3d(0, 0, Math.PI));
     public static final int DOOR_ID = 9;
