@@ -178,17 +178,17 @@ public final class PathfindingLayer implements FieldLayer {
         }
 
         // Wavy ends go wheeeeeeee (for testing latency)
-        msg.prepare(MSG_SET_POS)
-                .addDouble(follower.getX())
-                .addDouble(follower.getY())
-                .send();
+//        msg.prepare(MSG_SET_POS)
+//                .addDouble(follower.getX())
+//                .addDouble(follower.getY())
+//                .send();
 
         Vector2f cursor = tool.getCursorPos();
         if (cursor != null) {
-            msg.prepare(MSG_SET_GOAL)
-                    .addDouble(cursor.x)
-                    .addDouble(cursor.y)
-                    .send();
+//            msg.prepare(MSG_SET_GOAL)
+//                    .addDouble(cursor.x)
+//                    .addDouble(cursor.y)
+//                    .send();
         }
 
         boolean lines = showGridLines.get();
@@ -276,19 +276,19 @@ public final class PathfindingLayer implements FieldLayer {
             g.popMatrix();
         }
 
-        follower.setPath(this.path);
-        followerStatus = follower.go();
-
-        if (robotShape != null)
-            drawShape(
-                    g,
-                    robotShape,
-                    strokeMul,
-                    g.color(255, 0, 255),
-                    g.color(255, 0, 255, 128),
-                    (float) follower.getX(),
-                    (float) follower.getY()
-            );
+//        follower.setPath(this.path);
+//        followerStatus = follower.go();
+//
+//        if (robotShape != null)
+//            drawShape(
+//                    g,
+//                    robotShape,
+//                    strokeMul,
+//                    g.color(255, 0, 255),
+//                    g.color(255, 0, 255, 128),
+//                    (float) follower.getX(),
+//                    (float) follower.getY()
+//            );
     }
 
     String followerStatus = "";

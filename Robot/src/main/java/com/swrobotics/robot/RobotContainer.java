@@ -11,16 +11,20 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.FollowPathCommand;
 import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.commands.LightTest;
+import com.swrobotics.robot.commands.PathfindToPointCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
+import com.swrobotics.robot.subsystems.Pathfinder;
 import com.swrobotics.robot.subsystems.Vision;
 import com.swrobotics.robot.subsystems.Lights.Color;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
@@ -122,10 +126,22 @@ public class RobotContainer {
         m_drivetrainSubsystem.showTrajectory(getPath("Door to Window").get(0));
         // m_drivetrainSubsystem.showTrajectory(getPath("Small Path").get(0));
 
+        Pathfinder pathfinder = new Pathfinder(messenger, m_drivetrainSubsystem);
+
         Command pathTest = new FollowPathCommand(m_drivetrainSubsystem, m_lights);
 
+        // For now PathfindToPointCommand resets odometry pose to center of field on init
+        // This should be done automatically by another system later (i.e. Vision or ShuffleLog)
+        Command pathToPoint = new PathfindToPointCommand(
+                m_drivetrainSubsystem,
+                pathfinder,
+                m_lights,
+                new Vec2d(8.2296 + 2, 8.2296/2), // 2 meters forward from field center
+                Rotation2d.fromDegrees(90)
+        );
+
         // Create a chooser to select the autonomous
-        autoSelector= new SendableChooser<>();
+        autoSelector = new SendableChooser<>();
         autoSelector.setDefaultOption("No Auto", blankAuto);
         autoSelector.addOption("Print Auto", printAuto);
         autoSelector.addOption("Small Path", smallPathAuto);
@@ -135,6 +151,7 @@ public class RobotContainer {
         autoSelector.addOption("Tiny Auto", tinyAuto);
         autoSelector.addOption("Door to Window", doorToWindow);
         autoSelector.addOption("Follow Path", pathTest);
+        autoSelector.addOption("Path to Point", pathToPoint);
         autoSelector.addOption("Just lights", justLights);
         SmartDashboard.putData(autoSelector);
     }
