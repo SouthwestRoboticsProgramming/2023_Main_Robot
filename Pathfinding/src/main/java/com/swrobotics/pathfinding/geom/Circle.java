@@ -16,7 +16,8 @@ public final class Circle extends RobotShape {
     private final double y;
     private final double radius;
 
-    public Circle(double x, double y, double radius) {
+    public Circle(double x, double y, double radius, boolean inverted) {
+        super(inverted);
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -52,15 +53,17 @@ public final class Circle extends RobotShape {
         @Override
         public Circle deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
+            boolean inverted = obj.has("inverted") && obj.get("inverted").getAsBoolean();
             double x = obj.get("x").getAsDouble();
             double y = obj.get("y").getAsDouble();
             double radius = obj.get("radius").getAsDouble();
-            return new Circle(x, y, radius);
+            return new Circle(x, y, radius, inverted);
         }
 
         @Override
         public JsonElement serialize(Circle src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
+            obj.addProperty("inverted", src.isInverted());
             obj.addProperty("type", ShapeType.CIRCLE.toString());
             obj.addProperty("x", src.x);
             obj.addProperty("y", src.y);

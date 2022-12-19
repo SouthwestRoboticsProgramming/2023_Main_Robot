@@ -1,5 +1,6 @@
 package com.swrobotics.shufflelog.tool.field.path.grid;
 
+import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 
 import java.util.BitSet;
@@ -36,5 +37,11 @@ public final class BitfieldGrid extends Grid {
             l[i] = reader.readLong();
         }
         data = BitSet.valueOf(l);
+    }
+
+    @Override
+    public void write(MessageBuilder builder) {
+        super.write(builder);
+        builder.addByte(BITFIELD);
     }
 }

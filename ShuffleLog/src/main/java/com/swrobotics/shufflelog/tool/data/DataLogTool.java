@@ -3,11 +3,10 @@ package com.swrobotics.shufflelog.tool.data;
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.Tool;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import imgui.ImGui;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static imgui.ImGui.*;
 
 public final class DataLogTool implements Tool {
     private static final int HISTORY_RETENTION_TIME = 10; // Seconds
@@ -59,8 +58,8 @@ public final class DataLogTool implements Tool {
     public void process() {
         double time = log.getTimestamp();
 
-        if (begin("Data Log")) {
-            if (beginChild("drag_target")) {
+        if (ImGui.begin("Data Log")) {
+            if (ImGui.beginChild("drag_target")) {
                 List<Graph> graphsCopy = new ArrayList<>(graphs);
                 for (Graph graph : graphsCopy) {
                     if (graph.getPlots().isEmpty()) {
@@ -70,25 +69,25 @@ public final class DataLogTool implements Tool {
 
                     String name = graph.getName();
 
-                    pushID(name);
+                    ImGui.pushID(name);
                     showGraph(graph, time);
 
-                    if (beginPopupContextItem(name)) {
-                        if (selectable("Remove graph")) {
+                    if (ImGui.beginPopupContextItem(name)) {
+                        if (ImGui.selectable("Remove graph")) {
                             graphs.remove(graph);
                         }
 
                         if (graph.getPlots().size() > 1) {
-                            separator();
+                            ImGui.separator();
 
                             List<DataPlot<?>> split = new ArrayList<>();
                             for (DataPlot<?> plot : graph.getPlots()) {
-                                if (selectable("Split '" + plot.getName() + "'")) {
+                                if (ImGui.selectable("Split '" + plot.getName() + "'")) {
                                     split.add(plot);
                                 }
                             }
 
-                            if (selectable("Split all")) {
+                            if (ImGui.selectable("Split all")) {
                                 boolean shouldSplit = false;
                                 for (DataPlot<?> plot : graph.getPlots()) {
                                     // Keep the first plot in the current graph
@@ -106,11 +105,11 @@ public final class DataLogTool implements Tool {
                                 addPlot(plot);
                             }
 
-                            separator();
+                            ImGui.separator();
 
                             DataPlot<?> removed = null;
                             for (DataPlot<?> plot : graph.getPlots()) {
-                                if (selectable("Remove '" + plot.getName() + "'")) {
+                                if (ImGui.selectable("Remove '" + plot.getName() + "'")) {
                                     removed = plot;
                                 }
                             }
@@ -119,30 +118,30 @@ public final class DataLogTool implements Tool {
                                 graph.removePlot(removed);
                         }
 
-                        endPopup();
+                        ImGui.endPopup();
                     }
 
-                    if (beginDragDropSource()) {
-                        text(name);
-                        setDragDropPayload("DATALOG_DRAG_GRAPH", graph);
-                        endDragDropSource();
+                    if (ImGui.beginDragDropSource()) {
+                        ImGui.text(name);
+                        ImGui.setDragDropPayload("DATALOG_DRAG_GRAPH", graph);
+                        ImGui.endDragDropSource();
                     }
 
-                    if (beginDragDropTarget()) {
-                        Graph payload = acceptDragDropPayload("DATALOG_DRAG_GRAPH");
+                    if (ImGui.beginDragDropTarget()) {
+                        Graph payload = ImGui.acceptDragDropPayload("DATALOG_DRAG_GRAPH");
                         if (payload != null) {
                             graphs.remove(payload);
                             graph.addPlots(payload.getPlots());
                             payload.clearPlots();
                         }
-                        endDragDropTarget();
+                        ImGui.endDragDropTarget();
                     }
-                    popID();
+                    ImGui.popID();
                 }
-                endChild();
+                ImGui.endChild();
             }
-            if (beginDragDropTarget()) {
-                PlotDef plotDef = acceptDragDropPayload("NT_DRAG_VALUE");
+            if (ImGui.beginDragDropTarget()) {
+                PlotDef plotDef = ImGui.acceptDragDropPayload("NT_DRAG_VALUE");
                 if (plotDef != null) {
                     switch (plotDef.getType()) {
                         case DOUBLE:
@@ -159,9 +158,9 @@ public final class DataLogTool implements Tool {
                             break;
                     }
                 }
-                endDragDropTarget();
+                ImGui.endDragDropTarget();
             }
         }
-        end();
+        ImGui.end();
     }
 }

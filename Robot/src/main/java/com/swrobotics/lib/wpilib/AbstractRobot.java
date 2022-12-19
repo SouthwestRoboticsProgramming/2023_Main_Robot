@@ -75,7 +75,7 @@ public abstract class AbstractRobot extends RobotBase {
         addSubsystems();
 
         System.out.println("**** Robot program startup complete ****");
-        HAL.observeUserProgramStarting();
+        HAL.observeUserProgramStarting(); // This is not an error even if VS Code disagrees
 
         // Initialize periodic repeater
         Repeater repeater = new Repeater(

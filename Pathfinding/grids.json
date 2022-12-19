@@ -1,5 +1,6 @@
 {
   "robot": {
+    "inverted": false,
     "type": "CIRCLE",
     "x": 0.0,
     "y": 0.0,
@@ -10,32 +11,29 @@
       "type": "SHAPE",
       "shapes": [
         {
-          "type": "CIRCLE",
+          "type": "RECTANGLE",
           "x": 0.0,
-          "y": -4.0,
-          "radius": 1.0
-        },
-        {
-          "type": "RECTANGLE",
-          "x": 2.0,
           "y": 0.0,
-          "width": 4.0,
-          "height": 0.2,
-          "rotation": 0.8726646259971648
+          "width": 8.2296,
+          "height": 16.4592,
+          "rotation": 0.0,
+          "inverted": true
         },
         {
-          "type": "RECTANGLE",
+          "inverted": false,
+          "type": "CIRCLE",
           "x": 0.0,
           "y": 4.0,
-          "width": 1.0,
-          "height": 1.0,
-          "rotation": 0.4363323129985824
+          "radius": 2.0
         },
         {
-          "type": "CIRCLE",
-          "x": -6.0,
-          "y": 0.0,
-          "radius": 4.0
+          "type": "RECTANGLE",
+          "x": 0.0,
+          "y": -3.0,
+          "width": 4.0,
+          "height": 1.0,
+          "rotation": 0.7853981633974483,
+          "inverted": false
         }
       ]
     }

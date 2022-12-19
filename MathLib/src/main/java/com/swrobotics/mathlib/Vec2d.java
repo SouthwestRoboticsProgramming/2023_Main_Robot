@@ -465,6 +465,18 @@ public final class Vec2d {
         return Math.sqrt(distanceToSq(o));
     }
 
+    public double distanceToLineSegmentSq(Vec2d a, Vec2d b) {
+        double l2 = a.distanceToSq(b);
+        if (l2 == 0) return distanceToSq(a);
+        double t = ((x - a.x) * (b.x - a.x) + (y - a.y) * (b.y - a.y)) / l2;
+        t = MathUtil.clamp(t, 0, 1);
+        return distanceToSq(new Vec2d(MathUtil.lerp(a.x, b.x, t), MathUtil.lerp(a.y, b.y, t)));
+    }
+
+    public double distanceToLineSegment(Vec2d a, Vec2d b) {
+        return Math.sqrt(distanceToLineSegmentSq(a, b));
+    }
+
     /**
      * Rotates this vector by a given angle.
      *

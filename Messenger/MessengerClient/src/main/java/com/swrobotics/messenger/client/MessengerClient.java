@@ -123,7 +123,7 @@ public final class MessengerClient {
 
                     connected.set(true);
 
-                    for (String listen : listening) {
+                    for (String listen : new HashSet<>(listening)) {
                         listen(listen);
                     }
                 } catch (Exception e) {

@@ -5,7 +5,7 @@
       "bash",
       "test.sh"
     ],
-    "enabled": true
+    "enabled": false
   },
   "The thing": {
     "workingDirectory": "tasks/somthing",
@@ -13,6 +13,6 @@
       "bash",
       "test.sh"
     ],
-    "enabled": true
+    "enabled": false
   }
 }
