@@ -14,9 +14,7 @@ import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
-import com.swrobotics.robot.commands.FollowPathCommand;
 import com.swrobotics.robot.commands.LightCommand;
-import com.swrobotics.robot.commands.LightTest;
 import com.swrobotics.robot.commands.PathfindToPointCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
@@ -128,8 +126,6 @@ public class RobotContainer {
 
         Pathfinder pathfinder = new Pathfinder(messenger, m_drivetrainSubsystem);
 
-        Command pathTest = new FollowPathCommand(m_drivetrainSubsystem, m_lights);
-
         // For now PathfindToPointCommand resets odometry pose to center of field on init
         // This should be done automatically by another system later (i.e. Vision or ShuffleLog)
         Command pathToPoint = new PathfindToPointCommand(
@@ -150,7 +146,6 @@ public class RobotContainer {
         autoSelector.addOption("Light Show", lightShow);
         autoSelector.addOption("Tiny Auto", tinyAuto);
         autoSelector.addOption("Door to Window", doorToWindow);
-        autoSelector.addOption("Follow Path", pathTest);
         autoSelector.addOption("Path to Point", pathToPoint);
         autoSelector.addOption("Just lights", justLights);
         SmartDashboard.putData(autoSelector);
