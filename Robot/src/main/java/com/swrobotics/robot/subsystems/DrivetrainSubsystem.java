@@ -23,6 +23,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+
+/*
+ * Calibration instructions:
+ * Align all wheel to face forward with bevel gears to the right
+ * Use straight edge such as a meter stick to further align the wheels to each other
+ * Deploy code
+ * Look at RioLog and type those numbers into the module declarations
+ */
+
 public class DrivetrainSubsystem extends SubsystemBase {
 
     public static final double DRIVETRAIN_TRACKWIDTH_METERS = 0.3; // FIXME - Measure
@@ -67,10 +76,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     public final Field2d field = new Field2d();
 
     private final SwerveModule[] modules = new SwerveModule[] {
-        new SwerveModule(5, 9, 1,   225.0 + 180, new Translation2d(1, 1)), // Front left
-        new SwerveModule(6, 10, 2,   95.7 + 180, new Translation2d(1, -1)),  // Front right
-        new SwerveModule(7, 11, 3, 77.871 + 180, new Translation2d(-1, 1)),  // Back left
-        new SwerveModule(8, 12, 4, 44.297 + 180, new Translation2d(-1, -1))  // Back right
+        new SwerveModule(5, 9, 1,   44.21, new Translation2d(0.3, 0.3)), // Front left
+        new SwerveModule(6, 10, 2,   274.13, new Translation2d(0.3, -0.3)),  // Front right
+        new SwerveModule(7, 11, 3, 258.14, new Translation2d(-0.3, 0.3)),  // Back left
+        new SwerveModule(8, 12, 4, 218.06, new Translation2d(-0.3, -0.3))  // Back right
     };
     
     private final SwerveDriveOdometry odometry;
@@ -81,7 +90,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
         field.getObject("target").setPose(VisionConstants.DOOR_POSE.toPose2d());
         // field.getObject("traj").setTrajectory(new Trajectory()); // Clear trajectory view
 
-        printEncoderOffsets();
+        for (int i = 0; i < 15; i++) {
+            printEncoderOffsets();
+        }
 
         // FIXME: Change back to getGyroscopeRotation
         odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation());
@@ -187,6 +198,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
             builder.append(" ");
         }
         System.out.println(builder);
+        System.out.println();
     }
 
     @Override

@@ -37,11 +37,11 @@ public final class FollowPathCommand extends CommandBase {
     private static final List<Vec2d> path = new ArrayList<>();
     static {
         // Basic path
-        path.add(new Vec2d(0, 0));
-        path.add(new Vec2d(0.5, 0));
-        path.add(new Vec2d(0.5, 0.5));
-        path.add(new Vec2d(1, 0.5));
-
+//        path.add(new Vec2d(0, 0));
+//        path.add(new Vec2d(0.5, 0));
+//        path.add(new Vec2d(0.5, 0.5));
+//        path.add(new Vec2d(1, 0.5));
+//
         // Test long distance vs steps
 //        path.add(new Vec2d(0, 0));
 //        path.add(new Vec2d(0, 3));
@@ -52,12 +52,18 @@ public final class FollowPathCommand extends CommandBase {
 //        path.add(new Vec2d(8, 4));
 //        path.add(new Vec2d(9, 4));
 //        path.add(new Vec2d(10, 4));
+
+        // Path from one end of the room to the other
+        path.add(new Vec2d(1.9718, 1.65183));
+        path.add(new Vec2d(3.4249, 1.308));
+        path.add(new Vec2d(4.485, 1.507));
+        path.add(new Vec2d(5.94, 1.66));
     }
     private static final Rotation2d targetAngle = Rotation2d.fromDegrees(180);
 
     // Speed at which the robot tries to go
     // TODO-Mason: Might want to adjust this before running it inside house
-    private static final double VELOCITY = 0.3;
+    private static final double VELOCITY = 0.4;
 
     // Position tolerance in meters, must be larger than pathfinding tile
     private static final double TOLERANCE = 0.175;
@@ -87,7 +93,6 @@ public final class FollowPathCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        drive.resetPose(new Pose2d());
         turnPID.reset(drive.getPose().getRotation().getRadians());
     }
 
@@ -114,6 +119,8 @@ public final class FollowPathCommand extends CommandBase {
                 target = point;
                 break;
             }
+
+            target = point; // FIXME: Hotfix maybe breaking?
         }
 
         // If we aren't near the path at all, we need to wait for the pathfinder to make a valid path

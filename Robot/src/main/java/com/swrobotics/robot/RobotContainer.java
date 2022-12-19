@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
@@ -109,7 +110,13 @@ public class RobotContainer {
         for (Color color : Color.values()) {
             // eventMap.put(color.name(), new PrintCommand("Color: " + color.name()));
             System.out.println("Add color: " + color.name());
-            eventMap.put(color.name(), new LightCommand(m_lights, color, 0.02));
+            // eventMap.put(color.name(), new LightCommand(m_lights, color, 0.02));
+            eventMap.put(color.name(), new CommandBase() {
+                @Override
+                public void initialize() {
+                    m_lights.setColor(color);
+                }
+            });
         }
 
         eventMap.put("marker1", new PrintCommand("Passed marker 1"));
