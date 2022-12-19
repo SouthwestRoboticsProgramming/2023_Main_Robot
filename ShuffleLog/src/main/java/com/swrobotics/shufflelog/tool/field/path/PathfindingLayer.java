@@ -357,12 +357,53 @@ public final class PathfindingLayer implements FieldLayer {
 
         ImGui.tableNextColumn();
         boolean open = ImGui.treeNodeEx(id, flags);
-        if (ImGui.isItemHovered()) hoveredNode = grid;
+        if (ImGui.isItemHovered()) hoveredNode = union;
+        if (ImGui.beginPopupContextItem()) {
+            Grid addedGrid = null;
+
+            if (ImGui.selectable("Add Bitfield Grid")) {
+                BitfieldGrid b = new BitfieldGrid(UUID.randomUUID());
+                b.register(this);
+                addedGrid = b;
+            }
+
+            if (ImGui.selectable("Add Shape Grid")) {
+                ShapeGrid s = new ShapeGrid(UUID.randomUUID());
+                s.register(this);
+                addedGrid = s;
+            }
+
+            if (ImGui.selectable("Add Grid Union")) {
+                GridUnion u = new GridUnion(UUID.randomUUID());
+                u.register(this);
+                addedGrid = u;
+            }
+
+            if (union != this.grid) {
+                ImGui.separator();
+
+                if (ImGui.selectable("Delete")) {
+                    removeGrid(union);
+                }
+            }
+
+            if (addedGrid != null) {
+                union.addGrid(addedGrid);
+                MessageBuilder builder = msg.prepare(MSG_ADD_GRID);
+                builder.addLong(union.getId().getMostSignificantBits());
+                builder.addLong(union.getId().getLeastSignificantBits());
+                addedGrid.write(builder);
+                builder.send();
+                needsRefreshCellData = true;
+            }
+
+            ImGui.endPopup();
+        }
         ImGui.tableNextColumn();
         ImGui.textDisabled(union.getId().toString());
 
         if (open) {
-            for (Grid grid : union.getChildren()) {
+            for (Grid grid : new ArrayList<>(union.getChildren())) {
                 showGrid(grid, false);
             }
             ImGui.treePop();
@@ -374,6 +415,12 @@ public final class PathfindingLayer implements FieldLayer {
         ImGui.tableNextColumn();
         ImGui.treeNodeEx(id, ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
         if (ImGui.isItemHovered()) hoveredNode = grid;
+        if (this.grid != grid && ImGui.beginPopupContextItem()) {
+            if (ImGui.selectable("Delete")) {
+                removeGrid(grid);
+            }
+            ImGui.endPopup();
+        }
         ImGui.tableNextColumn();
         ImGui.textDisabled(grid.getId().toString());
     }
@@ -407,6 +454,13 @@ public final class PathfindingLayer implements FieldLayer {
                 r.height.set(1);
                 r.rotation.set(0);
                 addedShape = r;
+            }
+
+            if (this.grid != grid) {
+                ImGui.separator();
+                if (ImGui.selectable("Delete")) {
+                    removeGrid(grid);
+                }
             }
 
             if (addedShape != null) {
@@ -447,6 +501,27 @@ public final class PathfindingLayer implements FieldLayer {
         msg.prepare(MSG_REMOVE_SHAPE)
                 .addLong(shape.getId().getMostSignificantBits())
                 .addLong(shape.getId().getLeastSignificantBits())
+                .send();
+        needsRefreshCellData = true;
+    }
+
+    private void removeGrid(Grid grid) {
+        // Depth-first remove children
+        if (grid instanceof GridUnion) {
+            for (Grid child : new ArrayList<>(((GridUnion) grid).getChildren())) {
+                removeGrid(child);
+            }
+        } else if (grid instanceof ShapeGrid) {
+            for (Shape shape : new ArrayList<>(((ShapeGrid) grid).getShapes())) {
+                removeShape((ShapeGrid) grid, shape);
+            }
+        }
+
+        idToGrid.remove(grid.getId());
+        grid.getParent().removeGrid(grid);
+        msg.prepare(MSG_REMOVE_GRID)
+                .addLong(grid.getId().getMostSignificantBits())
+                .addLong(grid.getId().getLeastSignificantBits())
                 .send();
         needsRefreshCellData = true;
     }

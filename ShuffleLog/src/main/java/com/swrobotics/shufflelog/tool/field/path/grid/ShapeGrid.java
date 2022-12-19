@@ -1,5 +1,6 @@
 package com.swrobotics.shufflelog.tool.field.path.grid;
 
+import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.shufflelog.tool.field.path.PathfindingLayer;
 import com.swrobotics.shufflelog.tool.field.path.shape.Shape;
@@ -34,5 +35,11 @@ public final class ShapeGrid extends Grid {
         for (Shape shape : shapes) {
             shape.register(layer);
         }
+    }
+
+    @Override
+    public void write(MessageBuilder builder) {
+        super.write(builder);
+        builder.addByte(SHAPE);
     }
 }
