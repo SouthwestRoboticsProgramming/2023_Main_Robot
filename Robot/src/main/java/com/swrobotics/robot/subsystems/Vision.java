@@ -25,7 +25,7 @@ public class Vision extends SubsystemBase {
     private final TreeMap<Integer, Pose3d> targets = new TreeMap<>();
 
     // SimVisionSystem acts as a replacement for PhotonVision server
-    // private final SimVisionSystem2022 simulated;
+    private final SimVisionSystem2022 simulated;
 
     private final PhotonCamera camera = new PhotonCamera("Front"); // PhotonVision on Limelight must be called "Front"
     private final DrivetrainSubsystem drive;
@@ -38,13 +38,15 @@ public class Vision extends SubsystemBase {
         targets.put(WINDOW_ID, WINDOW_POSE);
         targets.put(3, TEST_POSE); // FIXME: Remove
 
-        // simulated = new SimVisionSystem2022("Front", CAMERA_DIAG_FOV, CAMERA_POSITION, 10, CAMERA_RESOLUTION[0],
-        //         CAMERA_RESOLUTION[1], PIPELINE_MIN_TARGET_AREA);
+        if (RobotBase.isSimulation()) {
+            simulated = new SimVisionSystem2022("Front", CAMERA_DIAG_FOV, CAMERA_POSITION, 10, CAMERA_RESOLUTION[0],
+                    CAMERA_RESOLUTION[1], PIPELINE_MIN_TARGET_AREA);
 
-        // simulated.addSimVisionTarget(DOOR_TARGET);
-        // simulated.addSimVisionTarget(WINDOW_TARGET);
-
-
+            simulated.addSimVisionTarget(DOOR_TARGET);
+            simulated.addSimVisionTarget(WINDOW_TARGET);
+        } else {
+            simulated = null;
+        }
 
         SmartDashboard.putBoolean("Calibrate with vision", true);
     }
@@ -56,7 +58,7 @@ public class Vision extends SubsystemBase {
         // outdated measurements
         if (RobotBase.isSimulation()) {
             // Run calculations to figure out what targets the camera would be able to see
-            // simulated.processFrame(drive.getPose());
+            simulated.processFrame(drive.getPose());
         }
 
         SmartDashboard.putBoolean("Target Found", false);
@@ -70,7 +72,7 @@ public class Vision extends SubsystemBase {
             return;
         }
         
-        // If the target was racked really poorly, don't use it
+        // If the target was tracked really poorly, don't use it
         double ambiguity = results.getBestTarget().getPoseAmbiguity();
         if (ambiguity > MAX_AMBIGUITY || ambiguity < 0) {
             System.out.println("Too ambiguous");
