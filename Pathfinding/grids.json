@@ -14,8 +14,8 @@
           "type": "RECTANGLE",
           "x": 0.0,
           "y": 0.0,
-          "width": 6.0,
-          "height": 10.0,
+          "width": 8.2296,
+          "height": 16.4592,
           "rotation": 0.0,
           "inverted": true
         },
@@ -24,7 +24,16 @@
           "type": "CIRCLE",
           "x": 0.0,
           "y": 4.0,
-          "radius": 1.0
+          "radius": 2.0
+        },
+        {
+          "type": "RECTANGLE",
+          "x": 0.0,
+          "y": -3.0,
+          "width": 4.0,
+          "height": 1.0,
+          "rotation": 0.7853981633974483,
+          "inverted": false
         }
       ]
     }

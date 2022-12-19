@@ -1,5 +1,6 @@
 package com.swrobotics.shufflelog.tool.field.path.grid;
 
+import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.shufflelog.tool.field.path.PathfindingLayer;
 
@@ -19,11 +20,21 @@ public final class GridUnion extends Grid {
         return children;
     }
 
+    public void addGrid(Grid grid) {
+        children.add(grid);
+        grid.setParent(this);
+    }
+
+    public void removeGrid(Grid grid) {
+        children.remove(grid);
+        grid.setParent(null);
+    }
+
     @Override
     public void readContent(MessageReader reader) {
         int count = reader.readInt();
         for (int i = 0; i < count; i++) {
-            children.add(Grid.read(reader));
+            addGrid(Grid.read(reader));
         }
     }
 
@@ -33,5 +44,11 @@ public final class GridUnion extends Grid {
         for (Grid child : children) {
             child.register(layer);
         }
+    }
+
+    @Override
+    public void write(MessageBuilder builder) {
+        super.write(builder);
+        builder.addByte(UNION);
     }
 }
