@@ -147,8 +147,13 @@ public final class AutoBlocks {
                 String name = file.getName();
                 name = name.substring(0, name.length() - PERSISTENCE_FILE_EXT.length());
 
-                PersistentSequence seq = new PersistentSequence(name, file);
-                sequences.put(name, seq);
+                try {
+                    PersistentSequence seq = new PersistentSequence(name, file);
+                    sequences.put(name, seq);
+                } catch (Throwable t) {
+                    System.err.println("Failed to read block auto file: " + name);
+                    t.printStackTrace();
+                }
             }
         }
         updateSelectorOptions();

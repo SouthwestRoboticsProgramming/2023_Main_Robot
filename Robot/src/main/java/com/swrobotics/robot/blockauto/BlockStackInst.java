@@ -17,7 +17,10 @@ public final class BlockStackInst {
         for (int i = 0; i < len; i++) {
             String name = reader.readString();
             BlockDef def = AutoBlocks.getBlockDef(name);
-            inst.blocks.add(def.readInstance(reader));
+            if (def != null)
+                inst.blocks.add(def.readInstance(reader));
+            else
+                System.err.println("Block is not defined: " + name);
         }
 
         return inst;

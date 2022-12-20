@@ -14,26 +14,22 @@ public final class PersistentSequence {
     private final File file;
     private final BlockStackInst stack;
 
-    public PersistentSequence(String name, File file) {
+    public PersistentSequence(String name, File file) throws IOException {
         this.name = name;
         this.file = file;
-        try {
-            FileInputStream in = new FileInputStream(file);
-            ByteArrayOutputStream b = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = in.read(buffer)) > 0) {
-                b.write(buffer, 0, read);
-            }
-            in.close();
-
-            MessageReader reader = new MessageReader(b.toByteArray());
-            stack = BlockStackInst.readFromMessenger(reader);
-
-            System.out.println("Block auto: Loaded persistent sequence from '" + file.getName() + "'");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        FileInputStream in = new FileInputStream(file);
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int read;
+        while ((read = in.read(buffer)) > 0) {
+            b.write(buffer, 0, read);
         }
+        in.close();
+
+        MessageReader reader = new MessageReader(b.toByteArray());
+        stack = BlockStackInst.readFromMessenger(reader);
+
+        System.out.println("Block auto: Loaded persistent sequence from '" + file.getName() + "'");
     }
 
     public PersistentSequence(String name, File file, BlockStackInst stack) {
