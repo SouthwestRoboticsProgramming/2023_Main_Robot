@@ -1,5 +1,6 @@
 package com.swrobotics.robot.blockauto;
 
+import com.swrobotics.lib.net.NTMultiSelect;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;

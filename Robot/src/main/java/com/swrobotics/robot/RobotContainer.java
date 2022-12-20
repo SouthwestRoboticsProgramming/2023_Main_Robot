@@ -11,16 +11,18 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.swrobotics.messenger.client.MessengerClient;
+import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.FollowPathCommand;
 import com.swrobotics.robot.commands.LightCommand;
-import com.swrobotics.robot.commands.LightTest;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Vision;
 import com.swrobotics.robot.subsystems.Lights.Color;
 
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Button;
 
 /**
@@ -40,6 +44,11 @@ import edu.wpi.first.wpilibj2.command.button.Button;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+    private static final String MESSENGER_HOST_ROBOT = "10.21.29.3";
+    private static final String MESSENGER_HOST_SIM = "localhost";
+    private static final int MESSENGER_PORT = 5805;
+    private static final String MESSENGER_NAME = "Robot";
+
     private final SendableChooser<Command> autoSelector;
 
     // The robot's subsystems and commands are defined here...
@@ -48,6 +57,11 @@ public class RobotContainer {
     private final Vision m_vision = new Vision(m_drivetrainSubsystem);
 
     private final XboxController m_controller = new XboxController(0);
+
+    private final MessengerClient messenger;
+
+    // A bit of a hack so that it gets the command on auto init
+    private final Command blockAutoCommand;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -69,6 +83,16 @@ public class RobotContainer {
 
         // Configure the button bindings
         configureButtonBindings();
+
+        // Initialize Messenger
+        messenger = new MessengerClient(
+                RobotBase.isSimulation() ? MESSENGER_HOST_SIM : MESSENGER_HOST_ROBOT,
+                MESSENGER_PORT,
+                MESSENGER_NAME
+        );
+
+        // Initialize block auto
+        AutoBlocks.init(messenger, this);
 
         // Generate autos to choose from
         Command blankAuto = new InstantCommand();
@@ -115,6 +139,8 @@ public class RobotContainer {
 
         Command pathTest = new FollowPathCommand(m_drivetrainSubsystem, m_lights);
 
+        blockAutoCommand = new InstantCommand();
+
         // Create a chooser to select the autonomous
         autoSelector= new SendableChooser<>();
         autoSelector.setDefaultOption("No Auto", blankAuto);
@@ -127,6 +153,7 @@ public class RobotContainer {
         autoSelector.addOption("Door to Window", doorToWindow);
         autoSelector.addOption("Follow Path", pathTest);
         autoSelector.addOption("Just lights", justLights);
+        autoSelector.addOption("Block Auto", blockAutoCommand);
         SmartDashboard.putData(autoSelector);
     }
 
@@ -151,7 +178,9 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return autoSelector.getSelected();
+        Command cmd = autoSelector.getSelected();
+        // FIXME: Don't do this
+        return cmd == blockAutoCommand ? AutoBlocks.getSelectedAutoCommand() : cmd;
     }
 
     private static double deadband(double value, double deadband) {
@@ -178,5 +207,9 @@ public class RobotContainer {
 
     private static ArrayList<PathPlannerTrajectory> getPath(String name) {
         return PathPlanner.loadPathGroup(name, new PathConstraints(0.2, 0.1)); // FIXME: Add throws and catch
+    }
+
+    public MessengerClient getMessenger() {
+        return messenger;
     }
 }
