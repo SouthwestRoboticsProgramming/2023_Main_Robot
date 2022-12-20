@@ -1,9 +1,9 @@
 package com.swrobotics.shufflelog.tool.blockauto.part;
 
+import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.shufflelog.tool.blockauto.BlockAutoTool;
-import com.swrobotics.shufflelog.util.Vec2d;
 import imgui.ImGui;
 import imgui.type.ImDouble;
 

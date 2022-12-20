@@ -6,7 +6,6 @@ import com.swrobotics.shufflelog.tool.blockauto.BlockAutoTool;
 import com.swrobotics.shufflelog.tool.blockauto.BlockStackInst;
 import imgui.ImGui;
 
-// TODO
 public final class BlockStackPart extends ParamPart {
     @Override
     public Object getDefault() {

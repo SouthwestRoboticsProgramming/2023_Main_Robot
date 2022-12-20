@@ -80,7 +80,7 @@ public final class BlockAutoTool implements Tool {
     public BlockAutoTool(ShuffleLog log) {
         INSTANCE = this;
 
-        msg = log.getMsg();
+        msg = log.getMessenger();
         msg.addHandler(MSG_BLOCK_DEFS, this::onBlockDefs);
         msg.addHandler(MSG_SEQUENCES, this::onSequences);
         msg.addHandler(MSG_SEQUENCE_DATA, this::onSequenceData);

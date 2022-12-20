@@ -92,7 +92,7 @@ public final class BlockInst {
         int paramIdx = 0;
         boolean first = true;
         List<BlockPart> parts = def.getParts();
-        boolean isStack = false, shouldSameLine = true;
+        boolean isStack, shouldSameLine = true;
         for (int id = 0; id < parts.size(); id++) {
             if (first) {
                 if (firstElemRequiresAlignToFrame)
