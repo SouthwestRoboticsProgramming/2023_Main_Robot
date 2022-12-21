@@ -5,10 +5,14 @@ import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.RobotContainer;
+import com.swrobotics.robot.subsystems.Lights;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 import java.io.File;
@@ -35,8 +39,7 @@ public final class AutoBlocks {
 
     public static Command getSelectedAutoCommand() {
         PersistentSequence seq = SELECTED_AUTO.get();
-        if (seq == null)
-            return null;
+        if (seq == null) return null;
 
         return seq.getStack().toCommand(robot);
     }
@@ -50,6 +53,7 @@ public final class AutoBlocks {
                 .paramDouble(1)
                 .text("seconds")
                 .creator((params, robot) -> new WaitCommand((double) params[0]));
+
         control.newBlock("union")
                 .text("Union of")
                 .paramBlockStack()
@@ -59,6 +63,24 @@ public final class AutoBlocks {
                         ((BlockStackInst) params[0]).toCommand(robot),
                         ((BlockStackInst) params[1]).toCommand(robot)
                 ));
+
+        control.newBlock("lights")
+                .text("Set lights to ")
+                .paramEnum(Lights.Color.class, Lights.Color.BLUE)
+                .creator((params, robot) -> new CommandBase() {
+
+                    @Override
+                    public void initialize() {
+                        System.out.println("Setting lights to " + (Lights.Color) params[0]);
+                        robot.m_lights.setColor((Lights.Color) params[0]);
+                    }
+
+                    @Override
+                    public boolean isFinished() {
+                        return true;
+                    }
+                    
+                });
         
         initRegistryAndValidate();
     }

@@ -53,7 +53,7 @@ public class RobotContainer {
 
     // The robot's subsystems and commands are defined here...
     private final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
-    private final Lights m_lights = new Lights();
+    public final Lights m_lights = new Lights();
     private final Vision m_vision = new Vision(m_drivetrainSubsystem);
 
     private final XboxController m_controller = new XboxController(0);
@@ -179,8 +179,14 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         Command cmd = autoSelector.getSelected();
-        // FIXME: Don't do this
-        return cmd == blockAutoCommand ? AutoBlocks.getSelectedAutoCommand() : cmd;
+        
+        // FIXME: Don't do this 
+        if (cmd == blockAutoCommand) {
+            System.out.println("Block autonomous detected, running command");
+            return AutoBlocks.getSelectedAutoCommand();
+        }
+        
+        return cmd;
     }
 
     private static double deadband(double value, double deadband) {
