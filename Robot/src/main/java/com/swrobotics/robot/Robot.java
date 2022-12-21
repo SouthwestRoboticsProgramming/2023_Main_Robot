@@ -82,9 +82,11 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
+    System.out.println(m_autonomousCommand);
+
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
-      SequentialCommandGroup finalCommand = m_autonomousCommand.andThen(
+      Command finalCommand = m_autonomousCommand;/* .andThen(
           new PrintCommand("Auto Completed!"),
           new CommandBase() {
             @Override
@@ -99,6 +101,7 @@ public class Robot extends TimedRobot {
             }
 
           });
+        */
       // m_autonomousCommand.schedule();
       finalCommand.schedule();
       m_autonomousTimer.stop();
