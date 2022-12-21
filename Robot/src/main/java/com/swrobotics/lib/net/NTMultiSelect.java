@@ -38,6 +38,9 @@ public abstract class NTMultiSelect<T> extends NTEntry<T> {
             data[i] = nameOf(options.get(i));
         }
         metadata.set(data);
+
+        // If the current value is invalid, set to default
+        set(get());
     }
 
     @Override

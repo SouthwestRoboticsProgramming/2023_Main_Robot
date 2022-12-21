@@ -170,7 +170,10 @@ public final class AutoBlocks {
     }
 
     private static void updateSelectorOptions() {
-        SELECTED_AUTO.setOptions(new ArrayList<>(sequences.values()));
+        List<PersistentSequence> options = new ArrayList<>(sequences.values());
+        options.add(null); // Case to fall back to if the value is invalid
+
+        SELECTED_AUTO.setOptions(options);
     }
 
     private static void onQueryBlockDefs(String type, MessageReader reader) {
