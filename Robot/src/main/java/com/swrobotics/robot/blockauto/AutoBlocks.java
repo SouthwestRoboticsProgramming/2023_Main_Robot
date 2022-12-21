@@ -64,7 +64,8 @@ public final class AutoBlocks {
                         ((BlockStackInst) params[1]).toCommand(robot)
                 ));
 
-        control.newBlock("lights")
+        BlockCategory lights = defineCategory("Lights");
+        lights.newBlock("lights")
                 .text("Set lights to ")
                 .paramEnum(Lights.Color.class, Lights.Color.BLUE)
                 .creator((params, robot) -> new CommandBase() {
