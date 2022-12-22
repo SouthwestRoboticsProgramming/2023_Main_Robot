@@ -5,7 +5,6 @@ import java.util.HashMap;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
-import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 import com.swrobotics.robot.VisionConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -83,6 +82,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     };
     
     private final SwerveDriveOdometry odometry;
+
+    private ChassisSpeeds speeds = new ChassisSpeeds();
     
     public DrivetrainSubsystem() {
         SmartDashboard.putData("Field", field);
@@ -122,10 +123,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
+        this.speeds = speeds;
+    }
 
-        setModuleStates(states);
+    public void combineChassisSpeeds(ChassisSpeeds addition) {
+        speeds = new ChassisSpeeds(
+            speeds.vxMetersPerSecond + addition.vxMetersPerSecond,
+            speeds.vyMetersPerSecond + addition.vyMetersPerSecond,
+            speeds.omegaRadiansPerSecond + addition.omegaRadiansPerSecond
+        );
     }
 
     public Pose2d getPose() {
@@ -203,6 +209,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        // Set this iteration's ChassisSpeeds
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
+
+        setModuleStates(states);
+
+        // Reset the ChassisSpeeds for next iteration
+        speeds = new ChassisSpeeds();
+
         // Freshly estimated the new rotation based off of the wheels
         if (RobotBase.isSimulation()) {
             ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
