@@ -214,7 +214,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
 
         setModuleStates(states);
-
+        double vx = speeds.vxMetersPerSecond;
+        double vy = speeds.vyMetersPerSecond;
+        double omega = speeds.omegaRadiansPerSecond;
+        if(vx == 0 && vy == 0 && omega == 0) {
+            // TODO: Implement Enum Reading, and Switching
+        }
         // Reset the ChassisSpeeds for next iteration
         speeds = new ChassisSpeeds();
 
