@@ -2,6 +2,7 @@ package com.swrobotics.robot.blockauto;
 
 import com.swrobotics.lib.net.NTMultiSelect;
 import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
+import com.swrobotics.lib.swerve.commands.TurnBlindCommand;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
@@ -14,7 +15,6 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 import com.swrobotics.mathlib.Angle;
@@ -90,13 +90,23 @@ public final class AutoBlocks {
         BlockCategory drive = defineCategory("Drive");
         drive.newBlock("blind drive for time")
                 .text("Drive at ")
-                .paramDouble(1)
+                .paramDouble(1.0)
                 .text(" MPS at ")
-                .paramAngle(Mode.CW_DEG, 0)
+                .paramAngle(Mode.CW_DEG, 0.0)
                 .text(" cw deg for ")
-                .paramDouble(1)
+                .paramDouble(1.0)
                 .text(" seconds")
-                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], true));
+                .text("Robot relative: ")
+                .paramBoolean(false)
+                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], (boolean) params[3]));
+
+        drive.newBlock("blind turn for time")
+                .text("Turn at ")
+                .paramDouble(0.0)
+                .text(" radians per second for ")
+                .paramDouble(1.0)
+                .text(" seconds")
+                .creator((params, robot) -> new TurnBlindCommand(robot, (double) params[0], (double) params[1]));
         
         initRegistryAndValidate();
     }
