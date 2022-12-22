@@ -52,9 +52,9 @@ public class RobotContainer {
     private final SendableChooser<Command> autoSelector;
 
     // The robot's subsystems and commands are defined here...
-    private final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
+    public final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
     public final Lights m_lights = new Lights();
-    private final Vision m_vision = new Vision(m_drivetrainSubsystem);
+    public final Vision m_vision = new Vision(m_drivetrainSubsystem);
 
     private final XboxController m_controller = new XboxController(0);
 
@@ -118,7 +118,7 @@ public class RobotContainer {
             eventMap.put(color.name(), new CommandBase() {
                 @Override
                 public void initialize() {
-                    m_lights.setColor(color);
+                    m_lights.set(color);
                 }
             });
         }

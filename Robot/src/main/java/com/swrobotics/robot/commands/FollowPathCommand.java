@@ -3,6 +3,8 @@ package com.swrobotics.robot.commands;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
+import com.swrobotics.robot.subsystems.Lights.IndicatorMode;
+
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -129,7 +131,7 @@ public final class FollowPathCommand extends CommandBase {
             drive.setChassisSpeeds(new ChassisSpeeds(0, 0, 0));
 
             // Indicate that this is what is happening
-            lights.setColor(Lights.Color.RED);
+            lights.set(IndicatorMode.FAILED);
             return;
         }
 
@@ -157,7 +159,7 @@ public final class FollowPathCommand extends CommandBase {
 
         // Move
         drive.setChassisSpeeds(speeds);
-        lights.setColor(Lights.Color.GREEN); // Indicate it is working correctly
+        lights.set(Lights.Color.GREEN); // Indicate it is working correctly
     }
 
     @Override

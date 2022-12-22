@@ -1,10 +1,12 @@
 package com.swrobotics.robot.blockauto;
 
 import com.swrobotics.lib.net.NTMultiSelect;
+import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.RobotContainer;
+import com.swrobotics.robot.blockauto.part.AnglePart.Mode;
 import com.swrobotics.robot.subsystems.Lights;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -14,6 +16,8 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+
+import com.swrobotics.mathlib.Angle;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -73,7 +77,7 @@ public final class AutoBlocks {
                     @Override
                     public void initialize() {
                         System.out.println("Setting lights to " + (Lights.Color) params[0]);
-                        robot.m_lights.setColor((Lights.Color) params[0]);
+                        robot.m_lights.set((Lights.Color) params[0]);
                     }
 
                     @Override
@@ -82,6 +86,17 @@ public final class AutoBlocks {
                     }
                     
                 });
+        
+        BlockCategory drive = defineCategory("Drive");
+        drive.newBlock("blind drive for time")
+                .text("Drive at ")
+                .paramDouble(1)
+                .text(" MPS at ")
+                .paramAngle(Mode.CW_DEG, 0)
+                .text(" cw deg for ")
+                .paramDouble(1)
+                .text(" seconds")
+                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], true));
         
         initRegistryAndValidate();
     }

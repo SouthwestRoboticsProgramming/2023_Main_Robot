@@ -1,5 +1,6 @@
 package com.swrobotics.robot.commands;
 
+import com.swrobotics.lib.commands.TimedCommand;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Lights.Color;
 
@@ -17,14 +18,14 @@ public class LightCommand extends TimedCommand {
     @Override
     public void initialize() {
         super.initialize();
-        lights.setColor(color);
+        lights.set(color);
         System.out.println("Lights at color: " + color);
     }
 
     @Override
     public void end(boolean interrupted) {
         super.end(interrupted);
-        lights.setColor(Color.OFF);
+        lights.set(Color.OFF);
     }
     
 }
