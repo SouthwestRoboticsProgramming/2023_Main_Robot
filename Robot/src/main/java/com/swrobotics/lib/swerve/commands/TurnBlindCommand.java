@@ -15,42 +15,30 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 
 import com.swrobotics.robot.subsystems.Lights.IndicatorMode;
 
-public class DriveBlindCommand extends TimedCommand {
+public class TurnBlindCommand extends TimedCommand {
     private final DrivetrainSubsystem drive;
     private final Lights lights;
 
-    private Translation2d translation;
-    private final boolean robotRelative;
+    private final ChassisSpeeds output;
 
-    public DriveBlindCommand(RobotContainer robot, Angle direction, double velocityMetersPerSecond, double runtimeSeconds, boolean robotRelative) {
+    // FIXME: Not tested with rotation
+    public TurnBlindCommand(RobotContainer robot, double omegaRadiansPerSecond, double runtimeSeconds) {
         super(runtimeSeconds);
         drive = robot.m_drivetrainSubsystem;
         lights = robot.m_lights;
 
-        this.robotRelative = robotRelative;
 
-        Rotation2d directionWPI = direction.ccw().rotation2d();
-        Translation2d justVelocity = new Translation2d(velocityMetersPerSecond, 0);
-        Translation2d withDirection = justVelocity.rotateBy(directionWPI);
-        translation = withDirection;
+        output = new ChassisSpeeds(0, 0, omegaRadiansPerSecond);
     }
 
     @Override
     public void initialize() {
-        // Make it relative to the current angle
-        if (robotRelative) {
-            translation = translation.rotateBy(drive.getGyroscopeRotation());
-        }
-
         super.initialize();
         lights.set(IndicatorMode.IN_PROGRESS);
     }
 
     @Override
     public void execute() {
-        // Add a ChassisSpeeds with just translation to the total
-        ChassisSpeeds output = ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(), 0, drive.getGyroscopeRotation());
-
         drive.combineChassisSpeeds(output);
     }
 
