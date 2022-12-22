@@ -6,6 +6,7 @@ import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.blockauto.part.AnglePart;
 import com.swrobotics.robot.blockauto.part.BlockPart;
 import com.swrobotics.robot.blockauto.part.BlockStackPart;
+import com.swrobotics.robot.blockauto.part.BooleanPart;
 import com.swrobotics.robot.blockauto.part.DoublePart;
 import com.swrobotics.robot.blockauto.part.EnumPart;
 import com.swrobotics.robot.blockauto.part.FieldPointPart;
@@ -47,6 +48,11 @@ public final class BlockDef {
 
     public BlockDef paramDouble(double def) {
         parts.add(new DoublePart(def));
+        return this;
+    }
+
+    public BlockDef paramBoolean(boolean def) {
+        parts.add(new BooleanPart(def));
         return this;
     }
 
