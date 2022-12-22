@@ -11,6 +11,10 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.swrobotics.lib.schedule.CommandUnion;
+import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
+import com.swrobotics.lib.swerve.commands.TurnBlindCommand;
+import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
@@ -29,10 +33,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Button;
+
+import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.CWAngle;
+
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -134,6 +143,13 @@ public class RobotContainer {
         Command tinyAuto = builder.fullAuto(getPath("Tiny Path"));
         Command doorToWindow = builder.fullAuto(getPath("Door to Window"));
 
+        Command blindDrive = new DriveBlindCommand(this, CWAngle.deg(90), 1, 1, true);
+        Command blindTurn = new TurnBlindCommand(this, Math.PI, 2.3);
+
+        Command blindCombo = new ParallelCommandGroup(blindDrive, blindTurn);
+
+        Command turnToAngle = new TurnToAngleCommand(this, CWAngle.deg(90), false).withTimeout(5);
+
         m_drivetrainSubsystem.showTrajectory(getPath("Door to Window").get(0));
         // m_drivetrainSubsystem.showTrajectory(getPath("Small Path").get(0));
 
@@ -154,6 +170,9 @@ public class RobotContainer {
         autoSelector.addOption("Follow Path", pathTest);
         autoSelector.addOption("Just lights", justLights);
         autoSelector.addOption("Block Auto", blockAutoCommand);
+        autoSelector.addOption("Blind drive", blindDrive);
+        autoSelector.addOption("Blind combo", blindCombo);
+        autoSelector.addOption("Turn to angle", turnToAngle);
         SmartDashboard.putData(autoSelector);
     }
 
