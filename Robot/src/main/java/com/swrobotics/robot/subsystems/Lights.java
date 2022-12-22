@@ -54,6 +54,8 @@ public class Lights {
         STROBE_BLUE(-0.09),
         STROBE_GOLD(-0.07),
         STROBE_WHITE(-0.05),
+
+        OFF(0.0),
         // TODO: Custom patterns
         HOT_PINK(0.57),
         DARK_RED(0.59),
@@ -76,7 +78,10 @@ public class Lights {
         WHITE(0.93),
         GRAY(0.95),
         DARK_GRAY(0.97),
-        BLACK(0.99);
+        BLACK(0.99),
+
+        /** Do not set the lights to this value, they won't do anything */
+        UNKNOWN(0.0);
 
 
 
@@ -91,10 +96,74 @@ public class Lights {
         }
     }
 
+    /**
+     * Allows constants to be set up for consistent colors across subsystems
+     */
+    public enum IndicatorMode {
+        OFF(Color.BLACK, 0),
+        IN_PROGRESS(Color.GOLD, 1),
+        GOOD(Color.DARK_GREEN, 2),
+        SUCCESS(Color.GREEN, 3),
+        FAILED(Color.RED, 3),
+        CRITICAL_FAILED(Color.STROBE_RED, 4);
+
+        private final Color color;
+        private final int severity;
+
+        private IndicatorMode(Color color, int severity) {
+            this.color = color;
+            this.severity = severity;
+        }
+
+        public Color getColor() {
+            return color;
+        }
+
+        public int getSeverity() {
+            return severity;
+        }
+    }
+
     private final Spark lights = new Spark(0); // The REV Blinkin is treated like a spark max
 
-    public void setColor(Color color) {
+    private double currentOutput;
+    private Color currentColor = Color.OFF;
+    private IndicatorMode currentMode = IndicatorMode.OFF;
+
+    public void set(double output) {
+        lights.set(output);
+
+        currentOutput = output;
+        currentColor = Color.UNKNOWN;
+        currentMode = IndicatorMode.OFF;
+    }
+
+    /**
+     * Set the color of the lights without respect for the color already set
+     * Use this when trying to make the robot look cool. If you are indicating something, use IndicatorMode instead.
+     * @param color
+     */
+    public void set(Color color) {
         lights.set(color.getValue());
+
+        currentOutput = color.getValue();
+        currentColor = color;
+        currentMode = IndicatorMode.OFF;
+    }
+
+    public void set(IndicatorMode mode) {
+        // The mode must be of higher importance to be set
+        if (mode.getSeverity() >= getMode().getSeverity()) {
+            set(mode.getColor());
+        }
+
+        currentOutput = mode.getColor().getValue();
+        currentColor = mode.getColor();
+        currentMode = mode;
+    }
+
+    public IndicatorMode getMode() {
+        return currentMode;
     }
 
     public void setDebug(double value) {
