@@ -159,7 +159,7 @@ public final class FollowPathCommand extends CommandBase {
 
         // Move
         drive.setChassisSpeeds(speeds);
-        lights.set(Lights.Color.GREEN); // Indicate it is working correctly
+        lights.set(IndicatorMode.GOOD); // Indicate it is working correctly
     }
 
     @Override
