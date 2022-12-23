@@ -88,7 +88,7 @@ public final class AutoBlocks {
                     
                 });
         
-        BlockCategory drive = defineCategory("Drive2ElectricBoogaloo");
+        BlockCategory drive = defineCategory("Drive");
         drive.newBlock("blind drive for time")
                 .text("Drive at ")
                 .paramDouble(1.0)
@@ -98,8 +98,8 @@ public final class AutoBlocks {
                 .paramDouble(1.0)
                 .text(" seconds")
                 .text("Robot relative: ")
-                .paramBoolean(false)
-                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], (boolean) params[3]));
+                // .paramBoolean(false)
+                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], false));
 
         drive.newBlock("blind turn for time")
                 .text("Turn at ")
@@ -114,8 +114,8 @@ public final class AutoBlocks {
                 .paramAngle(Mode.CW_DEG, 0)
                 .text(" cw deg")
                 .text("Robot relative: ")
-                .paramBoolean(false)
-                .creator((params, robot) -> new TurnToAngleCommand(robot, (Angle) params[0], (boolean) params[1]));
+                // .paramBoolean(false)
+                .creator((params, robot) -> new TurnToAngleCommand(robot, (Angle) params[0], false));
         
         initRegistryAndValidate();
     }
