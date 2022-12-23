@@ -1,6 +1,7 @@
-package com.swrobotics.robot.commands;
+package com.swrobotics.lib.swerve.commands;
 
 import com.swrobotics.mathlib.Vec2d;
+import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Pathfinder;
@@ -29,29 +30,19 @@ public final class PathfindToPointCommand extends CommandBase {
     private final Lights lights; // For debugging; TODO: Remove
 
     private final Vec2d goal;
-    private final ProfiledPIDController turnPID;
-    private final Rotation2d targetAngle;
 
-    public PathfindToPointCommand(DrivetrainSubsystem drive, Pathfinder finder, Lights lights, Vec2d goal, Rotation2d targetAngle) {
-        this.drive = drive;
-        this.finder = finder;
-        this.lights = lights;
+    public PathfindToPointCommand(RobotContainer robot, Vec2d goal) {
+        drive = robot.m_drivetrainSubsystem;
+        finder = robot.m_pathfinder;
+        this.lights = robot.m_lights;
         this.goal = goal;
-        this.targetAngle = targetAngle;
 
         addRequirements(drive);
-
-        turnPID = new ProfiledPIDController(
-                2, 0, 0, // Seems like these work in simulator
-                new TrapezoidProfile.Constraints(6.28, 3.14)
-        );
-        turnPID.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     @Override
     public void initialize() {
         drive.resetPose(new Pose2d(8.2296, 8.2296/2, new Rotation2d()));
-        turnPID.reset(drive.getPose().getRotation().getRadians());
     }
 
     @Override
@@ -116,12 +107,12 @@ public final class PathfindToPointCommand extends CommandBase {
         // Calculate speeds
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                 deltaX, deltaY,
-                turnPID.calculate(currentPose.getRotation().getRadians(), targetAngle.getRadians()),
+                0.0,
                 currentPose.getRotation()
         );
 
         // Move
-        drive.setChassisSpeeds(speeds);
+        drive.combineChassisSpeeds(speeds);
         lights.set(IndicatorMode.GOOD); // Indicate it is working correctly
     }
 
@@ -133,9 +124,6 @@ public final class PathfindToPointCommand extends CommandBase {
                 currentPose.getY()
         );
 
-        boolean positionInTol = currentPosition.distanceToSq(goal) < TOLERANCE * TOLERANCE;
-        boolean angleInTol = Math.abs(targetAngle.minus(currentPose.getRotation()).getRadians()) < ANGLE_TOLERANCE;
-
-        return positionInTol && angleInTol;
+        return currentPosition.distanceToSq(goal) < TOLERANCE * TOLERANCE;
     }
 }
