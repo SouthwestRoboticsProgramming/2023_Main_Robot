@@ -268,6 +268,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
         states[1] = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
         states[2] = new SwerveModuleState(0, Rotation2d.fromDegrees(225));
         states[3] = new SwerveModuleState(0, Rotation2d.fromDegrees(135));
-        return null;
+        return states;
     }
 }
