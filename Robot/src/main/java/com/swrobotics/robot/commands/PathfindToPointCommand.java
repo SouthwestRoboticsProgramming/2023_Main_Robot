@@ -4,6 +4,7 @@ import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Pathfinder;
+import com.swrobotics.robot.subsystems.Lights.IndicatorMode;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -58,7 +59,7 @@ public final class PathfindToPointCommand extends CommandBase {
         finder.setGoal(goal.x, goal.y);
         if (!finder.isPathValid()) {
             System.out.println("Path bad");
-            lights.setColor(Lights.Color.RED);
+            lights.set(Lights.Color.RED);
             return;
         }
         List<Vec2d> path = finder.getPath();
@@ -92,7 +93,7 @@ public final class PathfindToPointCommand extends CommandBase {
             drive.setChassisSpeeds(new ChassisSpeeds(0, 0, 0));
 
             // Indicate that this is what is happening
-            lights.setColor(Lights.Color.GOLD);
+            lights.set(IndicatorMode.FAILED);
             return;
         }
 
@@ -121,7 +122,7 @@ public final class PathfindToPointCommand extends CommandBase {
 
         // Move
         drive.setChassisSpeeds(speeds);
-        lights.setColor(Lights.Color.GREEN); // Indicate it is working correctly
+        lights.set(IndicatorMode.GOOD); // Indicate it is working correctly
     }
 
     @Override

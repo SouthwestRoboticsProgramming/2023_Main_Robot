@@ -211,7 +211,12 @@ public final class MessengerClient {
                     prevServerHeartbeatTimestamp = System.currentTimeMillis();
                 } else {
                     for (Handler handler : handlers) {
-                        handler.handle(type, data);
+                        try {
+                            handler.handle(type, data);
+                        } catch (Throwable t) {
+                            System.err.println("Error in message handler " + t.toString() + ":");
+                            t.printStackTrace();
+                        }
                     }
                 }
             }

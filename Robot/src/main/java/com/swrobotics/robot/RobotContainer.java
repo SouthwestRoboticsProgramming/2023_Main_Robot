@@ -13,6 +13,10 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
+import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
+import com.swrobotics.lib.swerve.commands.TurnBlindCommand;
+import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
+import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.commands.PathfindToPointCommand;
@@ -31,8 +35,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
+
+import com.swrobotics.mathlib.CWAngle;
+
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -52,13 +60,16 @@ public class RobotContainer {
     private final SendableChooser<Command> autoSelector;
 
     // The robot's subsystems and commands are defined here...
-    private final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
-    private final Lights m_lights = new Lights();
-    private final Vision m_vision = new Vision(m_drivetrainSubsystem);
+    public final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
+    public final Lights m_lights = new Lights();
+    public final Vision m_vision = new Vision(m_drivetrainSubsystem);
 
     private final XboxController m_controller = new XboxController(0);
 
     private final MessengerClient messenger;
+
+    // A bit of a hack so that it gets the command on auto init
+    private final Command blockAutoCommand;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -88,6 +99,9 @@ public class RobotContainer {
                 MESSENGER_NAME
         );
 
+        // Initialize block auto
+        AutoBlocks.init(messenger, this);
+
         // Generate autos to choose from
         Command blankAuto = new InstantCommand();
         Command printAuto = new PrintCommand("Auto chooser is working!");
@@ -112,7 +126,7 @@ public class RobotContainer {
             eventMap.put(color.name(), new CommandBase() {
                 @Override
                 public void initialize() {
-                    m_lights.setColor(color);
+                    m_lights.set(color);
                 }
             });
         }
@@ -127,6 +141,13 @@ public class RobotContainer {
         Command lightShow = builder.fullAuto(getPath("Light Show"));
         Command tinyAuto = builder.fullAuto(getPath("Tiny Path"));
         Command doorToWindow = builder.fullAuto(getPath("Door to Window"));
+
+        Command blindDrive = new DriveBlindCommand(this, CWAngle.deg(90), 1, 1, true);
+        Command blindTurn = new TurnBlindCommand(this, Math.PI, 2.3);
+
+        Command blindCombo = new ParallelCommandGroup(blindDrive, blindTurn);
+
+        Command turnToAngle = new TurnToAngleCommand(this, CWAngle.deg(90), false).withTimeout(5);
 
         m_drivetrainSubsystem.showTrajectory(getPath("Door to Window").get(0));
         // m_drivetrainSubsystem.showTrajectory(getPath("Small Path").get(0));
@@ -143,6 +164,8 @@ public class RobotContainer {
                 Rotation2d.fromDegrees(90)
         );
 
+        blockAutoCommand = new InstantCommand();
+
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
         autoSelector.setDefaultOption("No Auto", blankAuto);
@@ -155,6 +178,10 @@ public class RobotContainer {
         autoSelector.addOption("Door to Window", doorToWindow);
         autoSelector.addOption("Path to Point", pathToPoint);
         autoSelector.addOption("Just lights", justLights);
+        autoSelector.addOption("Block Auto", blockAutoCommand);
+        autoSelector.addOption("Blind drive", blindDrive);
+        autoSelector.addOption("Blind combo", blindCombo);
+        autoSelector.addOption("Turn to angle", turnToAngle);
         SmartDashboard.putData(autoSelector);
     }
 
@@ -179,7 +206,15 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return autoSelector.getSelected();
+        Command cmd = autoSelector.getSelected();
+        
+        // FIXME: Don't do this 
+        if (cmd == blockAutoCommand) {
+            System.out.println("Block autonomous detected, running command");
+            return AutoBlocks.getSelectedAutoCommand();
+        }
+        
+        return cmd;
     }
 
     private static double deadband(double value, double deadband) {
