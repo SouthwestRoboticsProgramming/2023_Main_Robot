@@ -257,14 +257,17 @@ public class DrivetrainSubsystem extends SubsystemBase {
         field.setRobotPose(getPose());
     }
     private SwerveModuleState[] setCross(SwerveModuleState[] states) {
-        states[0] = new SwerveModuleState(0, Rotation2d.fromDegrees(315));
-        states[1] = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
+        states[0] = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
+        states[1] = new SwerveModuleState(0, Rotation2d.fromDegrees(315));
         states[2] = new SwerveModuleState(0, Rotation2d.fromDegrees(135));
         states[3] = new SwerveModuleState(0, Rotation2d.fromDegrees(225));
         return states;
     }
     private SwerveModuleState[] setCircle(SwerveModuleState[] states) {
-
+        states[0] = new SwerveModuleState(0, Rotation2d.fromDegrees(315));
+        states[1] = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
+        states[2] = new SwerveModuleState(0, Rotation2d.fromDegrees(225));
+        states[3] = new SwerveModuleState(0, Rotation2d.fromDegrees(135));
         return null;
     }
 }
