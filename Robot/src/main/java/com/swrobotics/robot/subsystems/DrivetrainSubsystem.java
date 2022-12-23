@@ -219,21 +219,26 @@ public class DrivetrainSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // Set this iteration's ChassisSpeeds
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
+        SwerveModuleState[] states = new SwerveModuleState[4];
 
-        setModuleStates(states);
         double vx = speeds.vxMetersPerSecond;
         double vy = speeds.vyMetersPerSecond;
         double omega = speeds.omegaRadiansPerSecond;
         if(vx == 0 && vy == 0 && omega == 0) {
            switch (stopPosition) {
                case CROSS:
-                   // TODO: SET ALL WHEELS TO CROSS POSITION TO STOP ALL MOVEMENT
+                  states = kinematics.toSwerveModuleStates(speeds);
+                  break;
                case CIRCLE:
-                   // TODO: SET ALL WHEELS TO CIRCLE TO ALLOW ROTATION BUT NO MOVEMENT
+                  states = kinematics.toSwerveModuleStates(speeds);
+                  break;
+               default:
+                   states = kinematics.toSwerveModuleStates(speeds);
+                   SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
+                   break;
            }
         }
+        setModuleStates(states);
         // Reset the ChassisSpeeds for next iteration
         speeds = new ChassisSpeeds();
 
