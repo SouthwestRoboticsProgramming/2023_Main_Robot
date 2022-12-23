@@ -30,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Deploy code
  * Look at RioLog and type those numbers into the module declarations
  */
+
+// The Stop Position Enu
 enum StopPosition {
     NONE,
     CROSS,
