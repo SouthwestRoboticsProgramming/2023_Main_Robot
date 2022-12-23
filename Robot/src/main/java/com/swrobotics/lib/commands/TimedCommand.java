@@ -1,4 +1,4 @@
-package com.swrobotics.robot.commands;
+package com.swrobotics.lib.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -21,12 +21,10 @@ public class TimedCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         timer.stop();
-        System.out.println("Command finished");
     }
 
     @Override
     public boolean isFinished() {
         return timer.hasElapsed(runtimeSeconds);
-        // return true;
     }
 }

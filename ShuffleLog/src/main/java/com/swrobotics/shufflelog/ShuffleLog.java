@@ -4,6 +4,7 @@ import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.profiler.Profiler;
 import com.swrobotics.shufflelog.tool.MenuBarTool;
 import com.swrobotics.shufflelog.tool.Tool;
+import com.swrobotics.shufflelog.tool.blockauto.BlockAutoTool;
 import com.swrobotics.shufflelog.tool.data.DataLogTool;
 import com.swrobotics.shufflelog.tool.data.NetworkTablesTool;
 import com.swrobotics.shufflelog.tool.field.FieldViewTool;
@@ -12,6 +13,7 @@ import com.swrobotics.shufflelog.tool.profile.ShuffleLogProfilerTool;
 import com.swrobotics.shufflelog.tool.taskmanager.TaskManagerTool;
 import imgui.ImGui;
 import imgui.ImGuiIO;
+import imgui.extension.imguizmo.ImGuizmo;
 import imgui.extension.implot.ImPlot;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
@@ -77,6 +79,7 @@ public final class ShuffleLog extends PApplet {
         tools.add(new NetworkTablesTool(threadPool, dataLog));
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new FieldViewTool(this));
+        tools.add(new BlockAutoTool(this));
 
         startTime = System.currentTimeMillis();
     }
@@ -95,6 +98,7 @@ public final class ShuffleLog extends PApplet {
         imGuiGlfw.flushEvents();
         imGuiGlfw.newFrame();
         ImGui.newFrame();
+        ImGuizmo.beginFrame();
         Profiler.pop();
 
         background(210);
