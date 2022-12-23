@@ -111,7 +111,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public void zeroGyroscope() {
-        gyroOffset = getRawGyroscopeRotation();
+        setGyroscopeRotation(new Rotation2d());
     }
 
     /**
@@ -120,6 +120,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
      */
     public void setGyroscopeRotation(Rotation2d newRotation) {
         gyroOffset = getRawGyroscopeRotation().minus(newRotation);
+        resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
