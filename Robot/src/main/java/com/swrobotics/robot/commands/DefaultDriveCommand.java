@@ -1,11 +1,13 @@
 package com.swrobotics.robot.commands;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 import java.util.function.DoubleSupplier;
 
+import com.swrobotics.lib.wpilib.RobotState;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 
 public class DefaultDriveCommand extends CommandBase {
@@ -29,6 +31,9 @@ public class DefaultDriveCommand extends CommandBase {
 
     @Override
     public void execute() {
+        // Allow auto driving to still have effect
+        if (!DriverStation.isTeleop()) { return; }
+
         // You can use `new ChassisSpeeds(...)` for robot-oriented movement instead of field-oriented movement
 
         if (RobotBase.isSimulation()) {

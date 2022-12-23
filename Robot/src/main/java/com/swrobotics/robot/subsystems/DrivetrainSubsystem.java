@@ -123,6 +123,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
+        System.out.println("Set");
         this.speeds = speeds;
     }
 
