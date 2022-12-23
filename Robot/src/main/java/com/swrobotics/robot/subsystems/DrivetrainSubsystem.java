@@ -221,16 +221,18 @@ public class DrivetrainSubsystem extends SubsystemBase {
         // Set this iteration's ChassisSpeeds
         SwerveModuleState[] states = new SwerveModuleState[4];
 
+        SwerveModuleState e = new SwerveModuleState();
+
         double vx = speeds.vxMetersPerSecond;
         double vy = speeds.vyMetersPerSecond;
         double omega = speeds.omegaRadiansPerSecond;
         if(vx == 0 && vy == 0 && omega == 0) {
            switch (stopPosition) {
                case CROSS:
-                  states = kinematics.toSwerveModuleStates(speeds);
+                  states = setCross(states);
                   break;
                case CIRCLE:
-                  states = kinematics.toSwerveModuleStates(speeds);
+                  states = setCircle(states);
                   break;
                default:
                    states = kinematics.toSwerveModuleStates(speeds);
@@ -253,5 +255,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
         
         
         field.setRobotPose(getPose());
+    }
+    private SwerveModuleState[] setCross(SwerveModuleState[] states) {
+        // TODO: Set states and map to Array
+
+        return null;
+    }
+    private SwerveModuleState[] setCircle(SwerveModuleState[] states) {
+        // TODO: Set States and map to Array
+
+        return null;
     }
 }
