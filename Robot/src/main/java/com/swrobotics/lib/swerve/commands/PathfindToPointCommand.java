@@ -5,6 +5,7 @@ import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Pathfinder;
+import com.swrobotics.robot.subsystems.Lights.Color;
 import com.swrobotics.robot.subsystems.Lights.IndicatorMode;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -31,6 +32,8 @@ public final class PathfindToPointCommand extends CommandBase {
 
     private final Vec2d goal;
 
+    private List<Vec2d> currentPath;
+
     public PathfindToPointCommand(RobotContainer robot, Vec2d goal) {
         drive = robot.m_drivetrainSubsystem;
         finder = robot.m_pathfinder;
@@ -42,18 +45,29 @@ public final class PathfindToPointCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        drive.resetPose(new Pose2d(8.2296, 8.2296/2, new Rotation2d()));
+        /* Look for an initial path, if the robot wanders into territory where the pathfinder 
+         * thinks that it cannot go, stick to this path, or the latest that pathfinder has produced
+         */
+        finder.setGoal(goal.x, goal.y);
+        if (!finder.isPathValid()) {
+            System.out.println("Couldn't find initial path, failed routing");
+            lights.set(IndicatorMode.CRITICAL_FAILED);
+            this.cancel(); // Stop trying
+        }
+
+        currentPath = finder.getPath();
     }
 
     @Override
     public void execute() {
         finder.setGoal(goal.x, goal.y);
         if (!finder.isPathValid()) {
-            System.out.println("Path bad");
-            lights.set(Lights.Color.RED);
-            return;
+            System.out.println("Path bad, resorting to last good path");
+            lights.set(Color.ORANGE); // TODO: Kinda Bad indicator mode
+        } else {
+            lights.set(IndicatorMode.GOOD);
+            currentPath = finder.getPath(); // Update path with the new, valid path
         }
-        List<Vec2d> path = finder.getPath();
 
         Pose2d currentPose = drive.getPose();
         Vec2d currentPosition = new Vec2d(
@@ -65,9 +79,9 @@ public final class PathfindToPointCommand extends CommandBase {
         // behind the actual location
         // With the predefined path there is effectively infinite latency so this is very important
         Vec2d target = null;
-        for (int i = path.size() - 1; i > 0; i--) {
-            Vec2d point = path.get(i);
-            Vec2d prev = path.get(i - 1);
+        for (int i = currentPath.size() - 1; i > 0; i--) {
+            Vec2d point = currentPath.get(i);
+            Vec2d prev = currentPath.get(i - 1);
 
             double dist = currentPosition.distanceToLineSegmentSq(point, prev);
 
