@@ -4,6 +4,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.SimVisionSystem2022;
 import org.photonvision.SimVisionTarget;
 
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -17,7 +18,11 @@ import static com.swrobotics.robot.VisionConstants.*;
 
 import java.util.TreeMap;
 
+import com.swrobotics.robot.PoseFilter;
+
 public class Vision extends SubsystemBase {
+
+    private static PoseFilter filter = new PoseFilter(15);
 
     private static final double MAX_AMBIGUITY = 0.2;
 
@@ -64,11 +69,13 @@ public class Vision extends SubsystemBase {
         SmartDashboard.putBoolean("Target Found", false);
 
         if (drive.isMoving()) {
+            filter.get(drive.getPose());
             return;
         }
 
         var results = camera.getLatestResult();
         if (!results.hasTargets()) {
+            filter.get(drive.getPose());
             return;
         }
         
@@ -76,6 +83,7 @@ public class Vision extends SubsystemBase {
         double ambiguity = results.getBestTarget().getPoseAmbiguity();
         if (ambiguity > MAX_AMBIGUITY || ambiguity < 0) {
             System.out.println("Too ambiguous");
+            filter.get(drive.getPose());
             return;
         }
 
@@ -91,6 +99,7 @@ public class Vision extends SubsystemBase {
             // Get the location of the target
             int targetID = results.getBestTarget().getFiducialId();
             if (!targets.containsKey(targetID)) {
+                filter.get(drive.getPose());
                 return;
             }
 
@@ -101,11 +110,16 @@ public class Vision extends SubsystemBase {
             Pose2d cameraPose = targetPose.transformBy(relativeCameraPosition.inverse());
             Transform2d cameraRelativeToRobot = new Transform2d(CAMERA_POSITION.getTranslation().toTranslation2d(),
             CAMERA_POSITION.getRotation().toRotation2d());
+
+            // FIXME: Could be bugged out by camera moving during the match
+            Pose2d robotPose = cameraPose.transformBy(cameraRelativeToRobot);
+
+            robotPose = filter.get(robotPose);
             
             // drive.field.getObject("Vision Path").setPose(new Pose2d(cameraRelativeToRobot.getTranslation().times(0.5), cameraRelativeToRobot.getRotation()));
             if (SmartDashboard.getBoolean("Calibrate with vision", true)) {
             // Find the location of the robot and update the estimated position
-            drive.resetPose(cameraPose.transformBy(cameraRelativeToRobot));
+            drive.resetPose(robotPose);
         }
     }
 }
