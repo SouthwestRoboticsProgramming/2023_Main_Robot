@@ -33,8 +33,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
-    public static final double DRIVETRAIN_TRACKWIDTH_METERS = 0.3; // FIXME - Measure
-    public static final double DRIVETRAIN_WHEELBASE_METERS = 0.3; // FIXME - Measure
+    public static final double DRIVETRAIN_TRACKWIDTH_METERS = 0.3;
+    public static final double DRIVETRAIN_WHEELBASE_METERS = 0.3;
 
     /**
      * The maximum velocity of the robot in meters per second.
@@ -42,11 +42,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
      * This is a measure of how fast the robot should be able to drive in a straight
      * line.
      */
-    // public static final double MAX_VELOCITY_METERS_PER_SECOND = 6380.0 / 60.0 *
-    //         SdsModuleConfigurations.MK3_STANDARD.getDriveReduction() *
-    //         SdsModuleConfigurations.MK3_STANDARD.getWheelDiameter() * Math.PI;
+    public static final double MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND = 4.11; // From SDS website
 
-    public static final double MAX_VELOCITY_METERS_PER_SECOND = 4.0;
     /**
      * The maximum angular velocity of the robot in radians per second.
      * <p>
@@ -54,7 +51,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
      */
     // Here we calculate the theoretical maximum angular velocity. You can also
     // replace this with a measured amount.
-    public static final double MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = MAX_VELOCITY_METERS_PER_SECOND /
+    public static final double MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND /
             Math.hypot(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0);
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
@@ -167,8 +164,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
         double chassisVelocity = translation.getNorm();
         return chassisVelocity > IS_MOVING_THRESH;
     }
-
-    private void doNotResetPose(Pose2d pose) {}
 
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {
         // Create the AutoBuilder. This only needs to be created once when robot code
