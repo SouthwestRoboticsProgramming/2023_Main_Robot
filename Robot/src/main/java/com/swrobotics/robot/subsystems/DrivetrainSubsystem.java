@@ -126,10 +126,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
         // Configure modules using currently selected options
         modules = new SwerveModule[] {
-            new SwerveModule(FRONT_LEFT_SELECT.getSelected(), new Translation2d(0.3, 0.3)), // Front left
-            new SwerveModule(FRONT_RIGHT_SELECT.getSelected(), new Translation2d(0.3, -0.3)),  // Front right
-            new SwerveModule(BACK_LEFT_SELECT.getSelected(), new Translation2d(-0.3, 0.3)),  // Back left
-            new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3))  // Back right
+            // For now, each positional offset is 0.0, this will be changed later FIXME
+            new SwerveModule(FRONT_LEFT_SELECT.getSelected(), new Translation2d(0.3, 0.3), 0.0), // Front left
+            new SwerveModule(FRONT_RIGHT_SELECT.getSelected(), new Translation2d(0.3, -0.3), 0.0),  // Front right
+            new SwerveModule(BACK_LEFT_SELECT.getSelected(), new Translation2d(-0.3, 0.3), 0.0),  // Back left
+            new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3), 0.0)  // Back right
         };
 
         SmartDashboard.putData("Field", field);

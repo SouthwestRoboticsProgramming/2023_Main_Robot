@@ -31,14 +31,16 @@ public class SwerveModule {
     private final CANCoder encoder;
 
     private final NTDouble offset;
+    private final double positionalOffset;
     public final Translation2d position;
 
     // Conversion helpers
     private final double turnEncoderToAngle;
     private final double driveEncoderVelocityToMPS;
 
-    public SwerveModule(SwerveModuleInfo moduleInfo, Translation2d position) {
+    public SwerveModule(SwerveModuleInfo moduleInfo, Translation2d position, double positionalOffset) {
         this.position = position;
+        this.positionalOffset = positionalOffset;
 
         // Offset is stored in NTDouble to save it for the next match
         offset = new NTDouble("Swerve/Modules/" + moduleInfo.name + "/Offset Degrees", moduleInfo.offset);
@@ -111,11 +113,11 @@ public class SwerveModule {
     }
 
     public Rotation2d getAbsoluteAngle() {
-        return Rotation2d.fromDegrees(encoder.getAbsolutePosition() - offset.get());
+        return Rotation2d.fromDegrees(encoder.getAbsolutePosition() - offset.get() - positionalOffset);
     }
 
     public double getCalibrationAngle() {
-        return encoder.getAbsolutePosition(); // No offset applied
+        return encoder.getAbsolutePosition() + positionalOffset; // No offset applied
     }
 
     public void calibrate() {
