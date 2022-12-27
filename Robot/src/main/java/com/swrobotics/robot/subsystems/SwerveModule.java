@@ -36,7 +36,7 @@ public class SwerveModule {
     private final double turnEncoderToAngle;
     private final double driveEncoderVelocityToMPS;
 
-    public SwerveModule(int turn, int drive, int encoder, double offset, Translation2d position) {
+    public SwerveModule(SwerveModuleInfo moduleInfo, double offset, Translation2d position) {
         this.position = position;
         this.offset = offset;
 
@@ -54,13 +54,13 @@ public class SwerveModule {
         driveConfig.peakOutputForward = 0.1;
         driveConfig.peakOutputReverse = -0.1;
 
-        this.turn = new TalonFX(turn);
+        this.turn = new TalonFX(moduleInfo.turnMotorID);
         this.turn.configAllSettings(turnConfig);
 
-        this.drive = new TalonFX(drive);
+        this.drive = new TalonFX(moduleInfo.driveMotorID);
         this.drive.configAllSettings(driveConfig);
 
-        this.encoder = new CANCoder(encoder);
+        this.encoder = new CANCoder(moduleInfo.encoderID);
         this.encoder.configFactoryDefault();
 
         CANCoderConfiguration config = new CANCoderConfiguration();
@@ -202,8 +202,6 @@ public class SwerveModule {
 
     private double fromNativeDriveUnits(double units) {
         return units / ((2048 / 10) * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
-
-        // 2048 should equal
     }
 
 }

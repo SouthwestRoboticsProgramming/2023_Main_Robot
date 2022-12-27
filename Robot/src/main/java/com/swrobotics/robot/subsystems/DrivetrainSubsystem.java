@@ -5,6 +5,7 @@ import java.util.HashMap;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.swrobotics.lib.net.NTMultiSelect;
 import com.swrobotics.robot.VisionConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -18,6 +19,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -32,6 +34,21 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  */
 
 public class DrivetrainSubsystem extends SubsystemBase {
+
+    /* Modules that could be hot-swapped into a location on the swerve drive */
+    private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
+        new SwerveModuleInfo("Module 0", 9, 5, 1),  // Default front left
+        new SwerveModuleInfo("Module 1", 10, 6, 2), // Default front right
+        new SwerveModuleInfo("Module 2", 11, 7, 3), // Default back left
+        new SwerveModuleInfo("Module 3", 12, 8, 4)  // Default back right
+    }
+    // Currently, no fifth module is built (not enough falcons)
+
+    /* Chooser to select module locations */
+    private final SendableChooser<SwerveModuleInfo> FRONT_LEFT_SELECT;
+    private final SendableChooser<SwerveModuleInfo> FRONT_RIGHT_SELECT;
+    private final SendableChooser<SwerveModuleInfo> BACK_LEFT_SELECT;
+    private final SendableChooser<SwerveModuleInfo> BACK_RIGHT_SELECT;
 
     public static final double DRIVETRAIN_TRACKWIDTH_METERS = 0.3; // FIXME - Measure
     public static final double DRIVETRAIN_WHEELBASE_METERS = 0.3; // FIXME - Measure
@@ -74,18 +91,35 @@ public class DrivetrainSubsystem extends SubsystemBase {
     // Create a field sim to view where the odometry thinks we are
     public final Field2d field = new Field2d();
 
-    private final SwerveModule[] modules = new SwerveModule[] {
-        new SwerveModule(5, 9, 1,   44.21, new Translation2d(0.3, 0.3)), // Front left
-        new SwerveModule(6, 10, 2,   274.13, new Translation2d(0.3, -0.3)),  // Front right
-        new SwerveModule(7, 11, 3, 258.14, new Translation2d(-0.3, 0.3)),  // Back left
-        new SwerveModule(8, 12, 4, 218.06, new Translation2d(-0.3, -0.3))  // Back right
-    };
+    private final SwerveModule[] modules;
     
     private final SwerveDriveOdometry odometry;
 
     private ChassisSpeeds speeds = new ChassisSpeeds();
     
     public DrivetrainSubsystem() {
+
+        // Add all available modules to each chooser
+        for (SwerveModuleInfo info : SELECTABLE_MODULES) {
+            FRONT_LEFT_SELECT.addOption(info.name, info);
+            FRONT_RIGHT_SELECT.addOption(info.name, info);
+            BACK_LEFT_SELECT.addOption(info.name, info);
+            BACK_RIGHT_SELECT.addOption(info.name, info);
+        }
+
+        FRONT_LEFT_SELECT.setDefaultOption(SELECTABLE_MODULES[0].name, SELECTABLE_MODULES[0]);
+        FRONT_RIGHT_SELECT.setDefaultOption(SELECTABLE_MODULES[1].name, SELECTABLE_MODULES[1]);
+        BACK_LEFT_SELECT.setDefaultOption(SELECTABLE_MODULES[2].name, SELECTABLE_MODULES[2]);
+        BACK_RIGHT_SELECT.setDefaultOption(SELECTABLE_MODULES[3].name, SELECTABLE_MODULES[3]);
+
+        // Configure modules using currently selected options
+        modules = new SwerveModule[] {
+            new SwerveModule(FRONT_LEFT_SELECT.getSelected(),  44.21, new Translation2d(0.3, 0.3)), // Front left
+            new SwerveModule(FRONT_RIGHT_SELECT.getSelected(), 274.13, new Translation2d(0.3, -0.3)),  // Front right
+            new SwerveModule(BACK_LEFT_SELECT.getSelected(),   258.14, new Translation2d(-0.3, 0.3)),  // Back left
+            new SwerveModule(BACK_RIGHT_SELECT.getSelected(),  218.06, new Translation2d(-0.3, -0.3))  // Back right
+        };
+
         SmartDashboard.putData("Field", field);
         System.out.println("Target Position: " + VisionConstants.DOOR_POSE.toPose2d());
         field.getObject("target").setPose(VisionConstants.DOOR_POSE.toPose2d());
