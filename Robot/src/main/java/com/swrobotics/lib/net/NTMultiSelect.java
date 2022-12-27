@@ -1,5 +1,7 @@
 package com.swrobotics.lib.net;
 
+import edu.wpi.first.wpilibj.DriverStation;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,9 +47,12 @@ public abstract class NTMultiSelect<T> extends NTEntry<T> {
 
     @Override
     public T get() {
+        String name = entry.getString(defaultName);
         try {
-            return valueOf(entry.getString(defaultName));
+            return valueOf(name);
         } catch (IllegalArgumentException e) {
+            DriverStation.reportWarning("Multi-select had invalid value: " + name, true);
+            set(defaultVal);
             return defaultVal;
         }
     }
