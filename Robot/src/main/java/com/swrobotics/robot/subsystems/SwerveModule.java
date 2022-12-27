@@ -9,6 +9,7 @@ import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.CANCoderConfiguration;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix.sensors.SensorTimeBase;
+import com.swrobotics.lib.net.NTDouble;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -29,16 +30,18 @@ public class SwerveModule {
     private final TalonFX drive;
     private final CANCoder encoder;
 
-    private final double offset;
+    private final NTDouble offset;
     public final Translation2d position;
 
     // Conversion helpers
     private final double turnEncoderToAngle;
     private final double driveEncoderVelocityToMPS;
 
-    public SwerveModule(SwerveModuleInfo moduleInfo, double offset, Translation2d position) {
+    public SwerveModule(SwerveModuleInfo moduleInfo, Translation2d position) {
         this.position = position;
-        this.offset = offset;
+
+        // Offset is stored in NTDouble to save it for the next match
+        offset = new NTDouble("Swerve/Modules/" + moduleInfo.name + "/Offset Degrees", moduleInfo.offset);
 
         TalonFXConfiguration turnConfig = new TalonFXConfiguration();
         turnConfig.slot0.kP = 0.2;
@@ -108,11 +111,16 @@ public class SwerveModule {
     }
 
     public Rotation2d getAbsoluteAngle() {
-        return Rotation2d.fromDegrees(encoder.getAbsolutePosition() - offset);
+        return Rotation2d.fromDegrees(encoder.getAbsolutePosition() - offset.get());
     }
 
     public double getCalibrationAngle() {
         return encoder.getAbsolutePosition(); // No offset applied
+    }
+
+    public void calibrate() {
+        offset.set(getCalibrationAngle());
+        calibrateWithAbsoluteEncoder();
     }
 
     public double getDriveVelocity() {
@@ -123,11 +131,8 @@ public class SwerveModule {
         return fromNativeDriveUnits(drive.getSelectedSensorVelocity());
     }
 
-    public void calibrateWithAbsoluteEncoder() {
-        // double absoluteAngle = getAbsoluteAngle().getDegrees();
+    private void calibrateWithAbsoluteEncoder() {
         turn.setSelectedSensorPosition(toNativeTurnUnits(getAbsoluteAngle()));
-        // turn.setSelectedSensorPosition(0); // FIXME
-        // turn.setSelectedSensorPosition(toNativeTurnUnits(new Rotation2d))
     }
 
     private SwerveModuleState optimize(double velocity, double angleRad) {

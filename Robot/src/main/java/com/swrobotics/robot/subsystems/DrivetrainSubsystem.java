@@ -5,6 +5,7 @@ import java.util.HashMap;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.robot.VisionConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -36,10 +37,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
-        new SwerveModuleInfo("Module 0", 9, 5, 1),  // Default front left
-        new SwerveModuleInfo("Module 1", 10, 6, 2), // Default front right
-        new SwerveModuleInfo("Module 2", 11, 7, 3), // Default back left
-        new SwerveModuleInfo("Module 3", 12, 8, 4)  // Default back right
+        new SwerveModuleInfo("Module 0", 9, 5, 1, 44.21),  // Default front left
+        new SwerveModuleInfo("Module 1", 10, 6, 2, 274.13), // Default front right
+        new SwerveModuleInfo("Module 2", 11, 7, 3, 258.14), // Default back left
+        new SwerveModuleInfo("Module 3", 12, 8, 4, 218.06)  // Default back right
     };
     // Currently, no fifth module is built (not enough falcons)
 
@@ -48,6 +49,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private final SendableChooser<SwerveModuleInfo> FRONT_RIGHT_SELECT;
     private final SendableChooser<SwerveModuleInfo> BACK_LEFT_SELECT;
     private final SendableChooser<SwerveModuleInfo> BACK_RIGHT_SELECT;
+
+    private static final NTBoolean CALIBRATE = new NTBoolean("Swerve/Calibrate", false);
 
     public static final double DRIVETRAIN_TRACKWIDTH_METERS = 0.3; // FIXME - Measure
     public static final double DRIVETRAIN_WHEELBASE_METERS = 0.3; // FIXME - Measure
@@ -123,10 +126,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
         // Configure modules using currently selected options
         modules = new SwerveModule[] {
-            new SwerveModule(FRONT_LEFT_SELECT.getSelected(),  44.21, new Translation2d(0.3, 0.3)), // Front left
-            new SwerveModule(FRONT_RIGHT_SELECT.getSelected(), 274.13, new Translation2d(0.3, -0.3)),  // Front right
-            new SwerveModule(BACK_LEFT_SELECT.getSelected(),   258.14, new Translation2d(-0.3, 0.3)),  // Back left
-            new SwerveModule(BACK_RIGHT_SELECT.getSelected(),  218.06, new Translation2d(-0.3, -0.3))  // Back right
+            new SwerveModule(FRONT_LEFT_SELECT.getSelected(), new Translation2d(0.3, 0.3)), // Front left
+            new SwerveModule(FRONT_RIGHT_SELECT.getSelected(), new Translation2d(0.3, -0.3)),  // Front right
+            new SwerveModule(BACK_LEFT_SELECT.getSelected(), new Translation2d(-0.3, 0.3)),  // Back left
+            new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3))  // Back right
         };
 
         SmartDashboard.putData("Field", field);
@@ -252,6 +255,17 @@ public class DrivetrainSubsystem extends SubsystemBase {
         System.out.println();
     }
 
+    private void calibrate() {
+        // Reset each of the modules so that the current position is 0
+        for (SwerveModule module : modules) {
+            module.calibrate();
+        }
+
+        System.out.println("<---------------------------------------------------------->");
+        System.out.println("<--- Make sure to copy down new offsets into constants! --->");
+        System.out.println("<---------------------------------------------------------->");
+    }
+
     @Override
     public void periodic() {
         // Set this iteration's ChassisSpeeds
@@ -273,5 +287,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
         }
         
         field.setRobotPose(getPose());
+
+        // Check if it should calibrate the wheels
+        if (CALIBRATE.get()) {
+            CALIBRATE.set(false); // Instantly set back so that it doesn't calibrate more than needed
+            calibrate();
+        }
     }
 }
