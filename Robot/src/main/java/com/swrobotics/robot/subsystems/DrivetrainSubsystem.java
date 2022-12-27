@@ -5,7 +5,6 @@ import java.util.HashMap;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
-import com.swrobotics.lib.net.NTMultiSelect;
 import com.swrobotics.robot.VisionConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -41,7 +40,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         new SwerveModuleInfo("Module 1", 10, 6, 2), // Default front right
         new SwerveModuleInfo("Module 2", 11, 7, 3), // Default back left
         new SwerveModuleInfo("Module 3", 12, 8, 4)  // Default back right
-    }
+    };
     // Currently, no fifth module is built (not enough falcons)
 
     /* Chooser to select module locations */
@@ -98,6 +97,16 @@ public class DrivetrainSubsystem extends SubsystemBase {
     private ChassisSpeeds speeds = new ChassisSpeeds();
     
     public DrivetrainSubsystem() {
+
+        FRONT_LEFT_SELECT = new SendableChooser<SwerveModuleInfo>();
+        FRONT_RIGHT_SELECT = new SendableChooser<SwerveModuleInfo>();
+        BACK_LEFT_SELECT = new SendableChooser<SwerveModuleInfo>();
+        BACK_RIGHT_SELECT = new SendableChooser<SwerveModuleInfo>();
+
+        SmartDashboard.putData("Front Left Module", FRONT_LEFT_SELECT);
+        SmartDashboard.putData("Front Right Module", FRONT_RIGHT_SELECT);
+        SmartDashboard.putData("Back Left Module", BACK_LEFT_SELECT);
+        SmartDashboard.putData("Back Right Module", BACK_RIGHT_SELECT);
 
         // Add all available modules to each chooser
         for (SwerveModuleInfo info : SELECTABLE_MODULES) {
@@ -262,7 +271,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
         } else {
             odometry.update(getGyroscopeRotation(), getModuleStates());
         }
-        
         
         field.setRobotPose(getPose());
     }
