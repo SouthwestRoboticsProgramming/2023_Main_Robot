@@ -4,6 +4,7 @@
 
 package com.swrobotics.robot;
 
+import com.swrobotics.robot.subsystems.StatusLogging;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -63,6 +64,7 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().run();
 
         m_robotContainer.getMessenger().readMessages();
+
     }
 
     /** This function is called once each time the robot enters Disabled mode. */

@@ -21,6 +21,7 @@ import com.swrobotics.robot.commands.FollowPathCommand;
 import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
+import com.swrobotics.robot.subsystems.StatusLogging;
 import com.swrobotics.robot.subsystems.Vision;
 import com.swrobotics.robot.subsystems.Lights.Color;
 

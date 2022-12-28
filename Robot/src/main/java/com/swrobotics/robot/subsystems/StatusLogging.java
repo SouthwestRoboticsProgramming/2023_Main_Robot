@@ -16,7 +16,7 @@ public class StatusLogging extends SubsystemBase {
    @Override
    public void periodic() {
        int worstsev = getWorstSeverity();
-       
+
 
     }
    /* Adds an Error To the Error Log Data Structure, and returns an id value that the throwing subsystem can retain,
