@@ -18,7 +18,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public class SwerveModule {
-    private static final String NT_PATH = "Swerve/Module/"; // All module constants will be in the Swerve/Module folder
+    private static final String NT_PATH = "Swerve/Modules/"; // All module constants will be in the Swerve/Module folder
 
     private static final int TALON_FX_ENCODER_TICKS_PER_ROTATION = 2048;
     
