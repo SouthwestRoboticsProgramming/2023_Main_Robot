@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 
 import java.util.function.DoubleSupplier;
 
-import com.swrobotics.lib.wpilib.RobotState;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 
 public class DefaultDriveCommand extends CommandBase {
