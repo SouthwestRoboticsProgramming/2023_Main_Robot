@@ -19,6 +19,8 @@ import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.FollowPathCommand;
 import com.swrobotics.robot.commands.LightCommand;
+import com.swrobotics.robot.control.Input;
+import com.swrobotics.robot.control.XboxInput;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Vision;
@@ -55,6 +57,7 @@ public class RobotContainer {
     private static final String MESSENGER_NAME = "Robot";
 
     private final SendableChooser<Command> autoSelector;
+    private final SendableChooser<Input> inputSelector;
 
     // The robot's subsystems and commands are defined here...
     public final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
@@ -170,6 +173,9 @@ public class RobotContainer {
         autoSelector.addOption("Blind combo", blindCombo);
         autoSelector.addOption("Turn to angle", turnToAngle);
         SmartDashboard.putData(autoSelector);
+
+        inputSelector = new SendableChooser<>();
+        inputSelector.setDefaultOption("Xbox Controller", new XboxInput());
     }
 
     /**
@@ -202,28 +208,6 @@ public class RobotContainer {
         }
         
         return cmd;
-    }
-
-    private static double deadband(double value, double deadband) {
-        if (Math.abs(value) > deadband) {
-            if (value > 0.0) {
-                return (value - deadband) / (1.0 - deadband);
-            } else {
-                return (value + deadband) / (1.0 - deadband);
-            }
-        } else {
-            return 0.0;
-        }
-    }
-
-    private static double modifyAxis(double value) {
-        // Deadband
-        value = deadband(value, 0.15);
-
-        // Square the axis
-        value = Math.copySign(value * value, value);
-
-        return value;
     }
 
     private static ArrayList<PathPlannerTrajectory> getPath(String name) {
