@@ -63,6 +63,8 @@ public class RobotContainer {
     public final Lights m_lights = new Lights();
     public final Vision m_vision = new Vision(m_drivetrainSubsystem);
 
+    public final StatusLogging m_statuslogger = new StatusLogging(m_lights);
+
     private final XboxController m_controller = new XboxController(0);
 
     private final MessengerClient messenger;

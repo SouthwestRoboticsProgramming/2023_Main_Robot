@@ -12,11 +12,15 @@ public class StatusLogging extends SubsystemBase {
     private int queuelen = 0;
    public HashMap<Integer, RobotStatus> Statuses;
 
-
+   public Lights lights;
+   public StatusLogging(Lights lights) {
+       this.lights = lights;
+       Statuses = new HashMap<>();
+   }
    @Override
    public void periodic() {
        int worstsev = getWorstSeverity();
-
+       lights.setbyseverity(worstsev);
 
     }
    /* Adds an Error To the Error Log Data Structure, and returns an id value that the throwing subsystem can retain,
