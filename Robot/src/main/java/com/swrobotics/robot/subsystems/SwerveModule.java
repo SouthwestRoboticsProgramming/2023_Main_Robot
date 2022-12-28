@@ -38,19 +38,24 @@ public class SwerveModule {
     private final TalonFX turn;
     private final TalonFX drive;
     private final CANCoder encoder;
+
+    private final NTDouble offset;
+    private final double positionalOffset;
     
     /** The state the module is currently set to constantly try to reach */
     private SwerveModuleState targetState = new SwerveModuleState();
-    private final double offset;
     public final Translation2d position;
     
     // Conversion helpers
     private final double turnEncoderToAngle;
     private final double driveEncoderVelocityToMPS;
 
-    public SwerveModule(int turn, int drive, int encoder, double offset, Translation2d position) {
+    public SwerveModule(SwerveModuleInfo moduleInfo, Translation2d position, double positionalOffset) {
         this.position = position;
-        this.offset = offset;
+        this.positionalOffset = positionalOffset;
+
+        // Offset is stored in NTDouble to save it for the next match
+        offset = new NTDouble("Swerve/Modules/" + moduleInfo.name + "/Offset Degrees", moduleInfo.offset);
 
         TalonFXConfiguration turnConfig = new TalonFXConfiguration();
         turnConfig.slot0.kP = TURN_KP.get();
@@ -67,13 +72,13 @@ public class SwerveModule {
         driveConfig.peakOutputForward = 0.1;
         driveConfig.peakOutputReverse = -0.1;
 
-        this.turn = new TalonFX(turn);
+        this.turn = new TalonFX(moduleInfo.turnMotorID);
         this.turn.configAllSettings(turnConfig);
 
-        this.drive = new TalonFX(drive);
+        this.drive = new TalonFX(moduleInfo.driveMotorID);
         this.drive.configAllSettings(driveConfig);
 
-        this.encoder = new CANCoder(encoder);
+        this.encoder = new CANCoder(moduleInfo.encoderID);
         this.encoder.configFactoryDefault();
 
         CANCoderConfiguration config = new CANCoderConfiguration();
@@ -126,11 +131,16 @@ public class SwerveModule {
     }
 
     public Rotation2d getAbsoluteAngle() {
-        return Rotation2d.fromDegrees(encoder.getAbsolutePosition() - offset);
+        return Rotation2d.fromDegrees(encoder.getAbsolutePosition() - offset.get() - positionalOffset);
     }
 
     public double getCalibrationAngle() {
-        return encoder.getAbsolutePosition(); // No offset applied
+        return encoder.getAbsolutePosition() - positionalOffset; // No offset applied
+    }
+
+    public void calibrate() {
+        offset.set(getCalibrationAngle());
+        calibrateWithAbsoluteEncoder();
     }
 
     public double getDriveVelocity() {
@@ -141,7 +151,7 @@ public class SwerveModule {
         return fromNativeDriveUnits(drive.getSelectedSensorVelocity());
     }
 
-    public void calibrateWithAbsoluteEncoder() {
+    private void calibrateWithAbsoluteEncoder() {
         turn.setSelectedSensorPosition(toNativeTurnUnits(getAbsoluteAngle()));
     }
 
@@ -221,8 +231,6 @@ public class SwerveModule {
 
     private double fromNativeDriveUnits(double units) {
         return units / ((2048 / 10) * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
-
-        // 2048 should equal
     }
 
 }

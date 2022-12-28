@@ -5,6 +5,7 @@ import java.util.HashMap;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.robot.VisionConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -18,6 +19,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -40,6 +42,23 @@ enum StopPosition {
 
 
 public class DrivetrainSubsystem extends SubsystemBase {
+
+    /* Modules that could be hot-swapped into a location on the swerve drive */
+    private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
+        new SwerveModuleInfo("Module 0", 9, 5, 1, 44.21),  // Default front left
+        new SwerveModuleInfo("Module 1", 10, 6, 2, 274.13 - 90.0), // Default front right
+        new SwerveModuleInfo("Module 2", 11, 7, 3, 258.14 - 180.0), // Default back left
+        new SwerveModuleInfo("Module 3", 12, 8, 4, 218.06 - 270.0)  // Default back right
+    };
+    // Currently, no fifth module is built (not enough falcons)
+
+    /* Chooser to select module locations */
+    private final SendableChooser<SwerveModuleInfo> FRONT_LEFT_SELECT;
+    private final SendableChooser<SwerveModuleInfo> FRONT_RIGHT_SELECT;
+    private final SendableChooser<SwerveModuleInfo> BACK_LEFT_SELECT;
+    private final SendableChooser<SwerveModuleInfo> BACK_RIGHT_SELECT;
+
+    private static final NTBoolean CALIBRATE = new NTBoolean("Swerve/Calibrate", false);
 
     public static final double DRIVETRAIN_TRACKWIDTH_METERS = 0.3;
     public static final double DRIVETRAIN_WHEELBASE_METERS = 0.3;
@@ -84,18 +103,46 @@ public class DrivetrainSubsystem extends SubsystemBase {
     // Create a field sim to view where the odometry thinks we are
     public final Field2d field = new Field2d();
 
-    private final SwerveModule[] modules = new SwerveModule[] {
-        new SwerveModule(5, 9, 1,   44.21, new Translation2d(0.3, 0.3)), // Front left
-        new SwerveModule(6, 10, 2,   274.13, new Translation2d(0.3, -0.3)),  // Front right
-        new SwerveModule(7, 11, 3, 258.14, new Translation2d(-0.3, 0.3)),  // Back left
-        new SwerveModule(8, 12, 4, 218.06, new Translation2d(-0.3, -0.3))  // Back right
-    };
+    private final SwerveModule[] modules;
     
     private final SwerveDriveOdometry odometry;
 
     private ChassisSpeeds speeds = new ChassisSpeeds();
     
     public DrivetrainSubsystem() {
+
+        FRONT_LEFT_SELECT = new SendableChooser<SwerveModuleInfo>();
+        FRONT_RIGHT_SELECT = new SendableChooser<SwerveModuleInfo>();
+        BACK_LEFT_SELECT = new SendableChooser<SwerveModuleInfo>();
+        BACK_RIGHT_SELECT = new SendableChooser<SwerveModuleInfo>();
+
+        SmartDashboard.putData("Front Left Module", FRONT_LEFT_SELECT);
+        SmartDashboard.putData("Front Right Module", FRONT_RIGHT_SELECT);
+        SmartDashboard.putData("Back Left Module", BACK_LEFT_SELECT);
+        SmartDashboard.putData("Back Right Module", BACK_RIGHT_SELECT);
+
+        // Add all available modules to each chooser
+        for (SwerveModuleInfo info : SELECTABLE_MODULES) {
+            FRONT_LEFT_SELECT.addOption(info.name, info);
+            FRONT_RIGHT_SELECT.addOption(info.name, info);
+            BACK_LEFT_SELECT.addOption(info.name, info);
+            BACK_RIGHT_SELECT.addOption(info.name, info);
+        }
+
+        FRONT_LEFT_SELECT.setDefaultOption(SELECTABLE_MODULES[0].name, SELECTABLE_MODULES[0]);
+        FRONT_RIGHT_SELECT.setDefaultOption(SELECTABLE_MODULES[1].name, SELECTABLE_MODULES[1]);
+        BACK_LEFT_SELECT.setDefaultOption(SELECTABLE_MODULES[2].name, SELECTABLE_MODULES[2]);
+        BACK_RIGHT_SELECT.setDefaultOption(SELECTABLE_MODULES[3].name, SELECTABLE_MODULES[3]);
+
+        // Configure modules using currently selected options
+        modules = new SwerveModule[] {
+            // For now, each positional offset is 0.0, this will be changed later FIXME
+            new SwerveModule(FRONT_LEFT_SELECT.getSelected(), new Translation2d(0.3, 0.3), 0.0), // Front left
+            new SwerveModule(FRONT_RIGHT_SELECT.getSelected(), new Translation2d(0.3, -0.3), 90.0),  // Front right
+            new SwerveModule(BACK_LEFT_SELECT.getSelected(), new Translation2d(-0.3, 0.3), 180.0),  // Back left
+            new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3), 270.0)  // Back right
+        };
+
         SmartDashboard.putData("Field", field);
         System.out.println("Target Position: " + VisionConstants.DOOR_POSE.toPose2d());
         field.getObject("target").setPose(VisionConstants.DOOR_POSE.toPose2d());
@@ -217,6 +264,17 @@ public class DrivetrainSubsystem extends SubsystemBase {
         System.out.println();
     }
 
+    private void calibrate() {
+        // Reset each of the modules so that the current position is 0
+        for (SwerveModule module : modules) {
+            module.calibrate();
+        }
+
+        System.out.println("<---------------------------------------------------------->");
+        System.out.println("<--- Make sure to copy down new offsets into constants! --->");
+        System.out.println("<---------------------------------------------------------->");
+    }
+
     @Override
     public void periodic() {
         // Set this iteration's ChassisSpeeds
@@ -254,8 +312,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
             odometry.update(getGyroscopeRotation(), getModuleStates());
         }
         
-        
         field.setRobotPose(getPose());
+
+        // Check if it should calibrate the wheels
+        if (CALIBRATE.get()) {
+            CALIBRATE.set(false); // Instantly set back so that it doesn't calibrate more than needed
+            calibrate();
+        }
     }
     private SwerveModuleState[] setCross(SwerveModuleState[] states) {
         states[0] = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
