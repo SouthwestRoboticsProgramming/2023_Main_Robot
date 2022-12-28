@@ -117,7 +117,7 @@ public class SwerveModule {
     }
 
     public double getCalibrationAngle() {
-        return encoder.getAbsolutePosition() + positionalOffset; // No offset applied
+        return encoder.getAbsolutePosition() - positionalOffset; // No offset applied
     }
 
     public void calibrate() {

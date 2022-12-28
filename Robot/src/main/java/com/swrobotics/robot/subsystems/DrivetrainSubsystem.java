@@ -38,9 +38,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
         new SwerveModuleInfo("Module 0", 9, 5, 1, 44.21),  // Default front left
-        new SwerveModuleInfo("Module 1", 10, 6, 2, 274.13), // Default front right
-        new SwerveModuleInfo("Module 2", 11, 7, 3, 258.14), // Default back left
-        new SwerveModuleInfo("Module 3", 12, 8, 4, 218.06)  // Default back right
+        new SwerveModuleInfo("Module 1", 10, 6, 2, 274.13 - 90.0), // Default front right
+        new SwerveModuleInfo("Module 2", 11, 7, 3, 258.14 - 180.0), // Default back left
+        new SwerveModuleInfo("Module 3", 12, 8, 4, 218.06 - 270.0)  // Default back right
     };
     // Currently, no fifth module is built (not enough falcons)
 
@@ -128,9 +128,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
         modules = new SwerveModule[] {
             // For now, each positional offset is 0.0, this will be changed later FIXME
             new SwerveModule(FRONT_LEFT_SELECT.getSelected(), new Translation2d(0.3, 0.3), 0.0), // Front left
-            new SwerveModule(FRONT_RIGHT_SELECT.getSelected(), new Translation2d(0.3, -0.3), 0.0),  // Front right
-            new SwerveModule(BACK_LEFT_SELECT.getSelected(), new Translation2d(-0.3, 0.3), 0.0),  // Back left
-            new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3), 0.0)  // Back right
+            new SwerveModule(FRONT_RIGHT_SELECT.getSelected(), new Translation2d(0.3, -0.3), 90.0),  // Front right
+            new SwerveModule(BACK_LEFT_SELECT.getSelected(), new Translation2d(-0.3, 0.3), 180.0),  // Back left
+            new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3), 270.0)  // Back right
         };
 
         SmartDashboard.putData("Field", field);
