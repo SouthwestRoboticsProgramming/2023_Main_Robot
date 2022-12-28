@@ -1,5 +1,7 @@
 package com.swrobotics.robot.subsystems;
 
+import com.swrobotics.robot.Robot;
+import com.swrobotics.robot.RobotContainer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.HashMap;
@@ -14,7 +16,7 @@ public class StatusLogging extends SubsystemBase {
    @Override
    public void periodic() {
        int worstsev = getWorstSeverity();
-
+       
 
     }
    /* Adds an Error To the Error Log Data Structure, and returns an id value that the throwing subsystem can retain,

@@ -161,6 +161,27 @@ public class Lights {
         currentColor = mode.getColor();
         currentMode = mode;
     }
+    public void setbyseverity(int severity) {
+        if (severity >= 5) {
+            lights.set(Color.GREEN.value);
+
+        }
+        else if (severity == 4) {
+            lights.set(Color.DARK_GREEN.value);
+
+        }
+        else if (severity == 3) {
+            lights.set(Color.YELLOW.value);
+        }
+        else if (severity == 2) {
+            lights.set(Color.ORANGE.value);
+        } else if(severity == 0){
+            lights.set(Color.RED.value);
+        }
+        else {
+            lights.set(Color.STROBE_RED.value);
+        }
+    }
 
     public IndicatorMode getMode() {
         return currentMode;
