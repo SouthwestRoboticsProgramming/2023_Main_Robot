@@ -136,7 +136,7 @@ public final class AutoBlocks {
 
                     Pose2d newPose = new Pose2d(
                         new Translation2d(translation.x, translation.y),
-                        rotation.cw().rotation2d()
+                        rotation.ccw().rotation2d()
                     );
 
                     // Reset gyro before reseting odometry to fix field oriented drive
