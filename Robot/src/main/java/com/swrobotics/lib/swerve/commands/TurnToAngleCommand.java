@@ -43,7 +43,7 @@ public class TurnToAngleCommand extends CommandBase {
 
     @Override
     public void execute() {
-        drive.setChassisSpeeds(
+        drive.combineChassisSpeeds(
             new ChassisSpeeds(0, 0, 
             pid.calculate(
                 drive.getPose().getRotation().getRadians(),
