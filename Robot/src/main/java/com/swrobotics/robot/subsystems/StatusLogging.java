@@ -7,22 +7,22 @@ import java.util.HashMap;
 
 public class StatusLogging extends SubsystemBase {
     private int queuelen = 0;
-   public HashMap<Integer, RobotError> Statuses;
+   public HashMap<Integer, RobotStatus> Statuses;
 
    /* Adds an Error To the Error Log Data Structure, and returns an id value that the throwing subsystem can retain,
     so it can later resolve it.
     * */
-   public int AddError(int severity) {
+   public int AddStatus(int severity) {
        int queuepos = queuelen;
        queuelen++;
-       Errors.put(queuepos, new RobotError(severity, queuepos));
+       Statuses.put(queuepos, new RobotStatus(severity, queuepos));
        return queuepos;
    }
 
 
    // Resolves Error By Id, so that it will not cause issues with the light subsystem.
-   public void ResolveError(int id) {
-       Errors.remove(id);
+   public void ResolveStatus(int id) {
+       Statuses.remove(id);
    }
 
 
@@ -31,11 +31,11 @@ public class StatusLogging extends SubsystemBase {
 }
 
 // This could not exist but I added it so that I can refactor later
-class RobotError {
+class RobotStatus {
     public int severity;
     public int id;
 
-    public RobotError(int severity, int id) {
+    public RobotStatus(int severity, int id) {
         this.id = id;
         this.severity = severity;
     }
