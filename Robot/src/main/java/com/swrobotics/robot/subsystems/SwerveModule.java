@@ -18,22 +18,34 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public class SwerveModule {
-    private SwerveModuleState targetState = new SwerveModuleState();
+    private static final String NT_PATH = "Swerve/Modules/"; // All module constants will be in the Swerve/Module folder
 
     private static final int TALON_FX_ENCODER_TICKS_PER_ROTATION = 2048;
-    private static final double DRIVE_MOTOR_GEAR_RATIO = 8.14;
-    private static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(4.0);
-    private static final double TURN_MOTOR_GEAR_RATIO = 12.8;
-    private static final double MAX_VELOCITY = 4.0;
+    
+    // Configured for an SDS MK4 L1 module
+    private static final double DRIVE_MOTOR_GEAR_RATIO = 8.14; // 8.14 : 1
+    private static final double TURN_MOTOR_GEAR_RATIO = 12.8;  // 12.8 : 1
+    private static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(4.0); // FIXME: Slightly less than 4 inches -> Measure
+    private static final double MAX_ACHIEVABLE_VELOCITY = 4.11; // Meters / Second, Listed on SDS website
+    
+    /* Tunable Constants */
+    private static final NTDouble TURN_KP = new NTDouble(NT_PATH + "Turn kP", 0.2);
+    private static final NTDouble TURN_KI = new NTDouble(NT_PATH + "Turn kI", 0.0);
+    private static final NTDouble TURN_KD = new NTDouble(NT_PATH + "Turn kD", 0.1);
 
+    // Currently, drive is open-loop so no constants are required
+    
     private final TalonFX turn;
     private final TalonFX drive;
     private final CANCoder encoder;
 
     private final NTDouble offset;
     private final double positionalOffset;
+    
+    /** The state the module is currently set to constantly try to reach */
+    private SwerveModuleState targetState = new SwerveModuleState();
     public final Translation2d position;
-
+    
     // Conversion helpers
     private final double turnEncoderToAngle;
     private final double driveEncoderVelocityToMPS;
@@ -46,9 +58,9 @@ public class SwerveModule {
         offset = new NTDouble("Swerve/Modules/" + moduleInfo.name + "/Offset Degrees", moduleInfo.offset);
 
         TalonFXConfiguration turnConfig = new TalonFXConfiguration();
-        turnConfig.slot0.kP = 0.2;
-        turnConfig.slot0.kI = 0;
-        turnConfig.slot0.kD = 0.1;
+        turnConfig.slot0.kP = TURN_KP.get();
+        turnConfig.slot0.kI = TURN_KI.get();
+        turnConfig.slot0.kD = TURN_KD.get();
         turnConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
@@ -56,6 +68,7 @@ public class SwerveModule {
         driveConfig.slot0.kI = 0;
         driveConfig.slot0.kD = 0;
         driveConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
+        // FIXME: Remove limits imposed to keep robot from breaking Mason's house
         driveConfig.peakOutputForward = 0.1;
         driveConfig.peakOutputReverse = -0.1;
 
@@ -81,13 +94,15 @@ public class SwerveModule {
         // driveEncoderVelocityToMPS = ((600.0 / 2048.0) / DRIVE_MOTOR_GEAR_RATIO * WHEEL_DIAMETER_METERS * Math.PI) / 60; // Copied from Citrus Circuits
         driveEncoderVelocityToMPS = 1 / ((2048 * 10) * Math.PI * WHEEL_DIAMETER_METERS);
         calibrateWithAbsoluteEncoder();
+
+        // Update PID constants if they are changed
+        TURN_KP.onChange(this::updateTurnPID);
+        TURN_KI.onChange(this::updateTurnPID);
+        TURN_KD.onChange(this::updateTurnPID);
     }
 
     public void setState(SwerveModuleState state) {
-        // Optimize direction
-        // SwerveModuleState outputState = optimize(state);
-        // SwerveModuleState outputState = SwerveModuleState.optimize(state, getAngle());
-        // SwerveModuleState outputState = state;
+        // Optimize direction to be as close to current as possible
         SwerveModuleState outputState = optimize(state.speedMetersPerSecond, state.angle.getRadians());
         targetState = outputState;
 
@@ -95,11 +110,14 @@ public class SwerveModule {
 
         turn.set(TalonFXControlMode.Position, turnUnits);
 
-        double driveOutput = outputState.speedMetersPerSecond / MAX_VELOCITY;
+        double driveOutput = outputState.speedMetersPerSecond / MAX_ACHIEVABLE_VELOCITY;
         drive.set(TalonFXControlMode.PercentOutput, driveOutput);
-
     }
 
+    /**
+     * Get the current velocity and rotation of the module as read by the encoders
+     * @return State measured by encoders 
+     */
     public SwerveModuleState getState() {
         return new SwerveModuleState(getDriveVelocity(), getAngle());
     }
@@ -171,9 +189,13 @@ public class SwerveModule {
 
         Rotation2d finalAngle = new Rotation2d(adjustedReferenceAngleRadians);
 
-        double targetTurnEncoderPosition = toNativeTurnUnits(finalAngle);
-
         return new SwerveModuleState(velocity, finalAngle);
+    }
+
+    private void updateTurnPID() {
+        turn.config_kP(0, TURN_KP.get());
+        turn.config_kI(0, TURN_KI.get());
+        turn.config_kD(0, TURN_KD.get());
     }
 
     private Rotation2d absDiffRad(Rotation2d angle1, Rotation2d angle2) {
