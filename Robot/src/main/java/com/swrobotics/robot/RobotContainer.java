@@ -11,16 +11,18 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.swrobotics.mathlib.Vec2d;
+import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
+import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
 import com.swrobotics.lib.swerve.commands.TurnBlindCommand;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
-import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
-import com.swrobotics.robot.commands.FollowPathCommand;
 import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
+import com.swrobotics.robot.subsystems.Pathfinder;
 import com.swrobotics.robot.subsystems.Vision;
 import com.swrobotics.robot.subsystems.Lights.Color;
 
@@ -60,6 +62,7 @@ public class RobotContainer {
     public final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
     public final Lights m_lights = new Lights();
     public final Vision m_vision = new Vision(m_drivetrainSubsystem);
+    public final Pathfinder m_pathfinder;
 
     private final XboxController m_controller = new XboxController(0);
 
@@ -149,12 +152,19 @@ public class RobotContainer {
         m_drivetrainSubsystem.showTrajectory(getPath("Door to Window").get(0));
         // m_drivetrainSubsystem.showTrajectory(getPath("Small Path").get(0));
 
-        Command pathTest = new FollowPathCommand(m_drivetrainSubsystem, m_lights);
+        m_pathfinder = new Pathfinder(messenger, m_drivetrainSubsystem);
+
+        // For now PathfindToPointCommand resets odometry pose to center of field on init
+        // This should be done automatically by another system later (i.e. Vision or ShuffleLog)
+        Command pathToPoint = new PathfindToPointCommand(
+                this,
+                new Vec2d(8.2296 + 2, 8.2296/2) // 2 meters forward from field center
+        );
 
         blockAutoCommand = new InstantCommand();
 
         // Create a chooser to select the autonomous
-        autoSelector= new SendableChooser<>();
+        autoSelector = new SendableChooser<>();
         autoSelector.setDefaultOption("No Auto", blankAuto);
         autoSelector.addOption("Print Auto", printAuto);
         autoSelector.addOption("Small Path", smallPathAuto);
@@ -163,7 +173,7 @@ public class RobotContainer {
         autoSelector.addOption("Light Show", lightShow);
         autoSelector.addOption("Tiny Auto", tinyAuto);
         autoSelector.addOption("Door to Window", doorToWindow);
-        autoSelector.addOption("Follow Path", pathTest);
+        autoSelector.addOption("Path to Point", pathToPoint);
         autoSelector.addOption("Just lights", justLights);
         autoSelector.addOption("Block Auto", blockAutoCommand);
         autoSelector.addOption("Blind drive", blindDrive);

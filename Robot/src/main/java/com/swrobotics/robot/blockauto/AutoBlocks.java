@@ -2,6 +2,7 @@ package com.swrobotics.robot.blockauto;
 
 import com.swrobotics.lib.net.NTMultiSelect;
 import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
+import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
 import com.swrobotics.lib.swerve.commands.TurnBlindCommand;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.messenger.client.MessageBuilder;
@@ -13,6 +14,7 @@ import com.swrobotics.robot.subsystems.Lights;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -149,6 +151,11 @@ public final class AutoBlocks {
                     return true;
                 }
             });
+
+        drive.newBlock("pathfind to point")
+                .text("Pathfind to ")
+                .paramVec2d(0.0, 0.0)
+                .creator((params, robot) -> new PathfindToPointCommand(robot, (Vec2d) params[0]));
         
         initRegistryAndValidate();
     }

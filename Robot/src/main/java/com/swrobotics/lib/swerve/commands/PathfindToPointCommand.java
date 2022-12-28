@@ -1,10 +1,11 @@
-package com.swrobotics.robot.commands;
+package com.swrobotics.lib.swerve.commands;
 
 import com.swrobotics.mathlib.Vec2d;
+import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
+import com.swrobotics.robot.subsystems.Pathfinder;
 import com.swrobotics.robot.subsystems.Lights.IndicatorMode;
-
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -12,57 +13,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-import java.util.ArrayList;
 import java.util.List;
 
-// TODO: Do this in our coordinates instead of WPI
-public final class FollowPathCommand extends CommandBase {
-    /*
-     * This path assumes:
-     *   The robot starts at (0, 0), with heading 0
-     *   Units are in meters
-     *   +X is forward (WPI coords)
-     *   +Y is left (WPI coords)
-     *
-     * It should drive in this shape:
-     *   G
-     *   ^
-     *   O < O
-     *       ^
-     *       S
-     * where S is start and G is goal, and each movement is one meter,
-     * and rotate around 180 degrees.
-     */
-    private static final List<Vec2d> path = new ArrayList<>();
-    static {
-        // Basic path
-//        path.add(new Vec2d(0, 0));
-//        path.add(new Vec2d(0.5, 0));
-//        path.add(new Vec2d(0.5, 0.5));
-//        path.add(new Vec2d(1, 0.5));
-//
-        // Test long distance vs steps
-//        path.add(new Vec2d(0, 0));
-//        path.add(new Vec2d(0, 3));
-//        path.add(new Vec2d(5, 3));
-//        path.add(new Vec2d(5, 4));
-//        path.add(new Vec2d(6, 4));
-//        path.add(new Vec2d(7, 4));
-//        path.add(new Vec2d(8, 4));
-//        path.add(new Vec2d(9, 4));
-//        path.add(new Vec2d(10, 4));
-
-        // Path from one end of the room to the other
-        path.add(new Vec2d(1.9718, 1.65183));
-        path.add(new Vec2d(3.4249, 1.308));
-        path.add(new Vec2d(4.485, 1.507));
-        path.add(new Vec2d(5.94, 1.66));
-    }
-    private static final Rotation2d targetAngle = Rotation2d.fromDegrees(180);
-
+public final class PathfindToPointCommand extends CommandBase {
     // Speed at which the robot tries to go
-    // TODO-Mason: Might want to adjust this before running it inside house
-    private static final double VELOCITY = 0.4;
+    private static final double VELOCITY = 0.3;
 
     // Position tolerance in meters, must be larger than pathfinding tile
     private static final double TOLERANCE = 0.175;
@@ -71,32 +26,35 @@ public final class FollowPathCommand extends CommandBase {
     private static final double ANGLE_TOLERANCE = Math.toRadians(3);
 
     private final DrivetrainSubsystem drive;
-    private final Lights lights;
+    private final Pathfinder finder;
+    private final Lights lights; // For debugging; TODO: Remove
 
-    private final ProfiledPIDController turnPID;
     private final Vec2d goal;
 
-    public FollowPathCommand(DrivetrainSubsystem drive, Lights lights) {
-        this.drive = drive;
-        this.lights = lights;
+    public PathfindToPointCommand(RobotContainer robot, Vec2d goal) {
+        drive = robot.m_drivetrainSubsystem;
+        finder = robot.m_pathfinder;
+        this.lights = robot.m_lights;
+        this.goal = goal;
+
         addRequirements(drive);
-
-        turnPID = new ProfiledPIDController(
-                2, 0, 0, // Seems like these work in simulator
-                new TrapezoidProfile.Constraints(6.28, 3.14)
-        );
-        turnPID.enableContinuousInput(-Math.PI, Math.PI);
-
-        goal = path.get(path.size() - 1);
     }
 
     @Override
     public void initialize() {
-        turnPID.reset(drive.getPose().getRotation().getRadians());
+        drive.resetPose(new Pose2d(8.2296, 8.2296/2, new Rotation2d()));
     }
 
     @Override
     public void execute() {
+        finder.setGoal(goal.x, goal.y);
+        if (!finder.isPathValid()) {
+            System.out.println("Path bad");
+            lights.set(Lights.Color.RED);
+            return;
+        }
+        List<Vec2d> path = finder.getPath();
+
         Pose2d currentPose = drive.getPose();
         Vec2d currentPosition = new Vec2d(
                 currentPose.getX(),
@@ -118,8 +76,6 @@ public final class FollowPathCommand extends CommandBase {
                 target = point;
                 break;
             }
-
-            target = point; // FIXME: Hotfix maybe breaking?
         }
 
         // If we aren't near the path at all, we need to wait for the pathfinder to make a valid path
@@ -137,6 +93,7 @@ public final class FollowPathCommand extends CommandBase {
         double deltaY = target.y - currentPosition.y;
         double len = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         if (len < TOLERANCE) {
+            System.out.println("In tolerance to target");
             // Don't move if already in tolerance (waiting for angle to be good)
             deltaX = 0;
             deltaY = 0;
@@ -150,12 +107,12 @@ public final class FollowPathCommand extends CommandBase {
         // Calculate speeds
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                 deltaX, deltaY,
-                turnPID.calculate(currentPose.getRotation().getRadians(), targetAngle.getRadians()),
+                0.0,
                 currentPose.getRotation()
         );
 
         // Move
-        drive.setChassisSpeeds(speeds);
+        drive.combineChassisSpeeds(speeds);
         lights.set(IndicatorMode.GOOD); // Indicate it is working correctly
     }
 
@@ -167,9 +124,6 @@ public final class FollowPathCommand extends CommandBase {
                 currentPose.getY()
         );
 
-        boolean positionInTol = currentPosition.distanceToSq(goal) < TOLERANCE * TOLERANCE;
-        boolean angleInTol = Math.abs(targetAngle.minus(currentPose.getRotation()).getRadians()) < ANGLE_TOLERANCE;
-
-        return positionInTol && angleInTol;
+        return currentPosition.distanceToSq(goal) < TOLERANCE * TOLERANCE;
     }
 }
