@@ -20,10 +20,25 @@ public class ErrorLogging extends SubsystemBase {
    }
 
 
-   // Resolves Error By Id, so that it will not cause issues with the light subsystem. 
+   // Resolves Error By Id, so that it will not cause issues with the light subsystem.
    public void ResolveError(int id) {
        Errors.remove(id);
    }
 
 
+
+
 }
+
+// This could not exist but I added it so that I can refactor later
+class RobotError {
+    public int severity;
+    public int id;
+
+    public RobotError(int severity, int id) {
+        this.id = id;
+        this.severity = severity;
+    }
+}
+
+
