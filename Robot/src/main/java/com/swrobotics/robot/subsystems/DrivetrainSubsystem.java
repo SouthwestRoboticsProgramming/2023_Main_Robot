@@ -31,6 +31,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Look at RioLog and type those numbers into the module declarations
  */
 
+// The Stop Position Enu
+enum StopPosition {
+    NONE,
+    CROSS,
+    CIRCLE,
+}
+
+
 public class DrivetrainSubsystem extends SubsystemBase {
 
     public static final double DRIVETRAIN_TRACKWIDTH_METERS = 0.3; // FIXME - Measure
@@ -45,6 +53,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
     // public static final double MAX_VELOCITY_METERS_PER_SECOND = 6380.0 / 60.0 *
     //         SdsModuleConfigurations.MK3_STANDARD.getDriveReduction() *
     //         SdsModuleConfigurations.MK3_STANDARD.getWheelDiameter() * Math.PI;
+
+    // Setting for Robot Stop Position
+    private StopPosition stopPosition = StopPosition.NONE;
 
     public static final double MAX_VELOCITY_METERS_PER_SECOND = 4.0;
     /**
@@ -212,11 +223,28 @@ public class DrivetrainSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // Set this iteration's ChassisSpeeds
+
+
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
-
+        double vx = speeds.vxMetersPerSecond;
+        double vy = speeds.vyMetersPerSecond;
+        double omega = speeds.omegaRadiansPerSecond;
+        if(vx == 0 && vy == 0 && omega == 0) {
+           switch (stopPosition) {
+               case CROSS:
+                  states = setCross(states);
+                  break;
+               case CIRCLE:
+                  states = setCircle(states);
+                  break;
+               default:
+                   states = kinematics.toSwerveModuleStates(speeds);
+                   SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
+                   break;
+           }
+        }
         setModuleStates(states);
-
         // Reset the ChassisSpeeds for next iteration
         speeds = new ChassisSpeeds();
 
@@ -231,5 +259,19 @@ public class DrivetrainSubsystem extends SubsystemBase {
         
         
         field.setRobotPose(getPose());
+    }
+    private SwerveModuleState[] setCross(SwerveModuleState[] states) {
+        states[0] = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
+        states[1] = new SwerveModuleState(0, Rotation2d.fromDegrees(315));
+        states[2] = new SwerveModuleState(0, Rotation2d.fromDegrees(135));
+        states[3] = new SwerveModuleState(0, Rotation2d.fromDegrees(225));
+        return states;
+    }
+    private SwerveModuleState[] setCircle(SwerveModuleState[] states) {
+        states[0] = new SwerveModuleState(0, Rotation2d.fromDegrees(315));
+        states[1] = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
+        states[2] = new SwerveModuleState(0, Rotation2d.fromDegrees(225));
+        states[3] = new SwerveModuleState(0, Rotation2d.fromDegrees(135));
+        return states;
     }
 }
