@@ -12,6 +12,8 @@ import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.blockauto.part.AnglePart.Mode;
 import com.swrobotics.robot.subsystems.Lights;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -119,6 +121,36 @@ public final class AutoBlocks {
                 .text("Robot relative: ")
                 // .paramBoolean(false)
                 .creator((params, robot) -> new TurnToAngleCommand(robot, (Angle) params[0], false));
+    
+        drive.newBlock("reset pose")
+            .text("Reset pose to ")
+            .paramVec2d(0.0, 0.0)
+            .text("(wpi)")
+            .paramAngle(Mode.CW_DEG, 0.0)
+            .text("(cw deg)")
+            .creator((params, robot) -> new CommandBase() {
+                @Override
+                public void initialize() {
+                    System.out.println("Resetting pose");
+                    
+                    Vec2d translation = (Vec2d) params[0];
+                    Angle rotation = (Angle) params[1];
+
+                    Pose2d newPose = new Pose2d(
+                        new Translation2d(translation.x, translation.y),
+                        rotation.ccw().rotation2d()
+                    );
+
+                    // Reset gyro before reseting odometry to fix field oriented drive
+                    robot.m_drivetrainSubsystem.setGyroscopeRotation(newPose.getRotation());
+                    robot.m_drivetrainSubsystem.resetPose(newPose);
+                }
+
+                @Override
+                public boolean isFinished() {
+                    return true;
+                }
+            });
 
         drive.newBlock("pathfind to point")
                 .text("Pathfind to ")
