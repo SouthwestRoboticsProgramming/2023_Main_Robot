@@ -1,6 +1,8 @@
 package com.swrobotics.robot.control;
 
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.button.Button;
+
 import static com.swrobotics.robot.control.InputUtils.*;
 
 public class XboxInput implements Input {
@@ -10,17 +12,22 @@ public class XboxInput implements Input {
 
     @Override
     public double getDriveX() {
-        return deadband(controller.getLeftX(), DEADBAND);
+        return -modifyAxis(controller.getLeftY(), DEADBAND);
     }
 
     @Override
     public double getDriveY() {
-        return deadband(controller.getLeftX(), DEADBAND);
+        return -modifyAxis(controller.getLeftX(), DEADBAND);
     }
 
     @Override
     public double getDriveRotation() {
-        return deadband(controller.getLeftX(), DEADBAND);
+        return -modifyAxis(controller.getRightX(), DEADBAND);
+    }
+
+    @Override
+    public Button getResetGyroButton() {
+        return new Button(controller::getBackButton);
     }
     
 }

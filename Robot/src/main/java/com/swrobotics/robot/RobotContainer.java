@@ -20,6 +20,7 @@ import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.FollowPathCommand;
 import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.control.Input;
+import com.swrobotics.robot.control.InputSelector;
 import com.swrobotics.robot.control.XboxInput;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
@@ -55,16 +56,15 @@ public class RobotContainer {
     private static final String MESSENGER_HOST_SIM = "localhost";
     private static final int MESSENGER_PORT = 5805;
     private static final String MESSENGER_NAME = "Robot";
+    
 
     private final SendableChooser<Command> autoSelector;
-    private final SendableChooser<Input> inputSelector;
-
+    
     // The robot's subsystems and commands are defined here...
     public final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
+    private final InputSelector inputSelector = new InputSelector(this);
     public final Lights m_lights = new Lights();
     public final Vision m_vision = new Vision(m_drivetrainSubsystem);
-
-    private final XboxController m_controller = new XboxController(0);
 
     private final MessengerClient messenger;
 
@@ -80,17 +80,10 @@ public class RobotContainer {
         // Left stick Y axis -> forward and backwards movement
         // Left stick X axis -> left and right movement
         // Right stick X axis -> rotation
-        m_drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(
-                m_drivetrainSubsystem,
-                () -> -modifyAxis(m_controller.getLeftY()) * DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND,
-                () -> -modifyAxis(m_controller.getLeftX()) * DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND,
-                () -> -modifyAxis(m_controller.getRightX())
-                        * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND));
+
 
         m_vision.register();
-
-        // Configure the button bindings
-        configureButtonBindings();
+        inputSelector.register();
 
         // Initialize Messenger
         messenger = new MessengerClient(
@@ -172,25 +165,7 @@ public class RobotContainer {
         autoSelector.addOption("Blind drive", blindDrive);
         autoSelector.addOption("Blind combo", blindCombo);
         autoSelector.addOption("Turn to angle", turnToAngle);
-        SmartDashboard.putData(autoSelector);
-
-        inputSelector = new SendableChooser<>();
-        inputSelector.setDefaultOption("Xbox Controller", new XboxInput());
-    }
-
-    /**
-     * Use this method to define your button->command mappings. Buttons can be
-     * created by
-     * instantiating a {@link GenericHID} or one of its subclasses ({@link
-     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing
-     * it to a {@link
-     * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-     */
-    private void configureButtonBindings() {
-        // Back button zeros the gyroscope
-        new Button(m_controller::getBackButton)
-                // No requirements because we don't need to interrupt anything
-                .whenPressed(m_drivetrainSubsystem::zeroGyroscope);
+        SmartDashboard.putData("Auto selector", autoSelector);
     }
 
     /**

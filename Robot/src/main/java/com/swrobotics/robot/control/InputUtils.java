@@ -12,4 +12,14 @@ public class InputUtils {
 
         return (value - deadband) / (1.0 - deadband);
     }
+
+    public static double modifyAxis(double value, double deadband) {
+        // Deadband
+        value = deadband(value, deadband);
+
+        // Square the axis
+        value = Math.copySign(value * value, value);
+
+        return value;
+    }
 }
