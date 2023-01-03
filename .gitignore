@@ -31,7 +31,7 @@ Vision/Test.py
 *~
 
 # ImGui storage files
-**/layout.ini
+ShuffleLog/layout.ini
 **/imgui.ini
 **/simgui.json
 **/simgui-ds.json
