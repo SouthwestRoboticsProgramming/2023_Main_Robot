@@ -38,7 +38,7 @@ public final class ShuffleLog extends PApplet {
     private final List<Tool> removedTools = new ArrayList<>();
 
     // Things shared between tools
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(4);
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     private MessengerClient messenger;
 
     private long startTime;
@@ -125,6 +125,12 @@ public final class ShuffleLog extends PApplet {
         Profiler.pop();
 
         Profiler.endMeasurements();
+    }
+
+    @Override
+    public void keyPressed() {
+        // Prevent closing on escape key press
+        if (key == ESC) key = 0;
     }
 
     public void addTool(Tool tool) {
