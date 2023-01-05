@@ -17,6 +17,7 @@ public interface FieldLayer {
      *
      * @param g graphics to draw with
      */
+    // TODO: Remove metersScale because it's always 1
     void draw(PGraphics g, float metersScale);
 
     /**

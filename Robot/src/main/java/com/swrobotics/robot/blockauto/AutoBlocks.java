@@ -154,7 +154,7 @@ public final class AutoBlocks {
 
         drive.newBlock("pathfind to point")
                 .text("Pathfind to ")
-                .paramVec2d(0.0, 0.0)
+                .paramFieldPoint(0.0, 0.0)
                 .creator((params, robot) -> new PathfindToPointCommand(robot, (Vec2d) params[0]));
         
         initRegistryAndValidate();
