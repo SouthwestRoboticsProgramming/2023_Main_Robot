@@ -21,5 +21,10 @@
   {
     "$type": "lights",
     "color": "GREEN"
+  },
+  {
+    "$type": "turn to angle",
+    "target": 0.0,
+    "robot-relative": false
   }
 ]

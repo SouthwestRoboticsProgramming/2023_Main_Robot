@@ -25,7 +25,7 @@ public final class BooleanPart extends ParamPart {
 
     @Override
     public void writeToMessenger(MessageBuilder builder) {
-        builder.addByte(PartTypes.INT.getId());
+        builder.addByte(PartTypes.BOOLEAN.getId());
         builder.addBoolean(def);
     }
 

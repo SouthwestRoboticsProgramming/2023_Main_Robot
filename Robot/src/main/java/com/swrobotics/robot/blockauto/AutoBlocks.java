@@ -103,8 +103,8 @@ public final class AutoBlocks {
                 .paramDouble("time", 1.0)
                 .text(" seconds")
                 .text("Robot relative: ")
-                // .paramBoolean(false)
-                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], false));
+                .paramBoolean("robot-relative", false)
+                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], (boolean) params[3]));
 
         drive.newBlock("blind turn for time")
                 .text("Turn at ")
@@ -119,8 +119,8 @@ public final class AutoBlocks {
                 .paramAngle("target", Mode.CW_DEG, 0)
                 .text(" cw deg")
                 .text("Robot relative: ")
-                // .paramBoolean(false)
-                .creator((params, robot) -> new TurnToAngleCommand(robot, (Angle) params[0], false));
+                .paramBoolean("robot-relative", false)
+                .creator((params, robot) -> new TurnToAngleCommand(robot, (Angle) params[0], (boolean) params[1]));
     
         drive.newBlock("reset pose")
             .text("Reset pose to ")
