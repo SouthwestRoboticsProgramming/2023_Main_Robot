@@ -139,7 +139,7 @@ public final class FieldViewTool extends ViewportTool {
                 g.translate(0, 0, offset);
                 offset += 0.01;
             }
-            layer.draw(g, 1);
+            layer.draw(g);
             g.popMatrix();
         }
     }

@@ -22,7 +22,7 @@ public final class FieldVectorLayer implements FieldLayer {
     }
 
     @Override
-    public void draw(PGraphics g, float metersScale) {
+    public void draw(PGraphics g) {
         if (!show.get())
             return;
 
@@ -30,7 +30,7 @@ public final class FieldVectorLayer implements FieldLayer {
         float inchesPerMeter = 39.3701f;
         g.scale(1/inchesPerMeter);
 
-        float strokeMul = 1 / metersScale * inchesPerMeter;
+        float strokeMul = 1 / inchesPerMeter;
 
         g.strokeWeight(2 * strokeMul);
         g.stroke(255);

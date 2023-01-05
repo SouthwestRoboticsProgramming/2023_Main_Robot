@@ -87,7 +87,7 @@ public final class WaypointLayer implements FieldLayer {
     }
 
     @Override
-    public void draw(PGraphics g, float metersScale) {
+    public void draw(PGraphics g) {
         if (!show.get())
             return;
 

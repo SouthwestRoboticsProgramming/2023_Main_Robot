@@ -22,8 +22,7 @@ public interface FieldLayer {
      *
      * @param g graphics to draw with
      */
-    // TODO: Remove metersScale because it's always 1
-    void draw(PGraphics g, float metersScale);
+    void draw(PGraphics g);
 
     /**
      * Draws the ImGui content for this layer.
