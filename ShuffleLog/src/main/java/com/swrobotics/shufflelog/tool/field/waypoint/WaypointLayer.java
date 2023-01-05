@@ -20,6 +20,8 @@ import java.util.List;
 import static processing.core.PConstants.CENTER;
 
 public final class WaypointLayer implements FieldLayer {
+    public static WaypointLayer INSTANCE = null;
+
     public static final String MSG_GET_WAYPOINTS = "Waypoints:Get";
     public static final String MSG_ADD_WAYPOINT = "Waypoints:Add";
     public static final String MSG_REMOVE_WAYPOINT = "Waypoints:Remove";
@@ -38,6 +40,10 @@ public final class WaypointLayer implements FieldLayer {
     private boolean isSelectingPoint;
 
     public WaypointLayer(FieldViewTool tool, MessengerClient msg) {
+        if (INSTANCE != null)
+            throw new IllegalStateException("Waypoint layer instantiated multiple times");
+        INSTANCE = this;
+
         this.tool = tool;
         this.msg = msg;
         cooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
@@ -75,10 +81,13 @@ public final class WaypointLayer implements FieldLayer {
     }
 
     @Override
-    public void draw(PGraphics g, float metersScale) {
+    public void processAlways() {
         if (!hasWaypoints && cooldown.request())
             msg.send(MSG_GET_WAYPOINTS);
+    }
 
+    @Override
+    public void draw(PGraphics g, float metersScale) {
         if (!show.get())
             return;
 
@@ -215,5 +224,11 @@ public final class WaypointLayer implements FieldLayer {
             }
             isSelectingPoint = false;
         }
+    }
+
+    public List<Waypoint> getWaypoints() {
+        if (!hasWaypoints)
+            return null;
+        return waypoints;
     }
 }

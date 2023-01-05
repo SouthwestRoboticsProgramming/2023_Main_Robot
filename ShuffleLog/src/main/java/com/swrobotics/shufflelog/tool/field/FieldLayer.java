@@ -12,6 +12,11 @@ public interface FieldLayer {
     String getName();
 
     /**
+     * Called every frame regardless of whether the GUI is visible.
+     */
+    default void processAlways() {}
+
+    /**
      * Draws the content of this layer. The expected units are in
      * meters.
      *

@@ -25,14 +25,9 @@ public class Vec2dPart implements ParamPart {
         builder.addDouble(v.y);
     }
 
-    // To be overridden by FieldPointPart
-    protected byte getTypeId() {
-        return PartTypes.VEC2D.getId();
-    }
-
     @Override
     public void writeToMessenger(MessageBuilder builder) {
-        builder.addByte(getTypeId());
+        builder.addByte(PartTypes.VEC2D.getId());
         builder.addDouble(defX);
         builder.addDouble(defY);
     }

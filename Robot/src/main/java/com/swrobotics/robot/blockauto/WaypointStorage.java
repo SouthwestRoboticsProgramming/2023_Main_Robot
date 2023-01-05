@@ -46,6 +46,10 @@ public final class WaypointStorage {
         }
     }
 
+    public static Vec2d getWaypointLocation(String name) {
+        return waypoints.get(name);
+    }
+
     private static void save() {
         try {
             FileWriter fw = new FileWriter(STORAGE_FILE);

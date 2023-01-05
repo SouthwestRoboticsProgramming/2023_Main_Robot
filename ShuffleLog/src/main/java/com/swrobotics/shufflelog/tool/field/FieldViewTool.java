@@ -278,4 +278,12 @@ public final class FieldViewTool extends ViewportTool {
             ImGui.endTable();
         }
     }
+
+    @Override
+    public void process() {
+        for (FieldLayer layer : layers)
+            layer.processAlways();
+
+        super.process();
+    }
 }
