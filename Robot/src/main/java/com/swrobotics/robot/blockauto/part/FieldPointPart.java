@@ -1,8 +1,8 @@
 package com.swrobotics.robot.blockauto.part;
 
 public final class FieldPointPart extends Vec2dPart {
-    public FieldPointPart(double defX, double defY) {
-        super(defX, defY);
+    public FieldPointPart(String name, double defX, double defY) {
+        super(name, defX, defY);
     }
 
     @Override

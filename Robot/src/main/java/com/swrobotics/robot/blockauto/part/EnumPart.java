@@ -1,13 +1,18 @@
 package com.swrobotics.robot.blockauto.part;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 
-public final class EnumPart<E extends Enum<E>> implements ParamPart {
+public final class EnumPart<E extends Enum<E>> extends ParamPart {
+    private final Class<E> type;
     private final E[] values;
     private final int defIdx;
 
-    public EnumPart(Class<E> type, E def) {
+    public EnumPart(String name, Class<E> type, E def) {
+        super(name);
+        this.type = type;
         values = type.getEnumConstants();
         int defIdx = -1;
         for (int i = 0; i < values.length; i++) {
@@ -24,8 +29,7 @@ public final class EnumPart<E extends Enum<E>> implements ParamPart {
         return values[i];
     }
 
-    @Override
-    public void writeInst(MessageBuilder builder, Object val) {
+    private int indexOf(Object val) {
         @SuppressWarnings("unchecked")
         E e = (E) val;
         int idx = 0;
@@ -39,7 +43,12 @@ public final class EnumPart<E extends Enum<E>> implements ParamPart {
         }
         if (!found)
             throw new IllegalStateException("Failed to find index of value");
-        builder.addInt(idx);
+        return idx;
+    }
+
+    @Override
+    public void writeInst(MessageBuilder builder, Object val) {
+        builder.addInt(indexOf(val));
     }
 
     @Override
@@ -50,5 +59,22 @@ public final class EnumPart<E extends Enum<E>> implements ParamPart {
             builder.addString(value.name());
         }
         builder.addInt(defIdx);
+    }
+
+    @Override
+    public Object deserializeInst(JsonElement elem) {
+        if (elem == null)
+            return values[defIdx];
+
+        try {
+            return Enum.valueOf(type, elem.getAsString());
+        } catch (IllegalArgumentException e) {
+            return values[defIdx];
+        }
+    }
+
+    @Override
+    public JsonElement serializeInst(Object val) {
+        return new JsonPrimitive(((Enum<?>) val).name());
     }
 }

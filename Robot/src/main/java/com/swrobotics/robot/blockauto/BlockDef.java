@@ -1,5 +1,6 @@
 package com.swrobotics.robot.blockauto;
 
+import com.google.gson.JsonObject;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.robot.RobotContainer;
@@ -41,43 +42,43 @@ public final class BlockDef {
         return this;
     }
 
-    public BlockDef paramInt(int def) {
-        parts.add(new IntPart(def));
+    public BlockDef paramInt(String name, int def) {
+        parts.add(new IntPart(name, def));
         return this;
     }
 
-    public BlockDef paramDouble(double def) {
-        parts.add(new DoublePart(def));
+    public BlockDef paramDouble(String name, double def) {
+        parts.add(new DoublePart(name, def));
         return this;
     }
 
-    public BlockDef paramBoolean(boolean def) {
-        parts.add(new BooleanPart(def));
+    public BlockDef paramBoolean(String name, boolean def) {
+        parts.add(new BooleanPart(name, def));
         return this;
     }
 
-    public BlockDef paramAngle(AnglePart.Mode mode, double def) {
-        parts.add(new AnglePart(mode, def));
+    public BlockDef paramAngle(String name, AnglePart.Mode mode, double def) {
+        parts.add(new AnglePart(name, mode, def));
         return this;
     }
 
-    public BlockDef paramVec2d(double defX, double defY) {
-        parts.add(new Vec2dPart(defX, defY));
+    public BlockDef paramVec2d(String name, double defX, double defY) {
+        parts.add(new Vec2dPart(name, defX, defY));
         return this;
     }
 
-    public BlockDef paramFieldPoint(double defX, double defY) {
-        parts.add(new FieldPointPart(defX, defY));
+    public BlockDef paramFieldPoint(String name, double defX, double defY) {
+        parts.add(new FieldPointPart(name, defX, defY));
         return this;
     }
 
-    public BlockDef paramBlockStack() {
-        parts.add(new BlockStackPart());
+    public BlockDef paramBlockStack(String name) {
+        parts.add(new BlockStackPart(name));
         return this;
     }
 
-    public <E extends Enum<E>> BlockDef paramEnum(Class<E> type, E def) {
-        parts.add(new EnumPart<>(type, def));
+    public <E extends Enum<E>> BlockDef paramEnum(String name, Class<E> type, E def) {
+        parts.add(new EnumPart<>(name, type, def));
         return this;
     }
 
@@ -97,6 +98,25 @@ public final class BlockDef {
             if (part instanceof ParamPart) {
                 ParamPart p = (ParamPart) part;
                 params.add(p.readInst(reader));
+            }
+        }
+        return new BlockInst(this, params.toArray());
+    }
+
+    public BlockInst deserializeInstance(JsonObject obj) {
+        List<Object> params = new ArrayList<>();
+        for (BlockPart part : parts) {
+            if (part instanceof ParamPart) {
+                ParamPart p = (ParamPart) part;
+                Object val;
+                try {
+                    val = p.deserializeInst(obj.get(p.getName()));
+                } catch (Throwable t) {
+                    System.err.println("Failed to deserialize block:");
+                    t.printStackTrace();
+                    val = p.deserializeInst(null);
+                }
+                params.add(val);
             }
         }
         return new BlockInst(this, params.toArray());

@@ -60,15 +60,15 @@ public final class AutoBlocks {
         BlockCategory control = defineCategory("Control");
         control.newBlock("wait")
                 .text("Wait")
-                .paramDouble(1)
+                .paramDouble("time", 1)
                 .text("seconds")
                 .creator((params, robot) -> new WaitCommand((double) params[0]));
 
         control.newBlock("union")
                 .text("Union of")
-                .paramBlockStack()
+                .paramBlockStack("a")
                 .text("and")
-                .paramBlockStack()
+                .paramBlockStack("b")
                 .creator((params, robot) -> new ParallelCommandGroup(
                         ((BlockStackInst) params[0]).toCommand(robot),
                         ((BlockStackInst) params[1]).toCommand(robot)
@@ -77,7 +77,7 @@ public final class AutoBlocks {
         BlockCategory lights = defineCategory("Lights");
         lights.newBlock("lights")
                 .text("Set lights to ")
-                .paramEnum(Lights.Color.class, Lights.Color.BLUE)
+                .paramEnum("color", Lights.Color.class, Lights.Color.BLUE)
                 .creator((params, robot) -> new CommandBase() {
 
                     @Override
@@ -96,11 +96,11 @@ public final class AutoBlocks {
         BlockCategory drive = defineCategory("Drive");
         drive.newBlock("blind drive for time")
                 .text("Drive at ")
-                .paramDouble(1.0)
+                .paramDouble("speed", 1.0)
                 .text(" MPS at ")
-                .paramAngle(Mode.CW_DEG, 0.0)
+                .paramAngle("rotation", Mode.CW_DEG, 0.0)
                 .text(" cw deg for ")
-                .paramDouble(1.0)
+                .paramDouble("time", 1.0)
                 .text(" seconds")
                 .text("Robot relative: ")
                 // .paramBoolean(false)
@@ -108,15 +108,15 @@ public final class AutoBlocks {
 
         drive.newBlock("blind turn for time")
                 .text("Turn at ")
-                .paramDouble(0.0)
+                .paramDouble("rotation", 0.0)
                 .text(" radians per second for ")
-                .paramDouble(1.0)
+                .paramDouble("time", 1.0)
                 .text(" seconds")
                 .creator((params, robot) -> new TurnBlindCommand(robot, (double) params[0], (double) params[1]));
 
         drive.newBlock("turn to angle")
                 .text("Turn to ")
-                .paramAngle(Mode.CW_DEG, 0)
+                .paramAngle("target", Mode.CW_DEG, 0)
                 .text(" cw deg")
                 .text("Robot relative: ")
                 // .paramBoolean(false)
@@ -124,9 +124,9 @@ public final class AutoBlocks {
     
         drive.newBlock("reset pose")
             .text("Reset pose to ")
-            .paramVec2d(0.0, 0.0)
+            .paramVec2d("position", 0.0, 0.0)
             .text("(wpi)")
-            .paramAngle(Mode.CW_DEG, 0.0)
+            .paramAngle("angle", Mode.CW_DEG, 0.0)
             .text("(cw deg)")
             .creator((params, robot) -> new CommandBase() {
                 @Override
@@ -154,7 +154,7 @@ public final class AutoBlocks {
 
         drive.newBlock("pathfind to point")
                 .text("Pathfind to ")
-                .paramVec2d(0.0, 0.0)
+                .paramVec2d("goal", 0.0, 0.0)
                 .creator((params, robot) -> new PathfindToPointCommand(robot, (Vec2d) params[0]));
         
         initRegistryAndValidate();
@@ -217,7 +217,8 @@ public final class AutoBlocks {
     private static final String MSG_DELETE_CONFIRM  = "AutoBlock:DeleteConfirm";
 
     private static final File PERSISTENCE_DIR = new File(Filesystem.getOperatingDirectory(), "BlockAuto");
-    private static final String PERSISTENCE_FILE_EXT = ".auto";
+    public static final String PERSISTENCE_FILE_EXT = ".json";
+    public static final String PERSISTENCE_FILE_EXT_OLD = ".auto";
     private static final Map<String, PersistentSequence> sequences = new HashMap<>();
 
     private static final Map<String, BlockDef> blockDefRegistry = new HashMap<>();
@@ -239,11 +240,15 @@ public final class AutoBlocks {
         File[] persistenceFiles = PERSISTENCE_DIR.listFiles();
         if (persistenceFiles != null) {
             for (File file : persistenceFiles) {
-                if (!file.getName().endsWith(PERSISTENCE_FILE_EXT))
-                    continue;
+                String ext = PERSISTENCE_FILE_EXT;
+                if (!file.getName().endsWith(PERSISTENCE_FILE_EXT)) {
+                    ext = PERSISTENCE_FILE_EXT_OLD;
+                    if (!file.getName().endsWith(PERSISTENCE_FILE_EXT_OLD))
+                        continue;
+                }
 
                 String name = file.getName();
-                name = name.substring(0, name.length() - PERSISTENCE_FILE_EXT.length());
+                name = name.substring(0, name.length() - ext.length());
 
                 try {
                     PersistentSequence seq = new PersistentSequence(name, file);
