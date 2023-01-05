@@ -265,7 +265,7 @@ public final class FieldViewTool extends ViewportTool {
             }
 
             ImGui.tableNextColumn();
-
+            ImGui.beginChild("scroller");
             for (FieldLayer layer : layers) {
                 if (ImGui.collapsingHeader(layer.getName())) {
                     ImGui.pushID(layer.getName());
@@ -275,7 +275,7 @@ public final class FieldViewTool extends ViewportTool {
                     ImGui.popID();
                 }
             }
-
+            ImGui.endChild();
             ImGui.endTable();
         }
     }
