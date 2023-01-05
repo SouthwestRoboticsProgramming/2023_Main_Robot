@@ -10,11 +10,11 @@ import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.blockauto.part.AnglePart.Mode;
+import com.swrobotics.robot.blockauto.part.FieldPointPart.Point;
 import com.swrobotics.robot.subsystems.Lights;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -154,9 +154,9 @@ public final class AutoBlocks {
 
         drive.newBlock("pathfind to point")
                 .text("Pathfind to ")
-                .paramVec2d("goal", 0.0, 0.0)
-                .creator((params, robot) -> new PathfindToPointCommand(robot, (Vec2d) params[0]));
-        
+                .paramFieldPoint("goal", 0.0, 0.0)
+                .creator((params, robot) -> new PathfindToPointCommand(robot, ((Point) params[0]).getPosition()));
+
         initRegistryAndValidate();
     }
 

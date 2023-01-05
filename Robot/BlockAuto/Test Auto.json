@@ -13,10 +13,7 @@
   },
   {
     "$type": "pathfind to point",
-    "goal": [
-      0.0,
-      0.0
-    ]
+    "goal": "New Waypoint"
   },
   {
     "$type": "lights",

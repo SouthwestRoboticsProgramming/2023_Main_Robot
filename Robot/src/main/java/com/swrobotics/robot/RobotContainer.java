@@ -18,6 +18,7 @@ import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
 import com.swrobotics.lib.swerve.commands.TurnBlindCommand;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.robot.blockauto.AutoBlocks;
+import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
@@ -101,6 +102,7 @@ public class RobotContainer {
 
         // Initialize block auto
         AutoBlocks.init(messenger, this);
+        WaypointStorage.init(messenger);
 
         // Generate autos to choose from
         Command blankAuto = new InstantCommand();

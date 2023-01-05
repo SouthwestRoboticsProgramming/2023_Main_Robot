@@ -8,6 +8,7 @@ import com.swrobotics.shufflelog.math.Vector3f;
 import com.swrobotics.shufflelog.tool.ViewportTool;
 import com.swrobotics.shufflelog.tool.field.path.PathfindingLayer;
 import com.swrobotics.shufflelog.tool.field.tag.TagTrackerLayer;
+import com.swrobotics.shufflelog.tool.field.waypoint.WaypointLayer;
 import com.swrobotics.shufflelog.util.SmoothFloat;
 import imgui.ImGui;
 import imgui.ImGuiIO;
@@ -66,6 +67,7 @@ public final class FieldViewTool extends ViewportTool {
         layers.add(new FieldVectorLayer());
         layers.add(new PathfindingLayer(msg, this));
         layers.add(new TagTrackerLayer(this, msg));
+        layers.add(new WaypointLayer(this, msg));
 
         cameraRotX = new SmoothFloat(SMOOTH, 0);
         cameraRotY = new SmoothFloat(SMOOTH, 0);
@@ -128,10 +130,7 @@ public final class FieldViewTool extends ViewportTool {
         g.updateProjmodelview();
 
         g.background(0);
-
-        // Basic lighting for 3d objects
-        g.directionalLight(255, 255, 255, 1, 1, 1);
-        g.ambientLight(175, 175, 175);
+        g.noLights();
 
         float offset = 0;
         for (FieldLayer layer : layers) {
@@ -140,7 +139,7 @@ public final class FieldViewTool extends ViewportTool {
                 g.translate(0, 0, offset);
                 offset += 0.01;
             }
-            layer.draw(g, 1);
+            layer.draw(g);
             g.popMatrix();
         }
     }
@@ -278,5 +277,13 @@ public final class FieldViewTool extends ViewportTool {
             ImGui.endChild();
             ImGui.endTable();
         }
+    }
+
+    @Override
+    public void process() {
+        for (FieldLayer layer : layers)
+            layer.processAlways();
+
+        super.process();
     }
 }
