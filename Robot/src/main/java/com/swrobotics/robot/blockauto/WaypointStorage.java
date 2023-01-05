@@ -30,6 +30,9 @@ public final class WaypointStorage {
         msg.addHandler(MSG_REMOVE_WAYPOINT, WaypointStorage::onRemoveWaypoint);
 
         try {
+            if (!STORAGE_FILE.exists())
+                return;
+
             FileReader fr = new FileReader(STORAGE_FILE);
             BufferedReader br = new BufferedReader(fr);
 
