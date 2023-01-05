@@ -1,12 +1,15 @@
 package com.swrobotics.robot.blockauto.part;
 
-
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.robot.blockauto.WaypointStorage;
 
-public final class FieldPointPart implements ParamPart {
+public final class FieldPointPart extends ParamPart {
     public interface Point {
         Vec2d getPosition();
 
@@ -57,7 +60,8 @@ public final class FieldPointPart implements ParamPart {
     private final double defX;
     private final double defY;
 
-    public FieldPointPart(double defX, double defY) {
+    public FieldPointPart(String name, double defX, double defY) {
+        super(name);
         this.defX = defX;
         this.defY = defY;
     }
@@ -84,5 +88,30 @@ public final class FieldPointPart implements ParamPart {
         builder.addByte(PartTypes.FIELD_POINT.getId());
         builder.addDouble(defX);
         builder.addDouble(defY);
+    }
+
+    @Override
+    public Object deserializeInst(JsonElement elem) {
+        if (elem.isJsonArray()) {
+            JsonArray arr = elem.getAsJsonArray();
+            return new SpecificPoint(arr.get(0).getAsDouble(), arr.get(1).getAsDouble());
+        } else {
+            return new WaypointPoint(elem.getAsString());
+        }
+    }
+
+    @Override
+    public JsonElement serializeInst(Object val) {
+        if (val instanceof SpecificPoint) {
+            SpecificPoint p = (SpecificPoint) val;
+
+            JsonArray arr = new JsonArray();
+            arr.add(p.x);
+            arr.add(p.y);
+
+            return arr;
+        } else {
+            return new JsonPrimitive(((WaypointPoint) val).waypointName);
+        }
     }
 }

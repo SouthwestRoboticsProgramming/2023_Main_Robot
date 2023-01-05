@@ -1,14 +1,17 @@
 package com.swrobotics.robot.blockauto.part;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 
-public class Vec2dPart implements ParamPart {
+public class Vec2dPart extends ParamPart {
     private final double defX;
     private final double defY;
 
-    public Vec2dPart(double defX, double defY) {
+    public Vec2dPart(String name, double defX, double defY) {
+        super(name);
         this.defX = defX;
         this.defY = defY;
     }
@@ -30,5 +33,23 @@ public class Vec2dPart implements ParamPart {
         builder.addByte(PartTypes.VEC2D.getId());
         builder.addDouble(defX);
         builder.addDouble(defY);
+    }
+
+    @Override
+    public Object deserializeInst(JsonElement elem) {
+        if (elem == null)
+            return new Vec2d(defX, defY);
+
+        JsonArray arr = elem.getAsJsonArray();
+        return new Vec2d(arr.get(0).getAsDouble(), arr.get(1).getAsDouble());
+    }
+
+    @Override
+    public JsonElement serializeInst(Object val) {
+        Vec2d v = (Vec2d) val;
+        JsonArray arr = new JsonArray();
+        arr.add(v.x);
+        arr.add(v.y);
+        return arr;
     }
 }

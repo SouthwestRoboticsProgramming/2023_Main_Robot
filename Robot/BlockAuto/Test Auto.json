@@ -1,0 +1,27 @@
+[
+  {
+    "$type": "reset pose",
+    "position": [
+      0.0,
+      0.0
+    ],
+    "angle": 0.0
+  },
+  {
+    "$type": "wait",
+    "time": 1.0
+  },
+  {
+    "$type": "pathfind to point",
+    "goal": "New Waypoint"
+  },
+  {
+    "$type": "lights",
+    "color": "GREEN"
+  },
+  {
+    "$type": "turn to angle",
+    "target": 0.0,
+    "robot-relative": false
+  }
+]
