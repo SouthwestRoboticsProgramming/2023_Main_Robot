@@ -39,3 +39,5 @@ ShuffleLog/layout.ini
 # NetworkTables storage
 **/networktables.ini
 **/networktables.ini.bak
+
+Robot/waypoints.tsv

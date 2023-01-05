@@ -12,12 +12,17 @@ public interface FieldLayer {
     String getName();
 
     /**
+     * Called every frame regardless of whether the GUI is visible.
+     */
+    default void processAlways() {}
+
+    /**
      * Draws the content of this layer. The expected units are in
      * meters.
      *
      * @param g graphics to draw with
      */
-    void draw(PGraphics g, float metersScale);
+    void draw(PGraphics g);
 
     /**
      * Draws the ImGui content for this layer.
