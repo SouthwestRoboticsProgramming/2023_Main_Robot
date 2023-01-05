@@ -6,6 +6,7 @@ import com.swrobotics.shufflelog.tool.blockauto.part.BlockStackPart;
 import com.swrobotics.shufflelog.tool.blockauto.part.NewLinePart;
 import com.swrobotics.shufflelog.tool.blockauto.part.ParamPart;
 import com.swrobotics.shufflelog.tool.blockauto.part.StaticPart;
+import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.flag.ImGuiDragDropFlags;
 
@@ -86,7 +87,11 @@ public final class BlockInst {
     }
 
     public boolean draw(Runnable ctxMenu) {
+        ImDrawList draw = ImGui.getWindowDrawList();
+
         boolean changed = false;
+        draw.channelsSplit(2);
+        draw.channelsSetCurrent(1);
         ImGui.beginGroup();
         ImGui.beginGroup();
         int paramIdx = 0;
@@ -133,9 +138,13 @@ public final class BlockInst {
         dragSource();
         ctxMenu.run();
         ImGui.endGroup();
-        int color = ImGui.colorConvertFloat4ToU32(0.5f, 0.5f, 0.5f, 1.0f);
+        int border = def.getCategory().getBorderColor();
+        int color = def.getCategory().getBgColor();
         float pad = ImGui.getStyle().getItemSpacingY() / 2;
-        ImGui.getWindowDrawList().addRect(ImGui.getItemRectMinX()-pad, ImGui.getItemRectMinY()-pad, ImGui.getItemRectMaxX()+pad, ImGui.getItemRectMaxY()+pad, color);
+        draw.channelsSetCurrent(0);
+        draw.addRectFilled(ImGui.getItemRectMinX()-pad, ImGui.getItemRectMinY()-pad, ImGui.getItemRectMaxX()+pad, ImGui.getItemRectMaxY()+pad, color);
+        draw.addRect(ImGui.getItemRectMinX()-pad, ImGui.getItemRectMinY()-pad, ImGui.getItemRectMaxX()+pad, ImGui.getItemRectMaxY()+pad, border);
+        draw.channelsMerge();
 
         return changed;
     }

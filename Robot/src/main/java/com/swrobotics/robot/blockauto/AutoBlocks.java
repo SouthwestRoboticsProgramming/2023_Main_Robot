@@ -57,7 +57,7 @@ public final class AutoBlocks {
     private static void defineBlocks() {
         // The name parameter to newBlock("...") must be unique
 
-        BlockCategory control = defineCategory("Control");
+        BlockCategory control = defineCategory("Control", 123, 73, 14);
         control.newBlock("wait")
                 .text("Wait")
                 .paramDouble("time", 1)
@@ -74,7 +74,7 @@ public final class AutoBlocks {
                         ((BlockStackInst) params[1]).toCommand(robot)
                 ));
 
-        BlockCategory lights = defineCategory("Lights");
+        BlockCategory lights = defineCategory("Lights", 69, 39, 110);
         lights.newBlock("lights")
                 .text("Set lights to ")
                 .paramEnum("color", Lights.Color.class, Lights.Color.BLUE)
@@ -93,7 +93,7 @@ public final class AutoBlocks {
                     
                 });
         
-        BlockCategory drive = defineCategory("Drive");
+        BlockCategory drive = defineCategory("Drive", 42, 57, 112);
         drive.newBlock("blind drive for time")
                 .text("Drive at ")
                 .paramDouble("speed", 1.0)
@@ -162,8 +162,8 @@ public final class AutoBlocks {
 
     private static final List<BlockCategory> categories = new ArrayList<>();
 
-    private static BlockCategory defineCategory(String name) {
-        BlockCategory cat = new BlockCategory(name);
+    private static BlockCategory defineCategory(String name, int r, int g, int b) {
+        BlockCategory cat = new BlockCategory(name, (byte) r, (byte) g, (byte) b);
         categories.add(cat);
         return cat;
     }
