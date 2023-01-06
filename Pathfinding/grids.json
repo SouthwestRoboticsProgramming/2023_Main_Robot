@@ -11,28 +11,12 @@
       "type": "SHAPE",
       "shapes": [
         {
-          "inverted": false,
-          "type": "CIRCLE",
-          "x": 8.2296,
-          "y": 4.0,
-          "radius": 1.0
-        },
-        {
           "type": "RECTANGLE",
-          "x": 8.2296,
+          "x": 80.2296,
           "y": 4.1148,
           "width": 16.4592,
           "height": 8.2296,
           "rotation": 0.0,
-          "inverted": true
-        },
-        {
-          "type": "RECTANGLE",
-          "x": 13.0,
-          "y": 4.0,
-          "width": 4.0,
-          "height": 1.0,
-          "rotation": 0.7853981633974483,
           "inverted": false
         }
       ]

@@ -1,10 +1,9 @@
 package com.swrobotics.shufflelog.tool.field;
 
+import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.ShuffleLog;
-import com.swrobotics.shufflelog.math.Matrix4f;
-import com.swrobotics.shufflelog.math.Vector2f;
-import com.swrobotics.shufflelog.math.Vector3f;
+import com.swrobotics.shufflelog.math.*;
 import com.swrobotics.shufflelog.tool.ViewportTool;
 import com.swrobotics.shufflelog.tool.field.path.PathfindingLayer;
 import com.swrobotics.shufflelog.tool.field.tag.TagTrackerLayer;
@@ -83,8 +82,6 @@ public final class FieldViewTool extends ViewportTool {
 
     // Can be null
     public Vector2f getCursorPos() {
-        if (viewMode.get() != MODE_2D)
-            return null;
         return cursorPos;
     }
 
@@ -211,11 +208,33 @@ public final class FieldViewTool extends ViewportTool {
             float mouseX = mouse.x - x;
             float mouseY = mouse.y - y;
 
-            if (viewMode.get() == MODE_2D) {
+            if (mouseX >= 0 && mouseY >= 0 && mouseX < size.x && mouseY < size.y) {
+                Ray3f mouseRay;
+                if (viewMode.get() == MODE_2D) {
+                    float rayX = (mouseX - size.x / 2) / orthoScale;
+                    float rayY = -(mouseY - size.y / 2) / orthoScale;
+                    mouseRay = new Ray3f(new Vector3f(rayX, rayY, 0), new Vector3f(0, 0, 1));
+                } else {
+                    float normX = (2.0f * mouseX) / size.x - 1.0f;
+                    float normY = 1.0f - (2.0f * mouseY) / size.y;
+                    Vector4f clipSpace = new Vector4f(normX, normY, -1, 1);
+                    Vector4f eyeSpace = new Matrix4f(projection).invert().mul(clipSpace);
+                    mouseRay = new Ray3f(new Vector3f(0, 0, 0), new Vector3f(eyeSpace.x, eyeSpace.y, -1).normalize());
+                }
+
+                Matrix4f invView = new Matrix4f(view).invert();
+                Vector3f orig = invView.transformPosition(mouseRay.getOrigin());
+                Vector3f dir = invView.transformDirection(mouseRay.getDirection());
+
+                float zDelta = -orig.z;
+                float dirScale = zDelta / dir.z;
+
                 cursorPos = new Vector2f(
-                        (mouseX - size.x / 2) / orthoScale,
-                        -(mouseY - size.y / 2) / orthoScale
+                        orig.x + dir.x * dirScale,
+                        orig.y + dir.y * dirScale
                 );
+            } else {
+                cursorPos = null;
             }
 
             if (hovered && !gizmoConsumesMouse) {
