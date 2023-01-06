@@ -350,25 +350,26 @@ public final class Matrix4f {
 	        case 0: m00 = m; break; case 1: m01 = m; break;
 	        case 2: m02 = m; break; case 3: m03 = m; break;
 	        default: throw new IndexOutOfBoundsException(i + ", " + j);
-	    }
+	    } break;
 	    case 1: switch (j) {
 	        case 0: m10 = m; break; case 1: m11 = m; break;
 	        case 2: m12 = m; break; case 3: m13 = m; break;
 	        default: throw new IndexOutOfBoundsException(i + ", " + j);
-	    }
+	    } break;
 	    case 2: switch (j) {
 	        case 0: m20 = m; break; case 1: m21 = m; break;
 	        case 2: m22 = m; break; case 3: m23 = m; break;
 	        default: throw new IndexOutOfBoundsException(i + ", " + j);
-	    }
+	    } break;
 	    case 3: switch (j) {
 	        case 0: m30 = m; break; case 1: m31 = m; break;
 	        case 2: m32 = m; break; case 3: m33 = m; break;
 	        default: throw new IndexOutOfBoundsException(i + ", " + j);
-	    }
+	    } break;
+		default:
+			throw new IndexOutOfBoundsException(i + ", " + j);
 	}
-
-	throw new IndexOutOfBoundsException(i + ", " + j);
+	return this;
     }
 
     public float[] getRowMajor() {
