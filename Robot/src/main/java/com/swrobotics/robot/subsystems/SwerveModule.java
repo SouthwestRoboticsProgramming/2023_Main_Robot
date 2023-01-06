@@ -14,6 +14,7 @@ import com.swrobotics.lib.net.NTDouble;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
@@ -122,12 +123,20 @@ public class SwerveModule {
         return new SwerveModuleState(getDriveVelocity(), getAngle());
     }
 
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(getDistance(), getAngle());
+    }
+
     public Rotation2d getAngle() {
         if (RobotBase.isSimulation()) {
             return targetState.angle;
         }
 
         return fromNativeTurnUnits(turn.getSelectedSensorPosition());
+    }
+
+    public double getDistance() {
+        return fromNativeDriveUnits(drive.getSelectedSensorPosition());
     }
 
     public Rotation2d getAbsoluteAngle() {
