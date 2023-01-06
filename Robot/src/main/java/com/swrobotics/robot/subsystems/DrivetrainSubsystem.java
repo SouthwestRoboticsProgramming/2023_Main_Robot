@@ -2,7 +2,7 @@ package com.swrobotics.robot.subsystems;
 
 import java.util.HashMap;
 
-import com.kauailabs.navx.frc.AHRS;
+// import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.ADIS16448_IMU;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -98,7 +99,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
             new Translation2d(-DRIVETRAIN_TRACKWIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0));
 
     // Initialize a NavX over MXP port
-    private final AHRS gyro = new AHRS(Port.kMXP);
+    // private final AHRS gyro = new AHRS(Port.kMXP);
+    private final ADIS16448_IMU gyro = new ADIS16448_IMU();
     private Rotation2d gyroOffset = new Rotation2d(); // Subtracted to get angle
 
     // Create a field sim to view where the odometry thinks we are
@@ -161,11 +163,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
         if (RobotBase.isSimulation()) {
             return getPose().getRotation();
         }
-        return gyro.getRotation2d().minus(gyroOffset);
+        // return gyro.getRotation2d().minus(gyroOffset);
+        return Rotation2d.fromDegrees(gyro.getAngle()).minus(gyroOffset);
+
     }
 
     private Rotation2d getRawGyroscopeRotation() {
-        return gyro.getRotation2d();
+        // return gyro.getRotation2d();
+        return Rotation2d.fromDegrees(gyro.getAngle());
     }
 
     public void zeroGyroscope() {
