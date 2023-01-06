@@ -22,6 +22,8 @@ public final class BlockInst {
     private boolean valid = true;
     private boolean isPaletteEntry;
 
+    private float prevW, prevH;
+
     public BlockInst(BlockDef def, Object[] params) {
         this.def = def;
         this.params = params;
@@ -89,9 +91,16 @@ public final class BlockInst {
     public boolean draw(Runnable ctxMenu) {
         ImDrawList draw = ImGui.getWindowDrawList();
 
+        int border = def.getCategory().getBorderColor();
+        int color = def.getCategory().getBgColor();
+        float pad = ImGui.getStyle().getItemSpacingY() / 2;
+
+        float bgX = ImGui.getCursorPosX() + ImGui.getWindowPosX();
+        float bgY = ImGui.getCursorPosY() + ImGui.getWindowPosY();
+        draw.addRectFilled(bgX - pad, bgY - pad, bgX + prevW + pad, bgY + prevH + pad, color);
+        draw.addRect(bgX - pad, bgY - pad, bgX + prevW + pad, bgY + prevH + pad, border);
+
         boolean changed = false;
-        draw.channelsSplit(2);
-        draw.channelsSetCurrent(1);
         ImGui.beginGroup();
         ImGui.beginGroup();
         int paramIdx = 0;
@@ -138,13 +147,9 @@ public final class BlockInst {
         dragSource();
         ctxMenu.run();
         ImGui.endGroup();
-        int border = def.getCategory().getBorderColor();
-        int color = def.getCategory().getBgColor();
-        float pad = ImGui.getStyle().getItemSpacingY() / 2;
-        draw.channelsSetCurrent(0);
-        draw.addRectFilled(ImGui.getItemRectMinX()-pad, ImGui.getItemRectMinY()-pad, ImGui.getItemRectMaxX()+pad, ImGui.getItemRectMaxY()+pad, color);
-        draw.addRect(ImGui.getItemRectMinX()-pad, ImGui.getItemRectMinY()-pad, ImGui.getItemRectMaxX()+pad, ImGui.getItemRectMaxY()+pad, border);
-        draw.channelsMerge();
+
+        prevW = ImGui.getItemRectMaxX() - ImGui.getItemRectMinX();
+        prevH = ImGui.getItemRectMaxY() - ImGui.getItemRectMinY();
 
         return changed;
     }
