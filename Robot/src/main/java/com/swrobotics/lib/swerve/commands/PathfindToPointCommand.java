@@ -30,6 +30,7 @@ public final class PathfindToPointCommand extends CommandBase {
     private final Lights lights; // For debugging; TODO: Remove
 
     private final Vec2d goal;
+    private boolean done;
 
     public PathfindToPointCommand(RobotContainer robot, Vec2d goal) {
         drive = robot.m_drivetrainSubsystem;
@@ -38,6 +39,8 @@ public final class PathfindToPointCommand extends CommandBase {
         this.goal = goal;
 
         addRequirements(drive);
+
+        done = false;
     }
 
     @Override
@@ -88,10 +91,7 @@ public final class PathfindToPointCommand extends CommandBase {
         double deltaY = target.y - currentPosition.y;
         double len = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         if (len < TOLERANCE) {
-            System.out.println("In tolerance to target");
-            // Don't move if already in tolerance (waiting for angle to be good)
-            deltaX = 0;
-            deltaY = 0;
+            done = true;
         }
         deltaX /= len; deltaY /= len;
 
@@ -113,12 +113,6 @@ public final class PathfindToPointCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        Pose2d currentPose = drive.getPose();
-        Vec2d currentPosition = new Vec2d(
-                currentPose.getX(),
-                currentPose.getY()
-        );
-
-        return currentPosition.distanceToSq(goal) < TOLERANCE * TOLERANCE;
+        return done;
     }
 }

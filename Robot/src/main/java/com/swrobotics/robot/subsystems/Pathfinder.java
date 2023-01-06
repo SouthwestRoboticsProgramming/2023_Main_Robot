@@ -14,11 +14,15 @@ public final class Pathfinder extends SubsystemBase {
     private static final String MSG_SET_GOAL = "Pathfinder:SetGoal";
     private static final String MSG_PATH = "Pathfinder:Path";
 
+    private static final double CORRECT_TARGET_TOL = 0.1524 + 0.1;
+
     private final MessengerClient msg;
     private final DrivetrainSubsystem drive;
 
     private final List<Vec2d> path;
     private boolean pathValid;
+
+    private double goalX, goalY;
 
     public Pathfinder(MessengerClient msg, DrivetrainSubsystem drive) {
         this.msg = msg;
@@ -29,14 +33,26 @@ public final class Pathfinder extends SubsystemBase {
     }
 
     public void setGoal(double x, double y) {
+        goalX = x;
+        goalY = y;
         msg.prepare(MSG_SET_GOAL)
                 .addDouble(x)
                 .addDouble(y)
                 .send();
     }
 
+    private boolean pathTargetCorrect() {
+        if (path.isEmpty())
+            return false;
+
+        Vec2d last = path.get(path.size() - 1);
+        double dx = last.x - goalX;
+        double dy = last.y - goalY;
+        return dx * dx + dy * dy < CORRECT_TARGET_TOL * CORRECT_TARGET_TOL;
+    }
+
     public boolean isPathValid() {
-        return pathValid;
+        return pathValid && pathTargetCorrect();
     }
 
     public List<Vec2d> getPath() {
