@@ -41,11 +41,6 @@ public final class PathfindToPointCommand extends CommandBase {
     }
 
     @Override
-    public void initialize() {
-        drive.resetPose(new Pose2d(8.2296, 8.2296/2, new Rotation2d()));
-    }
-
-    @Override
     public void execute() {
         finder.setGoal(goal.x, goal.y);
         if (!finder.isPathValid()) {
