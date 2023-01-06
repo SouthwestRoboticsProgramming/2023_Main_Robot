@@ -70,8 +70,8 @@ public final class FieldViewTool extends ViewportTool {
 
         cameraRotX = new SmoothFloat(SMOOTH, 0);
         cameraRotY = new SmoothFloat(SMOOTH, 0);
-        cameraTargetX = new SmoothFloat(SMOOTH, 0);
-        cameraTargetY = new SmoothFloat(SMOOTH, 0);
+        cameraTargetX = new SmoothFloat(SMOOTH, (float) WIDTH/2);
+        cameraTargetY = new SmoothFloat(SMOOTH, (float) HEIGHT/2);
         cameraTargetZ = new SmoothFloat(SMOOTH, 0);
         cameraDist = new SmoothFloat(SMOOTH, 8);
 
