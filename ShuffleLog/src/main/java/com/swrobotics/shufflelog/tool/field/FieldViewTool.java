@@ -30,8 +30,8 @@ import static com.swrobotics.shufflelog.util.ProcessingUtils.setPMatrix;
 import static processing.core.PConstants.P3D;
 
 public final class FieldViewTool extends ViewportTool {
-    public static final double WIDTH = 8.2296;
-    public static final double HEIGHT = 16.4592;
+    public static final double WIDTH = 16.4592;
+    public static final double HEIGHT = 8.2296;
 
     private static final float SMOOTH = 12;
 
@@ -74,7 +74,7 @@ public final class FieldViewTool extends ViewportTool {
         cameraTargetX = new SmoothFloat(SMOOTH, 0);
         cameraTargetY = new SmoothFloat(SMOOTH, 0);
         cameraTargetZ = new SmoothFloat(SMOOTH, 0);
-        cameraDist = new SmoothFloat(SMOOTH, 10);
+        cameraDist = new SmoothFloat(SMOOTH, 8);
 
         gizmoOp = Operation.TRANSLATE;
         gizmoMode = Mode.WORLD;
