@@ -4,8 +4,8 @@
 
 package com.swrobotics.robot;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
@@ -24,8 +24,8 @@ import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Pathfinder;
-import com.swrobotics.robot.subsystems.Vision;
 import com.swrobotics.robot.subsystems.Lights.Color;
+import com.swrobotics.robot.subsystems.vision.Photon;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -34,10 +34,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.button.Button;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import com.swrobotics.mathlib.CWAngle;
 
@@ -62,7 +63,7 @@ public class RobotContainer {
     // The robot's subsystems and commands are defined here...
     public final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
     public final Lights m_lights = new Lights();
-    public final Vision m_vision = new Vision(m_drivetrainSubsystem);
+    public final Photon m_vision = new Photon(m_drivetrainSubsystem);
     public final Pathfinder m_pathfinder;
 
     private final XboxController m_controller = new XboxController(0);
@@ -194,9 +195,9 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         // Back button zeros the gyroscope
-        new Button(m_controller::getBackButton)
+        new Trigger(m_controller::getBackButton)
                 // No requirements because we don't need to interrupt anything
-                .whenPressed(m_drivetrainSubsystem::zeroGyroscope);
+                .onTrue(Commands.runOnce(() -> m_drivetrainSubsystem.zeroGyroscope()));
     }
 
     /**
@@ -238,7 +239,7 @@ public class RobotContainer {
         return value;
     }
 
-    private static ArrayList<PathPlannerTrajectory> getPath(String name) {
+    private static List<PathPlannerTrajectory> getPath(String name) {
         return PathPlanner.loadPathGroup(name, new PathConstraints(0.2, 0.1)); // FIXME: Add throws and catch
     }
 
