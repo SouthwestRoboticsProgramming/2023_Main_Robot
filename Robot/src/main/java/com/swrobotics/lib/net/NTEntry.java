@@ -1,6 +1,5 @@
 package com.swrobotics.lib.net;
 
-import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -43,9 +42,9 @@ public abstract class NTEntry<T> implements Supplier<T> {
             set(defaultVal);
 
         entry.setPersistent();
-        entry.addListener((event) -> {
-            fireOnChanged();
-        }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+        // entry.addListener((event) -> {
+        //     fireOnChanged();
+        // }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate); FIXME: Deprecated
     }
 
     public abstract void set(T value);
