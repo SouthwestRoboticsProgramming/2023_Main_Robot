@@ -1,13 +1,11 @@
 package com.swrobotics.robot.subsystems.vision;
 
 import org.photonvision.PhotonCamera;
-import org.photonvision.SimVisionSystem2022;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -27,57 +25,33 @@ public class Photon extends SubsystemBase {
     // Tree map to map each AprilTag IDs to locations
     private final TreeMap<Integer, Pose3d> targets = new TreeMap<>();
 
-    // SimVisionSystem acts as a replacement for PhotonVision server
-    private final SimVisionSystem2022 simulated;
-
     private final PhotonCamera camera = new PhotonCamera("Front"); // PhotonVision on Limelight must be called "Front"
     private final DrivetrainSubsystem drive;
 
     public Photon(DrivetrainSubsystem drive) {
         this.drive = drive;
 
-        // Map target locations to their AprilTag IDs
-        targets.put(DOOR_ID, DOOR_POSE);
-        targets.put(WINDOW_ID, WINDOW_POSE);
-        targets.put(3, TEST_POSE); // FIXME: Remove
-
-        if (RobotBase.isSimulation()) {
-            simulated = new SimVisionSystem2022("Front", CAMERA_DIAG_FOV, CAMERA_POSITION, 10, CAMERA_RESOLUTION[0],
-                    CAMERA_RESOLUTION[1], PIPELINE_MIN_TARGET_AREA);
-
-            simulated.addSimVisionTarget(DOOR_TARGET);
-            simulated.addSimVisionTarget(WINDOW_TARGET);
-        } else {
-            simulated = null;
-        }
-
         SmartDashboard.putBoolean("Calibrate with vision", true);
     }
 
     @Override
     public void periodic() {
-
-        // Not in separate simulationPeriodic because it causes the drive to update with
-        // outdated measurements
-        if (RobotBase.isSimulation()) {
-            // Run calculations to figure out what targets the camera would be able to see
-            simulated.processFrame(drive.getPose());
-        }
-
         SmartDashboard.putBoolean("Target Found", false);
 
+        // Don't update with blurry photos
         if (drive.isMoving()) {
             filter.get(drive.getPose());
             return;
         }
 
+        // Don't update if there are no targets
         var results = camera.getLatestResult();
         if (!results.hasTargets()) {
             filter.get(drive.getPose());
             return;
         }
         
-        // If the target was tracked really poorly, don't use it
+        // Don't update if the target was tracked poorly
         double ambiguity = results.getBestTarget().getPoseAmbiguity();
         if (ambiguity > MAX_AMBIGUITY || ambiguity < 0) {
             System.out.println("Too ambiguous");
@@ -85,7 +59,6 @@ public class Photon extends SubsystemBase {
             return;
         }
 
-        // System.out.println("Found a target");
         SmartDashboard.putBoolean("Target Found", true);
         
         // Get the location of the camera relative to the target
@@ -109,7 +82,6 @@ public class Photon extends SubsystemBase {
             Transform2d cameraRelativeToRobot = new Transform2d(CAMERA_POSITION.getTranslation().toTranslation2d(),
             CAMERA_POSITION.getRotation().toRotation2d());
 
-            // FIXME: Could be bugged out by camera moving during the match
             Pose2d robotPose = cameraPose.transformBy(cameraRelativeToRobot);
 
             robotPose = filter.get(robotPose);
