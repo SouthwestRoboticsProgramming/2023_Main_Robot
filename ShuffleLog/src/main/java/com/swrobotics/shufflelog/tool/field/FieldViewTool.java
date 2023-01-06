@@ -178,10 +178,10 @@ public final class FieldViewTool extends ViewportTool {
             if (ImGui.button("Reset View")) {
                 cameraRotX.set(0);
                 cameraRotY.set(0);
-                cameraTargetX.set(0);
-                cameraTargetY.set(0);
+                cameraTargetX.set((float) WIDTH/2);
+                cameraTargetY.set((float) HEIGHT/2);
                 cameraTargetZ.set(0);
-                cameraDist.set(10);
+                cameraDist.set(8);
             }
 
             ImGui.separator();
