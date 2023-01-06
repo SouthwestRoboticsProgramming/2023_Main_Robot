@@ -1,16 +1,13 @@
-package com.swrobotics.robot.subsystems;
+package com.swrobotics.robot.subsystems.vision;
 
 import org.photonvision.PhotonCamera;
 import org.photonvision.SimVisionSystem2022;
-import org.photonvision.SimVisionTarget;
 
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -19,8 +16,9 @@ import static com.swrobotics.robot.VisionConstants.*;
 import java.util.TreeMap;
 
 import com.swrobotics.robot.PoseFilter;
+import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 
-public class Vision extends SubsystemBase {
+public class Photon extends SubsystemBase {
 
     private static PoseFilter filter = new PoseFilter(15);
 
@@ -35,7 +33,7 @@ public class Vision extends SubsystemBase {
     private final PhotonCamera camera = new PhotonCamera("Front"); // PhotonVision on Limelight must be called "Front"
     private final DrivetrainSubsystem drive;
 
-    public Vision(DrivetrainSubsystem drive) {
+    public Photon(DrivetrainSubsystem drive) {
         this.drive = drive;
 
         // Map target locations to their AprilTag IDs
