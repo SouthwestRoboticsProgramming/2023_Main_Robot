@@ -41,7 +41,13 @@ enum StopPosition {
 }
 
 
-public class DrivetrainSubsystem extends SubsystemBase {
+public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable {
+
+    public StatusLogging logger;
+
+    public void initLogging(StatusLogging logger) {
+        this.logger = logger;
+    }
 
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
