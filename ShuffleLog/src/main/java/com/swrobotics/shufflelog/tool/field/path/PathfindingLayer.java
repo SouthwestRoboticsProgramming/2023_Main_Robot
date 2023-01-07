@@ -161,7 +161,7 @@ public final class PathfindingLayer implements FieldLayer {
     }
 
     @Override
-    public void draw(PGraphics g, float metersScale) {
+    public void draw(PGraphics g) {
         if (grid == null && reqGridsCooldown.request()) {
             msg.send(MSG_GET_GRIDS);
         }
@@ -178,17 +178,17 @@ public final class PathfindingLayer implements FieldLayer {
         }
 
         // Wavy ends go wheeeeeeee (for testing latency)
-        msg.prepare(MSG_SET_POS)
-                .addDouble(follower.getX())
-                .addDouble(follower.getY())
-                .send();
+//        msg.prepare(MSG_SET_POS)
+//                .addDouble(follower.getX())
+//                .addDouble(follower.getY())
+//                .send();
 
         Vector2f cursor = tool.getCursorPos();
         if (cursor != null) {
-            msg.prepare(MSG_SET_GOAL)
-                    .addDouble(cursor.x)
-                    .addDouble(cursor.y)
-                    .send();
+//            msg.prepare(MSG_SET_GOAL)
+//                    .addDouble(cursor.x)
+//                    .addDouble(cursor.y)
+//                    .send();
         }
 
         boolean lines = showGridLines.get();
@@ -196,14 +196,13 @@ public final class PathfindingLayer implements FieldLayer {
         boolean shapes = showShapes.get();
         boolean path = showPath.get();
 
-        float strokeMul = 1 / metersScale;
         g.pushMatrix();
         {
             // Transform into cell space
             float cellSize = (float) fieldInfo.getCellSize();
             g.scale(cellSize, -cellSize);
             g.translate((float) -fieldInfo.getOriginX(), (float) -fieldInfo.getOriginY());
-            float cellStrokeMul = strokeMul / cellSize;
+            float cellStrokeMul = 1 / cellSize;
 
             int cellsX = fieldInfo.getCellsX();
             int cellsY = fieldInfo.getCellsY();
@@ -239,21 +238,21 @@ public final class PathfindingLayer implements FieldLayer {
 
         // Show shapes
         if (shapes) {
-            drawShapes(g, grid, strokeMul, g.color(201, 101, 18), g.color(201, 101, 18, 128));
-            drawShapes(g, hoveredNode, strokeMul, g.color(46, 174, 217), g.color(46, 174, 217, 128));
+            drawShapes(g, grid, g.color(201, 101, 18), g.color(201, 101, 18, 128));
+            drawShapes(g, hoveredNode, g.color(46, 174, 217), g.color(46, 174, 217, 128));
         }
 
         // Show path
         if (path) {
             if (this.path != null) {
-                g.strokeWeight(4 * strokeMul);
+                g.strokeWeight(4);
                 g.stroke(214, 196, 32, 128);
                 g.beginShape(PConstants.LINE_STRIP);
                 for (Point p : this.path)
                     g.vertex((float) p.x, (float) p.y);
                 g.endShape();
 
-                g.strokeWeight(2 * strokeMul);
+                g.strokeWeight(2);
                 g.stroke(214, 196, 32);
                 g.beginShape(PConstants.LINE_STRIP);
                 for (Point p : this.path)
@@ -264,37 +263,37 @@ public final class PathfindingLayer implements FieldLayer {
             // Show endpoints
             g.pushMatrix();
             g.translate(0, 0, 0.005f);
-            g.strokeWeight(strokeMul);
+            g.strokeWeight(1);
             g.ellipseMode(PConstants.CENTER);
             g.stroke(27, 196, 101, 128);
             g.fill(27, 196, 101);
-            float startSize = startX == goalX && startY == goalY ? 0.12f*strokeMul : 0.10f*strokeMul;
+            float startSize = startX == goalX && startY == goalY ? 0.12f : 0.10f;
             g.ellipse((float) startX, (float) startY, startSize, startSize);
             g.stroke(44, 62, 199, 128);
             g.fill(44, 62, 199);
-            g.ellipse((float) goalX, (float) goalY, 0.10f*strokeMul, 0.10f*strokeMul);
+            g.ellipse((float) goalX, (float) goalY, 0.10f, 0.10f);
             g.popMatrix();
         }
 
-        follower.setPath(this.path);
-        followerStatus = follower.go();
-
-        if (robotShape != null)
-            drawShape(
-                    g,
-                    robotShape,
-                    strokeMul,
-                    g.color(255, 0, 255),
-                    g.color(255, 0, 255, 128),
-                    (float) follower.getX(),
-                    (float) follower.getY()
-            );
+//        follower.setPath(this.path);
+//        followerStatus = follower.go();
+//
+//        if (robotShape != null)
+//            drawShape(
+//                    g,
+//                    robotShape,
+//                    strokeMul,
+//                    g.color(255, 0, 255),
+//                    g.color(255, 0, 255, 128),
+//                    (float) follower.getX(),
+//                    (float) follower.getY()
+//            );
     }
 
     String followerStatus = "";
 
-    private void drawShape(PGraphics g, Shape shape, float strokeMul, int fg, int bg) { drawShape(g, shape, strokeMul, fg, bg, 0, 0); }
-    private void drawShape(PGraphics g, Shape shape, float strokeMul, int fg, int bg, float ox, float oy) {
+    private void drawShape(PGraphics g, Shape shape, int fg, int bg) { drawShape(g, shape, fg, bg, 0, 0); }
+    private void drawShape(PGraphics g, Shape shape, int fg, int bg, float ox, float oy) {
         if (shape instanceof Circle) {
             Circle c = (Circle) shape;
             g.ellipseMode(PConstants.CENTER);
@@ -304,10 +303,10 @@ public final class PathfindingLayer implements FieldLayer {
             float y = (float) c.y.get() + oy;
             float d = (float) (2 * c.radius.get());
 
-            g.strokeWeight(4 * strokeMul);
+            g.strokeWeight(4);
             g.stroke(bg);
             g.ellipse(x, y, d, d);
-            g.strokeWeight(2 * strokeMul);
+            g.strokeWeight(2);
             g.stroke(fg);
             g.ellipse(x, y, d, d);
         } else if (shape instanceof Rectangle) {
@@ -323,27 +322,27 @@ public final class PathfindingLayer implements FieldLayer {
             g.rotate((float) Math.toRadians(rot));
 
             g.noFill();
-            g.strokeWeight(4 * strokeMul);
+            g.strokeWeight(4);
             g.stroke(bg);
             g.rect(-w/2, -h/2, w, h);
             g.stroke(fg);
-            g.strokeWeight(2 * strokeMul);
+            g.strokeWeight(2);
             g.rect(-w/2, -h/2, w, h);
 
             g.popMatrix();
         }
     }
 
-    private void drawShapes(PGraphics g, FieldNode node, float strokeMul, int fg, int bg) {
+    private void drawShapes(PGraphics g, FieldNode node, int fg, int bg) {
         if (node instanceof Shape) {
-            drawShape(g, (Shape) node, strokeMul, fg, bg);
+            drawShape(g, (Shape) node, fg, bg);
         } else if (node instanceof ShapeGrid) {
             for (Shape shape : ((ShapeGrid) node).getShapes()) {
-                drawShape(g, shape, strokeMul, fg, bg);
+                drawShape(g, shape, fg, bg);
             }
         } else if (node instanceof GridUnion) {
             for (Grid grid : ((GridUnion) node).getChildren()) {
-                drawShapes(g, grid, strokeMul, fg, bg);
+                drawShapes(g, grid, fg, bg);
             }
         }
     }

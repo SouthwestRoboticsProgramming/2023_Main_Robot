@@ -1,15 +1,23 @@
 package com.swrobotics.robot.blockauto;
 
+import com.google.gson.*;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.robot.RobotContainer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class BlockStackInst {
+    public static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(BlockStackInst.class, new BlockStackInst.Serializer())
+            .registerTypeAdapter(BlockInst.class, new BlockInst.Serializer())
+            .setPrettyPrinting()
+            .create();
+
     public static BlockStackInst readFromMessenger(MessageReader reader) {
         int len = reader.readInt();
         BlockStackInst inst = new BlockStackInst();
@@ -52,5 +60,30 @@ public final class BlockStackInst {
             seq.addCommands(block.toCommand(robot));
         }
         return seq;
+    }
+
+    public static final class Serializer implements JsonSerializer<BlockStackInst>, JsonDeserializer<BlockStackInst> {
+        @Override
+        public BlockStackInst deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            BlockStackInst stack = new BlockStackInst();
+
+            JsonArray arr = json.getAsJsonArray();
+            for (JsonElement elem : arr) {
+                BlockInst block = context.deserialize(elem, BlockInst.class);
+                if (block != null)
+                    stack.addBlock(block);
+            }
+
+            return stack;
+        }
+
+        @Override
+        public JsonElement serialize(BlockStackInst src, Type typeOfSrc, JsonSerializationContext context) {
+            JsonArray arr = new JsonArray();
+            for (BlockInst block : src.blocks) {
+                arr.add(context.serialize(block));
+            }
+            return arr;
+        }
     }
 }

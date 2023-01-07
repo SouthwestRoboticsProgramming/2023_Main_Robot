@@ -107,7 +107,7 @@ public final class TagTrackerLayer implements FieldLayer {
     }
 
     @Override
-    public void draw(PGraphics g, float metersScale) {
+    public void draw(PGraphics g) {
         if (!hasEnvironment && queryEnvironmentCooldown.request())
             msg.send(MSG_QUERY_ENVIRONMENT);
 
