@@ -89,7 +89,7 @@ public class RobotContainer {
                         * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND));
 
         m_vision.register();
-
+        m_statuslogger.register();
         // Configure the button bindings
         configureButtonBindings();
 
