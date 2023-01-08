@@ -24,7 +24,9 @@ public class TurnBlindCommand extends TimedCommand {
 
         output = new ChassisSpeeds(0, 0, omegaRadiansPerSecond);
 
-        addRequirements(drive);
+
+        addRequirements(drive.TURN_SUBSYSTEM);
+
     }
 
     @Override

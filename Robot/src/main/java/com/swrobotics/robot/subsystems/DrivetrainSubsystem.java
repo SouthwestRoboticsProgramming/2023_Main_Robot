@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
@@ -33,17 +34,19 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-
-
-
 public class DrivetrainSubsystem extends SubsystemBase {
 
-    // The Stop Position Enu
+    // The Stop Position Enum
     public enum StopPosition {
         NONE,
         CROSS,
         CIRCLE,
     }
+
+
+    // Use these instead of adding DrivetrainSubsystem as requirements for commands
+    public final Subsystem TURN_SUBSYSTEM = new SubsystemBase() {};
+    public final Subsystem DRIVE_SUBSYSTEM = new SubsystemBase() {};
 
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {

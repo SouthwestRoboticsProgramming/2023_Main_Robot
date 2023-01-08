@@ -31,7 +31,9 @@ public class TurnToAngleCommand extends CommandBase {
 
         pid.setTolerance(0.1);
 
-        addRequirements(drive);
+
+        addRequirements(drive.TURN_SUBSYSTEM);
+
     }
 
     @Override

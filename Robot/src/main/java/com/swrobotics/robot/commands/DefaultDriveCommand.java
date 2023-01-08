@@ -16,16 +16,16 @@ public class DefaultDriveCommand extends CommandBase {
     private final DoubleSupplier m_translationYSupplier;
     private final DoubleSupplier m_rotationSupplier;
 
-    public DefaultDriveCommand(DrivetrainSubsystem drivetrainSubsystem,
+    public DefaultDriveCommand(DrivetrainSubsystem drive,
                                DoubleSupplier translationXSupplier,
                                DoubleSupplier translationYSupplier,
                                DoubleSupplier rotationSupplier) {
-        this.m_drivetrainSubsystem = drivetrainSubsystem;
+        this.m_drivetrainSubsystem = drive;
         this.m_translationXSupplier = translationXSupplier;
         this.m_translationYSupplier = translationYSupplier;
         this.m_rotationSupplier = rotationSupplier;
 
-        addRequirements(drivetrainSubsystem);
+        addRequirements(drive.DRIVE_SUBSYSTEM, drive.TURN_SUBSYSTEM);
     }
 
     @Override
