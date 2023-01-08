@@ -34,17 +34,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-// The Stop Position Enu
-enum StopPosition {
-    NONE,
-    CROSS,
-    CIRCLE,
-}
-
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
-    // The Stop Position Enu
+    // The Stop Position Enum
     public enum StopPosition {
         NONE,
         CROSS,
