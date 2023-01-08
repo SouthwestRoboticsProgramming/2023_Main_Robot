@@ -7,42 +7,42 @@ import processing.core.PConstants;
 import processing.core.PGraphics;
 
 public final class FieldVectorLayer2023 implements FieldLayer {
-    float width = 54*12+1;
-    float height = 216.03f + 99.07f;
+    private static final float width = 54*12+1;
+    private static final float height = 216.03f + 99.07f;
 
-    float centerX = width / 2;
-    float centerY = height / 2;
+    private static final float centerX = width / 2;
+    private static final float centerY = height / 2;
 
     // Dimensions from official FIRST field drawings unless otherwise specified
-    float gamePieceSpacingFromCenterX = 47.36f;
-    float gamePieceSpacingFromCenterY = 22.39f;
-    float gamePieceSpacing = 48;
+    private static final float gamePieceSpacingFromCenterX = 47.36f;
+    private static final float gamePieceSpacingFromCenterY = 22.39f;
+    private static final float gamePieceSpacing = 48;
 
-    float doubleSubstationInnerFromLeft = 14; // Game manual pg. 30
+    private static final float doubleSubstationInnerFromLeft = 14; // Game manual pg. 30
 
-    float loadingZoneInnerSpacingFromCenterX = 61.36f;
-    float loadingZoneHorizSpacingFromTop = 50.50f;
-    float loadingZoneOuterSpacingFromDoubleSubstationInner = 118.25f;
-    float barrierSpacingFromTop = 99.07f;
+    private static final float loadingZoneInnerSpacingFromCenterX = 61.36f;
+    private static final float loadingZoneHorizSpacingFromTop = 50.50f;
+    private static final float loadingZoneOuterSpacingFromDoubleSubstationInner = 118.25f;
+    private static final float barrierSpacingFromTop = 99.07f;
 
-    float communityLowerSpacingFromGamePieces = 85.13f;
+    private static final float communityLowerSpacingFromGamePieces = 85.13f;
 
-    float gridInnerSpacingFromGamePieces = 224f;
+    private static final float gridInnerSpacingFromGamePieces = 224f;
 
-    float gridInnerToChargeStationSpacing = 60.69f;
-    float chargeStationLowerSpacing = 59.39f;
-    float gridInnerToChargeStationCableProtectorCenterSpacing = 96.75f;
-    float gridInnerToChargeStationCableProtectorOuterSpacing = 95.25f;
+    private static final float gridInnerToChargeStationSpacing = 60.69f;
+    private static final float chargeStationLowerSpacing = 59.39f;
+    private static final float gridInnerToChargeStationCableProtectorCenterSpacing = 96.75f;
+    private static final float gridInnerToChargeStationCableProtectorOuterSpacing = 95.25f;
 
-    float gridL1ToDoubleSubstationInnerSpacing = 26.19f;
-    float communityHorizToGridTopCubeCenterYSpacing = 91.55f;
-    float gridCubeSpacing = 66;
-    float gridCubeWidth = 18.25f;
+    private static final float gridL1ToDoubleSubstationInnerSpacing = 26.19f;
+    private static final float communityHorizToGridTopCubeCenterYSpacing = 91.55f;
+    private static final float gridCubeSpacing = 66;
+    private static final float gridCubeWidth = 18.25f;
 
     // -----------------------------------------------------
 
-    float barrierInnerEndpointX = doubleSubstationInnerFromLeft + loadingZoneOuterSpacingFromDoubleSubstationInner;
-    float gridInnerX = centerX - gamePieceSpacingFromCenterX - gridInnerSpacingFromGamePieces;
+    private static final float barrierInnerEndpointX = doubleSubstationInnerFromLeft + loadingZoneOuterSpacingFromDoubleSubstationInner;
+    private static final float gridInnerX = centerX - gamePieceSpacingFromCenterX - gridInnerSpacingFromGamePieces;
 
     private final ImBoolean show = new ImBoolean(true);
 
