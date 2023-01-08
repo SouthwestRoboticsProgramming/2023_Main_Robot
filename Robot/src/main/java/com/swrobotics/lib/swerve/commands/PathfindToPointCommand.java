@@ -38,7 +38,7 @@ public final class PathfindToPointCommand extends CommandBase {
         this.lights = robot.m_lights;
         this.goal = goal;
 
-        addRequirements(drive);
+        addRequirements(drive.DRIVE_SUBSYSTEM);
 
         done = false;
     }
