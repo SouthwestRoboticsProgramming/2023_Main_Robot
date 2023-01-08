@@ -28,7 +28,7 @@ public class AutoBalanceCommand extends CommandBase {
 
         firstStopPosition = drive.getStopPosition();
 
-        addRequirements(drive);
+        addRequirements(drive.DRIVE_SUBSYSTEM);
     }
 
     @Override
