@@ -145,6 +145,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
             new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3), 270.0)  // Back right
         };
 
+        setBrakeMode(true);
+
         SmartDashboard.putData("Field", field);
         System.out.println("Target Position: " + VisionConstants.DOOR_POSE.toPose2d());
         field.getObject("target").setPose(VisionConstants.DOOR_POSE.toPose2d());
@@ -235,6 +237,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     public void setStopPosition(StopPosition position) {
         stopPosition = position;
+    }
+
+    public StopPosition getStopPosition() {
+        return stopPosition;
     }
 
     public void setBrakeMode(boolean brake) {

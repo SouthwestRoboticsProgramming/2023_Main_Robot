@@ -19,6 +19,7 @@ import com.swrobotics.lib.swerve.commands.TurnBlindCommand;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.blockauto.WaypointStorage;
+import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
@@ -88,7 +89,7 @@ public class RobotContainer {
                 () -> -modifyAxis(m_controller.getRightX())
                         * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND));
 
-        m_vision.register();
+        // m_vision.register();
 
         // Configure the button bindings
         configureButtonBindings();
@@ -147,9 +148,11 @@ public class RobotContainer {
         Command blindDrive = new DriveBlindCommand(this, CWAngle.deg(90), 1, 1, true);
         Command blindTurn = new TurnBlindCommand(this, Math.PI, 2.3);
 
-        Command blindCombo = new ParallelCommandGroup(blindDrive, blindTurn);
+        // Command blindCombo = new ParallelCommandGroup(blindDrive, blindTurn);
 
         Command turnToAngle = new TurnToAngleCommand(this, CWAngle.deg(90), false).withTimeout(5);
+
+        Command testTilt = new AutoBalanceCommand(this);
 
         m_drivetrainSubsystem.showTrajectory(getPath("Door to Window").get(0));
         // m_drivetrainSubsystem.showTrajectory(getPath("Small Path").get(0));
@@ -179,8 +182,9 @@ public class RobotContainer {
         autoSelector.addOption("Just lights", justLights);
         autoSelector.addOption("Block Auto", blockAutoCommand);
         autoSelector.addOption("Blind drive", blindDrive);
-        autoSelector.addOption("Blind combo", blindCombo);
+        // autoSelector.addOption("Blind combo", blindCombo);
         autoSelector.addOption("Turn to angle", turnToAngle);
+        autoSelector.addOption("Test tilt", testTilt);
         SmartDashboard.putData(autoSelector);
     }
 
@@ -197,6 +201,10 @@ public class RobotContainer {
         new Button(m_controller::getBackButton)
                 // No requirements because we don't need to interrupt anything
                 .whenPressed(m_drivetrainSubsystem::zeroGyroscope);
+
+        // Start button does leveling sequence on charger
+        new Button(m_controller::getStartButton)
+                .whileHeld(new AutoBalanceCommand(this), true);
     }
 
     /**

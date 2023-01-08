@@ -14,24 +14,26 @@ import com.swrobotics.robot.subsystems.DrivetrainSubsystem.StopPosition;
 public class AutoBalanceCommand extends CommandBase {
 
     private static final NTDouble KP = new NTDouble("Drive/Balance/kP", 0.1);
-    private static final NTDouble TOLERANCE = new NTDouble("Drive/Balance/Tolerance Degrees", 2.5);
 
     private final DrivetrainSubsystem drive;
     private final PIDController pid;
 
+    private final StopPosition firstStopPosition;
+
     public AutoBalanceCommand(RobotContainer robot) {
         drive = robot.m_drivetrainSubsystem;
         pid = new PIDController(KP.get(), 0.0, 0.0);
-        pid.setTolerance(TOLERANCE.get());
 
         KP.onChange(() -> pid.setP(KP.get()));
-        TOLERANCE.onChange(() -> pid.setTolerance(TOLERANCE.get()));
-        
+
+        firstStopPosition = drive.getStopPosition();
+
+        addRequirements(drive);
     }
 
     @Override
     public void initialize() {
-        
+        drive.setStopPosition(StopPosition.CROSS); // Allow it to hold position
     }
 
     @Override
@@ -47,14 +49,8 @@ public class AutoBalanceCommand extends CommandBase {
     }
 
     @Override
-    public boolean isFinished() {
-        return pid.atSetpoint();
-    }
-
-    @Override
     public void end(boolean interrupted) {
-        drive.setStopPosition(StopPosition.CROSS); // Allow it to hold position
-        drive.setBrakeMode(true); // Hold position even more
+        drive.setStopPosition(firstStopPosition); // Set it back to how it was
     }
 
 }
