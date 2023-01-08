@@ -34,6 +34,8 @@ public class TurnToAngleCommand extends CommandBase {
         pid.enableContinuousInput(-Math.PI, Math.PI);
 
         pid.setTolerance(0.1);
+
+        addRequirements(drive.TURN_SUBSYSTEM);
     }
 
     @Override
