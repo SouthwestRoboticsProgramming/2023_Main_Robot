@@ -18,6 +18,8 @@ import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
 import com.swrobotics.lib.swerve.commands.TurnBlindCommand;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.robot.blockauto.AutoBlocks;
+import com.swrobotics.robot.blockauto.WaypointStorage;
+import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
@@ -26,7 +28,6 @@ import com.swrobotics.robot.subsystems.Pathfinder;
 import com.swrobotics.robot.subsystems.Vision;
 import com.swrobotics.robot.subsystems.Lights.Color;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
@@ -83,8 +84,8 @@ public class RobotContainer {
         // Right stick X axis -> rotation
         m_drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(
                 m_drivetrainSubsystem,
-                () -> -modifyAxis(m_controller.getLeftY()) * DrivetrainSubsystem.MAX_VELOCITY_METERS_PER_SECOND,
-                () -> -modifyAxis(m_controller.getLeftX()) * DrivetrainSubsystem.MAX_VELOCITY_METERS_PER_SECOND,
+                () -> -modifyAxis(m_controller.getLeftY()) * DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND,
+                () -> -modifyAxis(m_controller.getLeftX()) * DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND,
                 () -> -modifyAxis(m_controller.getRightX())
                         * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND));
 
@@ -102,6 +103,7 @@ public class RobotContainer {
 
         // Initialize block auto
         AutoBlocks.init(messenger, this);
+        WaypointStorage.init(messenger);
 
         // Generate autos to choose from
         Command blankAuto = new InstantCommand();
@@ -150,6 +152,8 @@ public class RobotContainer {
 
         Command turnToAngle = new TurnToAngleCommand(this, CWAngle.deg(90), false).withTimeout(5);
 
+        Command testTilt = new AutoBalanceCommand(this);
+
         m_drivetrainSubsystem.showTrajectory(getPath("Door to Window").get(0));
         // m_drivetrainSubsystem.showTrajectory(getPath("Small Path").get(0));
 
@@ -180,6 +184,7 @@ public class RobotContainer {
         autoSelector.addOption("Blind drive", blindDrive);
         autoSelector.addOption("Blind combo", blindCombo);
         autoSelector.addOption("Turn to angle", turnToAngle);
+        autoSelector.addOption("Test tilt", testTilt);
         SmartDashboard.putData(autoSelector);
     }
 
@@ -196,6 +201,10 @@ public class RobotContainer {
         new Button(m_controller::getBackButton)
                 // No requirements because we don't need to interrupt anything
                 .whenPressed(m_drivetrainSubsystem::zeroGyroscope);
+
+        // Start button does leveling sequence on charger
+        new Button(m_controller::getStartButton)
+                .whileHeld(new AutoBalanceCommand(this), true);
     }
 
     /**
@@ -229,7 +238,7 @@ public class RobotContainer {
 
     private static double modifyAxis(double value) {
         // Deadband
-        value = deadband(value, 0.05);
+        value = deadband(value, 0.15);
 
         // Square the axis
         value = Math.copySign(value * value, value);

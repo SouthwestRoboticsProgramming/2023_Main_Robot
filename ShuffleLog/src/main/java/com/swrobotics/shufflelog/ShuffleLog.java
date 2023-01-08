@@ -20,7 +20,7 @@ import imgui.gl3.ImGuiImplGl3;
 import processing.core.PApplet;
 import processing.core.PFont;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -38,7 +38,7 @@ public final class ShuffleLog extends PApplet {
     private final List<Tool> removedTools = new ArrayList<>();
 
     // Things shared between tools
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(4);
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     private MessengerClient messenger;
 
     private long startTime;
@@ -48,8 +48,34 @@ public final class ShuffleLog extends PApplet {
         size(1280, 720, P2D);
     }
 
+    private void saveDefaultLayout() {
+        File defaultLayoutFile = new File(LAYOUT_FILE);
+        if (!defaultLayoutFile.exists()) {
+            try {
+                InputStream in = getClass().getClassLoader().getResourceAsStream(LAYOUT_FILE);
+                OutputStream out = new FileOutputStream(defaultLayoutFile);
+
+                if (in == null)
+                    throw new IOException("Failed to load default layout resource");
+
+                byte[] buf = new byte[1024];
+                int read;
+                while ((read = in.read(buf)) > 0)
+                    out.write(buf, 0, read);
+
+                in.close();
+                out.close();
+            } catch (IOException e) {
+                System.err.println("Failed to save default layout file:");
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public void setup() {
+        saveDefaultLayout();
+
         surface.setResizable(true);
         long windowHandle = (long) surface.getNative();
 
@@ -125,6 +151,12 @@ public final class ShuffleLog extends PApplet {
         Profiler.pop();
 
         Profiler.endMeasurements();
+    }
+
+    @Override
+    public void keyPressed() {
+        // Prevent closing on escape key press
+        if (key == ESC) key = 0;
     }
 
     public void addTool(Tool tool) {

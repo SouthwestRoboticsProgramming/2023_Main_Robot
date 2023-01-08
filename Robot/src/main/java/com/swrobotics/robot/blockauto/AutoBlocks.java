@@ -10,9 +10,12 @@ import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.blockauto.part.AnglePart.Mode;
+import com.swrobotics.robot.blockauto.part.FieldPointPart.Point;
+import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.subsystems.Lights;
 
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -55,27 +58,27 @@ public final class AutoBlocks {
     private static void defineBlocks() {
         // The name parameter to newBlock("...") must be unique
 
-        BlockCategory control = defineCategory("Control");
+        BlockCategory control = defineCategory("Control", 123, 73, 14);
         control.newBlock("wait")
                 .text("Wait")
-                .paramDouble(1)
+                .paramDouble("time", 1)
                 .text("seconds")
                 .creator((params, robot) -> new WaitCommand((double) params[0]));
 
         control.newBlock("union")
-                .text("Union of")
-                .paramBlockStack()
-                .text("and")
-                .paramBlockStack()
-                .creator((params, robot) -> new ParallelCommandGroup(
-                        ((BlockStackInst) params[0]).toCommand(robot),
-                        ((BlockStackInst) params[1]).toCommand(robot)
-                ));
+                 .text("Union of")
+                 .paramBlockStack("a")
+                 .text("and")
+                 .paramBlockStack("b")
+                 .creator((params, robot) -> new ParallelCommandGroup(
+                         ((BlockStackInst) params[0]).toCommand(robot),
+                         ((BlockStackInst) params[1]).toCommand(robot)
+                 ));
 
-        BlockCategory lights = defineCategory("Lights");
+        BlockCategory lights = defineCategory("Lights", 69, 39, 110);
         lights.newBlock("lights")
                 .text("Set lights to ")
-                .paramEnum(Lights.Color.class, Lights.Color.BLUE)
+                .paramEnum("color", Lights.Color.class, Lights.Color.BLUE)
                 .creator((params, robot) -> new CommandBase() {
 
                     @Override
@@ -91,47 +94,81 @@ public final class AutoBlocks {
                     
                 });
         
-        BlockCategory drive = defineCategory("Drive");
+        BlockCategory drive = defineCategory("Drive", 42, 57, 112);
         drive.newBlock("blind drive for time")
                 .text("Drive at ")
-                .paramDouble(1.0)
+                .paramDouble("speed", 1.0)
                 .text(" MPS at ")
-                .paramAngle(Mode.CW_DEG, 0.0)
+                .paramAngle("rotation", Mode.CW_DEG, 0.0)
                 .text(" cw deg for ")
-                .paramDouble(1.0)
+                .paramDouble("time", 1.0)
                 .text(" seconds")
                 .text("Robot relative: ")
-                // .paramBoolean(false)
-                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], false));
+                .paramBoolean("robot-relative", false)
+                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], (boolean) params[3]));
 
         drive.newBlock("blind turn for time")
                 .text("Turn at ")
-                .paramDouble(0.0)
+                .paramDouble("rotation", 0.0)
                 .text(" radians per second for ")
-                .paramDouble(1.0)
+                .paramDouble("time", 1.0)
                 .text(" seconds")
                 .creator((params, robot) -> new TurnBlindCommand(robot, (double) params[0], (double) params[1]));
 
         drive.newBlock("turn to angle")
                 .text("Turn to ")
-                .paramAngle(Mode.CW_DEG, 0)
+                .paramAngle("target", Mode.CW_DEG, 0)
                 .text(" cw deg")
                 .text("Robot relative: ")
-                // .paramBoolean(false)
-                .creator((params, robot) -> new TurnToAngleCommand(robot, (Angle) params[0], false));
+                .paramBoolean("robot-relative", false)
+                .creator((params, robot) -> new TurnToAngleCommand(robot, (Angle) params[0], (boolean) params[1]));
+    
+        drive.newBlock("reset pose")
+            .text("Reset pose to ")
+            .paramVec2d("position", 0.0, 0.0)
+            .text("(wpi)")
+            .paramAngle("angle", Mode.CW_DEG, 0.0)
+            .text("(cw deg)")
+            .creator((params, robot) -> new CommandBase() {
+                @Override
+                public void initialize() {
+                    System.out.println("Resetting pose");
+                    
+                    Vec2d translation = (Vec2d) params[0];
+                    Angle rotation = (Angle) params[1];
+
+                    Pose2d newPose = new Pose2d(
+                        new Translation2d(translation.x, translation.y),
+                        rotation.ccw().rotation2d()
+                    );
+
+                    // Reset gyro before reseting odometry to fix field oriented drive
+                    robot.m_drivetrainSubsystem.setGyroscopeRotation(newPose.getRotation());
+                    robot.m_drivetrainSubsystem.resetPose(newPose);
+                }
+
+                @Override
+                public boolean isFinished() {
+                    return true;
+                }
+            });
+
+        drive.newBlock("balance")
+            .text("Balance")
+            .creator((params, robot) -> new AutoBalanceCommand(robot));
 
         drive.newBlock("pathfind to point")
                 .text("Pathfind to ")
-                .paramVec2d(0.0, 0.0)
-                .creator((params, robot) -> new PathfindToPointCommand(robot, (Vec2d) params[0]));
-        
+                .paramFieldPoint("goal", 0.0, 0.0)
+                .creator((params, robot) -> new PathfindToPointCommand(robot, ((Point) params[0]).getPosition()));
+
         initRegistryAndValidate();
     }
 
     private static final List<BlockCategory> categories = new ArrayList<>();
 
-    private static BlockCategory defineCategory(String name) {
-        BlockCategory cat = new BlockCategory(name);
+    private static BlockCategory defineCategory(String name, int r, int g, int b) {
+        BlockCategory cat = new BlockCategory(name, (byte) r, (byte) g, (byte) b);
         categories.add(cat);
         return cat;
     }
@@ -185,7 +222,8 @@ public final class AutoBlocks {
     private static final String MSG_DELETE_CONFIRM  = "AutoBlock:DeleteConfirm";
 
     private static final File PERSISTENCE_DIR = new File(Filesystem.getOperatingDirectory(), "BlockAuto");
-    private static final String PERSISTENCE_FILE_EXT = ".auto";
+    public static final String PERSISTENCE_FILE_EXT = ".json";
+    public static final String PERSISTENCE_FILE_EXT_OLD = ".auto";
     private static final Map<String, PersistentSequence> sequences = new HashMap<>();
 
     private static final Map<String, BlockDef> blockDefRegistry = new HashMap<>();
@@ -207,11 +245,15 @@ public final class AutoBlocks {
         File[] persistenceFiles = PERSISTENCE_DIR.listFiles();
         if (persistenceFiles != null) {
             for (File file : persistenceFiles) {
-                if (!file.getName().endsWith(PERSISTENCE_FILE_EXT))
-                    continue;
+                String ext = PERSISTENCE_FILE_EXT;
+                if (!file.getName().endsWith(PERSISTENCE_FILE_EXT)) {
+                    ext = PERSISTENCE_FILE_EXT_OLD;
+                    if (!file.getName().endsWith(PERSISTENCE_FILE_EXT_OLD))
+                        continue;
+                }
 
                 String name = file.getName();
-                name = name.substring(0, name.length() - PERSISTENCE_FILE_EXT.length());
+                name = name.substring(0, name.length() - ext.length());
 
                 try {
                     PersistentSequence seq = new PersistentSequence(name, file);

@@ -13,7 +13,7 @@ public final class MeterGridLayer implements FieldLayer {
     }
 
     @Override
-    public void draw(PGraphics g, float metersScale) {
+    public void draw(PGraphics g) {
         if (!show.get())
             return;
 
@@ -22,16 +22,15 @@ public final class MeterGridLayer implements FieldLayer {
 
         g.stroke(64);
         g.strokeWeight(1);
-        for (float x = 0; x < width/2; x += 1) {
-            g.line(x, -height/2, x, height/2);
-            g.line(-x, -height/2, -x, height/2);
+        for (float x = 0; x < width; x += 1) {
+            g.line(x, 0, x, height);
         }
-        for (float y = 0; y < height/2; y += 1) {
-            g.line(-width/2, y, width/2, y);
-            g.line(-width/2, -y, width/2, -y);
+        for (float y = 0; y < height; y += 1) {
+            g.line(0, y, width, y);
         }
+
         g.noFill();
-        g.rect(-width/2, -height/2, width, height);
+        g.rect(0, 0, width, height);
     }
 
     @Override

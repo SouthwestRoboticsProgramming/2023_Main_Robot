@@ -30,8 +30,12 @@ Vision/Test.py
 # Emacs temporary files
 *~
 
+# Local Properties File
+local.properties
+
+
 # ImGui storage files
-**/layout.ini
+ShuffleLog/layout.ini
 **/imgui.ini
 **/simgui.json
 **/simgui-ds.json
@@ -39,3 +43,5 @@ Vision/Test.py
 # NetworkTables storage
 **/networktables.ini
 **/networktables.ini.bak
+
+Robot/waypoints.tsv

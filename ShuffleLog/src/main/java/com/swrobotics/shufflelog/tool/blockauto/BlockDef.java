@@ -21,6 +21,7 @@ public final class BlockDef {
 
     private final String name;
     private final List<BlockPart> parts;
+    private BlockCategory category;
 
     public BlockDef(String name, List<BlockPart> parts) {
         this.name = name;
@@ -55,5 +56,13 @@ public final class BlockDef {
             }
         }
         return new BlockInst(this, params.toArray());
+    }
+
+    public BlockCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(BlockCategory category) {
+        this.category = category;
     }
 }

@@ -5,13 +5,9 @@ import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Pathfinder;
-import com.swrobotics.robot.subsystems.Lights.Color;
 import com.swrobotics.robot.subsystems.Lights.IndicatorMode;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 import java.util.List;
@@ -28,8 +24,7 @@ public final class PathfindToPointCommand extends CommandBase {
     private final Lights lights; // For debugging; TODO: Remove
 
     private final Vec2d goal;
-
-    private List<Vec2d> currentPath;
+    private boolean done;
 
     public PathfindToPointCommand(RobotContainer robot, Vec2d goal) {
         drive = robot.m_drivetrainSubsystem;
@@ -37,34 +32,22 @@ public final class PathfindToPointCommand extends CommandBase {
         this.lights = robot.m_lights;
         this.goal = goal;
 
-        addRequirements(drive);
-    }
+        addRequirements(drive.DRIVE_SUBSYSTEM);
 
-    @Override
-    public void initialize() {
-        /* Look for an initial path, if the robot wanders into territory where the pathfinder 
-         * thinks that it cannot go, stick to this path, or the latest that pathfinder has produced
-         */
-        finder.setGoal(goal.x, goal.y);
-        if (!finder.isPathValid()) {
-            System.out.println("Couldn't find initial path, failed routing");
-            lights.set(IndicatorMode.CRITICAL_FAILED);
-            this.cancel(); // Stop trying
-        }
-
-        currentPath = finder.getPath();
+        done = false;
     }
 
     @Override
     public void execute() {
         finder.setGoal(goal.x, goal.y);
-        if (!finder.isPathValid()) {
-            System.out.println("Path bad, resorting to last good path");
-            lights.set(Color.ORANGE); // TODO: Kinda Bad indicator mode
-        } else {
-            lights.set(IndicatorMode.GOOD);
-            currentPath = finder.getPath(); // Update path with the new, valid path
+        if (!finder.isPathTargetValid()) {
+            System.err.println("Path target is incorrect, waiting for good path");
+            drive.setChassisSpeeds(new ChassisSpeeds(0, 0, 0));
+            return;
         }
+
+        lights.set(IndicatorMode.GOOD);
+        List<Vec2d> currentPath = finder.getPath(); // Update path with the new, valid path
 
         Pose2d currentPose = drive.getPose();
         Vec2d currentPosition = new Vec2d(
@@ -104,10 +87,7 @@ public final class PathfindToPointCommand extends CommandBase {
         double deltaY = target.y - currentPosition.y;
         double len = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         if (len < TOLERANCE) {
-            System.out.println("In tolerance to target");
-            // Don't move if already in tolerance (waiting for angle to be good)
-            deltaX = 0;
-            deltaY = 0;
+            done = true;
         }
         deltaX /= len; deltaY /= len;
 
@@ -129,12 +109,6 @@ public final class PathfindToPointCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        Pose2d currentPose = drive.getPose();
-        Vec2d currentPosition = new Vec2d(
-                currentPose.getX(),
-                currentPose.getY()
-        );
-
-        return currentPosition.distanceToSq(goal) < TOLERANCE * TOLERANCE;
+        return done;
     }
 }

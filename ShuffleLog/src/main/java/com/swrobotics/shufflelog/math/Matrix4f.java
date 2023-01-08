@@ -208,10 +208,26 @@ public final class Matrix4f {
 	return dest;
     }
 
+	public Vector4f mul(Vector4f v) {
+		return new Vector4f(
+				m00 * v.x + m01 * v.y + m02 * v.z + m03 * v.w,
+				m10 * v.x + m11 * v.y + m12 * v.z + m13 * v.w,
+				m20 * v.x + m21 * v.y + m22 * v.z + m23 * v.w,
+				m30 * v.x + m31 * v.y + m32 * v.z + m33 * v.w
+		);
+	}
+
     public Vector3f transformPosition(Vector3f v) {
 		float x = m00 * v.x + m01 * v.y + m02 * v.z + m03;
 		float y = m10 * v.x + m11 * v.y + m12 * v.z + m13;
 		float z = m20 * v.x + m21 * v.y + m22 * v.z + m23;
+		return new Vector3f(x, y, z);
+	}
+
+	public Vector3f transformDirection(Vector3f v) {
+		float x = m00 * v.x + m01 * v.y + m02 * v.z;
+		float y = m10 * v.x + m11 * v.y + m12 * v.z;
+		float z = m20 * v.x + m21 * v.y + m22 * v.z;
 		return new Vector3f(x, y, z);
 	}
 
@@ -334,25 +350,26 @@ public final class Matrix4f {
 	        case 0: m00 = m; break; case 1: m01 = m; break;
 	        case 2: m02 = m; break; case 3: m03 = m; break;
 	        default: throw new IndexOutOfBoundsException(i + ", " + j);
-	    }
+	    } break;
 	    case 1: switch (j) {
 	        case 0: m10 = m; break; case 1: m11 = m; break;
 	        case 2: m12 = m; break; case 3: m13 = m; break;
 	        default: throw new IndexOutOfBoundsException(i + ", " + j);
-	    }
+	    } break;
 	    case 2: switch (j) {
 	        case 0: m20 = m; break; case 1: m21 = m; break;
 	        case 2: m22 = m; break; case 3: m23 = m; break;
 	        default: throw new IndexOutOfBoundsException(i + ", " + j);
-	    }
+	    } break;
 	    case 3: switch (j) {
 	        case 0: m30 = m; break; case 1: m31 = m; break;
 	        case 2: m32 = m; break; case 3: m33 = m; break;
 	        default: throw new IndexOutOfBoundsException(i + ", " + j);
-	    }
+	    } break;
+		default:
+			throw new IndexOutOfBoundsException(i + ", " + j);
 	}
-
-	throw new IndexOutOfBoundsException(i + ", " + j);
+	return this;
     }
 
     public float[] getRowMajor() {
