@@ -65,16 +65,15 @@ public final class AutoBlocks {
                 .text("seconds")
                 .creator((params, robot) -> new WaitCommand((double) params[0]));
 
-        // FIXME: Do not add back until parallel commands are fixed (see issue)
-        // control.newBlock("union")
-        //         .text("Union of")
-        //         .paramBlockStack("a")
-        //         .text("and")
-        //         .paramBlockStack("b")
-        //         .creator((params, robot) -> new ParallelCommandGroup(
-        //                 ((BlockStackInst) params[0]).toCommand(robot),
-        //                 ((BlockStackInst) params[1]).toCommand(robot)
-        //         ));
+        control.newBlock("union")
+                 .text("Union of")
+                 .paramBlockStack("a")
+                 .text("and")
+                 .paramBlockStack("b")
+                 .creator((params, robot) -> new ParallelCommandGroup(
+                         ((BlockStackInst) params[0]).toCommand(robot),
+                         ((BlockStackInst) params[1]).toCommand(robot)
+                 ));
 
         BlockCategory lights = defineCategory("Lights", 69, 39, 110);
         lights.newBlock("lights")
