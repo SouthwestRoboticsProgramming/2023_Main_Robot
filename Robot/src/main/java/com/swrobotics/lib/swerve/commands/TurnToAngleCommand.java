@@ -1,7 +1,6 @@
 package com.swrobotics.lib.swerve.commands;
 
 import com.swrobotics.mathlib.Angle;
-import com.swrobotics.robot.Robot;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 
@@ -9,9 +8,6 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class TurnToAngleCommand extends CommandBase {
@@ -34,6 +30,8 @@ public class TurnToAngleCommand extends CommandBase {
         pid.enableContinuousInput(-Math.PI, Math.PI);
 
         pid.setTolerance(0.1);
+
+        addRequirements(drive);
     }
 
     @Override

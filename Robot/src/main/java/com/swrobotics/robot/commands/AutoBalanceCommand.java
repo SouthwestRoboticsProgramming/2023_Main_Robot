@@ -8,8 +8,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import com.swrobotics.robot.subsystems.DrivetrainSubsystem.StopPosition;
 
 public class AutoBalanceCommand extends CommandBase {
 
@@ -18,16 +18,22 @@ public class AutoBalanceCommand extends CommandBase {
     private final DrivetrainSubsystem drive;
     private final PIDController pid;
 
+    private final StopPosition firstStopPosition;
+
     public AutoBalanceCommand(RobotContainer robot) {
         drive = robot.m_drivetrainSubsystem;
         pid = new PIDController(KP.get(), 0.0, 0.0);
 
         KP.onChange(() -> pid.setP(KP.get()));
+
+        firstStopPosition = drive.getStopPosition();
+
+        addRequirements(drive);
     }
 
     @Override
     public void initialize() {
-        
+        drive.setStopPosition(StopPosition.CROSS); // Allow it to hold position
     }
 
     @Override
@@ -43,13 +49,8 @@ public class AutoBalanceCommand extends CommandBase {
     }
 
     @Override
-    public boolean isFinished() {
-        return false;
-    }
-
-    @Override
     public void end(boolean interrupted) {
-        
+        drive.setStopPosition(firstStopPosition); // Set it back to how it was
     }
 
 }

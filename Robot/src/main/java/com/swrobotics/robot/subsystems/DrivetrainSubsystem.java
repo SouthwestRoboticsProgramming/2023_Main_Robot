@@ -33,15 +33,17 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-// The Stop Position Enu
-enum StopPosition {
-    NONE,
-    CROSS,
-    CIRCLE,
-}
+
 
 
 public class DrivetrainSubsystem extends SubsystemBase {
+
+    // The Stop Position Enu
+    public enum StopPosition {
+        NONE,
+        CROSS,
+        CIRCLE,
+    }
 
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
@@ -143,6 +145,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
             new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3), 270.0)  // Back right
         };
 
+        setBrakeMode(true);
+
         SmartDashboard.putData("Field", field);
         System.out.println("Target Position: " + VisionConstants.DOOR_POSE.toPose2d());
         field.getObject("target").setPose(VisionConstants.DOOR_POSE.toPose2d());
@@ -229,6 +233,20 @@ public class DrivetrainSubsystem extends SubsystemBase {
         Translation2d translation = new Translation2d(currentMovement.vxMetersPerSecond, currentMovement.vyMetersPerSecond);
         double chassisVelocity = translation.getNorm();
         return chassisVelocity > IS_MOVING_THRESH;
+    }
+
+    public void setStopPosition(StopPosition position) {
+        stopPosition = position;
+    }
+
+    public StopPosition getStopPosition() {
+        return stopPosition;
+    }
+
+    public void setBrakeMode(boolean brake) {
+        for (SwerveModule module : modules) {
+            module.setBrakeMode(brake);
+        }
     }
 
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {
