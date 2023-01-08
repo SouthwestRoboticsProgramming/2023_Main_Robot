@@ -152,6 +152,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
             printEncoderOffsets();
         }
 
+        gyro.calibrate();
+
         // FIXME: Change back to getGyroscopeRotation
         odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation());
     }
@@ -161,6 +163,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
             return getPose().getRotation();
         }
         return gyro.getRotation2d().minus(gyroOffset);
+    }
+
+    public Translation2d getTiltAsTranslation() {
+        // FIXME: May be swapped on final robot
+        return new Translation2d(gyro.getRoll(), gyro.getPitch());
     }
 
     private Rotation2d getRawGyroscopeRotation() {
@@ -181,10 +188,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
-        System.out.println("Set");
         this.speeds = speeds;
     }
-
+    
     public void combineChassisSpeeds(ChassisSpeeds addition) {
         speeds = new ChassisSpeeds(
             speeds.vxMetersPerSecond + addition.vxMetersPerSecond,
