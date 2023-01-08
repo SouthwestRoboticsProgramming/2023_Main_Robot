@@ -32,6 +32,8 @@ public class DriveBlindCommand extends TimedCommand {
         Translation2d justVelocity = new Translation2d(velocityMetersPerSecond, 0);
         Translation2d withDirection = justVelocity.rotateBy(directionWPI);
         translation = withDirection;
+
+        addRequirements(drive.DRIVE_SUBSYSTEM);
     }
 
     @Override
