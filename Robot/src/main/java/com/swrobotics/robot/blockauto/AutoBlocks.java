@@ -11,6 +11,7 @@ import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.blockauto.part.AnglePart.Mode;
 import com.swrobotics.robot.blockauto.part.FieldPointPart.Point;
+import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.subsystems.Lights;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -65,14 +66,14 @@ public final class AutoBlocks {
                 .creator((params, robot) -> new WaitCommand((double) params[0]));
 
         control.newBlock("union")
-                .text("Union of")
-                .paramBlockStack("a")
-                .text("and")
-                .paramBlockStack("b")
-                .creator((params, robot) -> new ParallelCommandGroup(
-                        ((BlockStackInst) params[0]).toCommand(robot),
-                        ((BlockStackInst) params[1]).toCommand(robot)
-                ));
+                 .text("Union of")
+                 .paramBlockStack("a")
+                 .text("and")
+                 .paramBlockStack("b")
+                 .creator((params, robot) -> new ParallelCommandGroup(
+                         ((BlockStackInst) params[0]).toCommand(robot),
+                         ((BlockStackInst) params[1]).toCommand(robot)
+                 ));
 
         BlockCategory lights = defineCategory("Lights", 69, 39, 110);
         lights.newBlock("lights")
@@ -151,6 +152,10 @@ public final class AutoBlocks {
                     return true;
                 }
             });
+
+        drive.newBlock("balance")
+            .text("Balance")
+            .creator((params, robot) -> new AutoBalanceCommand(robot));
 
         drive.newBlock("pathfind to point")
                 .text("Pathfind to ")
