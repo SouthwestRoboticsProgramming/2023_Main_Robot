@@ -23,9 +23,6 @@ public final class PathfindToPointCommand extends CommandBase {
     // Position tolerance in meters, must be larger than pathfinding tile
     private static final double TOLERANCE = 0.175;
 
-    // Angle tolerance in radians
-    private static final double ANGLE_TOLERANCE = Math.toRadians(3);
-
     private final DrivetrainSubsystem drive;
     private final Pathfinder finder;
     private final Lights lights; // For debugging; TODO: Remove
