@@ -152,10 +152,13 @@ public final class FieldVectorLayer2023 implements FieldLayer {
         // Cube nodes
         g.fill(128);
         g.stroke(255);
+        g.pushMatrix();
+        g.translate(0, 0, 0.05f);
         for (int i = 0; i < 3; i++) {
             float centerY = topCubeCenterY - i * gridCubeSpacing;
             g.rect(0, centerY - gridCubeWidth/2f, l1x, gridCubeWidth);
         }
+        g.popMatrix();
 
         // Barrier
         g.stroke(255);
