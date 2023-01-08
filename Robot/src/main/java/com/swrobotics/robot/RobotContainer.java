@@ -201,6 +201,10 @@ public class RobotContainer {
         new Button(m_controller::getBackButton)
                 // No requirements because we don't need to interrupt anything
                 .whenPressed(m_drivetrainSubsystem::zeroGyroscope);
+
+        // Start button does leveling sequence on charger
+        new Button(m_controller::getStartButton)
+                .whileHeld(new AutoBalanceCommand(this), true);
     }
 
     /**
