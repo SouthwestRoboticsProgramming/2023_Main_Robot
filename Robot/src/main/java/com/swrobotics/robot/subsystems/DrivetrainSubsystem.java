@@ -32,7 +32,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-public class DrivetrainSubsystem extends SubsystemBase {
+public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable {
+
+    public StatusLogging logger;
+
+    public void initLogging(StatusLogging logger) {
+        this.logger = logger;
+    }
 
     // The Stop Position Enum
     public enum StopPosition {
