@@ -42,11 +42,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
         CIRCLE,
     }
 
-
-    // Use these instead of adding DrivetrainSubsystem as requirements for commands
-    public final Subsystem TURN_SUBSYSTEM = new SubsystemBase() {};
-    public final Subsystem DRIVE_SUBSYSTEM = new SubsystemBase() {};
-
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
         new SwerveModuleInfo("Module 0", 9, 5, 1, 44.21),  // Default front left
@@ -111,6 +106,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     
     private final SwerveDriveOdometry odometry;
 
+    private Translation2d translation = new Translation2d();
+    private Rotation2d rotation = new Rotation2d();
     private ChassisSpeeds speeds = new ChassisSpeeds();
     
     public DrivetrainSubsystem() {
@@ -197,13 +194,18 @@ public class DrivetrainSubsystem extends SubsystemBase {
     public void setChassisSpeeds(ChassisSpeeds speeds) {
         this.speeds = speeds;
     }
-    
-    public void combineChassisSpeeds(ChassisSpeeds addition) {
-        speeds = new ChassisSpeeds(
-            speeds.vxMetersPerSecond + addition.vxMetersPerSecond,
-            speeds.vyMetersPerSecond + addition.vyMetersPerSecond,
-            speeds.omegaRadiansPerSecond + addition.omegaRadiansPerSecond
-        );
+
+    public void setTargetTranslation(Translation2d targetTranslation, boolean fieldRelative) {
+        System.out.println("T: " + targetTranslation);
+        translation = targetTranslation;
+
+        if (fieldRelative) {
+            translation.rotateBy(getGyroscopeRotation().times(-1));
+        }
+    }
+
+    public void setTargetRotation(Rotation2d targeRotation) {
+        rotation = targeRotation;
     }
 
     public Pose2d getPose() {
@@ -309,8 +311,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Set this iteration's ChassisSpeeds
+        // Check if it should use auto for some or all of the movement
+        if (translation.getNorm() != 0.0) {
+            speeds.vxMetersPerSecond = translation.getX();
+            speeds.vyMetersPerSecond = translation.getY();
+        }
 
+        if (rotation.getRadians() != 0.0) {
+            speeds.omegaRadiansPerSecond = rotation.getRadians();
+        }
 
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
@@ -334,6 +343,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
         setModuleStates(states);
         // Reset the ChassisSpeeds for next iteration
         speeds = new ChassisSpeeds();
+
+        // Reset auto rotation and translation for next iteration
+        translation = new Translation2d();
+        rotation = new Rotation2d();
 
         // Freshly estimated the new rotation based off of the wheels
         if (RobotBase.isSimulation()) {

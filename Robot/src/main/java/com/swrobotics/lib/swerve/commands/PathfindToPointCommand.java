@@ -5,6 +5,7 @@ import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Pathfinder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
@@ -27,8 +28,6 @@ public final class PathfindToPointCommand extends CommandBase {
         drive = robot.drivetrainSubsystem;
         finder = robot.pathfinder;
         this.goal = goal;
-
-        addRequirements(drive.DRIVE_SUBSYSTEM);
 
         finished = false;
     }
@@ -85,15 +84,8 @@ public final class PathfindToPointCommand extends CommandBase {
         deltaX *= VELOCITY;
         deltaY *= VELOCITY;
 
-        // Calculate speeds
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                deltaX, deltaY,
-                0.0,
-                currentPose.getRotation()
-        );
-
         // Move
-        drive.combineChassisSpeeds(speeds);
+        drive.setTargetTranslation(new Translation2d(deltaX, deltaY), true);
     }
 
     @Override

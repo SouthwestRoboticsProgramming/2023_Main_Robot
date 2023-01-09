@@ -30,10 +30,6 @@ public class TurnToAngleCommand extends CommandBase {
         pid.enableContinuousInput(-Math.PI, Math.PI);
 
         pid.setTolerance(0.1);
-
-
-        addRequirements(drive.TURN_SUBSYSTEM);
-
     }
 
     @Override
@@ -43,12 +39,12 @@ public class TurnToAngleCommand extends CommandBase {
 
     @Override
     public void execute() {
-        drive.combineChassisSpeeds(
-            new ChassisSpeeds(0, 0, 
+        drive.setTargetRotation(new Rotation2d(
             pid.calculate(
                 drive.getPose().getRotation().getRadians(),
-                target.getRadians()))
-        );
+                target.getRadians()
+            )
+        ));
     }
 
 

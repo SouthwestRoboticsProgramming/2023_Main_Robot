@@ -25,9 +25,6 @@ public class DriveBlindCommand extends CommandBase {
         Translation2d justVelocity = new Translation2d(velocityMetersPerSecond, 0);
         Translation2d withDirection = justVelocity.rotateBy(directionWPI);
         translation = withDirection;
-
-        addRequirements(drive.DRIVE_SUBSYSTEM);
-
     }
 
     @Override
@@ -40,9 +37,6 @@ public class DriveBlindCommand extends CommandBase {
 
     @Override
     public void execute() {
-        // Add a ChassisSpeeds with just translation to the total
-        ChassisSpeeds output = ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(), 0, drive.getGyroscopeRotation());
-
-        drive.combineChassisSpeeds(output);
+        drive.setTargetTranslation(translation, true);
     }
 }

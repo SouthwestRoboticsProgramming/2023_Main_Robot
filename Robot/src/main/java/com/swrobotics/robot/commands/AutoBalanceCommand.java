@@ -27,8 +27,6 @@ public class AutoBalanceCommand extends CommandBase {
         KP.onChange(() -> pid.setP(KP.get()));
 
         firstStopPosition = drive.getStopPosition();
-
-        addRequirements(drive.DRIVE_SUBSYSTEM);
     }
 
     @Override

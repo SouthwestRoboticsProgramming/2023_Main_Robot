@@ -24,7 +24,7 @@ public class DefaultDriveCommand extends CommandBase {
         this.m_translationYSupplier = translationYSupplier;
         this.m_rotationSupplier = rotationSupplier;
 
-        addRequirements(drive.DRIVE_SUBSYSTEM, drive.TURN_SUBSYSTEM, drive);
+        addRequirements(drive);
     }
 
     @Override
