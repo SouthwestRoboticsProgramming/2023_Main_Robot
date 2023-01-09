@@ -98,12 +98,15 @@ public class RobotContainer {
         AutoBlocks.init(messenger, this);
         WaypointStorage.init(messenger);
 
+        // Initialize pathfinder to be able to drive to any point on the field
+        m_pathfinder = new Pathfinder(messenger, m_drivetrainSubsystem);
 
-        // Generate drive commands using PathPlanner
         HashMap<String, Command> eventMap = new HashMap<>();
 
+        // Put your events from PathPlanner here
         eventMap.put("marker1", new PrintCommand("Passed marker 1"));
 
+        // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = m_drivetrainSubsystem.getAutoBuilder(eventMap);
 
         // Add your pre-generated autos here...
