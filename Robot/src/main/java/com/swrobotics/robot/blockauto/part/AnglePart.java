@@ -1,5 +1,7 @@
 package com.swrobotics.robot.blockauto.part;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.CWAngle;
@@ -9,7 +11,7 @@ import com.swrobotics.messenger.client.MessageReader;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class AnglePart implements ParamPart {
+public final class AnglePart extends ParamPart {
     public enum Mode {
         CW_DEG(0) {
             @Override
@@ -98,7 +100,8 @@ public final class AnglePart implements ParamPart {
     private final Mode mode;
     private final double def;
 
-    public AnglePart(Mode mode, double def) {
+    public AnglePart(String name, Mode mode, double def) {
+        super(name);
         this.mode = mode;
         this.def = def;
     }
@@ -120,5 +123,16 @@ public final class AnglePart implements ParamPart {
         
         builder.addByte((byte) mode.id);
         builder.addDouble(def);
+    }
+
+    @Override
+    public Object deserializeInst(JsonElement elem) {
+        if (elem == null) return def;
+        return mode.toAngle(elem.getAsDouble());
+    }
+
+    @Override
+    public JsonElement serializeInst(Object val) {
+        return new JsonPrimitive(mode.fromAngle((Angle) val));
     }
 }

@@ -1,7 +1,6 @@
 package com.swrobotics.lib.swerve.commands;
 
 import com.swrobotics.mathlib.Angle;
-import com.swrobotics.robot.Robot;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 
@@ -9,9 +8,6 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class TurnToAngleCommand extends CommandBase {
@@ -23,7 +19,7 @@ public class TurnToAngleCommand extends CommandBase {
     private Rotation2d target;
     
     public TurnToAngleCommand(RobotContainer robot, Angle angle, boolean robotRelative) {
-        drive = robot.m_drivetrainSubsystem;
+        drive = robot.drivetrainSubsystem;
         target = angle.ccw().rotation2d();
         if (robotRelative) {
             target.plus(drive.getGyroscopeRotation());
@@ -43,12 +39,12 @@ public class TurnToAngleCommand extends CommandBase {
 
     @Override
     public void execute() {
-        drive.setChassisSpeeds(
-            new ChassisSpeeds(0, 0, 
+        drive.setTargetRotation(new Rotation2d(
             pid.calculate(
                 drive.getPose().getRotation().getRadians(),
-                target.getRadians()))
-        );
+                target.getRadians()
+            )
+        ));
     }
 
 

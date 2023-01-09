@@ -6,6 +6,7 @@ import com.swrobotics.shufflelog.tool.blockauto.part.BlockStackPart;
 import com.swrobotics.shufflelog.tool.blockauto.part.NewLinePart;
 import com.swrobotics.shufflelog.tool.blockauto.part.ParamPart;
 import com.swrobotics.shufflelog.tool.blockauto.part.StaticPart;
+import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.flag.ImGuiDragDropFlags;
 
@@ -20,6 +21,8 @@ public final class BlockInst {
     // Workaround for ImGui bug with drag and drop
     private boolean valid = true;
     private boolean isPaletteEntry;
+
+    private float prevW, prevH;
 
     public BlockInst(BlockDef def, Object[] params) {
         this.def = def;
@@ -86,6 +89,17 @@ public final class BlockInst {
     }
 
     public boolean draw(Runnable ctxMenu) {
+        ImDrawList draw = ImGui.getWindowDrawList();
+
+        int border = def.getCategory().getBorderColor();
+        int color = def.getCategory().getBgColor();
+        float pad = ImGui.getStyle().getItemSpacingY() / 2;
+
+        float bgX = ImGui.getCursorPosX() + ImGui.getWindowPosX();
+        float bgY = ImGui.getCursorPosY() + ImGui.getWindowPosY();
+        draw.addRectFilled(bgX - pad, bgY - pad, bgX + prevW + pad, bgY + prevH + pad, color);
+        draw.addRect(bgX - pad, bgY - pad, bgX + prevW + pad, bgY + prevH + pad, border);
+
         boolean changed = false;
         ImGui.beginGroup();
         ImGui.beginGroup();
@@ -133,9 +147,9 @@ public final class BlockInst {
         dragSource();
         ctxMenu.run();
         ImGui.endGroup();
-        int color = ImGui.colorConvertFloat4ToU32(0.5f, 0.5f, 0.5f, 1.0f);
-        float pad = ImGui.getStyle().getItemSpacingY() / 2;
-        ImGui.getWindowDrawList().addRect(ImGui.getItemRectMinX()-pad, ImGui.getItemRectMinY()-pad, ImGui.getItemRectMaxX()+pad, ImGui.getItemRectMaxY()+pad, color);
+
+        prevW = ImGui.getItemRectMaxX() - ImGui.getItemRectMinX();
+        prevH = ImGui.getItemRectMaxY() - ImGui.getItemRectMinY();
 
         return changed;
     }

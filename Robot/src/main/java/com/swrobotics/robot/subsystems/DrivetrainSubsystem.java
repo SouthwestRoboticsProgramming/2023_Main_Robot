@@ -6,7 +6,6 @@ import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
-import com.swrobotics.robot.VisionConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,8 +13,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -33,15 +32,20 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-// The Stop Position Enu
-enum StopPosition {
-    NONE,
-    CROSS,
-    CIRCLE,
-}
+public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable {
 
+    public StatusLogging logger;
 
-public class DrivetrainSubsystem extends SubsystemBase {
+    public void initLogging(StatusLogging logger) {
+        this.logger = logger;
+    }
+
+    // The Stop Position Enum
+    public enum StopPosition {
+        NONE,
+        CROSS,
+        CIRCLE,
+    }
 
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
@@ -107,6 +111,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     
     private final SwerveDriveOdometry odometry;
 
+    private Translation2d translation = new Translation2d();
+    private Rotation2d rotation = new Rotation2d();
     private ChassisSpeeds speeds = new ChassisSpeeds();
     
     public DrivetrainSubsystem() {
@@ -143,28 +149,33 @@ public class DrivetrainSubsystem extends SubsystemBase {
             new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3), 270.0)  // Back right
         };
 
+        setBrakeMode(true);
+
         SmartDashboard.putData("Field", field);
-        System.out.println("Target Position: " + VisionConstants.DOOR_POSE.toPose2d());
-        field.getObject("target").setPose(VisionConstants.DOOR_POSE.toPose2d());
         // field.getObject("traj").setTrajectory(new Trajectory()); // Clear trajectory view
 
         for (int i = 0; i < 15; i++) {
             printEncoderOffsets();
         }
 
+        gyro.calibrate();
+
         // FIXME: Change back to getGyroscopeRotation
-        odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation());
+        odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation(), getModulePositions());
     }
 
     public Rotation2d getGyroscopeRotation() {
-        if (RobotBase.isSimulation()) {
-            return getPose().getRotation();
-        }
         return gyro.getRotation2d().minus(gyroOffset);
     }
 
+    public Translation2d getTiltAsTranslation() {
+        // FIXME: May be swapped on final robot
+        return new Translation2d(gyro.getRoll(), gyro.getPitch());
+    }
+
     private Rotation2d getRawGyroscopeRotation() {
-        return gyro.getRotation2d();
+        // return gyro.getRotation2d();
+        return Rotation2d.fromDegrees(gyro.getAngle());
     }
 
     public void zeroGyroscope() {
@@ -181,16 +192,20 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
-        System.out.println("Set");
         this.speeds = speeds;
     }
 
-    public void combineChassisSpeeds(ChassisSpeeds addition) {
-        speeds = new ChassisSpeeds(
-            speeds.vxMetersPerSecond + addition.vxMetersPerSecond,
-            speeds.vyMetersPerSecond + addition.vyMetersPerSecond,
-            speeds.omegaRadiansPerSecond + addition.omegaRadiansPerSecond
-        );
+    public void setTargetTranslation(Translation2d targetTranslation, boolean fieldRelative) {
+        System.out.println("T: " + targetTranslation);
+        translation = targetTranslation;
+
+        if (fieldRelative) {
+            translation.rotateBy(getGyroscopeRotation().times(-1));
+        }
+    }
+
+    public void setTargetRotation(Rotation2d targeRotation) {
+        rotation = targeRotation;
     }
 
     public Pose2d getPose() {
@@ -198,7 +213,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public void resetPose(Pose2d newPose) {
-        odometry.resetPosition(newPose, getGyroscopeRotation());
+        odometry.resetPosition(getGyroscopeRotation(), getModulePositions(), newPose);
     }
 
     public void setModuleStates(SwerveModuleState[] states) {
@@ -216,6 +231,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
         return states;
     }
 
+    public SwerveModulePosition[] getModulePositions() {
+        SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
+        for (int i = 0; i < modules.length; i++) {
+            positions[i] = modules[i].getPosition();
+        }
+
+        return positions;
+    }
+
     private static final double IS_MOVING_THRESH = 0.1;
 
     public boolean isMoving() {
@@ -223,6 +247,20 @@ public class DrivetrainSubsystem extends SubsystemBase {
         Translation2d translation = new Translation2d(currentMovement.vxMetersPerSecond, currentMovement.vyMetersPerSecond);
         double chassisVelocity = translation.getNorm();
         return chassisVelocity > IS_MOVING_THRESH;
+    }
+
+    public void setStopPosition(StopPosition position) {
+        stopPosition = position;
+    }
+
+    public StopPosition getStopPosition() {
+        return stopPosition;
+    }
+
+    public void setBrakeMode(boolean brake) {
+        for (SwerveModule module : modules) {
+            module.setBrakeMode(brake);
+        }
     }
 
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {
@@ -244,10 +282,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
         );
 
         return autoBuilder;
-    }
-
-    public void showTrajectory(Trajectory trajectory) {
-        field.getObject("traj").setTrajectory(trajectory);
     }
 
     public void printEncoderOffsets() {
@@ -277,8 +311,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Set this iteration's ChassisSpeeds
+        // Check if it should use auto for some or all of the movement
+        if (translation.getNorm() != 0.0) {
+            speeds.vxMetersPerSecond = translation.getX();
+            speeds.vyMetersPerSecond = translation.getY();
+        }
 
+        if (rotation.getRadians() != 0.0) {
+            speeds.omegaRadiansPerSecond = rotation.getRadians();
+        }
 
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
@@ -303,13 +344,17 @@ public class DrivetrainSubsystem extends SubsystemBase {
         // Reset the ChassisSpeeds for next iteration
         speeds = new ChassisSpeeds();
 
+        // Reset auto rotation and translation for next iteration
+        translation = new Translation2d();
+        rotation = new Rotation2d();
+
         // Freshly estimated the new rotation based off of the wheels
         if (RobotBase.isSimulation()) {
             ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
-            gyroOffset = gyroOffset.plus(new Rotation2d(-estimatedChassis.omegaRadiansPerSecond * 0.02));
-            odometry.update(gyroOffset, getModuleStates());
+            gyroOffset = gyroOffset.plus(new Rotation2d(estimatedChassis.omegaRadiansPerSecond * 0.02));
+            odometry.update(gyroOffset, getModulePositions());
         } else {
-            odometry.update(getGyroscopeRotation(), getModuleStates());
+            odometry.update(getGyroscopeRotation(), getModulePositions());
         }
         
         field.setRobotPose(getPose());
