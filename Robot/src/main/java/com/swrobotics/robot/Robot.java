@@ -95,10 +95,10 @@ public class Robot extends TimedRobot {
                     new RunCommand(() -> System.out.printf("Auto finished in %.3f seconds\n", autonomousTimer.get())
             );
             finalCommand.schedule();
-            m_autonomousTimer.stop();
-            m_autonomousTimer.reset();
-            m_autonomousTimer.start();
-            // CommandScheduler.getInstance().schedule(m_autonomousCommand);
+
+            // Reset the timer
+            autonomousTimer.reset();
+            autonomousTimer.start();
         }
     }
 }
