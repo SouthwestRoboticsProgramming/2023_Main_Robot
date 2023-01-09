@@ -175,7 +175,20 @@ public class RobotContainer {
     }
 
     private static ArrayList<PathPlannerTrajectory> getPath(String name) {
-        return PathPlanner.loadPathGroup(name, new PathConstraints(0.2, 0.1)); // FIXME: Add throws and catch
+        try {
+            return PathPlanner.loadPathGroup(name, new PathConstraints(0.2, 0.1));
+        } catch (Exception e) {
+            System.out.println("Could not find that path, using default path instead");
+
+            // Generate a blank path
+            ArrayList<PathPlannerTrajectory> path = new ArrayList<>();
+            path.add(PathPlanner.generatePath( // Default is to not move TODO: Report error through lights
+                new PathConstraints(0.0, 0.0),
+                new PathPoint(new Translation2d(), new Rotation2d()),
+                new PathPoint(new Translation2d(), new Rotation2d())));
+            
+            return path;
+        }
     }
 
     public MessengerClient getMessenger() {
