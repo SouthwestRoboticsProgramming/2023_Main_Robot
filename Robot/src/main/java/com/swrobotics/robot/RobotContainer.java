@@ -2,6 +2,7 @@ package com.swrobotics.robot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
@@ -26,9 +27,10 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.button.Button;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 
 /**
@@ -107,7 +109,7 @@ public class RobotContainer {
         Command printAuto = new PrintCommand("Auto chooser is working!");
 
         // Autos to just drive off the line
-        Command taxiSmart = builder.followPathGroup(getPath("Taxi Auto"));     // Drive forward and reset position
+        Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
         Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, true); // Just drive forward
 
         blockAutoCommand = new InstantCommand();
@@ -132,13 +134,13 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         // Back button zeros the gyroscope
-        new Button(controller::getBackButton)
+        new Trigger(controller::getBackButton)
                 // No requirements because we don't need to interrupt anything
-                .whenPressed(drivetrainSubsystem::zeroGyroscope);
+                .onTrue(Commands.runOnce(() -> drivetrainSubsystem.zeroGyroscope()));
 
         // Start button does leveling sequence on charger
-        new Button(controller::getStartButton)
-                .whileHeld(new AutoBalanceCommand(this), true);
+        new Trigger(controller::getStartButton)
+                .whileTrue(new AutoBalanceCommand(this));
     }
 
     /**
@@ -180,7 +182,7 @@ public class RobotContainer {
         return value;
     }
 
-    private static ArrayList<PathPlannerTrajectory> getPath(String name) {
+    private static List<PathPlannerTrajectory> getPath(String name) {
         try {
             return PathPlanner.loadPathGroup(name, new PathConstraints(0.2, 0.1));
         } catch (Exception e) {

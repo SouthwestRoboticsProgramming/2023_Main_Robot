@@ -77,7 +77,6 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         // If an autonomous command has already be set, reset it
         if (autonomousCommand != null) {
-            SequentialCommandGroup.clearGroupedCommands();
             autonomousCommand.cancel();
             System.out.println("Canceled the current auto command");
         }

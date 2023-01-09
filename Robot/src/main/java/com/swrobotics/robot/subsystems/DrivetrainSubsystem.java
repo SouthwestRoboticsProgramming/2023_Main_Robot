@@ -3,6 +3,7 @@ package com.swrobotics.robot.subsystems;
 import java.util.HashMap;
 
 import com.kauailabs.navx.frc.AHRS;
+// import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
@@ -13,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -159,14 +161,16 @@ public class DrivetrainSubsystem extends SubsystemBase {
         gyro.calibrate();
 
         // FIXME: Change back to getGyroscopeRotation
-        odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation());
+        odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation(), getModulePositions());
     }
 
     public Rotation2d getGyroscopeRotation() {
         if (RobotBase.isSimulation()) {
             return getPose().getRotation();
         }
-        return gyro.getRotation2d().minus(gyroOffset);
+        // return gyro.getRotation2d().minus(gyroOffset);
+        return Rotation2d.fromDegrees(gyro.getAngle()).minus(gyroOffset);
+
     }
 
     public Translation2d getTiltAsTranslation() {
@@ -175,7 +179,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     private Rotation2d getRawGyroscopeRotation() {
-        return gyro.getRotation2d();
+        // return gyro.getRotation2d();
+        return Rotation2d.fromDegrees(gyro.getAngle());
     }
 
     public void zeroGyroscope() {
@@ -208,7 +213,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public void resetPose(Pose2d newPose) {
-        odometry.resetPosition(newPose, getGyroscopeRotation());
+        odometry.resetPosition(getGyroscopeRotation(), getModulePositions(), newPose);
     }
 
     public void setModuleStates(SwerveModuleState[] states) {
@@ -224,6 +229,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
         }
 
         return states;
+    }
+
+    public SwerveModulePosition[] getModulePositions() {
+        SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
+        for (int i = 0; i < modules.length; i++) {
+            positions[i] = modules[i].getPosition();
+        }
+
+        return positions;
     }
 
     private static final double IS_MOVING_THRESH = 0.1;
@@ -331,9 +345,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
         if (RobotBase.isSimulation()) {
             ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
             gyroOffset = gyroOffset.plus(new Rotation2d(-estimatedChassis.omegaRadiansPerSecond * 0.02));
-            odometry.update(gyroOffset, getModuleStates());
+            odometry.update(gyroOffset, getModulePositions());
         } else {
-            odometry.update(getGyroscopeRotation(), getModuleStates());
+            odometry.update(getGyroscopeRotation(), getModulePositions());
         }
         
         field.setRobotPose(getPose());

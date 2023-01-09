@@ -17,7 +17,7 @@ public class DriveBlindCommand extends CommandBase {
     private final boolean robotRelative;
 
     public DriveBlindCommand(RobotContainer robot, Angle direction, double velocityMetersPerSecond, boolean robotRelative) {
-        drive = robot.m_drivetrainSubsystem;
+        drive = robot.drivetrainSubsystem;
 
         this.robotRelative = robotRelative;
 
