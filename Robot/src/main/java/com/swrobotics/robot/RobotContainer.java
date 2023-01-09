@@ -8,6 +8,8 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
+import com.swrobotics.mathlib.Angle;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.blockauto.WaypointStorage;
@@ -104,12 +106,18 @@ public class RobotContainer {
         Command blankAuto = new InstantCommand();
         Command printAuto = new PrintCommand("Auto chooser is working!");
 
+        // Autos to just drive off the line
+        Command taxiSmart = builder.followPathGroup(getPath("Taxi Auto"));     // Drive forward and reset position
+        Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, true); // Just drive forward
+
         blockAutoCommand = new InstantCommand();
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
-        autoSelector.setDefaultOption("No Auto", blankAuto); // TODO: Swap to taxi auto
+        autoSelector.setDefaultOption("Taxi Dumb", taxiDumb);
+        autoSelector.addOption("No Auto", blankAuto);
         autoSelector.addOption("Print Auto", printAuto);
+        autoSelector.addOption("Taxi Smart", taxiSmart);
 
         SmartDashboard.putData(autoSelector);
     }
