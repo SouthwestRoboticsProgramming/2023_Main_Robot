@@ -12,7 +12,6 @@ import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.blockauto.part.AnglePart.Mode;
 import com.swrobotics.robot.blockauto.part.FieldPointPart.Point;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
-import com.swrobotics.robot.subsystems.Lights;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -74,25 +73,6 @@ public final class AutoBlocks {
                          ((BlockStackInst) params[0]).toCommand(robot),
                          ((BlockStackInst) params[1]).toCommand(robot)
                  ));
-
-        BlockCategory lights = defineCategory("Lights", 69, 39, 110);
-        lights.newBlock("lights")
-                .text("Set lights to ")
-                .paramEnum("color", Lights.Color.class, Lights.Color.BLUE)
-                .creator((params, robot) -> new CommandBase() {
-
-                    @Override
-                    public void initialize() {
-                        System.out.println("Setting lights to " + (Lights.Color) params[0]);
-                        robot.m_lights.set((Lights.Color) params[0]);
-                    }
-
-                    @Override
-                    public boolean isFinished() {
-                        return true;
-                    }
-                    
-                });
         
         BlockCategory drive = defineCategory("Drive", 42, 57, 112);
         drive.newBlock("blind drive for time")
