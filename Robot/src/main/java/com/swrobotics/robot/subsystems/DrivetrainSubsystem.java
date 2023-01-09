@@ -6,7 +6,6 @@ import java.util.HashMap;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
-import com.swrobotics.robot.VisionConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
@@ -35,15 +35,19 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-// The Stop Position Enu
-enum StopPosition {
-    NONE,
-    CROSS,
-    CIRCLE,
-}
-
-
 public class DrivetrainSubsystem extends SubsystemBase {
+
+    // The Stop Position Enum
+    public enum StopPosition {
+        NONE,
+        CROSS,
+        CIRCLE,
+    }
+
+
+    // Use these instead of adding DrivetrainSubsystem as requirements for commands
+    public final Subsystem TURN_SUBSYSTEM = new SubsystemBase() {};
+    public final Subsystem DRIVE_SUBSYSTEM = new SubsystemBase() {};
 
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
@@ -146,14 +150,16 @@ public class DrivetrainSubsystem extends SubsystemBase {
             new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3), 270.0)  // Back right
         };
 
+        setBrakeMode(true);
+
         SmartDashboard.putData("Field", field);
-        System.out.println("Target Position: " + VisionConstants.DOOR_POSE.toPose2d());
-        field.getObject("target").setPose(VisionConstants.DOOR_POSE.toPose2d());
         // field.getObject("traj").setTrajectory(new Trajectory()); // Clear trajectory view
 
         for (int i = 0; i < 15; i++) {
             printEncoderOffsets();
         }
+
+        gyro.calibrate();
 
         // FIXME: Change back to getGyroscopeRotation
         odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation(), getModulePositions());
@@ -166,6 +172,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
         // return gyro.getRotation2d().minus(gyroOffset);
         return Rotation2d.fromDegrees(gyro.getAngle()).minus(gyroOffset);
 
+    }
+
+    public Translation2d getTiltAsTranslation() {
+        // FIXME: May be swapped on final robot
+        return new Translation2d(gyro.getRoll(), gyro.getPitch());
     }
 
     private Rotation2d getRawGyroscopeRotation() {
@@ -189,7 +200,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     public void setChassisSpeeds(ChassisSpeeds speeds) {
         this.speeds = speeds;
     }
-
+    
     public void combineChassisSpeeds(ChassisSpeeds addition) {
         speeds = new ChassisSpeeds(
             speeds.vxMetersPerSecond + addition.vxMetersPerSecond,
@@ -237,6 +248,20 @@ public class DrivetrainSubsystem extends SubsystemBase {
         Translation2d translation = new Translation2d(currentMovement.vxMetersPerSecond, currentMovement.vyMetersPerSecond);
         double chassisVelocity = translation.getNorm();
         return chassisVelocity > IS_MOVING_THRESH;
+    }
+
+    public void setStopPosition(StopPosition position) {
+        stopPosition = position;
+    }
+
+    public StopPosition getStopPosition() {
+        return stopPosition;
+    }
+
+    public void setBrakeMode(boolean brake) {
+        for (SwerveModule module : modules) {
+            module.setBrakeMode(brake);
+        }
     }
 
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {

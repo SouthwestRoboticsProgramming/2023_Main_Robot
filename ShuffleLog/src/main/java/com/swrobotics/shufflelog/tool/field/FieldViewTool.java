@@ -2,9 +2,7 @@ package com.swrobotics.shufflelog.tool.field;
 
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.ShuffleLog;
-import com.swrobotics.shufflelog.math.Matrix4f;
-import com.swrobotics.shufflelog.math.Vector2f;
-import com.swrobotics.shufflelog.math.Vector3f;
+import com.swrobotics.shufflelog.math.*;
 import com.swrobotics.shufflelog.tool.ViewportTool;
 import com.swrobotics.shufflelog.tool.field.path.PathfindingLayer;
 import com.swrobotics.shufflelog.tool.field.tag.TagTrackerLayer;
@@ -30,8 +28,36 @@ import static com.swrobotics.shufflelog.util.ProcessingUtils.setPMatrix;
 import static processing.core.PConstants.P3D;
 
 public final class FieldViewTool extends ViewportTool {
-    public static final double WIDTH = 8.2296;
-    public static final double HEIGHT = 16.4592;
+    private static final class SmoothMatrix {
+        private final SmoothFloat[] elements;
+
+        public SmoothMatrix(float smooth) {
+            elements = new SmoothFloat[16];
+            for (int i = 0; i < elements.length; i++)
+                elements[i] = new SmoothFloat(smooth);
+        }
+
+        public void set(Matrix4f m) {
+            for (int i = 0; i < 16; i++) {
+                elements[i].set(m.get(i % 4, i / 4));
+            }
+        }
+
+        public Matrix4f get() {
+            Matrix4f m = new Matrix4f();
+            for (int i = 0; i < 16; i++)
+                m.set(i % 4, i / 4, elements[i].get());
+            return m;
+        }
+
+        public void step() {
+            for (SmoothFloat elem : elements)
+                elem.step();
+        }
+    }
+
+    public static final double WIDTH = 16.4592;
+    public static final double HEIGHT = 8.2296;
 
     private static final float SMOOTH = 12;
 
@@ -44,7 +70,8 @@ public final class FieldViewTool extends ViewportTool {
 
     private final List<FieldLayer> layers;
 
-    private Matrix4f projection, view;
+    private final SmoothMatrix projection;
+    private Matrix4f view;
     private GizmoTarget gizmoTarget;
     private int gizmoOp, gizmoMode;
 
@@ -56,6 +83,7 @@ public final class FieldViewTool extends ViewportTool {
 
     private Vector2f cursorPos;
     private float orthoScale;
+    private float orthoCameraRotYTarget;
 
     public FieldViewTool(ShuffleLog log) {
         // Be in 3d rendering mode
@@ -64,17 +92,19 @@ public final class FieldViewTool extends ViewportTool {
         MessengerClient msg = log.getMessenger();
         layers = new ArrayList<>();
         layers.add(new MeterGridLayer());
-        layers.add(new FieldVectorLayer());
+        layers.add(new FieldVectorLayer2023());
         layers.add(new PathfindingLayer(msg, this));
         layers.add(new TagTrackerLayer(this, msg));
         layers.add(new WaypointLayer(this, msg));
 
+        projection = new SmoothMatrix(SMOOTH);
+
         cameraRotX = new SmoothFloat(SMOOTH, 0);
         cameraRotY = new SmoothFloat(SMOOTH, 0);
-        cameraTargetX = new SmoothFloat(SMOOTH, 0);
-        cameraTargetY = new SmoothFloat(SMOOTH, 0);
+        cameraTargetX = new SmoothFloat(SMOOTH, (float) WIDTH/2);
+        cameraTargetY = new SmoothFloat(SMOOTH, (float) HEIGHT/2);
         cameraTargetZ = new SmoothFloat(SMOOTH, 0);
-        cameraDist = new SmoothFloat(SMOOTH, 10);
+        cameraDist = new SmoothFloat(SMOOTH, 8);
 
         gizmoOp = Operation.TRANSLATE;
         gizmoMode = Mode.WORLD;
@@ -84,8 +114,6 @@ public final class FieldViewTool extends ViewportTool {
 
     // Can be null
     public Vector2f getCursorPos() {
-        if (viewMode.get() != MODE_2D)
-            return null;
         return cursorPos;
     }
 
@@ -95,6 +123,7 @@ public final class FieldViewTool extends ViewportTool {
 
     @Override
     protected void drawViewportContent(PGraphics pGraphics) {
+        projection.step();
         cameraRotX.step(); cameraRotY.step(); cameraDist.step();
         cameraTargetX.step(); cameraTargetY.step(); cameraTargetZ.step();
 
@@ -102,17 +131,32 @@ public final class FieldViewTool extends ViewportTool {
         PGraphicsOpenGL g = (PGraphicsOpenGL) pGraphics;
 
         if (viewMode.get() == MODE_3D) {
-            projection = new Matrix4f().perspective((float) Math.toRadians(80), g.width / (float) g.height, 0.01f, 1000f);
+            projection.set(new Matrix4f().perspective((float) Math.toRadians(80), g.width / (float) g.height, 0.01f, 1000f));
         } else {
-            float scaleX = calcReqScale(g.width, (float) WIDTH);
-            float scaleY = calcReqScale(g.height, (float) HEIGHT);
-            float scale = Math.min(scaleX, scaleY);
+            float normalScale = Math.min(calcReqScale(g.width, (float) WIDTH), calcReqScale(g.height, (float) HEIGHT));
+            float rotatedScale = Math.min(calcReqScale(g.width, (float) HEIGHT), calcReqScale(g.height, (float) WIDTH));
+
+            float scale;
+            if (normalScale > rotatedScale) {
+                cameraRotY.set(0);
+                scale = normalScale;
+            } else {
+                cameraRotY.set((float) -Math.PI / 2);
+                scale = rotatedScale;
+            }
+            cameraRotX.set(0);
+            cameraDist.set(8);
+            cameraTargetX.set((float) WIDTH / 2);
+            cameraTargetY.set((float) HEIGHT / 2);
+            cameraTargetZ.set(0);
+
+            orthoCameraRotYTarget = cameraRotY.getTarget();
             orthoScale = scale;
 
             float halfW = (float) g.width / scale / 2;
             float halfH = (float) g.height / scale / 2;
-            projection = new Matrix4f().ortho(-halfW, halfW, -halfH, halfH,
-                    50, -50);
+            projection.set(new Matrix4f().ortho(-halfW, halfW, -halfH, halfH,
+                    50, -50));
         }
         view = new Matrix4f()
                 .translate(new Vector3f(cameraTargetX.get(), cameraTargetY.get(), cameraTargetZ.get()))
@@ -121,7 +165,7 @@ public final class FieldViewTool extends ViewportTool {
                 .translate(new Vector3f(0, 0, cameraDist.get()))
                 .invert();
 
-        setPMatrix(g.projection, projection);
+        setPMatrix(g.projection, projection.get());
         setPMatrix(g.modelview, view);
         g.modelviewInv.set(g.modelview);
         g.modelviewInv.invert();
@@ -178,11 +222,11 @@ public final class FieldViewTool extends ViewportTool {
             ImGui.sameLine();
             if (ImGui.button("Reset View")) {
                 cameraRotX.set(0);
-                cameraRotY.set(0);
-                cameraTargetX.set(0);
-                cameraTargetY.set(0);
+                cameraRotY.set(viewMode.get() == MODE_2D ? orthoCameraRotYTarget : 0);
+                cameraTargetX.set((float) WIDTH/2);
+                cameraTargetY.set((float) HEIGHT/2);
                 cameraTargetZ.set(0);
-                cameraDist.set(10);
+                cameraDist.set(8);
             }
 
             ImGui.separator();
@@ -201,7 +245,7 @@ public final class FieldViewTool extends ViewportTool {
                 float[] transArr = gizmoTarget.getTransform().getColumnMajor();
                 ImGuizmo.setRect(x, y, size.x, size.y);
                 ImGuizmo.setAllowAxisFlip(true);
-                ImGuizmo.manipulate(view.getColumnMajor(), projection.getColumnMajor(), transArr, gizmoOp, gizmoMode);
+                ImGuizmo.manipulate(view.getColumnMajor(), projection.get().getColumnMajor(), transArr, gizmoOp, gizmoMode);
                 if (ImGuizmo.isUsing()) {
                     gizmoTarget.setTransform(Matrix4f.fromColumnMajor(transArr));
                 }
@@ -212,11 +256,33 @@ public final class FieldViewTool extends ViewportTool {
             float mouseX = mouse.x - x;
             float mouseY = mouse.y - y;
 
-            if (viewMode.get() == MODE_2D) {
+            if (mouseX >= 0 && mouseY >= 0 && mouseX < size.x && mouseY < size.y) {
+                Ray3f mouseRay;
+                if (viewMode.get() == MODE_2D) {
+                    float rayX = (mouseX - size.x / 2) / orthoScale;
+                    float rayY = -(mouseY - size.y / 2) / orthoScale;
+                    mouseRay = new Ray3f(new Vector3f(rayX, rayY, 0), new Vector3f(0, 0, 1));
+                } else {
+                    float normX = (2.0f * mouseX) / size.x - 1.0f;
+                    float normY = 1.0f - (2.0f * mouseY) / size.y;
+                    Vector4f clipSpace = new Vector4f(normX, normY, -1, 1);
+                    Vector4f eyeSpace = new Matrix4f(projection.get()).invert().mul(clipSpace);
+                    mouseRay = new Ray3f(new Vector3f(0, 0, 0), new Vector3f(eyeSpace.x, eyeSpace.y, -1).normalize());
+                }
+
+                Matrix4f invView = new Matrix4f(view).invert();
+                Vector3f orig = invView.transformPosition(mouseRay.getOrigin());
+                Vector3f dir = invView.transformDirection(mouseRay.getDirection());
+
+                float zDelta = -orig.z;
+                float dirScale = zDelta / dir.z;
+
                 cursorPos = new Vector2f(
-                        (mouseX - size.x / 2) / orthoScale,
-                        -(mouseY - size.y / 2) / orthoScale
+                        orig.x + dir.x * dirScale,
+                        orig.y + dir.y * dirScale
                 );
+            } else {
+                cursorPos = null;
             }
 
             if (hovered && !gizmoConsumesMouse) {
@@ -246,17 +312,17 @@ public final class FieldViewTool extends ViewportTool {
                     cameraTargetZ.set(cameraTargetZ.getTarget() + up.z * scaleUp + right.z * scaleRight);
                 }
 
-                if (io.getMouseDown(ImGuiMouseButton.Left)) {
-                    // Turn
-
-                    float deltaX = io.getMouseDeltaX();
-                    float deltaY = io.getMouseDeltaY();
-
-                    cameraRotX.set(cameraRotX.getTarget() - deltaY * 0.007f);
-                    cameraRotY.set(cameraRotY.getTarget() - deltaX * 0.007f);
-                }
-
                 if (viewMode.get() == MODE_3D) {
+                    if (io.getMouseDown(ImGuiMouseButton.Left)) {
+                        // Turn
+
+                        float deltaX = io.getMouseDeltaX();
+                        float deltaY = io.getMouseDeltaY();
+
+                        cameraRotX.set(cameraRotX.getTarget() - deltaY * 0.007f);
+                        cameraRotY.set(cameraRotY.getTarget() - deltaX * 0.007f);
+                    }
+
                     float scroll = io.getMouseWheel();
                     float scale = 1 + scroll * -0.05f;
                     cameraDist.set(cameraDist.getTarget() * scale);

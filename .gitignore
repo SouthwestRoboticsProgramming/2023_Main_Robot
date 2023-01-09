@@ -30,6 +30,10 @@ Vision/Test.py
 # Emacs temporary files
 *~
 
+# Local Properties File
+local.properties
+
+
 # ImGui storage files
 ShuffleLog/layout.ini
 **/imgui.ini

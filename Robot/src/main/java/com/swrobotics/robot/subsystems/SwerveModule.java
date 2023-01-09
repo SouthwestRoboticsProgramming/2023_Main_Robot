@@ -1,6 +1,7 @@
 package com.swrobotics.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
@@ -150,6 +151,14 @@ public class SwerveModule {
     public void calibrate() {
         offset.set(getCalibrationAngle());
         calibrateWithAbsoluteEncoder();
+    }
+
+    public void setBrakeMode(boolean brake) {
+        NeutralMode mode = NeutralMode.Coast;
+        if (brake) {
+            mode = NeutralMode.Brake;
+        }
+        drive.setNeutralMode(mode);
     }
 
     public double getDriveVelocity() {
