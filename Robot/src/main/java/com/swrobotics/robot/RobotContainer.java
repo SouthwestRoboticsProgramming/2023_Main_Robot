@@ -61,7 +61,7 @@ public class RobotContainer {
 
     private final MessengerClient messenger;
 
-    // A bit of a hack so that it gets the command on auto init
+    // A bit of a hack so that it gets the command on auto init FIXME-@rmheuer: Un-hackify this
     private final Command blockAutoCommand;
 
     /**
@@ -80,7 +80,7 @@ public class RobotContainer {
                 () -> -modifyAxis(m_controller.getRightX())
                         * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND));
 
-        // Configure the button bindings
+        // Configure the rest of the button bindings
         configureButtonBindings();
 
         // Initialize Messenger
