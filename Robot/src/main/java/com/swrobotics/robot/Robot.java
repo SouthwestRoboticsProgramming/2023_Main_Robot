@@ -87,12 +87,13 @@ public class Robot extends TimedRobot {
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
             // Follow up autonomous command with diagnostics on how quickly it ran
-            SequentialCommandGroup finalCommand = autonomousCommand.andThen(
-                    new PrintCommand("Auto Completed!"),
-                    new RunCommand(() -> autonomousTimer.stop()));
-                    new RunCommand(() -> System.out.printf("Auto finished in %.3f seconds\n", autonomousTimer.get())
-            );
-            finalCommand.schedule();
+            // autonomousCommand.andThen(
+            //         new PrintCommand("Auto Completed!"),
+            //         new RunCommand(() -> autonomousTimer.stop()));
+            //         new RunCommand(() -> System.out.printf("Auto finished in %.3f seconds\n", autonomousTimer.get())
+            // );
+
+            autonomousCommand.schedule();
 
             // Reset the timer
             autonomousTimer.reset();
