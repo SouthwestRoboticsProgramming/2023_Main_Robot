@@ -110,7 +110,7 @@ public class RobotContainer {
 
         // Autos to just drive off the line
         Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
-        Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, true); // Just drive forward
+        Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, true).withTimeout(2.0); // Just drive forward
 
         blockAutoCommand = new InstantCommand();
 
