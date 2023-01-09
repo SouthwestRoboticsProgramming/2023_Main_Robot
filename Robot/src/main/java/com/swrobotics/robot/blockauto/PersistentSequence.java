@@ -1,8 +1,5 @@
 package com.swrobotics.robot.blockauto;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import edu.wpi.first.wpilibj.DriverStation;
 
