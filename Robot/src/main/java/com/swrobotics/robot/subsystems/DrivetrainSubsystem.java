@@ -159,11 +159,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public Rotation2d getGyroscopeRotation() {
-        if (RobotBase.isSimulation()) {
-            return getPose().getRotation();
-        }
         return gyro.getRotation2d().minus(gyroOffset);
-
     }
 
     public Translation2d getTiltAsTranslation() {
@@ -349,7 +345,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         // Freshly estimated the new rotation based off of the wheels
         if (RobotBase.isSimulation()) {
             ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
-            gyroOffset = gyroOffset.plus(new Rotation2d(-estimatedChassis.omegaRadiansPerSecond * 0.02));
+            gyroOffset = gyroOffset.plus(new Rotation2d(estimatedChassis.omegaRadiansPerSecond * 0.02));
             odometry.update(gyroOffset, getModulePositions());
         } else {
             odometry.update(getGyroscopeRotation(), getModulePositions());
