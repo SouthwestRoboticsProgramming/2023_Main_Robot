@@ -21,7 +21,7 @@ public class AutoBalanceCommand extends CommandBase {
     private final StopPosition firstStopPosition;
 
     public AutoBalanceCommand(RobotContainer robot) {
-        drive = robot.m_drivetrainSubsystem;
+        drive = robot.drivetrainSubsystem;
         pid = new PIDController(KP.get(), 0.0, 0.0);
 
         KP.onChange(() -> pid.setP(KP.get()));
