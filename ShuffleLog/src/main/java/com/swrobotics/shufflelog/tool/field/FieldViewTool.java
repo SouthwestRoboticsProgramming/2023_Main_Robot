@@ -92,6 +92,7 @@ public final class FieldViewTool extends ViewportTool {
         MessengerClient msg = log.getMessenger();
         layers = new ArrayList<>();
         layers.add(new MeterGridLayer());
+        layers.add(new FieldVectorLayer2023());
         layers.add(new PathfindingLayer(msg, this));
         layers.add(new TagTrackerLayer(this, msg));
         layers.add(new WaypointLayer(this, msg));

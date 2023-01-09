@@ -6,7 +6,6 @@ import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
-import com.swrobotics.robot.VisionConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,14 +13,15 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
@@ -33,14 +33,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-// The Stop Position Enu
-enum StopPosition {
-    NONE,
-    CROSS,
-    CIRCLE,
-}
-
-
 public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable {
 
     public StatusLogging logger;
@@ -48,6 +40,18 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
     public void initLogging(StatusLogging logger) {
         this.logger = logger;
     }
+
+    // The Stop Position Enum
+    public enum StopPosition {
+        NONE,
+        CROSS,
+        CIRCLE,
+    }
+
+
+    // Use these instead of adding DrivetrainSubsystem as requirements for commands
+    public final Subsystem TURN_SUBSYSTEM = new SubsystemBase() {};
+    public final Subsystem DRIVE_SUBSYSTEM = new SubsystemBase() {};
 
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
@@ -149,28 +153,38 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
             new SwerveModule(BACK_RIGHT_SELECT.getSelected(), new Translation2d(-0.3, -0.3), 270.0)  // Back right
         };
 
+        setBrakeMode(true);
+
         SmartDashboard.putData("Field", field);
-        System.out.println("Target Position: " + VisionConstants.DOOR_POSE.toPose2d());
-        field.getObject("target").setPose(VisionConstants.DOOR_POSE.toPose2d());
         // field.getObject("traj").setTrajectory(new Trajectory()); // Clear trajectory view
 
         for (int i = 0; i < 15; i++) {
             printEncoderOffsets();
         }
 
+        gyro.calibrate();
+
         // FIXME: Change back to getGyroscopeRotation
-        odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation());
+        odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation(), getModulePositions());
     }
 
     public Rotation2d getGyroscopeRotation() {
         if (RobotBase.isSimulation()) {
             return getPose().getRotation();
         }
-        return gyro.getRotation2d().minus(gyroOffset);
+        // return gyro.getRotation2d().minus(gyroOffset);
+        return Rotation2d.fromDegrees(gyro.getAngle()).minus(gyroOffset);
+
+    }
+
+    public Translation2d getTiltAsTranslation() {
+        // FIXME: May be swapped on final robot
+        return new Translation2d(gyro.getRoll(), gyro.getPitch());
     }
 
     private Rotation2d getRawGyroscopeRotation() {
-        return gyro.getRotation2d();
+        // return gyro.getRotation2d();
+        return Rotation2d.fromDegrees(gyro.getAngle());
     }
 
     public void zeroGyroscope() {
@@ -187,10 +201,9 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
-        System.out.println("Set");
         this.speeds = speeds;
     }
-
+    
     public void combineChassisSpeeds(ChassisSpeeds addition) {
         speeds = new ChassisSpeeds(
             speeds.vxMetersPerSecond + addition.vxMetersPerSecond,
@@ -204,7 +217,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
     }
 
     public void resetPose(Pose2d newPose) {
-        odometry.resetPosition(newPose, getGyroscopeRotation());
+        odometry.resetPosition(getGyroscopeRotation(), getModulePositions(), newPose);
     }
 
     public void setModuleStates(SwerveModuleState[] states) {
@@ -222,6 +235,15 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         return states;
     }
 
+    public SwerveModulePosition[] getModulePositions() {
+        SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
+        for (int i = 0; i < modules.length; i++) {
+            positions[i] = modules[i].getPosition();
+        }
+
+        return positions;
+    }
+
     private static final double IS_MOVING_THRESH = 0.1;
 
     public boolean isMoving() {
@@ -229,6 +251,20 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         Translation2d translation = new Translation2d(currentMovement.vxMetersPerSecond, currentMovement.vyMetersPerSecond);
         double chassisVelocity = translation.getNorm();
         return chassisVelocity > IS_MOVING_THRESH;
+    }
+
+    public void setStopPosition(StopPosition position) {
+        stopPosition = position;
+    }
+
+    public StopPosition getStopPosition() {
+        return stopPosition;
+    }
+
+    public void setBrakeMode(boolean brake) {
+        for (SwerveModule module : modules) {
+            module.setBrakeMode(brake);
+        }
     }
 
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {
@@ -250,10 +286,6 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         );
 
         return autoBuilder;
-    }
-
-    public void showTrajectory(Trajectory trajectory) {
-        field.getObject("traj").setTrajectory(trajectory);
     }
 
     public void printEncoderOffsets() {
@@ -313,9 +345,9 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         if (RobotBase.isSimulation()) {
             ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
             gyroOffset = gyroOffset.plus(new Rotation2d(-estimatedChassis.omegaRadiansPerSecond * 0.02));
-            odometry.update(gyroOffset, getModuleStates());
+            odometry.update(gyroOffset, getModulePositions());
         } else {
-            odometry.update(getGyroscopeRotation(), getModuleStates());
+            odometry.update(getGyroscopeRotation(), getModulePositions());
         }
         
         field.setRobotPose(getPose());

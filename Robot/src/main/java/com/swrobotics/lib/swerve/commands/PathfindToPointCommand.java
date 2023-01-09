@@ -3,14 +3,9 @@ package com.swrobotics.lib.swerve.commands;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
-import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Pathfinder;
-import com.swrobotics.robot.subsystems.Lights.IndicatorMode;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 import java.util.List;
@@ -22,25 +17,20 @@ public final class PathfindToPointCommand extends CommandBase {
     // Position tolerance in meters, must be larger than pathfinding tile
     private static final double TOLERANCE = 0.175;
 
-    // Angle tolerance in radians
-    private static final double ANGLE_TOLERANCE = Math.toRadians(3);
-
     private final DrivetrainSubsystem drive;
     private final Pathfinder finder;
-    private final Lights lights; // For debugging; TODO: Remove
 
     private final Vec2d goal;
-    private boolean done;
+    private boolean finished;
 
     public PathfindToPointCommand(RobotContainer robot, Vec2d goal) {
-        drive = robot.m_drivetrainSubsystem;
-        finder = robot.m_pathfinder;
-        this.lights = robot.m_lights;
+        drive = robot.drivetrainSubsystem;
+        finder = robot.pathfinder;
         this.goal = goal;
 
-        addRequirements(drive);
+        addRequirements(drive.DRIVE_SUBSYSTEM);
 
-        done = false;
+        finished = false;
     }
 
     @Override
@@ -48,7 +38,6 @@ public final class PathfindToPointCommand extends CommandBase {
         finder.setGoal(goal.x, goal.y);
         if (!finder.isPathValid()) {
             System.out.println("Path bad");
-            lights.set(Lights.Color.RED);
             return;
         }
         List<Vec2d> path = finder.getPath();
@@ -80,9 +69,6 @@ public final class PathfindToPointCommand extends CommandBase {
         if (target == null) {
             System.err.println("Waiting for pathfinder to catch up");
             drive.setChassisSpeeds(new ChassisSpeeds(0, 0, 0));
-
-            // Indicate that this is what is happening
-            lights.set(IndicatorMode.FAILED);
             return;
         }
 
@@ -91,7 +77,7 @@ public final class PathfindToPointCommand extends CommandBase {
         double deltaY = target.y - currentPosition.y;
         double len = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         if (len < TOLERANCE) {
-            done = true;
+            finished = true;
         }
         deltaX /= len; deltaY /= len;
 
@@ -108,11 +94,10 @@ public final class PathfindToPointCommand extends CommandBase {
 
         // Move
         drive.combineChassisSpeeds(speeds);
-        lights.set(IndicatorMode.GOOD); // Indicate it is working correctly
     }
 
     @Override
     public boolean isFinished() {
-        return done;
+        return finished;
     }
 }

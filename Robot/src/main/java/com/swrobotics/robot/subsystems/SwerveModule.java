@@ -1,6 +1,7 @@
 package com.swrobotics.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
@@ -14,6 +15,7 @@ import com.swrobotics.lib.net.NTDouble;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
@@ -49,6 +51,9 @@ public class SwerveModule {
     // Conversion helpers
     private final double turnEncoderToAngle;
     private final double driveEncoderVelocityToMPS;
+
+    // Simulate drive encoder distance
+    private double simulatedDistance = 0.0;
 
     public SwerveModule(SwerveModuleInfo moduleInfo, Translation2d position, double positionalOffset) {
         this.position = position;
@@ -106,6 +111,9 @@ public class SwerveModule {
         SwerveModuleState outputState = optimize(state.speedMetersPerSecond, state.angle.getRadians());
         targetState = outputState;
 
+        // Simulate encoder distance for odometry
+        simulatedDistance += outputState.speedMetersPerSecond * 0.02;
+
         double turnUnits = toNativeTurnUnits(outputState.angle);
 
         turn.set(TalonFXControlMode.Position, turnUnits);
@@ -122,12 +130,23 @@ public class SwerveModule {
         return new SwerveModuleState(getDriveVelocity(), getAngle());
     }
 
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(getDistance(), getAngle());
+    }
+
     public Rotation2d getAngle() {
         if (RobotBase.isSimulation()) {
             return targetState.angle;
         }
 
         return fromNativeTurnUnits(turn.getSelectedSensorPosition());
+    }
+
+    public double getDistance() {
+        if (RobotBase.isSimulation()) {
+            return simulatedDistance;
+        }
+        return fromNativeDriveUnits(drive.getSelectedSensorPosition());
     }
 
     public Rotation2d getAbsoluteAngle() {
@@ -141,6 +160,14 @@ public class SwerveModule {
     public void calibrate() {
         offset.set(getCalibrationAngle());
         calibrateWithAbsoluteEncoder();
+    }
+
+    public void setBrakeMode(boolean brake) {
+        NeutralMode mode = NeutralMode.Coast;
+        if (brake) {
+            mode = NeutralMode.Brake;
+        }
+        drive.setNeutralMode(mode);
     }
 
     public double getDriveVelocity() {

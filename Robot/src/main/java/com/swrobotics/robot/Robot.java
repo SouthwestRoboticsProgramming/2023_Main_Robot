@@ -1,16 +1,11 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package com.swrobotics.robot;
 
-import com.swrobotics.robot.subsystems.StatusLogging;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 /**
@@ -23,10 +18,10 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
  * project.
  */
 public class Robot extends TimedRobot {
-    private Command m_autonomousCommand;
-    private final Timer m_autonomousTimer = new Timer();
+    private Command autonomousCommand;
+    private final Timer autonomousTimer = new Timer();
 
-    private RobotContainer m_robotContainer;
+    private RobotContainer robotContainer;
 
     /**
      * This function is run when the robot is first started up and should be used
@@ -35,10 +30,8 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotInit() {
-        // Instantiate our RobotContainer. This will perform all our button bindings,
-        // and put our
-        // autonomous chooser on the dashboard.
-        m_robotContainer = new RobotContainer();
+        // Create a RobotContainer to manage our subsystems and our buttons
+        robotContainer = new RobotContainer();
     }
 
     /**
@@ -63,20 +56,18 @@ public class Robot extends TimedRobot {
         // block in order for anything in the Command-based framework to work.
         CommandScheduler.getInstance().run();
 
-        m_robotContainer.getMessenger().readMessages();
-
+        // Handle messages being sent by the raspberry pi
+        robotContainer.getMessenger().readMessages();
     }
 
     /**
      * This function is called once each time the robot enters Disabled mode.
      */
     @Override
-    public void disabledInit() {
-    }
+    public void disabledInit() {}
 
     @Override
-    public void disabledPeriodic() {
-    }
+    public void disabledPeriodic() {}
 
     /**
      * This autonomous runs the autonomous command selected by your
@@ -85,39 +76,27 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         // If an autonomous command has already be set, reset it
-        if (m_autonomousCommand != null) {
-            SequentialCommandGroup.clearGroupedCommands();
-            m_autonomousCommand.cancel();
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
             System.out.println("Canceled the current auto command");
         }
 
         // Get autonomous from selector
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-        System.out.println(m_autonomousCommand);
+        autonomousCommand = robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command (example)
-        if (m_autonomousCommand != null) {
-            SequentialCommandGroup finalCommand = m_autonomousCommand.andThen(
+        if (autonomousCommand != null) {
+            // Follow up autonomous command with diagnostics on how quickly it ran
+            SequentialCommandGroup finalCommand = autonomousCommand.andThen(
                     new PrintCommand("Auto Completed!"),
-                    new CommandBase() {
-                        @Override
-                        public void execute() {
-                            m_autonomousTimer.stop();
-                            System.out.printf("Auto finished in %.3f seconds\n", m_autonomousTimer.get());
-                        }
-
-                        @Override
-                        public boolean isFinished() {
-                            return true;
-                        }
-
-                    });
-            // m_autonomousCommand.schedule();
+                    new RunCommand(() -> autonomousTimer.stop()));
+                    new RunCommand(() -> System.out.printf("Auto finished in %.3f seconds\n", autonomousTimer.get())
+            );
             finalCommand.schedule();
-            m_autonomousTimer.stop();
-            m_autonomousTimer.reset();
-            m_autonomousTimer.start();
-            // CommandScheduler.getInstance().schedule(m_autonomousCommand);
+
+            // Reset the timer
+            autonomousTimer.reset();
+            autonomousTimer.start();
         }
     }
 }

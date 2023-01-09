@@ -11,7 +11,7 @@ import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.blockauto.part.AnglePart.Mode;
 import com.swrobotics.robot.blockauto.part.FieldPointPart.Point;
-import com.swrobotics.robot.subsystems.Lights;
+import com.swrobotics.robot.commands.AutoBalanceCommand;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -65,33 +65,14 @@ public final class AutoBlocks {
                 .creator((params, robot) -> new WaitCommand((double) params[0]));
 
         control.newBlock("union")
-                .text("Union of")
-                .paramBlockStack("a")
-                .text("and")
-                .paramBlockStack("b")
-                .creator((params, robot) -> new ParallelCommandGroup(
-                        ((BlockStackInst) params[0]).toCommand(robot),
-                        ((BlockStackInst) params[1]).toCommand(robot)
-                ));
-
-        BlockCategory lights = defineCategory("Lights", 69, 39, 110);
-        lights.newBlock("lights")
-                .text("Set lights to ")
-                .paramEnum("color", Lights.Color.class, Lights.Color.BLUE)
-                .creator((params, robot) -> new CommandBase() {
-
-                    @Override
-                    public void initialize() {
-                        System.out.println("Setting lights to " + (Lights.Color) params[0]);
-                        robot.m_lights.set((Lights.Color) params[0]);
-                    }
-
-                    @Override
-                    public boolean isFinished() {
-                        return true;
-                    }
-                    
-                });
+                 .text("Union of")
+                 .paramBlockStack("a")
+                 .text("and")
+                 .paramBlockStack("b")
+                 .creator((params, robot) -> new ParallelCommandGroup(
+                         ((BlockStackInst) params[0]).toCommand(robot),
+                         ((BlockStackInst) params[1]).toCommand(robot)
+                 ));
         
         BlockCategory drive = defineCategory("Drive", 42, 57, 112);
         drive.newBlock("blind drive for time")
@@ -104,7 +85,7 @@ public final class AutoBlocks {
                 .text(" seconds")
                 .text("Robot relative: ")
                 .paramBoolean("robot-relative", false)
-                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], (boolean) params[3]));
+                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (boolean) params[3]).withTimeout((double) params[2]));
 
         drive.newBlock("blind turn for time")
                 .text("Turn at ")
@@ -112,7 +93,7 @@ public final class AutoBlocks {
                 .text(" radians per second for ")
                 .paramDouble("time", 1.0)
                 .text(" seconds")
-                .creator((params, robot) -> new TurnBlindCommand(robot, (double) params[0], (double) params[1]));
+                .creator((params, robot) -> new TurnBlindCommand(robot, (double) params[0]).withTimeout((double) params[1]));
 
         drive.newBlock("turn to angle")
                 .text("Turn to ")
@@ -141,9 +122,9 @@ public final class AutoBlocks {
                         rotation.ccw().rotation2d()
                     );
 
-                    // Reset gyro before reseting odometry to fix field oriented drive
-                    robot.m_drivetrainSubsystem.setGyroscopeRotation(newPose.getRotation());
-                    robot.m_drivetrainSubsystem.resetPose(newPose);
+                    // Reset gyro before resetting odometry to fix field oriented drive
+                    robot.drivetrainSubsystem.setGyroscopeRotation(newPose.getRotation());
+                    robot.drivetrainSubsystem.resetPose(newPose);
                 }
 
                 @Override
@@ -151,6 +132,10 @@ public final class AutoBlocks {
                     return true;
                 }
             });
+
+        drive.newBlock("balance")
+            .text("Balance")
+            .creator((params, robot) -> new AutoBalanceCommand(robot));
 
         drive.newBlock("pathfind to point")
                 .text("Pathfind to ")

@@ -2,7 +2,6 @@ package com.swrobotics.robot.blockauto.part;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageBuilder;
