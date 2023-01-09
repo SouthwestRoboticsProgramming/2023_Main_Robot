@@ -53,11 +53,10 @@ public class RobotContainer {
     private final SendableChooser<Command> autoSelector;
 
     // The robot's subsystems are defined here...
-    public final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
-    
-    public final Pathfinder m_pathfinder;
+    public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
+    public final Pathfinder pathfinder;
 
-    private final XboxController m_controller = new XboxController(0);
+    private final XboxController controller = new XboxController(0);
 
     private final MessengerClient messenger;
 
@@ -73,11 +72,11 @@ public class RobotContainer {
         // Left stick Y axis -> forward and backwards movement
         // Left stick X axis -> left and right movement
         // Right stick X axis -> rotation
-        m_drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(
-                m_drivetrainSubsystem,
-                () -> -modifyAxis(m_controller.getLeftY()) * DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND,
-                () -> -modifyAxis(m_controller.getLeftX()) * DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND,
-                () -> -modifyAxis(m_controller.getRightX())
+        drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(
+                drivetrainSubsystem,
+                () -> -modifyAxis(controller.getLeftY()) * DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND,
+                () -> -modifyAxis(controller.getLeftX()) * DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND,
+                () -> -modifyAxis(controller.getRightX())
                         * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND));
 
         // Configure the rest of the button bindings
@@ -95,7 +94,7 @@ public class RobotContainer {
         WaypointStorage.init(messenger);
 
         // Initialize pathfinder to be able to drive to any point on the field
-        m_pathfinder = new Pathfinder(messenger, m_drivetrainSubsystem);
+        pathfinder = new Pathfinder(messenger, drivetrainSubsystem);
 
         HashMap<String, Command> eventMap = new HashMap<>();
 
@@ -103,7 +102,7 @@ public class RobotContainer {
         eventMap.put("marker1", new PrintCommand("Passed marker 1"));
 
         // Allow for easy creation of autos using PathPlanner
-        SwerveAutoBuilder builder = m_drivetrainSubsystem.getAutoBuilder(eventMap);
+        SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
 
         // Add your pre-generated autos here...
         Command blankAuto = new InstantCommand();
@@ -135,12 +134,12 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         // Back button zeros the gyroscope
-        new Trigger(m_controller::getBackButton)
+        new Trigger(controller::getBackButton)
                 // No requirements because we don't need to interrupt anything
-                .onTrue(Commands.runOnce(() -> m_drivetrainSubsystem.zeroGyroscope()));
+                .onTrue(Commands.runOnce(() -> drivetrainSubsystem.zeroGyroscope()));
 
         // Start button does leveling sequence on charger
-        new Trigger(m_controller::getStartButton)
+        new Trigger(controller::getStartButton)
                 .whileTrue(new AutoBalanceCommand(this));
     }
 

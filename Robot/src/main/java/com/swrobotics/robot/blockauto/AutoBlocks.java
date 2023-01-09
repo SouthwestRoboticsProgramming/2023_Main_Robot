@@ -123,8 +123,8 @@ public final class AutoBlocks {
                     );
 
                     // Reset gyro before resetting odometry to fix field oriented drive
-                    robot.m_drivetrainSubsystem.setGyroscopeRotation(newPose.getRotation());
-                    robot.m_drivetrainSubsystem.resetPose(newPose);
+                    robot.drivetrainSubsystem.setGyroscopeRotation(newPose.getRotation());
+                    robot.drivetrainSubsystem.resetPose(newPose);
                 }
 
                 @Override
