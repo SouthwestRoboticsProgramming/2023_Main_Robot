@@ -3,7 +3,6 @@ on:
   pull_request:
 
   push:
-    branches: main
 jobs:
   gradle:
     runs-on: ubuntu-latest
