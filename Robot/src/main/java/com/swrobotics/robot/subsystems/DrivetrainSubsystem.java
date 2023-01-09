@@ -3,7 +3,6 @@ package com.swrobotics.robot.subsystems;
 import java.util.HashMap;
 
 import com.kauailabs.navx.frc.AHRS;
-// import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
@@ -16,7 +15,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -282,10 +280,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
         );
 
         return autoBuilder;
-    }
-
-    public void showTrajectory(Trajectory trajectory) {
-        field.getObject("traj").setTrajectory(trajectory);
     }
 
     public void printEncoderOffsets() {
