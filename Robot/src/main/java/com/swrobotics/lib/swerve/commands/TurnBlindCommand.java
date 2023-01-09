@@ -12,7 +12,7 @@ public class TurnBlindCommand extends CommandBase {
     private final ChassisSpeeds output;
 
     public TurnBlindCommand(RobotContainer robot, double omegaRadiansPerSecond) {
-        drive = robot.m_drivetrainSubsystem;
+        drive = robot.drivetrainSubsystem;
 
         output = new ChassisSpeeds(0, 0, omegaRadiansPerSecond);
 
