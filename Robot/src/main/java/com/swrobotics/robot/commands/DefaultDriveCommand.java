@@ -1,7 +1,6 @@
 package com.swrobotics.robot.commands;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
@@ -25,7 +24,7 @@ public class DefaultDriveCommand extends CommandBase {
         this.m_translationYSupplier = translationYSupplier;
         this.m_rotationSupplier = rotationSupplier;
 
-        addRequirements(drive.DRIVE_SUBSYSTEM, drive.TURN_SUBSYSTEM);
+        addRequirements(drive.DRIVE_SUBSYSTEM, drive.TURN_SUBSYSTEM, drive);
     }
 
     @Override
