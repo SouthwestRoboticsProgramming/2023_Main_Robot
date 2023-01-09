@@ -17,12 +17,8 @@ import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
-import com.swrobotics.robot.commands.LightCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
-import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Pathfinder;
-import com.swrobotics.robot.subsystems.Vision;
-import com.swrobotics.robot.subsystems.Lights.Color;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -30,7 +26,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -58,8 +53,6 @@ public class RobotContainer {
 
     // The robot's subsystems and commands are defined here...
     public final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
-    public final Lights m_lights = new Lights();
-    public final Vision m_vision = new Vision(m_drivetrainSubsystem);
     public final Pathfinder m_pathfinder;
 
     private final XboxController m_controller = new XboxController(0);
@@ -85,8 +78,6 @@ public class RobotContainer {
                 () -> -modifyAxis(m_controller.getRightX())
                         * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND));
 
-        m_vision.register();
-
         // Configure the button bindings
         configureButtonBindings();
 
@@ -105,30 +96,10 @@ public class RobotContainer {
         Command blankAuto = new InstantCommand();
         Command printAuto = new PrintCommand("Auto chooser is working!");
 
-        Command justLights = new LightCommand(m_lights, Color.BLUE, 0.2).andThen(
-            new LightCommand(m_lights, Color.GOLD, 1),
-            new LightCommand(m_lights, Color.GREEN, 2),
-            new LightCommand(m_lights, Color.WHITE, 3),
-            new LightCommand(m_lights, Color.RAINBOW, 5.0)
-        );
-
         // Command justLights = new LightTest(m_lights);
 
         // Generate drive commands using PathPlanner
         HashMap<String, Command> eventMap = new HashMap<>();
-
-        // Add all of the colors as potential markers
-        for (Color color : Color.values()) {
-            // eventMap.put(color.name(), new PrintCommand("Color: " + color.name()));
-            System.out.println("Add color: " + color.name());
-            // eventMap.put(color.name(), new LightCommand(m_lights, color, 0.02));
-            eventMap.put(color.name(), new CommandBase() {
-                @Override
-                public void initialize() {
-                    m_lights.set(color);
-                }
-            });
-        }
 
         eventMap.put("marker1", new PrintCommand("Passed marker 1"));
 
@@ -175,7 +146,6 @@ public class RobotContainer {
         autoSelector.addOption("Tiny Auto", tinyAuto);
         autoSelector.addOption("Door to Window", doorToWindow);
         autoSelector.addOption("Path to Point", pathToPoint);
-        autoSelector.addOption("Just lights", justLights);
         autoSelector.addOption("Block Auto", blockAutoCommand);
         autoSelector.addOption("Blind drive", blindDrive);
         autoSelector.addOption("Blind combo", blindCombo);
