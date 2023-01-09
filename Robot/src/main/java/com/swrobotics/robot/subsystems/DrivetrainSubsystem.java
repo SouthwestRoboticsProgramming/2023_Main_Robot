@@ -6,7 +6,6 @@ import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
-import com.swrobotics.robot.VisionConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -151,8 +150,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
         setBrakeMode(true);
 
         SmartDashboard.putData("Field", field);
-        System.out.println("Target Position: " + VisionConstants.DOOR_POSE.toPose2d());
-        field.getObject("target").setPose(VisionConstants.DOOR_POSE.toPose2d());
         // field.getObject("traj").setTrajectory(new Trajectory()); // Clear trajectory view
 
         for (int i = 0; i < 15; i++) {

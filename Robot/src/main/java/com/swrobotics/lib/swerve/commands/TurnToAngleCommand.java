@@ -19,7 +19,7 @@ public class TurnToAngleCommand extends CommandBase {
     private Rotation2d target;
     
     public TurnToAngleCommand(RobotContainer robot, Angle angle, boolean robotRelative) {
-        drive = robot.m_drivetrainSubsystem;
+        drive = robot.drivetrainSubsystem;
         target = angle.ccw().rotation2d();
         if (robotRelative) {
             target.plus(drive.getGyroscopeRotation());
