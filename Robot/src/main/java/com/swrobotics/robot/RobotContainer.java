@@ -2,10 +2,12 @@ package com.swrobotics.robot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
@@ -20,6 +22,8 @@ import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Pathfinder;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
