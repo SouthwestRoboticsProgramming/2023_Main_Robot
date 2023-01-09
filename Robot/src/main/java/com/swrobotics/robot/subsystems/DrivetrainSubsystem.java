@@ -162,8 +162,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         if (RobotBase.isSimulation()) {
             return getPose().getRotation();
         }
-        // return gyro.getRotation2d().minus(gyroOffset);
-        return Rotation2d.fromDegrees(gyro.getAngle()).minus(gyroOffset);
+        return gyro.getRotation2d().minus(gyroOffset);
 
     }
 
