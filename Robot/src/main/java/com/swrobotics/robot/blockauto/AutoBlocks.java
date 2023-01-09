@@ -85,7 +85,7 @@ public final class AutoBlocks {
                 .text(" seconds")
                 .text("Robot relative: ")
                 .paramBoolean("robot-relative", false)
-                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (double) params[2], (boolean) params[3]));
+                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (boolean) params[3]).withTimeout((double) params[2]));
 
         drive.newBlock("blind turn for time")
                 .text("Turn at ")
@@ -93,7 +93,7 @@ public final class AutoBlocks {
                 .text(" radians per second for ")
                 .paramDouble("time", 1.0)
                 .text(" seconds")
-                .creator((params, robot) -> new TurnBlindCommand(robot, (double) params[0], (double) params[1]));
+                .creator((params, robot) -> new TurnBlindCommand(robot, (double) params[0]).withTimeout((double) params[1]));
 
         drive.newBlock("turn to angle")
                 .text("Turn to ")
@@ -122,7 +122,7 @@ public final class AutoBlocks {
                         rotation.ccw().rotation2d()
                     );
 
-                    // Reset gyro before reseting odometry to fix field oriented drive
+                    // Reset gyro before resetting odometry to fix field oriented drive
                     robot.m_drivetrainSubsystem.setGyroscopeRotation(newPose.getRotation());
                     robot.m_drivetrainSubsystem.resetPose(newPose);
                 }
