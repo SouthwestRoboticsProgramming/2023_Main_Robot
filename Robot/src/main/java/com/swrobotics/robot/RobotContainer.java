@@ -44,14 +44,16 @@ import com.swrobotics.mathlib.CWAngle;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+    // Configuration for our Raspberry Pi communication service
     private static final String MESSENGER_HOST_ROBOT = "10.21.29.3";
     private static final String MESSENGER_HOST_SIM = "localhost";
     private static final int MESSENGER_PORT = 5805;
     private static final String MESSENGER_NAME = "Robot";
 
+    // Create a way to choose between autonomous sequences
     private final SendableChooser<Command> autoSelector;
 
-    // The robot's subsystems and commands are defined here...
+    // The robot's subsystems are defined here...
     public final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
     public final Pathfinder m_pathfinder;
 
@@ -120,9 +122,6 @@ public class RobotContainer {
         Command turnToAngle = new TurnToAngleCommand(this, CWAngle.deg(90), false).withTimeout(5);
 
         Command testTilt = new AutoBalanceCommand(this);
-
-        m_drivetrainSubsystem.showTrajectory(getPath("Door to Window").get(0));
-        // m_drivetrainSubsystem.showTrajectory(getPath("Small Path").get(0));
 
         m_pathfinder = new Pathfinder(messenger, m_drivetrainSubsystem);
 
