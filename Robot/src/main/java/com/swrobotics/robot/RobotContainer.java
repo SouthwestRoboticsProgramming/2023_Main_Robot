@@ -62,7 +62,7 @@ public class RobotContainer {
     public final Pathfinder pathfinder;
 
     public final Lights lights = new Lights();
-    public final StatusLogging m_statuslogger = new StatusLogging(lights);
+    public final StatusLogging statuslogger = new StatusLogging(lights);
 
     private final XboxController controller = new XboxController(0);
 
