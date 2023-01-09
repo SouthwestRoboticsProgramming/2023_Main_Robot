@@ -1,7 +1,6 @@
-import com.swrobotics.robot.subsystems.StatusLogging;
+package com.swrobotics.robot.subsystems;
 
 // Interface for methods that want
 public interface StatusLoggable {
-    public StatusLogging logger;
     public void initLogging(StatusLogging logger);
 }
