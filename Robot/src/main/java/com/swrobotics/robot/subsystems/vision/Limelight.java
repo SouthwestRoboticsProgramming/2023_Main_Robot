@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems;
+package com.swrobotics.robot.subsystems.vision;
 
 import com.swrobotics.lib.net.NTBoolean;
 
