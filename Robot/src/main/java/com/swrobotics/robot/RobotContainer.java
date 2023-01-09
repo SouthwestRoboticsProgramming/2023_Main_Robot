@@ -94,11 +94,6 @@ public class RobotContainer {
         AutoBlocks.init(messenger, this);
         WaypointStorage.init(messenger);
 
-        // Generate autos to choose from
-        Command blankAuto = new InstantCommand();
-        Command printAuto = new PrintCommand("Auto chooser is working!");
-
-        // Command justLights = new LightTest(m_lights);
 
         // Generate drive commands using PathPlanner
         HashMap<String, Command> eventMap = new HashMap<>();
@@ -107,49 +102,17 @@ public class RobotContainer {
 
         SwerveAutoBuilder builder = m_drivetrainSubsystem.getAutoBuilder(eventMap);
 
-        Command smallPathAuto = builder.fullAuto(getPath("Small Path"));
-        Command bigPathAuto = builder.fullAuto(getPath("Big Path"));
-        Command twentyOne = builder.fullAuto(getPath("2129"));
-        Command lightShow = builder.fullAuto(getPath("Light Show"));
-        Command tinyAuto = builder.fullAuto(getPath("Tiny Path"));
-        Command doorToWindow = builder.fullAuto(getPath("Door to Window"));
-
-        Command blindDrive = new DriveBlindCommand(this, CWAngle.deg(90), 1, 1, true);
-        Command blindTurn = new TurnBlindCommand(this, Math.PI, 2.3);
-
-        Command blindCombo = new ParallelCommandGroup(blindDrive, blindTurn);
-
-        Command turnToAngle = new TurnToAngleCommand(this, CWAngle.deg(90), false).withTimeout(5);
-
-        Command testTilt = new AutoBalanceCommand(this);
-
-        m_pathfinder = new Pathfinder(messenger, m_drivetrainSubsystem);
-
-        // For now PathfindToPointCommand resets odometry pose to center of field on init
-        // This should be done automatically by another system later (i.e. Vision or ShuffleLog)
-        Command pathToPoint = new PathfindToPointCommand(
-                this,
-                new Vec2d(8.2296 + 2, 8.2296/2) // 2 meters forward from field center
-        );
+        // Add your pre-generated autos here...
+        Command blankAuto = new InstantCommand();
+        Command printAuto = new PrintCommand("Auto chooser is working!");
 
         blockAutoCommand = new InstantCommand();
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
-        autoSelector.setDefaultOption("No Auto", blankAuto);
+        autoSelector.setDefaultOption("No Auto", blankAuto); // TODO: Swap to taxi auto
         autoSelector.addOption("Print Auto", printAuto);
-        autoSelector.addOption("Small Path", smallPathAuto);
-        autoSelector.addOption("Big Path", bigPathAuto);
-        autoSelector.addOption("2129", twentyOne);
-        autoSelector.addOption("Light Show", lightShow);
-        autoSelector.addOption("Tiny Auto", tinyAuto);
-        autoSelector.addOption("Door to Window", doorToWindow);
-        autoSelector.addOption("Path to Point", pathToPoint);
-        autoSelector.addOption("Block Auto", blockAutoCommand);
-        autoSelector.addOption("Blind drive", blindDrive);
-        autoSelector.addOption("Blind combo", blindCombo);
-        autoSelector.addOption("Turn to angle", turnToAngle);
-        autoSelector.addOption("Test tilt", testTilt);
+
         SmartDashboard.putData(autoSelector);
     }
 
