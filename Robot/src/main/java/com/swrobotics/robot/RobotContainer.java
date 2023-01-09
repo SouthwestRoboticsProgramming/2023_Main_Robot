@@ -121,7 +121,7 @@ public class RobotContainer {
         autoSelector.addOption("Print Auto", printAuto);
         autoSelector.addOption("Taxi Smart", taxiSmart);
 
-        SmartDashboard.putData(autoSelector);
+        SmartDashboard.putData("Auto", autoSelector);
     }
 
     /**
