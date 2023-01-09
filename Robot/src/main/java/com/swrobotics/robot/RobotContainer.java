@@ -18,7 +18,6 @@ import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Pathfinder;
-import com.swrobotics.robot.subsystems.vision.Photon;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -56,7 +55,6 @@ public class RobotContainer {
     // The robot's subsystems are defined here...
     public final DrivetrainSubsystem m_drivetrainSubsystem = new DrivetrainSubsystem();
     
-    public final Photon m_vision = new Photon(m_drivetrainSubsystem);
     public final Pathfinder m_pathfinder;
 
     private final XboxController m_controller = new XboxController(0);
