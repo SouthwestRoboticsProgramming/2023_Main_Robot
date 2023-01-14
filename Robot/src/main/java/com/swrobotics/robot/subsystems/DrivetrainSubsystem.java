@@ -49,10 +49,10 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
 
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
-        new SwerveModuleInfo("Module 0", 9, 5, 1, 44.21),  // Default front left
-        new SwerveModuleInfo("Module 1", 10, 6, 2, 274.13 - 90.0), // Default front right
-        new SwerveModuleInfo("Module 2", 11, 7, 3, 258.14 - 180.0), // Default back left
-        new SwerveModuleInfo("Module 3", 12, 8, 4, 218.06 - 270.0)  // Default back right
+        new SwerveModuleInfo("Module 0", 9, 5, 1, 38.41),  // Default front left
+        new SwerveModuleInfo("Module 1", 10, 6, 2, 185.45), // Default front right
+        new SwerveModuleInfo("Module 2", 11, 7, 3, 132.63), // Default back left
+        new SwerveModuleInfo("Module 3", 12, 8, 4, 78.93)  // Default back right
     };
     // Currently, no fifth module is built (not enough falcons)
 
@@ -187,7 +187,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
      * @param newRotation New gyro rotation, CCW +
      */
     public void setGyroscopeRotation(Rotation2d newRotation) {
-        gyroOffset = getRawGyroscopeRotation().minus(newRotation);
+        gyroOffset = getRawGyroscopeRotation().plus(newRotation);
         resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
     }
 

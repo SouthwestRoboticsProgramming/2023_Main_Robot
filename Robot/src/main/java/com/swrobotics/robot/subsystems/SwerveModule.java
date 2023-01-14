@@ -73,9 +73,9 @@ public class SwerveModule {
         driveConfig.slot0.kI = 0;
         driveConfig.slot0.kD = 0;
         driveConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
-        // FIXME: Remove limits imposed to keep robot from breaking Mason's house
-        driveConfig.peakOutputForward = 0.1;
-        driveConfig.peakOutputReverse = -0.1;
+        // FIXME: Remove limits imposed to keep robot from breaking Mason's house FIXME: Break the house
+        // driveConfig.peakOutputForward = 0.1;
+        // driveConfig.peakOutputReverse = -0.1;
 
         this.turn = new TalonFX(moduleInfo.turnMotorID);
         this.turn.configAllSettings(turnConfig);
