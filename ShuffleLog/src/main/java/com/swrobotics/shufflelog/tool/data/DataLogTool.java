@@ -2,7 +2,6 @@ package com.swrobotics.shufflelog.tool.data;
 
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.Tool;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import imgui.ImGui;
 
 import java.util.ArrayList;
@@ -31,22 +30,6 @@ public final class DataLogTool implements Tool {
         Graph graph = new Graph();
         graph.addPlot(plot);
         graphs.add(graph);
-    }
-
-    public void addBooleanPlot(String path, String name, NetworkTableEntry entry) {
-        addPlot(new BooleanEntryPlot(name, path, HISTORY_RETENTION_TIME, entry));
-    }
-
-    public void addDoublePlot(String path, String name, NetworkTableEntry entry) {
-        addPlot(new DoubleEntryPlot(name, path, HISTORY_RETENTION_TIME, entry));
-    }
-
-    public void addBooleanArrayEntryPlot(String path, String name, NetworkTableEntry entry, int index) {
-        addPlot(new BooleanArrayElementPlot(name, path, HISTORY_RETENTION_TIME, entry, index));
-    }
-
-    public void addDoubleArrayEntryPlot(String path, String name, NetworkTableEntry entry, int index) {
-        addPlot(new DoubleArrayElementPlot(name, path, HISTORY_RETENTION_TIME, entry, index));
     }
 
     private void showGraph(Graph graph, double time) {
@@ -141,24 +124,24 @@ public final class DataLogTool implements Tool {
                 ImGui.endChild();
             }
             if (ImGui.beginDragDropTarget()) {
-                PlotDef plotDef = ImGui.acceptDragDropPayload("NT_DRAG_VALUE");
-                if (plotDef != null) {
-                    switch (plotDef.getType()) {
-                        case DOUBLE:
-                            addDoublePlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry());
-                            break;
-                        case BOOLEAN:
-                            addBooleanPlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry());
-                            break;
-                        case DOUBLE_ARRAY_ENTRY:
-                            addDoubleArrayEntryPlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry(), plotDef.getIndex());
-                            break;
-                        case BOOLEAN_ARRAY_ENTRY:
-                            addBooleanArrayEntryPlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry(), plotDef.getIndex());
-                            break;
-                    }
-                }
-                ImGui.endDragDropTarget();
+//                PlotDef plotDef = ImGui.acceptDragDropPayload("NT_DRAG_VALUE");
+//                if (plotDef != null) {
+//                    switch (plotDef.getType()) {
+//                        case DOUBLE:
+//                            addDoublePlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry());
+//                            break;
+//                        case BOOLEAN:
+//                            addBooleanPlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry());
+//                            break;
+//                        case DOUBLE_ARRAY_ENTRY:
+//                            addDoubleArrayEntryPlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry(), plotDef.getIndex());
+//                            break;
+//                        case BOOLEAN_ARRAY_ENTRY:
+//                            addBooleanArrayEntryPlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry(), plotDef.getIndex());
+//                            break;
+//                    }
+//                }
+//                ImGui.endDragDropTarget();
             }
         }
         ImGui.end();
