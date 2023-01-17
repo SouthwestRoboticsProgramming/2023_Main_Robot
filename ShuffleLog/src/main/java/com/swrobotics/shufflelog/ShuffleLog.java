@@ -6,6 +6,7 @@ import com.swrobotics.shufflelog.tool.MenuBarTool;
 import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.blockauto.BlockAutoTool;
 import com.swrobotics.shufflelog.tool.data.DataLogTool;
+import com.swrobotics.shufflelog.tool.data.nt.NetworkTablesTool;
 import com.swrobotics.shufflelog.tool.field.FieldViewTool;
 import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
 import com.swrobotics.shufflelog.tool.profile.ShuffleLogProfilerTool;
@@ -101,7 +102,7 @@ public final class ShuffleLog extends PApplet {
         tools.add(new ShuffleLogProfilerTool(this));
         DataLogTool dataLog = new DataLogTool(this);
         tools.add(dataLog);
-//        tools.add(new NetworkTablesTool(threadPool, dataLog));
+        tools.add(new NetworkTablesTool());
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new FieldViewTool(this));
         tools.add(new BlockAutoTool(this));
