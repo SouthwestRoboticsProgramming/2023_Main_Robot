@@ -64,7 +64,7 @@ dependencies {
     implementation lwjglModule('opengl')
     implementation lwjglModule('stb')
 
-    //implementation "edu.wpi.first.ntcore:ntcore-java:${WPILIB_VERSION}"
+    implementation "edu.wpi.first.ntcore:ntcore-java:${WPILIB_VERSION}"
     implementation "edu.wpi.first.wpiutil:wpiutil-java:${WPILIB_VERSION}"
     //implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:windowsx86"
     //implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:windowsx86-64"
