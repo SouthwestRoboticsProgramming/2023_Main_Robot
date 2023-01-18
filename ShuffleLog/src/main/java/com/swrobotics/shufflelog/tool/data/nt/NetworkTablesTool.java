@@ -3,6 +3,7 @@ package com.swrobotics.shufflelog.tool.data.nt;
 import com.swrobotics.shufflelog.tool.Tool;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import imgui.ImGui;
+import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiTableFlags;
 import imgui.type.ImInt;
 import imgui.type.ImString;
@@ -35,12 +36,16 @@ public final class NetworkTablesTool implements Tool {
     private final ImString host;
     private final ImInt portOrTeamNumber;
 
+    private NetworkTablesConnection connection;
+
     public NetworkTablesTool() {
         version = new ImInt(DEFAULT_VERSION);
         connectionMode = new ImInt(DEFAULT_CONN_MODE);
         host = new ImString(64);
         host.set(DEFAULT_HOST);
         portOrTeamNumber = new ImInt(getDefaultPortOrTeamNumber());
+
+        connection = openConnection();
     }
 
     private int getDefaultPortOrTeamNumber() {
@@ -48,6 +53,15 @@ public final class NetworkTablesTool implements Tool {
             return DEFAULT_TEAM_NUMBER;
 
         return DEFAULT_PORT_PER_VERSION[version.get()];
+    }
+
+    private NetworkTablesConnection openConnection() {
+        boolean isNt4 = version.get() == VERSION_NT4;
+        if (connectionMode.get() == CONN_MODE_TEAM_NUMBER) {
+            return NetworkTablesConnection.fromTeamNumber(portOrTeamNumber.get(), isNt4);
+        } else {
+            return NetworkTablesConnection.fromAddress(host.get(), portOrTeamNumber.get(), isNt4);
+        }
     }
 
     private void label(String label) {
@@ -77,7 +91,25 @@ public final class NetworkTablesTool implements Tool {
                 label("Port:"); changed |= ImGui.inputInt("##port", portOrTeamNumber);
             }
 
+            ImGui.tableNextColumn();
+            ImGui.text("Status");
+            ImGui.tableNextColumn();
+            if (connection != null && connection.isConnected()) {
+                ImGui.pushStyleColor(ImGuiCol.Text, COLOR_CONNECTED);
+                ImGui.text("Connected");
+            } else {
+                ImGui.pushStyleColor(ImGuiCol.Text, COLOR_NOT_CONNECTED);
+                ImGui.text("Not Connected");
+            }
+            ImGui.popStyleColor();
+
             ImGui.endTable();
+        }
+
+        if (changed) {
+            if (connection != null)
+                connection.close();
+            connection = openConnection();
         }
     }
 
