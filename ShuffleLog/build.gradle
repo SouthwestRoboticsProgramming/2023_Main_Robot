@@ -65,10 +65,14 @@ dependencies {
     implementation lwjglModule('stb')
 
     implementation "edu.wpi.first.ntcore:ntcore-java:${WPILIB_VERSION}"
+    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:windowsx86-64"
     implementation "edu.wpi.first.wpiutil:wpiutil-java:${WPILIB_VERSION}"
+    implementation "edu.wpi.first.wpiutil:wpiutil-jni:${WPILIB_VERSION}:windowsx86-64"
+    implementation "edu.wpi.first.wpinet:wpinet-java:${WPILIB_VERSION}"
+    implementation "edu.wpi.first.wpinet:wpinet-jni:${WPILIB_VERSION}:windowsx86-64"
+
     //implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:windowsx86"
     //implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:windowsx86-64"
-    //implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:linuxx86-64"
     //implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:linuxraspbian"
     //implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:osxx86-64"
 }
