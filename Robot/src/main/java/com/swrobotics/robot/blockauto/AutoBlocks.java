@@ -17,10 +17,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.*;
 
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.Vec2d;
@@ -73,6 +70,11 @@ public final class AutoBlocks {
                          ((BlockStackInst) params[0]).toCommand(robot),
                          ((BlockStackInst) params[1]).toCommand(robot)
                  ));
+
+        control.newBlock("repeat")
+                .text("Repeat")
+                .paramBlockStack("content")
+                .creator((params, robot) -> new RepeatCommand(((BlockStackInst) params[0]).toCommand(robot)));
         
         BlockCategory drive = defineCategory("Drive", 42, 57, 112);
         drive.newBlock("blind drive for time")
