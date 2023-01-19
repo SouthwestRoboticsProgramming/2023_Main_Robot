@@ -45,3 +45,4 @@ ShuffleLog/layout.ini
 **/networktables.ini.bak
 
 Robot/waypoints.tsv
+Robot/BlockAuto/
