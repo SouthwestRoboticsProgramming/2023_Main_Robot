@@ -192,20 +192,21 @@ public class RobotContainer {
     }
 
     private static List<PathPlannerTrajectory> getPath(String name) {
-        try {
-            return PathPlanner.loadPathGroup(name, new PathConstraints(2.0, 1.0));
-        } catch (Exception e) {
-            System.out.println("Could not find that path, using default path instead");
 
-            // Generate a blank path
-            ArrayList<PathPlannerTrajectory> path = new ArrayList<>();
-            path.add(PathPlanner.generatePath( // Default is to not move TODO: Report error through lights
-                new PathConstraints(0.0, 0.0),
-                new PathPoint(new Translation2d(), new Rotation2d()),
-                new PathPoint(new Translation2d(), new Rotation2d())));
-            
+        List<PathPlannerTrajectory> path = PathPlanner.loadPathGroup(name, new PathConstraints(2.0, 1.0));
+        if (path != null) {
             return path;
         }
+
+        System.out.println("Could not find that path, using default path instead");
+
+        // // Generate a blank path
+        path = new ArrayList<>();
+        path.add(PathPlanner.generatePath(new PathConstraints(1.0, 1.0), new ArrayList<PathPoint>() {{
+            add(new PathPoint(new Translation2d(), new Rotation2d()));
+            add(new PathPoint(new Translation2d(1.0, 0), new Rotation2d()));
+        }}));
+        return path;
     }
 
     public MessengerClient getMessenger() {
