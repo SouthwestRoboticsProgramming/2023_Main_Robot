@@ -275,9 +275,9 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
                 this::getPose, // Pose2d supplier
                 this::resetPose, // Pose2d consumer, used to reset odometry at the beginning of auto
                 kinematics, // SwerveDriveKinematics
-                new PIDConstants(3.0, 0.0, 0.0), // PID constants to correct for translation error (used to create the X
+                new PIDConstants(0.0, 0.0, 0.0), // PID constants to correct for translation error (used to create the X
                                                  // and Y PID controllers)
-                new PIDConstants(0.5, 0.0, 0.0), // PID constants to correct for rotation error (used to create the
+                new PIDConstants(2.0, 0.0, 0.0), // PID constants to correct for rotation error (used to create the
                                                  // rotation controller)
                 this::cheatChassisSpeeds, // Module states consumer used to output to the drive subsystem
                 eventMap,
