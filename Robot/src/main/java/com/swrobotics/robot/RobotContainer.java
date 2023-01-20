@@ -191,7 +191,7 @@ public class RobotContainer {
 
     private static List<PathPlannerTrajectory> getPath(String name) {
         try {
-            return PathPlanner.loadPathGroup(name, new PathConstraints(0.2, 0.1));
+            return PathPlanner.loadPathGroup(name, new PathConstraints(2.0, 1.0));
         } catch (Exception e) {
             System.out.println("Could not find that path, using default path instead");
 
