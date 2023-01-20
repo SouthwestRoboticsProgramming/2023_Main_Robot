@@ -13,7 +13,7 @@ import java.util.List;
 
 public final class PathfindToPointCommand extends CommandBase {
     // Speed at which the robot tries to go
-    private static final double VELOCITY = 0.3;
+    private static final double VELOCITY = 1.0;
 
     // Position tolerance in meters, must be larger than pathfinding tile
     private static final double TOLERANCE = 0.175;
