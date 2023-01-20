@@ -263,6 +263,10 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         }
     }
 
+    private void cheatChassisSpeeds(SwerveModuleState[] states) {
+        setChassisSpeeds(kinematics.toChassisSpeeds(states));
+    }
+
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {
         // Create the AutoBuilder. This only needs to be created once when robot code
         // starts, not every time you want to create an auto command. A good place to
@@ -275,7 +279,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
                                                  // and Y PID controllers)
                 new PIDConstants(0.5, 0.0, 0.0), // PID constants to correct for rotation error (used to create the
                                                  // rotation controller)
-                this::setModuleStates, // Module states consumer used to output to the drive subsystem
+                this::cheatChassisSpeeds, // Module states consumer used to output to the drive subsystem
                 eventMap,
                 this // The drive subsystem. Used to properly set the requirements of path following
                      // commands
