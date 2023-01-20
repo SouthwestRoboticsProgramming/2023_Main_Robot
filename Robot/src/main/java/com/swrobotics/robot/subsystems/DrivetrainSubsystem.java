@@ -196,7 +196,6 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
     }
 
     public void setTargetTranslation(Translation2d targetTranslation, boolean fieldRelative) {
-        System.out.println("T: " + targetTranslation);
         translation = targetTranslation;
 
         if (fieldRelative) {
