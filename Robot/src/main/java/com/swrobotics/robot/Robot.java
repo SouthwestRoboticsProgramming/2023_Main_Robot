@@ -100,4 +100,11 @@ public class Robot extends TimedRobot {
             autonomousTimer.start();
         }
     }
+
+    @Override
+    public void autonomousExit() {
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
+        }
+    }
 }
