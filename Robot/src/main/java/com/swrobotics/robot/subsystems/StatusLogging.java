@@ -1,7 +1,5 @@
 package com.swrobotics.robot.subsystems;
 
-import com.swrobotics.robot.Robot;
-import com.swrobotics.robot.RobotContainer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.HashMap;

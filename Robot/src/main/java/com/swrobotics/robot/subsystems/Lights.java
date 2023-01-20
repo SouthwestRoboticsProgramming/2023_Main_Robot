@@ -126,15 +126,11 @@ public class Lights {
 
     private final Spark lights = new Spark(0); // The REV Blinkin is treated like a spark max
 
-    private double currentOutput;
-    private Color currentColor = Color.OFF;
     private IndicatorMode currentMode = IndicatorMode.OFF;
 
     public void set(double output) {
         lights.set(output);
 
-        currentOutput = output;
-        currentColor = Color.UNKNOWN;
         currentMode = IndicatorMode.OFF;
     }
 
@@ -146,8 +142,6 @@ public class Lights {
     public void set(Color color) {
         lights.set(color.getValue());
 
-        currentOutput = color.getValue();
-        currentColor = color;
         currentMode = IndicatorMode.OFF;
     }
 
@@ -156,9 +150,7 @@ public class Lights {
         if (mode.getSeverity() >= getMode().getSeverity()) {
             set(mode.getColor());
         }
-
-        currentOutput = mode.getColor().getValue();
-        currentColor = mode.getColor();
+        
         currentMode = mode;
     }
     public void setbyseverity(int severity) {
