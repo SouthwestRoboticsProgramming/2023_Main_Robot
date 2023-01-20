@@ -165,7 +165,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
     }
 
     public Rotation2d getGyroscopeRotation() {
-        return gyro.getRotation2d().minus(gyroOffset);
+        return gyro.getRotation2d().plus(gyroOffset);
     }
 
     public Translation2d getTiltAsTranslation() {
