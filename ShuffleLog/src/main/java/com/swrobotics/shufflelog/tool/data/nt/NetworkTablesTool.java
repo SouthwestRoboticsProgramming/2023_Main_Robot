@@ -2,13 +2,21 @@ package com.swrobotics.shufflelog.tool.data.nt;
 
 import com.swrobotics.shufflelog.tool.Tool;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableValue;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiTableColumnFlags;
 import imgui.flag.ImGuiTableFlags;
+import imgui.flag.ImGuiTreeNodeFlags;
 import imgui.type.ImInt;
 import imgui.type.ImString;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 
 // FIXME-Future: Since NetworkTable#getSubTables and NetworkTable#getTopics always seem to
 //   return an empty set for NT4, we only use NT3 here, which may be removed from WPILib
@@ -106,20 +114,67 @@ public final class NetworkTablesTool implements Tool {
         updateConnectionServer();
     }
 
-    private void showValue(NetworkTableValueRepr value) {
-        ImGui.text("Value: " + value.getName() + ": " + value.getType());
+    private void showValue(NetworkTableValueRepr valueRepr) {
+        int flags = ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen;
+
+        ImGui.tableNextColumn();
+        ImGui.treeNodeEx(valueRepr.getName(), flags);
+
+        NetworkTableValue value = valueRepr.sub.get();
+
+        ImGui.tableNextColumn();
+        ImGui.text("TODO: Edit");
+
+        ImGui.tableNextColumn();
+        ImGui.text(value.getType().getValueStr());
     }
 
-    private void showTable(NetworkTableRepr table) {
-        ImGui.text("Table: " + table.getName());
-        ImGui.indent();
-        for (NetworkTableRepr subtable : table.getSubtables()) {
-            showTable(subtable);
+    private <T> List<T> sortAlphabetically(Set<T> values, Function<T, String> nameGetter) {
+        List<T> list = new ArrayList<>(values);
+        list.sort(Comparator.comparing(nameGetter, String.CASE_INSENSITIVE_ORDER));
+        return list;
+    }
+
+    private void showTable(NetworkTableRepr table, boolean root) {
+        boolean open = root;
+        if (!root) {
+            ImGui.tableNextColumn();
+            open = ImGui.treeNodeEx(table.getName());
+            ImGui.tableNextColumn();
+            ImGui.textDisabled("--"); // Value
+            ImGui.tableNextColumn();
+            ImGui.textDisabled("--"); // Type
         }
-        for (NetworkTableValueRepr value : table.getValues()) {
-            showValue(value);
+
+        if (open) {
+            for (NetworkTableRepr subtable : sortAlphabetically(table.getSubtables(), NetworkTableRepr::getName)) {
+                showTable(subtable, false);
+            }
+            for (NetworkTableValueRepr value : sortAlphabetically(table.getValues(), NetworkTableValueRepr::getName)) {
+                showValue(value);
+            }
+
+            if (!root)
+                ImGui.treePop();
         }
-        ImGui.unindent();
+    }
+
+    private void showData() {
+        int tableFlags = ImGuiTableFlags.BordersOuter
+                | ImGuiTableFlags.BordersInnerV
+                | ImGuiTableFlags.Resizable;
+
+        NetworkTableRepr rootTable = connection.getRootTable();
+        if (rootTable == null) {
+            ImGui.textDisabled("Not connected");
+        } else if (ImGui.beginTable("data", 3, tableFlags)) {
+            ImGui.tableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 3);
+            ImGui.tableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch, 2);
+            ImGui.tableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 60);
+            ImGui.tableHeadersRow();
+            showTable(rootTable, true);
+            ImGui.endTable();
+        }
     }
 
     @Override
@@ -128,12 +183,7 @@ public final class NetworkTablesTool implements Tool {
             ImGui.text("Instances: " + connection.getActiveInstances());
             showConnectionInfo();
             ImGui.separator();
-            NetworkTableRepr rootTable = connection.getRootTable();
-            if (rootTable == null) {
-                ImGui.textDisabled("Not connected");
-            } else {
-                showTable(rootTable);
-            }
+            showData();
         }
         ImGui.end();
     }
