@@ -19,9 +19,29 @@ public final class NetworkTableRepr implements AutoCloseable {
         valueCache = new HashMap<>();
     }
 
+    public String getPath() {
+        return table.getPath();
+    }
+
+    /**
+     * Gets the name of this specific table within its parent,
+     * without a leading or trailing path separator.
+     *
+     * @return name
+     */
+    public String getName() {
+        String path = getPath();
+        int lastSeparatorIdx = path.lastIndexOf(NetworkTable.PATH_SEPARATOR);
+        if (lastSeparatorIdx < 0)
+            return path;
+        else
+            return path.substring(lastSeparatorIdx + 1);
+    }
+
     public Set<NetworkTableRepr> getSubtables() {
         Set<NetworkTableRepr> out = new HashSet<>();
         Set<String> subtableNames = table.getSubTables();
+        System.out.println("SUbtables: " + subtableNames);
 
         Map<String, NetworkTableRepr> toRemove = new HashMap<>(subtableCache);
         for (String key : subtableNames) {
@@ -66,6 +86,8 @@ public final class NetworkTableRepr implements AutoCloseable {
 
     @Override
     public void close() {
-
+        for (NetworkTableValueRepr value : valueCache.values()) {
+            value.close();
+        }
     }
 }

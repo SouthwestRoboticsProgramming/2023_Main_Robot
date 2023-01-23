@@ -8,6 +8,11 @@ import imgui.flag.ImGuiTableFlags;
 import imgui.type.ImInt;
 import imgui.type.ImString;
 
+import java.util.concurrent.ExecutorService;
+
+// FIXME-Future: Since NetworkTable#getSubTables and NetworkTable#getTopics always seem to
+//   return an empty set for NT4, we only use NT3 here, which may be removed from WPILib
+//   in the future
 public final class NetworkTablesTool implements Tool {
     private static final String TITLE = "NetworkTables";
 
@@ -19,8 +24,8 @@ public final class NetworkTablesTool implements Tool {
     private static final int CONN_MODE_ADDRESS = 1;
     private static final String[] CONN_MODE_NAMES = {"Team Number", "Address"};
 
-    private static final int DEFAULT_VERSION = VERSION_NT4;
-    private static final int DEFAULT_CONN_MODE = CONN_MODE_TEAM_NUMBER;
+    private static final int DEFAULT_VERSION = VERSION_NT3;
+    private static final int DEFAULT_CONN_MODE = CONN_MODE_ADDRESS;
     private static final String DEFAULT_HOST = "localhost";
     private static final int[] DEFAULT_PORT_PER_VERSION = {
             NetworkTableInstance.kDefaultPort3,
@@ -28,24 +33,21 @@ public final class NetworkTablesTool implements Tool {
     };
     private static final int DEFAULT_TEAM_NUMBER = 2129;
 
-    private static final int COLOR_CONNECTED = ImGui.colorConvertFloat4ToU32(0, 1, 0, 1);
-    private static final int COLOR_NOT_CONNECTED = ImGui.colorConvertFloat4ToU32(1, 0, 0, 1);
-
     private final ImInt version;
     private final ImInt connectionMode;
     private final ImString host;
     private final ImInt portOrTeamNumber;
 
-    private NetworkTablesConnection connection;
+    private final NetworkTablesConnection connection;
 
-    public NetworkTablesTool() {
+    public NetworkTablesTool(ExecutorService threadPool) {
         version = new ImInt(DEFAULT_VERSION);
         connectionMode = new ImInt(DEFAULT_CONN_MODE);
         host = new ImString(64);
         host.set(DEFAULT_HOST);
         portOrTeamNumber = new ImInt(getDefaultPortOrTeamNumber());
 
-        connection = openConnection();
+        connection = new NetworkTablesConnection(threadPool);
     }
 
     private int getDefaultPortOrTeamNumber() {
@@ -55,13 +57,14 @@ public final class NetworkTablesTool implements Tool {
         return DEFAULT_PORT_PER_VERSION[version.get()];
     }
 
-    private NetworkTablesConnection openConnection() {
-        boolean isNt4 = version.get() == VERSION_NT4;
-        if (connectionMode.get() == CONN_MODE_TEAM_NUMBER) {
-            return NetworkTablesConnection.fromTeamNumber(portOrTeamNumber.get(), isNt4);
-        } else {
-            return NetworkTablesConnection.fromAddress(host.get(), portOrTeamNumber.get(), isNt4);
-        }
+    private void updateConnectionServer() {
+        NetworkTablesConnection.Params params;
+        if (connectionMode.get() == CONN_MODE_TEAM_NUMBER)
+            params = new NetworkTablesConnection.Params(portOrTeamNumber.get());
+        else
+            params = new NetworkTablesConnection.Params(host.get(), portOrTeamNumber.get());
+
+        connection.setServerParams(version.get() == VERSION_NT4, params);
     }
 
     private void label(String label) {
@@ -73,51 +76,64 @@ public final class NetworkTablesTool implements Tool {
     }
 
     private void showConnectionInfo() {
-        boolean changed = false;
-
         if (ImGui.beginTable("layout", 2, ImGuiTableFlags.SizingStretchProp)) {
-            label("NT Version:"); changed = ImGui.combo("##version", version, VERSION_NAMES);
+            // FIXME-Future: Enable when NT4 works
+            // label("NT Version:"); ImGui.combo("##version", version, VERSION_NAMES);
 
             label("Connection Mode:");
             boolean connModeChanged = ImGui.combo("##conn_mode", connectionMode, CONN_MODE_NAMES);
-            changed |= connModeChanged;
             if (connModeChanged)
                 portOrTeamNumber.set(getDefaultPortOrTeamNumber());
 
             if (connectionMode.get() == CONN_MODE_TEAM_NUMBER) {
-                label("Team Number:"); changed |= ImGui.inputInt("##team_num", portOrTeamNumber);
+                label("Team Number:"); ImGui.inputInt("##team_num", portOrTeamNumber);
             } else {
-                label("Host:"); changed |= ImGui.inputText("##host", host);
-                label("Port:"); changed |= ImGui.inputInt("##port", portOrTeamNumber);
+                label("Host:"); ImGui.inputText("##host", host);
+                label("Port:"); ImGui.inputInt("##port", portOrTeamNumber);
             }
 
             ImGui.tableNextColumn();
             ImGui.text("Status");
             ImGui.tableNextColumn();
-            if (connection != null && connection.isConnected()) {
-                ImGui.pushStyleColor(ImGuiCol.Text, COLOR_CONNECTED);
-                ImGui.text("Connected");
-            } else {
-                ImGui.pushStyleColor(ImGuiCol.Text, COLOR_NOT_CONNECTED);
-                ImGui.text("Not Connected");
-            }
+            NetworkTablesConnection.Status status = connection.getStatus();
+            ImGui.pushStyleColor(ImGuiCol.Text, status.getColor());
+            ImGui.text(status.getFriendlyName());
             ImGui.popStyleColor();
 
             ImGui.endTable();
         }
 
-        if (changed) {
-            if (connection != null)
-                connection.close();
-            connection = openConnection();
+        updateConnectionServer();
+    }
+
+    private void showValue(NetworkTableValueRepr value) {
+        ImGui.text("Value: " + value.getName() + ": " + value.getType());
+    }
+
+    private void showTable(NetworkTableRepr table) {
+        ImGui.text("Table: " + table.getName());
+        ImGui.indent();
+        for (NetworkTableRepr subtable : table.getSubtables()) {
+            showTable(subtable);
         }
+        for (NetworkTableValueRepr value : table.getValues()) {
+            showValue(value);
+        }
+        ImGui.unindent();
     }
 
     @Override
     public void process() {
         if (ImGui.begin(TITLE)) {
+            ImGui.text("Instances: " + connection.getActiveInstances());
             showConnectionInfo();
             ImGui.separator();
+            NetworkTableRepr rootTable = connection.getRootTable();
+            if (rootTable == null) {
+                ImGui.textDisabled("Not connected");
+            } else {
+                showTable(rootTable);
+            }
         }
         ImGui.end();
     }
