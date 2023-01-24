@@ -1,9 +1,6 @@
 package com.swrobotics.shufflelog.tool.data.nt;
 
-import edu.wpi.first.networktables.GenericPublisher;
-import edu.wpi.first.networktables.GenericSubscriber;
-import edu.wpi.first.networktables.NetworkTableType;
-import edu.wpi.first.networktables.Topic;
+import edu.wpi.first.networktables.*;
 
 public final class NetworkTableValueRepr implements AutoCloseable {
     private final Topic topic;
@@ -17,23 +14,15 @@ public final class NetworkTableValueRepr implements AutoCloseable {
     }
 
     public String getName() {
+        return NetworkTable.basenameKey(topic.getName());
+    }
+
+    public String getPath() {
         return topic.getName();
     }
 
-    public boolean isArray() {
-        switch (topic.getType()) {
-            case kBooleanArray:
-            case kFloatArray:
-            case kDoubleArray:
-            case kIntegerArray:
-            case kStringArray:
-                return true;
-        }
-        return false;
-    }
-
     public NetworkTableType getType() {
-        return topic.getType();
+        return sub.get().getType();
     }
 
     @Override

@@ -38,21 +38,49 @@ public final class NetworkTableRepr implements AutoCloseable {
             return path.substring(lastSeparatorIdx + 1);
     }
 
+    public NetworkTableRepr getSubtable(String name) {
+        if (!table.containsSubTable(name))
+            return null;
+
+        return getOrCreateSubtable(name);
+    }
+
+    public NetworkTableValueRepr getValue(String name) {
+        if (!table.containsKey(name))
+            return null;
+
+        return getOrCreateValue(name);
+    }
+
+    private NetworkTableRepr getOrCreateSubtable(String name) {
+        NetworkTableRepr existing = subtableCache.get(name);
+        if (existing != null) {
+            return existing;
+        } else {
+            NetworkTableRepr repr = new NetworkTableRepr(table.getSubTable(name));
+            subtableCache.put(name, repr);
+            return repr;
+        }
+    }
+
+    private NetworkTableValueRepr getOrCreateValue(String name) {
+        NetworkTableValueRepr existing = valueCache.get(name);
+        if (existing != null) {
+            return existing;
+        } else {
+            NetworkTableValueRepr repr = new NetworkTableValueRepr(table.getTopic(name));
+            valueCache.put(name, repr);
+            return repr;
+        }
+    }
+
     public Set<NetworkTableRepr> getSubtables() {
         Set<NetworkTableRepr> out = new HashSet<>();
         Set<String> subtableNames = table.getSubTables();
-        System.out.println("SUbtables: " + subtableNames);
 
         Map<String, NetworkTableRepr> toRemove = new HashMap<>(subtableCache);
         for (String key : subtableNames) {
-            NetworkTableRepr existing = subtableCache.get(key);
-            if (existing != null) {
-                out.add(existing);
-            } else {
-                NetworkTableRepr repr = new NetworkTableRepr(table.getSubTable(key));
-                out.add(repr);
-                subtableCache.put(key, repr);
-            }
+            out.add(getOrCreateSubtable(key));
             toRemove.remove(key);
         }
 
