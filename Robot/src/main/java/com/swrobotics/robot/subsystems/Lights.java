@@ -65,6 +65,7 @@ public class Lights {
         GOLD(0.67),
         YELLOW(0.69),
         LAWN_GREEN(0.71),
+        SEMI_LIME_LAWN_GREEN(0.72),
         LIME(0.73),
         DARK_GREEN(0.75),
         GREEN(0.77),
