@@ -2,13 +2,29 @@ package com.swrobotics.shufflelog.tool.data;
 
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.Tool;
+import edu.wpi.first.networktables.NetworkTableType;
 import imgui.ImGui;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class DataLogTool implements Tool {
+    // Payload is expected to be a PlotDef
+    public static final String DRAG_DROP_IN_PAYLOAD = "DATALOG_PLOT_DEF";
+
     private static final int HISTORY_RETENTION_TIME = 10; // Seconds
+
+    public static boolean canPlot(NetworkTableType type) {
+        switch (type) {
+            case kBoolean:
+            case kInteger:
+            case kFloat:
+            case kDouble:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     private final ShuffleLog log;
     private final List<Graph> graphs;
@@ -124,24 +140,30 @@ public final class DataLogTool implements Tool {
                 ImGui.endChild();
             }
             if (ImGui.beginDragDropTarget()) {
-//                PlotDef plotDef = ImGui.acceptDragDropPayload("NT_DRAG_VALUE");
-//                if (plotDef != null) {
-//                    switch (plotDef.getType()) {
-//                        case DOUBLE:
-//                            addDoublePlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry());
-//                            break;
-//                        case BOOLEAN:
-//                            addBooleanPlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry());
-//                            break;
-//                        case DOUBLE_ARRAY_ENTRY:
-//                            addDoubleArrayEntryPlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry(), plotDef.getIndex());
-//                            break;
-//                        case BOOLEAN_ARRAY_ENTRY:
-//                            addBooleanArrayEntryPlot(plotDef.getPath(), plotDef.getName(), plotDef.getEntry(), plotDef.getIndex());
-//                            break;
-//                    }
-//                }
-//                ImGui.endDragDropTarget();
+                PlotDef def = ImGui.acceptDragDropPayload(DRAG_DROP_IN_PAYLOAD);
+                if (def != null) {
+                    switch (def.getAcc().getType()) {
+                        case kBoolean:
+                            addPlot(new BooleanDataPlot(def.getName(), def.getPath(), HISTORY_RETENTION_TIME) {
+                                @Override
+                                protected Boolean read() {
+                                    return (Boolean) def.getAcc().get();
+                                }
+                            });
+                            break;
+                        case kInteger:
+                        case kFloat:
+                        case kDouble:
+                            addPlot(new DoubleDataPlot(def.getName(), def.getPath(), HISTORY_RETENTION_TIME) {
+                                @Override
+                                protected Double read() {
+                                    return (Double) def.getAcc().get();
+                                }
+                            });
+                            break;
+                    }
+                }
+                ImGui.endDragDropTarget();
             }
         }
         ImGui.end();

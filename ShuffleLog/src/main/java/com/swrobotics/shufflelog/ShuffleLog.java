@@ -6,10 +6,15 @@ import com.swrobotics.shufflelog.tool.MenuBarTool;
 import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.blockauto.BlockAutoTool;
 import com.swrobotics.shufflelog.tool.data.DataLogTool;
+import com.swrobotics.shufflelog.tool.data.nt.NetworkTablesTool;
 import com.swrobotics.shufflelog.tool.field.FieldViewTool;
 import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
 import com.swrobotics.shufflelog.tool.profile.ShuffleLogProfilerTool;
 import com.swrobotics.shufflelog.tool.taskmanager.TaskManagerTool;
+import edu.wpi.first.math.WPIMathJNI;
+import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.extension.imguizmo.ImGuizmo;
@@ -44,6 +49,20 @@ public final class ShuffleLog extends PApplet {
 
     @Override
     public void settings() {
+        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        WPIMathJNI.Helper.setExtractOnStaticLoad(false);
+        try {
+            CombinedRuntimeLoader.loadLibraries(
+                    ShuffleLog.class,
+                    "wpiutiljni",
+                    "wpimathjni",
+                    "ntcorejni"
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load WPILib libraries", e);
+        }
+
         size(1280, 720, P2D);
     }
 
@@ -101,7 +120,7 @@ public final class ShuffleLog extends PApplet {
         tools.add(new ShuffleLogProfilerTool(this));
         DataLogTool dataLog = new DataLogTool(this);
         tools.add(dataLog);
-//        tools.add(new NetworkTablesTool(threadPool, dataLog));
+        tools.add(new NetworkTablesTool(threadPool));
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new FieldViewTool(this));
         tools.add(new BlockAutoTool(this));
