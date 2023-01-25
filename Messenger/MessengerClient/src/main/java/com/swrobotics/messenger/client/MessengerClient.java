@@ -190,6 +190,7 @@ public final class MessengerClient {
         }
 
         prevServerHeartbeatTimestamp = -1;
+        connected.set(false);
     }
 
     /**
