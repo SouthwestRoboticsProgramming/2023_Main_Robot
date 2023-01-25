@@ -125,7 +125,15 @@ public final class MessengerClient {
 
                     connected.set(true);
 
-                    for (String listen : new HashSet<>(listening)) {
+                    // Prioritize listening to EVENT_TYPE so that we receive our own events
+                    // when listening to the rest of them
+                    Set<String> listeningCopy = new HashSet<>(listening);
+                    if (listeningCopy.contains(EVENT_TYPE))
+                        listen(EVENT_TYPE);
+
+                    for (String listen : listeningCopy) {
+                        if (listen.equals(EVENT_TYPE))
+                            continue;
                         listen(listen);
                     }
                 } catch (Exception e) {
