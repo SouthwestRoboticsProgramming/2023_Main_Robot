@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author rmheuer
  */
 public final class MessengerClient {
+    public static final String EVENT_TYPE = "Messenger:Event";
+
     private static final String HEARTBEAT = "_Heartbeat";
     private static final String LISTEN = "_Listen";
     private static final String UNLISTEN = "_Unlisten";
