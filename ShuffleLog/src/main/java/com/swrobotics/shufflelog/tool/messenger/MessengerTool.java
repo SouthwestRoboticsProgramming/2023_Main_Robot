@@ -17,6 +17,7 @@ import imgui.type.ImString;
 public final class MessengerTool implements Tool {
     private static final int LOG_HISTORY_SIZE = 128;
 
+    private final ShuffleLog shuffleLog;
     private final MessengerClient msg;
     private final ImString host;
     private final ImInt port;
@@ -26,6 +27,7 @@ public final class MessengerTool implements Tool {
     private boolean prevConnected;
 
     public MessengerTool(ShuffleLog log) {
+        shuffleLog = log;
         host = new ImString(64);
         port = new ImInt(5805);
         name = new ImString(64);
@@ -46,7 +48,7 @@ public final class MessengerTool implements Tool {
         String name = reader.readString();
         String desc = reader.readString();
 
-        eventLog.insert(new MessengerEvent(type, name, desc));
+        eventLog.insert(new MessengerEvent(shuffleLog.getTimestamp(), type, name, desc));
     }
 
     private void fancyLabel(String label) {
@@ -110,13 +112,16 @@ public final class MessengerTool implements Tool {
 
         ImGui.text("Event Log:");
         if (ImGui.beginChild("scroll_table")) {
-            if (ImGui.beginTable("event_log", 3, tableFlags)) {
+            if (ImGui.beginTable("event_log", 4, tableFlags)) {
+                ImGui.tableSetupColumn("Time", ImGuiTableColumnFlags.WidthStretch, 1);
                 ImGui.tableSetupColumn("Type", ImGuiTableColumnFlags.WidthStretch, 1);
                 ImGui.tableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 1);
-                ImGui.tableSetupColumn("Descriptor", ImGuiTableColumnFlags.WidthStretch, 2);
+                ImGui.tableSetupColumn("Descriptor", ImGuiTableColumnFlags.WidthStretch, 3);
                 ImGui.tableHeadersRow();
 
                 eventLog.forEach((event) -> {
+                    ImGui.tableNextColumn();
+                    ImGui.text(String.format("%.3f", event.getTimestamp()));
                     ImGui.tableNextColumn();
                     ImGui.text(event.getType());
                     ImGui.tableNextColumn();
@@ -127,8 +132,8 @@ public final class MessengerTool implements Tool {
 
                 ImGui.endTable();
             }
-            ImGui.endChild();
         }
+        ImGui.endChild();
     }
 
     @Override
