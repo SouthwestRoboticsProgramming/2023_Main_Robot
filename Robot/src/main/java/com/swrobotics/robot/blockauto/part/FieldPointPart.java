@@ -1,8 +1,6 @@
 package com.swrobotics.robot.blockauto.part;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
@@ -90,7 +88,7 @@ public final class FieldPointPart extends ParamPart {
     }
 
     @Override
-    public Object deserializeInst(JsonElement elem) {
+    public Object deserializeInst(JsonElement elem, JsonDeserializationContext ctx) {
         if (elem.isJsonArray()) {
             JsonArray arr = elem.getAsJsonArray();
             return new SpecificPoint(arr.get(0).getAsDouble(), arr.get(1).getAsDouble());
@@ -100,7 +98,7 @@ public final class FieldPointPart extends ParamPart {
     }
 
     @Override
-    public JsonElement serializeInst(Object val) {
+    public JsonElement serializeInst(Object val, JsonSerializationContext ctx) {
         if (val instanceof SpecificPoint) {
             SpecificPoint p = (SpecificPoint) val;
 

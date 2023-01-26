@@ -1,5 +1,6 @@
 package com.swrobotics.robot.blockauto;
 
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
@@ -103,18 +104,18 @@ public final class BlockDef {
         return new BlockInst(this, params.toArray());
     }
 
-    public BlockInst deserializeInstance(JsonObject obj) {
+    public BlockInst deserializeInstance(JsonObject obj, JsonDeserializationContext ctx) {
         List<Object> params = new ArrayList<>();
         for (BlockPart part : parts) {
             if (part instanceof ParamPart) {
                 ParamPart p = (ParamPart) part;
                 Object val;
                 try {
-                    val = p.deserializeInst(obj.get(p.getName()));
+                    val = p.deserializeInst(obj.get(p.getName()), ctx);
                 } catch (Throwable t) {
                     System.err.println("Failed to deserialize block:");
                     t.printStackTrace();
-                    val = p.deserializeInst(null);
+                    val = p.deserializeInst(null, ctx);
                 }
                 params.add(val);
             }

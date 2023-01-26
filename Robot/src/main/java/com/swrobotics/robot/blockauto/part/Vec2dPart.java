@@ -1,7 +1,9 @@
 package com.swrobotics.robot.blockauto.part;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSerializationContext;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
@@ -36,7 +38,7 @@ public class Vec2dPart extends ParamPart {
     }
 
     @Override
-    public Object deserializeInst(JsonElement elem) {
+    public Object deserializeInst(JsonElement elem, JsonDeserializationContext ctx) {
         if (elem == null)
             return new Vec2d(defX, defY);
 
@@ -45,7 +47,7 @@ public class Vec2dPart extends ParamPart {
     }
 
     @Override
-    public JsonElement serializeInst(Object val) {
+    public JsonElement serializeInst(Object val, JsonSerializationContext ctx) {
         Vec2d v = (Vec2d) val;
         JsonArray arr = new JsonArray();
         arr.add(v.x);

@@ -1,7 +1,9 @@
 package com.swrobotics.robot.blockauto.part;
 
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 
@@ -30,14 +32,14 @@ public final class DoublePart extends ParamPart {
     }
 
     @Override
-    public Object deserializeInst(JsonElement elem) {
+    public Object deserializeInst(JsonElement elem, JsonDeserializationContext ctx) {
         if (elem == null)
             return def;
         return elem.getAsDouble();
     }
 
     @Override
-    public JsonElement serializeInst(Object val) {
+    public JsonElement serializeInst(Object val, JsonSerializationContext ctx) {
         return new JsonPrimitive((double) val);
     }
 }

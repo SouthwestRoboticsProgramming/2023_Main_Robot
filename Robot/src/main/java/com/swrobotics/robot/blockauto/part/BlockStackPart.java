@@ -1,6 +1,8 @@
 package com.swrobotics.robot.blockauto.part;
 
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSerializationContext;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.robot.blockauto.BlockStackInst;
@@ -26,13 +28,13 @@ public final class BlockStackPart extends ParamPart {
     }
 
     @Override
-    public Object deserializeInst(JsonElement elem) {
+    public Object deserializeInst(JsonElement elem, JsonDeserializationContext ctx) {
         if (elem == null) return new BlockStackInst();
-        return BlockStackInst.GSON.fromJson(elem, BlockStackInst.class);
+        return ctx.deserialize(elem, BlockStackInst.class);
     }
 
     @Override
-    public JsonElement serializeInst(Object val) {
-        return BlockStackInst.GSON.toJsonTree(val);
+    public JsonElement serializeInst(Object val, JsonSerializationContext ctx) {
+        return ctx.serialize(val);
     }
 }

@@ -43,7 +43,7 @@ public final class BlockInst {
             String type = obj.get("$type").getAsString();
             BlockDef def = AutoBlocks.getBlockDef(type);
             if (def != null)
-                return def.deserializeInstance(obj);
+                return def.deserializeInstance(obj, context);
             else
                 return null;
         }
@@ -56,7 +56,7 @@ public final class BlockInst {
             for (BlockPart part : src.def.getParts()) {
                 if (part instanceof ParamPart) {
                     ParamPart p = (ParamPart) part;
-                    obj.add(p.getName(), p.serializeInst(src.params[paramIdx++]));
+                    obj.add(p.getName(), p.serializeInst(src.params[paramIdx++], context));
                 }
             }
             return obj;
