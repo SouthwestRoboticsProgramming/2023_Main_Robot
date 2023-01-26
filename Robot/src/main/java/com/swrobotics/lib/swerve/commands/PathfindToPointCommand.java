@@ -28,7 +28,10 @@ public final class PathfindToPointCommand extends CommandBase {
         drive = robot.drivetrainSubsystem;
         finder = robot.pathfinder;
         this.goal = goal;
+    }
 
+    @Override
+    public void initialize() {
         finished = false;
     }
 
