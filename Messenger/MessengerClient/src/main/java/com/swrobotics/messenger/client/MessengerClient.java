@@ -8,10 +8,7 @@ import java.net.Socket;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -163,6 +160,7 @@ public final class MessengerClient {
                         System.err.println("Messenger watchdog: Force-closing socket due to server timeout");
                         if (!socket.isClosed()) {
                             disconnectSocket();
+                            lastConnectFailException = new TimeoutException("Server timed out");
                         }
                     }
                 }
