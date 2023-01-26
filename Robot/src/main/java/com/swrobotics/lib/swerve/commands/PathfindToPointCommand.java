@@ -5,6 +5,7 @@ import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Pathfinder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
@@ -12,7 +13,7 @@ import java.util.List;
 
 public final class PathfindToPointCommand extends CommandBase {
     // Speed at which the robot tries to go
-    private static final double VELOCITY = 0.3;
+    private static final double VELOCITY = 1.0;
 
     // Position tolerance in meters, must be larger than pathfinding tile
     private static final double TOLERANCE = 0.175;
@@ -27,8 +28,6 @@ public final class PathfindToPointCommand extends CommandBase {
         drive = robot.drivetrainSubsystem;
         finder = robot.pathfinder;
         this.goal = goal;
-
-        addRequirements(drive.DRIVE_SUBSYSTEM);
 
         finished = false;
     }
@@ -89,15 +88,8 @@ public final class PathfindToPointCommand extends CommandBase {
         deltaX *= VELOCITY;
         deltaY *= VELOCITY;
 
-        // Calculate speeds
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                deltaX, deltaY,
-                0.0,
-                currentPose.getRotation()
-        );
-
         // Move
-        drive.combineChassisSpeeds(speeds);
+        drive.setTargetTranslation(new Translation2d(deltaX, deltaY), true);
     }
 
     @Override

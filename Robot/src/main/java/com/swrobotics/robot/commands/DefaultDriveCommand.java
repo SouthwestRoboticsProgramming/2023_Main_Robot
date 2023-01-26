@@ -1,7 +1,6 @@
 package com.swrobotics.robot.commands;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
@@ -10,22 +9,22 @@ import java.util.function.DoubleSupplier;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 
 public class DefaultDriveCommand extends CommandBase {
-    private final DrivetrainSubsystem m_drivetrainSubsystem;
+    private final DrivetrainSubsystem drivetrainSubsystem;
 
-    private final DoubleSupplier m_translationXSupplier;
-    private final DoubleSupplier m_translationYSupplier;
-    private final DoubleSupplier m_rotationSupplier;
+    private final DoubleSupplier translationXSupplier;
+    private final DoubleSupplier translationYSupplier;
+    private final DoubleSupplier rotationSupplier;
 
     public DefaultDriveCommand(DrivetrainSubsystem drive,
                                DoubleSupplier translationXSupplier,
                                DoubleSupplier translationYSupplier,
                                DoubleSupplier rotationSupplier) {
-        this.m_drivetrainSubsystem = drive;
-        this.m_translationXSupplier = translationXSupplier;
-        this.m_translationYSupplier = translationYSupplier;
-        this.m_rotationSupplier = rotationSupplier;
+        this.drivetrainSubsystem = drive;
+        this.translationXSupplier = translationXSupplier;
+        this.translationYSupplier = translationYSupplier;
+        this.rotationSupplier = rotationSupplier;
 
-        addRequirements(drive.DRIVE_SUBSYSTEM, drive.TURN_SUBSYSTEM);
+        addRequirements(drive);
     }
 
     @Override
@@ -33,29 +32,29 @@ public class DefaultDriveCommand extends CommandBase {
         // You can use `new ChassisSpeeds(...)` for robot-oriented movement instead of field-oriented movement
 
         if (RobotBase.isSimulation()) {
-            m_drivetrainSubsystem.setChassisSpeeds(
+            drivetrainSubsystem.setChassisSpeeds(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
-                        m_translationXSupplier.getAsDouble(),
-                        m_translationYSupplier.getAsDouble(),
-                        m_rotationSupplier.getAsDouble(),
-                        m_drivetrainSubsystem.getPose().getRotation()
+                        translationXSupplier.getAsDouble(),
+                        translationYSupplier.getAsDouble(),
+                        rotationSupplier.getAsDouble(),
+                        drivetrainSubsystem.getPose().getRotation()
                 )
             );
             return;
         }
 
-        m_drivetrainSubsystem.setChassisSpeeds(
+        drivetrainSubsystem.setChassisSpeeds(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
-                        m_translationXSupplier.getAsDouble(),
-                        m_translationYSupplier.getAsDouble(),
-                        m_rotationSupplier.getAsDouble(),
-                        m_drivetrainSubsystem.getGyroscopeRotation()
+                        translationXSupplier.getAsDouble(),
+                        translationYSupplier.getAsDouble(),
+                        rotationSupplier.getAsDouble(),
+                        drivetrainSubsystem.getGyroscopeRotation()
                 )
         );
     }
 
     @Override
     public void end(boolean interrupted) {
-        m_drivetrainSubsystem.setChassisSpeeds(new ChassisSpeeds(0.0, 0.0, 0.0));
+        drivetrainSubsystem.setChassisSpeeds(new ChassisSpeeds(0.0, 0.0, 0.0));
     }
 }

@@ -3,7 +3,6 @@ package com.swrobotics.robot.subsystems;
 import java.util.HashMap;
 
 import com.kauailabs.navx.frc.AHRS;
-// import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
@@ -16,14 +15,12 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
@@ -35,7 +32,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-public class DrivetrainSubsystem extends SubsystemBase {
+public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable {
+
+    public StatusLogging logger;
+
+    public void initLogging(StatusLogging logger) {
+        this.logger = logger;
+    }
 
     // The Stop Position Enum
     public enum StopPosition {
@@ -44,17 +47,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
         CIRCLE,
     }
 
-
-    // Use these instead of adding DrivetrainSubsystem as requirements for commands
-    public final Subsystem TURN_SUBSYSTEM = new SubsystemBase() {};
-    public final Subsystem DRIVE_SUBSYSTEM = new SubsystemBase() {};
-
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
-        new SwerveModuleInfo("Module 0", 9, 5, 1, 44.21),  // Default front left
-        new SwerveModuleInfo("Module 1", 10, 6, 2, 274.13 - 90.0), // Default front right
-        new SwerveModuleInfo("Module 2", 11, 7, 3, 258.14 - 180.0), // Default back left
-        new SwerveModuleInfo("Module 3", 12, 8, 4, 218.06 - 270.0)  // Default back right
+        new SwerveModuleInfo("Module 0", 9, 5, 1, 38.41),  // Default front left
+        new SwerveModuleInfo("Module 1", 10, 6, 2, 185.45), // Default front right
+        new SwerveModuleInfo("Module 2", 11, 7, 3, 132.63), // Default back left
+        new SwerveModuleInfo("Module 3", 12, 8, 4, 78.93)  // Default back right
     };
     // Currently, no fifth module is built (not enough falcons)
 
@@ -113,6 +111,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     
     private final SwerveDriveOdometry odometry;
 
+    private Translation2d translation = new Translation2d();
+    private Rotation2d rotation = new Rotation2d();
     private ChassisSpeeds speeds = new ChassisSpeeds();
     
     public DrivetrainSubsystem() {
@@ -165,12 +165,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public Rotation2d getGyroscopeRotation() {
-        if (RobotBase.isSimulation()) {
-            return getPose().getRotation();
-        }
-        // return gyro.getRotation2d().minus(gyroOffset);
-        return Rotation2d.fromDegrees(gyro.getAngle()).minus(gyroOffset);
-
+        return gyro.getRotation2d().plus(gyroOffset);
     }
 
     public Translation2d getTiltAsTranslation() {
@@ -192,20 +187,24 @@ public class DrivetrainSubsystem extends SubsystemBase {
      * @param newRotation New gyro rotation, CCW +
      */
     public void setGyroscopeRotation(Rotation2d newRotation) {
-        gyroOffset = getRawGyroscopeRotation().minus(newRotation);
+        gyroOffset = getRawGyroscopeRotation().plus(newRotation);
         resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
         this.speeds = speeds;
     }
-    
-    public void combineChassisSpeeds(ChassisSpeeds addition) {
-        speeds = new ChassisSpeeds(
-            speeds.vxMetersPerSecond + addition.vxMetersPerSecond,
-            speeds.vyMetersPerSecond + addition.vyMetersPerSecond,
-            speeds.omegaRadiansPerSecond + addition.omegaRadiansPerSecond
-        );
+
+    public void setTargetTranslation(Translation2d targetTranslation, boolean fieldRelative) {
+        translation = targetTranslation;
+
+        if (fieldRelative) {
+            translation.rotateBy(getGyroscopeRotation().times(-1));
+        }
+    }
+
+    public void setTargetRotation(Rotation2d targeRotation) {
+        rotation = targeRotation;
     }
 
     public Pose2d getPose() {
@@ -263,6 +262,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
         }
     }
 
+    private void cheatChassisSpeeds(SwerveModuleState[] states) {
+        setChassisSpeeds(kinematics.toChassisSpeeds(states));
+    }
+
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {
         // Create the AutoBuilder. This only needs to be created once when robot code
         // starts, not every time you want to create an auto command. A good place to
@@ -271,21 +274,17 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 this::getPose, // Pose2d supplier
                 this::resetPose, // Pose2d consumer, used to reset odometry at the beginning of auto
                 kinematics, // SwerveDriveKinematics
-                new PIDConstants(3.0, 0.0, 0.0), // PID constants to correct for translation error (used to create the X
+                new PIDConstants(0.0, 0.0, 0.0), // PID constants to correct for translation error (used to create the X
                                                  // and Y PID controllers)
-                new PIDConstants(0.5, 0.0, 0.0), // PID constants to correct for rotation error (used to create the
+                new PIDConstants(2.0, 0.0, 0.0), // PID constants to correct for rotation error (used to create the
                                                  // rotation controller)
-                this::setModuleStates, // Module states consumer used to output to the drive subsystem
+                this::cheatChassisSpeeds, // Module states consumer used to output to the drive subsystem
                 eventMap,
                 this // The drive subsystem. Used to properly set the requirements of path following
                      // commands
         );
 
         return autoBuilder;
-    }
-
-    public void showTrajectory(Trajectory trajectory) {
-        field.getObject("traj").setTrajectory(trajectory);
     }
 
     public void printEncoderOffsets() {
@@ -315,8 +314,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Set this iteration's ChassisSpeeds
+        // Check if it should use auto for some or all of the movement
+        if (translation.getNorm() != 0.0) {
+            speeds.vxMetersPerSecond = translation.getX();
+            speeds.vyMetersPerSecond = translation.getY();
+        }
 
+        if (rotation.getRadians() != 0.0) {
+            speeds.omegaRadiansPerSecond = rotation.getRadians();
+        }
 
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
@@ -341,10 +347,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
         // Reset the ChassisSpeeds for next iteration
         speeds = new ChassisSpeeds();
 
+        // Reset auto rotation and translation for next iteration
+        translation = new Translation2d();
+        rotation = new Rotation2d();
+
         // Freshly estimated the new rotation based off of the wheels
         if (RobotBase.isSimulation()) {
             ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
-            gyroOffset = gyroOffset.plus(new Rotation2d(-estimatedChassis.omegaRadiansPerSecond * 0.02));
+            gyroOffset = gyroOffset.plus(new Rotation2d(estimatedChassis.omegaRadiansPerSecond * 0.02));
             odometry.update(gyroOffset, getModulePositions());
         } else {
             odometry.update(getGyroscopeRotation(), getModulePositions());

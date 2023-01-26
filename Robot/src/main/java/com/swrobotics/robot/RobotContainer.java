@@ -17,10 +17,12 @@ import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
+import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Pathfinder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
@@ -30,8 +32,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import com.swrobotics.robot.subsystems.StatusLogging;
 
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -56,6 +59,9 @@ public class RobotContainer {
     public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
     public final Pathfinder pathfinder;
 
+    public final Lights lights = new Lights();
+    public final StatusLogging statuslogger = new StatusLogging(lights);
+
     private final XboxController controller = new XboxController(0);
 
     private final MessengerClient messenger;
@@ -67,6 +73,9 @@ public class RobotContainer {
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() {
+        // Turn off joystick warnings
+        DriverStation.silenceJoystickConnectionWarning(true);
+
         // Set up the default command for the drivetrain.
         // The controls are for field-oriented driving:
         // Left stick Y axis -> forward and backwards movement
@@ -110,7 +119,7 @@ public class RobotContainer {
 
         // Autos to just drive off the line
         Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
-        Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, true); // Just drive forward
+        Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, true).withTimeout(2.0); // Just drive forward
 
         blockAutoCommand = new InstantCommand();
 
@@ -121,7 +130,7 @@ public class RobotContainer {
         autoSelector.addOption("Print Auto", printAuto);
         autoSelector.addOption("Taxi Smart", taxiSmart);
 
-        SmartDashboard.putData(autoSelector);
+        SmartDashboard.putData("Auto", autoSelector);
     }
 
     /**
@@ -183,20 +192,21 @@ public class RobotContainer {
     }
 
     private static List<PathPlannerTrajectory> getPath(String name) {
-        try {
-            return PathPlanner.loadPathGroup(name, new PathConstraints(0.2, 0.1));
-        } catch (Exception e) {
-            System.out.println("Could not find that path, using default path instead");
 
-            // Generate a blank path
-            ArrayList<PathPlannerTrajectory> path = new ArrayList<>();
-            path.add(PathPlanner.generatePath( // Default is to not move TODO: Report error through lights
-                new PathConstraints(0.0, 0.0),
-                new PathPoint(new Translation2d(), new Rotation2d()),
-                new PathPoint(new Translation2d(), new Rotation2d())));
-            
+        List<PathPlannerTrajectory> path = PathPlanner.loadPathGroup(name, new PathConstraints(2.0, 1.0));
+        if (path != null) {
             return path;
         }
+
+        System.out.println("Could not find that path, using default path instead");
+
+        // // Generate a blank path
+        path = new ArrayList<>();
+        path.add(PathPlanner.generatePath(new PathConstraints(1.0, 1.0), new ArrayList<PathPoint>() {{
+            add(new PathPoint(new Translation2d(), new Rotation2d()));
+            add(new PathPoint(new Translation2d(1.0, 0), new Rotation2d()));
+        }}));
+        return path;
     }
 
     public MessengerClient getMessenger() {

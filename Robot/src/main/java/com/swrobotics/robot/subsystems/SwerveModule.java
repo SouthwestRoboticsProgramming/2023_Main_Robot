@@ -52,6 +52,9 @@ public class SwerveModule {
     private final double turnEncoderToAngle;
     private final double driveEncoderVelocityToMPS;
 
+    // Simulate drive encoder distance
+    private double simulatedDistance = 0.0;
+
     public SwerveModule(SwerveModuleInfo moduleInfo, Translation2d position, double positionalOffset) {
         this.position = position;
         this.positionalOffset = positionalOffset;
@@ -70,9 +73,9 @@ public class SwerveModule {
         driveConfig.slot0.kI = 0;
         driveConfig.slot0.kD = 0;
         driveConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
-        // FIXME: Remove limits imposed to keep robot from breaking Mason's house
-        driveConfig.peakOutputForward = 0.1;
-        driveConfig.peakOutputReverse = -0.1;
+        // FIXME: Remove limits imposed to keep robot from breaking Mason's house FIXME: Break the house
+        // driveConfig.peakOutputForward = 0.1;
+        // driveConfig.peakOutputReverse = -0.1;
 
         this.turn = new TalonFX(moduleInfo.turnMotorID);
         this.turn.configAllSettings(turnConfig);
@@ -108,6 +111,9 @@ public class SwerveModule {
         SwerveModuleState outputState = optimize(state.speedMetersPerSecond, state.angle.getRadians());
         targetState = outputState;
 
+        // Simulate encoder distance for odometry
+        simulatedDistance += outputState.speedMetersPerSecond * 0.02;
+
         double turnUnits = toNativeTurnUnits(outputState.angle);
 
         turn.set(TalonFXControlMode.Position, turnUnits);
@@ -137,6 +143,9 @@ public class SwerveModule {
     }
 
     public double getDistance() {
+        if (RobotBase.isSimulation()) {
+            return simulatedDistance;
+        }
         return fromNativeDriveUnits(drive.getSelectedSensorPosition());
     }
 

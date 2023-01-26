@@ -9,6 +9,8 @@ import com.badlogicgames.packr.*;
 
 plugins {
     id 'java'
+    id 'edu.wpi.first.GradleRIO' version '2023.2.1'
+    id 'edu.wpi.first.WpilibTools' version '1.1.0'
 }
 
 group 'com.swrobotics'
@@ -19,10 +21,25 @@ compileJava {
     targetCompatibility = '11'
 }
 
-def WPILIB_VERSION = '2022.4.1'
+def WPILIB_VERSION = wpi.versions.wpilibVersion.get()
 def P5X_VERSION = '0.353.0-beta-3'
 def LWJGL_VERSION = '3.3.1'
 def IMGUI_VERSION = '1.86.4'
+
+wpilibTools.deps.wpilibVersion = WPILIB_VERSION
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 
 static def lwjglModule(module) {
     def prefix = 'org.lwjgl:lwjgl'
@@ -64,16 +81,23 @@ dependencies {
     implementation lwjglModule('opengl')
     implementation lwjglModule('stb')
 
-    implementation "edu.wpi.first.ntcore:ntcore-java:${WPILIB_VERSION}"
-    implementation "edu.wpi.first.wpiutil:wpiutil-java:${WPILIB_VERSION}"
-    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:windowsx86"
-    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:windowsx86-64"
-    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:linuxx86-64"
-    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:linuxraspbian"
-    implementation "edu.wpi.first.ntcore:ntcore-jni:${WPILIB_VERSION}:osxx86-64"
+    implementation wpilibTools.deps.wpilibJava("wpiutil")
+    implementation wpilibTools.deps.wpilibJava("wpimath")
+    implementation wpilibTools.deps.wpilibJava("wpinet")
+    implementation wpilibTools.deps.wpilibJava("ntcore")
+
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
+
+    implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
 }
 
 jar {
+    dependsOn ':Messenger:MessengerClient:jar'
+    dependsOn ':MathLib:jar'
+    dependsOn ':Profiler:jar'
+
     manifest {
         attributes 'Main-Class': 'com.swrobotics.shufflelog.ShuffleLog'
     }

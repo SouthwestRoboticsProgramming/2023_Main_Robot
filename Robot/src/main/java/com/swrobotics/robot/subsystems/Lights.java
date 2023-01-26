@@ -65,6 +65,7 @@ public class Lights {
         GOLD(0.67),
         YELLOW(0.69),
         LAWN_GREEN(0.71),
+        SEMI_LIME_LAWN_GREEN(0.72),
         LIME(0.73),
         DARK_GREEN(0.75),
         GREEN(0.77),
@@ -126,15 +127,11 @@ public class Lights {
 
     private final Spark lights = new Spark(0); // The REV Blinkin is treated like a spark max
 
-    private double currentOutput;
-    private Color currentColor = Color.OFF;
     private IndicatorMode currentMode = IndicatorMode.OFF;
 
     public void set(double output) {
         lights.set(output);
 
-        currentOutput = output;
-        currentColor = Color.UNKNOWN;
         currentMode = IndicatorMode.OFF;
     }
 
@@ -146,8 +143,6 @@ public class Lights {
     public void set(Color color) {
         lights.set(color.getValue());
 
-        currentOutput = color.getValue();
-        currentColor = color;
         currentMode = IndicatorMode.OFF;
     }
 
@@ -156,10 +151,29 @@ public class Lights {
         if (mode.getSeverity() >= getMode().getSeverity()) {
             set(mode.getColor());
         }
-
-        currentOutput = mode.getColor().getValue();
-        currentColor = mode.getColor();
+        
         currentMode = mode;
+    }
+    public void setbyseverity(int severity) {
+        if (severity >= 5) {
+            lights.set(Color.GREEN.value);
+
+        }
+        else if (severity == 4) {
+            lights.set(Color.DARK_GREEN.value);
+
+        }
+        else if (severity == 3) {
+            lights.set(Color.YELLOW.value);
+        }
+        else if (severity == 2) {
+            lights.set(Color.ORANGE.value);
+        } else if(severity == 0){
+            lights.set(Color.RED.value);
+        }
+        else {
+            lights.set(Color.STROBE_RED.value);
+        }
     }
 
     public IndicatorMode getMode() {
