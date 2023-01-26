@@ -43,6 +43,8 @@ ShuffleLog/layout.ini
 # NetworkTables storage
 **/networktables.ini
 **/networktables.ini.bak
+**/networktables.json
+**/networktables.json.bck
 
 Robot/waypoints.tsv
 Robot/BlockAuto/
