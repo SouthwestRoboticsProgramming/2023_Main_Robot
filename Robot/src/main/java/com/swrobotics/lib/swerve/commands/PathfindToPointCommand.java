@@ -28,18 +28,23 @@ public final class PathfindToPointCommand extends CommandBase {
         drive = robot.drivetrainSubsystem;
         finder = robot.pathfinder;
         this.goal = goal;
+    }
 
+    @Override
+    public void initialize() {
         finished = false;
     }
 
     @Override
     public void execute() {
         finder.setGoal(goal.x, goal.y);
-        if (!finder.isPathValid()) {
-            System.out.println("Path bad");
+
+        if (!finder.isPathTargetValid()) {
+            System.err.println("Path target is incorrect, waiting for good path");
             return;
         }
-        List<Vec2d> path = finder.getPath();
+
+        List<Vec2d> currentPath = finder.getPath(); // Update path with the new, valid path
 
         Pose2d currentPose = drive.getPose();
         Vec2d currentPosition = new Vec2d(
@@ -51,9 +56,9 @@ public final class PathfindToPointCommand extends CommandBase {
         // behind the actual location
         // With the predefined path there is effectively infinite latency so this is very important
         Vec2d target = null;
-        for (int i = path.size() - 1; i > 0; i--) {
-            Vec2d point = path.get(i);
-            Vec2d prev = path.get(i - 1);
+        for (int i = currentPath.size() - 1; i > 0; i--) {
+            Vec2d point = currentPath.get(i);
+            Vec2d prev = currentPath.get(i - 1);
 
             double dist = currentPosition.distanceToLineSegmentSq(point, prev);
 

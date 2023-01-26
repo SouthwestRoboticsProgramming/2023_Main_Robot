@@ -8,10 +8,7 @@ import java.net.Socket;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -21,6 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author rmheuer
  */
 public final class MessengerClient {
+    public static final String EVENT_TYPE = "Messenger:Event";
+
     private static final String HEARTBEAT = "_Heartbeat";
     private static final String LISTEN = "_Listen";
     private static final String UNLISTEN = "_Unlisten";
@@ -123,7 +122,15 @@ public final class MessengerClient {
 
                     connected.set(true);
 
-                    for (String listen : new HashSet<>(listening)) {
+                    // Prioritize listening to EVENT_TYPE so that we receive our own events
+                    // when listening to the rest of them
+                    Set<String> listeningCopy = new HashSet<>(listening);
+                    if (listeningCopy.contains(EVENT_TYPE))
+                        listen(EVENT_TYPE);
+
+                    for (String listen : listeningCopy) {
+                        if (listen.equals(EVENT_TYPE))
+                            continue;
                         listen(listen);
                     }
                 } catch (Exception e) {
@@ -153,6 +160,7 @@ public final class MessengerClient {
                         System.err.println("Messenger watchdog: Force-closing socket due to server timeout");
                         if (!socket.isClosed()) {
                             disconnectSocket();
+                            lastConnectFailException = new TimeoutException("Server timed out");
                         }
                     }
                 }
