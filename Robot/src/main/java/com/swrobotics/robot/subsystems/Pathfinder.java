@@ -20,7 +20,6 @@ public final class Pathfinder extends SubsystemBase {
     private final DrivetrainSubsystem drive;
 
     private final List<Vec2d> path;
-    private boolean pathValid;
 
     private double goalX, goalY;
 
@@ -51,8 +50,8 @@ public final class Pathfinder extends SubsystemBase {
         return dx * dx + dy * dy < CORRECT_TARGET_TOL * CORRECT_TARGET_TOL;
     }
 
-    public boolean isPathValid() {
-        return pathValid && pathTargetCorrect();
+    public boolean isPathTargetValid() {
+        return pathTargetCorrect();
     }
 
     public List<Vec2d> getPath() {
@@ -67,7 +66,7 @@ public final class Pathfinder extends SubsystemBase {
     }
 
     private void onPath(String type, MessageReader reader) {
-        pathValid = reader.readBoolean();
+        boolean pathValid = reader.readBoolean();
         if (!pathValid) {
             return;
         }
