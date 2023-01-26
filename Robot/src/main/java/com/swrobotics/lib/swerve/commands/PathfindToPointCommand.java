@@ -38,11 +38,9 @@ public final class PathfindToPointCommand extends CommandBase {
 
         if (!finder.isPathTargetValid()) {
             System.err.println("Path target is incorrect, waiting for good path");
-
             return;
         }
 
-        lights.set(IndicatorMode.GOOD);
         List<Vec2d> currentPath = finder.getPath(); // Update path with the new, valid path
 
         Pose2d currentPose = drive.getPose();
