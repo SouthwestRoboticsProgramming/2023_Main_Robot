@@ -150,7 +150,15 @@ public final class ShuffleLog extends PApplet {
 
         for (Tool tool : tools) {
             Profiler.push(tool.getClass().getSimpleName());
-            tool.process();
+
+            // if (going to crash) { dont(); }
+            try {
+                tool.process();
+            } catch (Throwable t) {
+                // Log it and ignore
+                t.printStackTrace();
+            }
+
             Profiler.pop();
         }
         tools.addAll(addedTools);
