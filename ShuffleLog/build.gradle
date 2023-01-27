@@ -81,6 +81,8 @@ dependencies {
     implementation lwjglModule('opengl')
     implementation lwjglModule('stb')
 
+    implementation "com.fazecast:jSerialComm:2.9.3"
+
     implementation wpilibTools.deps.wpilibJava("wpiutil")
     implementation wpilibTools.deps.wpilibJava("wpimath")
     implementation wpilibTools.deps.wpilibJava("wpinet")
