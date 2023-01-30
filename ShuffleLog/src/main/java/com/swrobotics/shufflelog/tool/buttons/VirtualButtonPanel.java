@@ -3,7 +3,6 @@ package com.swrobotics.shufflelog.tool.buttons;
 import imgui.ImGui;
 import imgui.flag.ImGuiColorEditFlags;
 import imgui.flag.ImGuiStyleVar;
-import imgui.flag.ImGuiWindowFlags;
 
 public final class VirtualButtonPanel implements ButtonPanel {
     private static final float[] LIGHT_ON = {1, 1, 1, 1};
