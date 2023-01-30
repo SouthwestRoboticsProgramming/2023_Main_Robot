@@ -5,6 +5,8 @@
 #define BUTTON_PIN PINF
 #define BUTTON_DDR DDRF
 
+#define SWITCH_PIN 10
+
 #define MATRIX_GROUP_COUNT 6
 #define MATRIX_GROUP_SIZE 6
 
@@ -42,6 +44,8 @@ void setup() {
   packet_buf_out[0] = PACKET_BEGIN;
 
   memset(light_data, 0, sizeof(light_data));
+
+  pinMode(SWITCH_PIN, INPUT);
 }
 
 // All code here must run as fast as possible to avoid flickering lights
@@ -76,5 +80,8 @@ void loop() {
   }
 
   // Dump button state over serial, will be decoded by ShuffleLog
+
+  if (digitalRead(SWITCH_PIN))
+    packet_buf_out[1] |= 128;
   Serial.write(packet_buf_out, sizeof(packet_buf_out));
 }
