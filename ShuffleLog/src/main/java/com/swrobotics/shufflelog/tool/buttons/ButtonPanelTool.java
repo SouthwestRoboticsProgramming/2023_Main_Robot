@@ -22,19 +22,6 @@ public final class ButtonPanelTool implements Tool {
             {32, 23, 14, 5, 24,  6}
     };
 
-    private static final float[] C_Y = {1, 1, 0, 1};
-    private static final float[] C_B = {0, 0, 1, 1};
-    private static final float[] C_W = {1, 1, 1, 1};
-    private static final float[] C_R = {1, 0, 0, 1};
-    private static final float[] C_G = {0, 1, 0, 1};
-    private static final float[] C_P = {245 / 255f, 66 / 255f, 158 / 255f, 1};
-    private static final float[][] BUTTON_COLORS = {
-            C_Y, C_B, C_Y,  C_Y, C_B, C_Y,  C_Y, C_B, C_Y,
-            C_Y, C_B, C_Y,  C_Y, C_B, C_Y,  C_Y, C_B, C_Y,
-            C_W, C_W, C_W,  C_W, C_W, C_W,  C_W, C_W, C_W,
-            C_R, C_G, C_B,  C_Y, C_P, C_G,  C_B, C_G, C_R
-    };
-
     private SerialPort serial;
     private boolean waitingForStart;
     private final byte[] readBuf = new byte[6];
@@ -58,6 +45,15 @@ public final class ButtonPanelTool implements Tool {
                 buttonStates[buttonIdx] = (readBuf[group] & (1 << bit)) != 0;
             }
         }
+    }
+
+    private void updateLightData() {
+        byte[] data = new byte[7];
+        data[0] = START_BYTE;
+        for (int i = 1; i < 7; i++) {
+            data[i] = (byte) (Math.random() * 63);
+        }
+        serial.writeBytes(data, data.length);
     }
 
     private void updateButtons() {
@@ -92,12 +88,20 @@ public final class ButtonPanelTool implements Tool {
         }
     }
 
+    long lastRandomTime = System.currentTimeMillis();
+
     private void showGUI() {
         if (ImGui.begin("Button Panel")) {
             if (serial == null) {
                 ImGui.text("Not connected");
             } else {
                 ImGui.text("Connected on serial port: " + serial.getDescriptivePortName());
+            }
+
+            long time = System.currentTimeMillis();
+            if (time - lastRandomTime > 250) {
+                updateLightData();
+                lastRandomTime = time;
             }
 
             ImGui.text("Button data");
