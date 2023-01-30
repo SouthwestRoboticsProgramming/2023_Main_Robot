@@ -27,6 +27,11 @@ public final class VirtualButtonPanel implements ButtonPanel {
     }
 
     @Override
+    public SwitchState getSwitchState() {
+        return SwitchState.DOWN;
+    }
+
+    @Override
     public void processIO() {
         if (ImGui.begin("Virtual Button Panel")) {
             ImGui.setWindowSize(0, 0);

@@ -2,6 +2,7 @@ package com.swrobotics.shufflelog.tool.buttons;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.swrobotics.shufflelog.util.Cooldown;
+import imgui.ImGui;
 
 import java.util.Arrays;
 
@@ -35,11 +36,14 @@ public final class SerialButtonPanel implements ButtonPanel {
     };
 
     private static final byte START_BYTE = (byte) 0xA5;
-    private static final int LIGHT_DATA_COOLDOWN = 100; // Milliseconds
+    private static final long LIGHT_DATA_COOLDOWN = 100_000_000L; // Nanoseconds
 
     private static final int GROUP_SIZE = 6;
     private static final int GROUP_COUNT = 6;
     private static final byte GROUP_MASK = (1 << GROUP_SIZE) - 1;
+
+    private static final int SWITCH_GROUP = 0;
+    private static final int SWITCH_BIT = 128;
 
     private SerialPort serial;
     private boolean waitingForStart;
@@ -48,8 +52,10 @@ public final class SerialButtonPanel implements ButtonPanel {
 
     private final byte[] buttonStates = new byte[GROUP_COUNT];
     private final byte[] lightStates = new byte[GROUP_COUNT];
+    private SwitchState switchState;
 
     private final Cooldown lightDataCooldown;
+    private boolean needsLightUpdate;
 
     public SerialButtonPanel() {
         Arrays.fill(buttonStates, (byte) 0);
@@ -57,6 +63,9 @@ public final class SerialButtonPanel implements ButtonPanel {
 
         lightDataCooldown = new Cooldown(LIGHT_DATA_COOLDOWN);
         serial = null;
+        switchState = SwitchState.DOWN;
+
+        needsLightUpdate = true;
     }
 
     @Override
@@ -69,11 +78,22 @@ public final class SerialButtonPanel implements ButtonPanel {
     public void setButtonLight(int x, int y, boolean on) {
         Button button = BUTTONS[x][y];
 
+        boolean current = (lightStates[button.group] & button.bit) == 0;
+        if (on == current)
+            return; // Light is already set to this value, don't bother resending
+
         // Bits are negated in lightStates
         if (on)
             lightStates[button.group] &= ~button.bit;
         else
             lightStates[button.group] |= button.bit;
+
+        needsLightUpdate = true;
+    }
+
+    @Override
+    public SwitchState getSwitchState() {
+        return switchState;
     }
 
     @Override
@@ -97,22 +117,13 @@ public final class SerialButtonPanel implements ButtonPanel {
         }
 
         // Write out light data
-        if (lightDataCooldown.request()) {
+        if (needsLightUpdate && lightDataCooldown.request()) {
             byte[] packet = new byte[GROUP_COUNT + 1];
             packet[0] = START_BYTE;
             System.arraycopy(lightStates, 0, packet, 1, GROUP_COUNT);
 
-            int written = 0;
-            while (written < packet.length) {
-                int attempt = serial.writeBytes(packet, packet.length - written, written);
-                if (attempt < 0) {
-                    System.err.println("Button panel disconnected due to write error");
-                    serial.closePort();
-                    serial = null;
-                    return;
-                }
-                written += attempt;
-            }
+            serial.writeBytes(packet, packet.length);
+            needsLightUpdate = false;
         }
 
         // Read in button data
@@ -134,6 +145,7 @@ public final class SerialButtonPanel implements ButtonPanel {
                 readBuf[readIdx++] = b;
                 if (readIdx == readBuf.length) {
                     System.arraycopy(readBuf, 0, buttonStates, 0, GROUP_COUNT);
+                    switchState = (readBuf[SWITCH_GROUP] & SWITCH_BIT) != 0 ? SwitchState.UP : SwitchState.DOWN;
                     waitingForStart = true;
                 }
             }

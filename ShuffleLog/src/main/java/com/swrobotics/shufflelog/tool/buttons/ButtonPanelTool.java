@@ -10,17 +10,19 @@ public final class ButtonPanelTool implements Tool {
     private final ButtonPanel panel;
 
     public ButtonPanelTool() {
-//        panel = new SerialButtonPanel();
-        panel = new VirtualButtonPanel();
+        panel = new SerialButtonPanel();
+//        panel = new VirtualButtonPanel();
     }
 
     private void showGUI() {
         if (ImGui.begin("Button Panel")) {
-            if (panel.isConnected()) {
+            if (!panel.isConnected()) {
                 ImGui.text("Not connected");
             } else {
                 ImGui.text("Connected");
             }
+
+            ImGui.text("Switch: " + panel.getSwitchState());
 
             ImGui.separator();
             ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
@@ -43,6 +45,14 @@ public final class ButtonPanelTool implements Tool {
 
     @Override
     public void process() {
+        boolean invertLight = panel.getSwitchState() == ButtonPanel.SwitchState.DOWN;
+
+        for (int x = 0; x < 9; x++) {
+            for (int y = 0; y < 4; y++) {
+                panel.setButtonLight(x, y, invertLight ^ panel.isButtonDown(x, y));
+            }
+        }
+
         panel.processIO();
         showGUI();
     }
