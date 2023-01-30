@@ -29,7 +29,7 @@ inline uint8_t shift_down_buttons(uint8_t buttons_group) {
 }
 
 void setup() {
-  uint8_t size_mask = (2 << MATRIX_GROUP_SIZE) - 1;
+  uint8_t size_mask = (1 << MATRIX_GROUP_SIZE) - 1;
   
   // Set as outputs
   SELECT_DDR = size_mask;
