@@ -29,7 +29,7 @@ public final class ButtonPanelTool implements Tool {
                     float on = panel.isButtonDown(col, row) ? 1 : 0;
                     ImGui.pushStyleColor(ImGuiCol.Border, ImGui.colorConvertFloat4ToU32(on, on, on, 1));
 
-                    ImGui.colorButton("##" + row + "," + col, new float[] {on, on, on, 1}, ImGuiColorEditFlags.NoTooltip);
+                    ImGui.colorButton("##" + row + "," + col, new float[] {on, on, on, 1}, ImGuiColorEditFlags.NoTooltip | ImGuiColorEditFlags.NoDragDrop);
                     ImGui.sameLine();
 
                     ImGui.popStyleColor();

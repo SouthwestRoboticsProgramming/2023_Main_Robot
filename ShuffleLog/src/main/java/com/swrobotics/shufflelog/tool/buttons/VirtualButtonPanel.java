@@ -37,7 +37,7 @@ public final class VirtualButtonPanel implements ButtonPanel {
                         ImGui.sameLine();
 
                     float[] color = lightsOn[x][y] ? LIGHT_ON : LIGHT_OFF;
-                    ImGui.colorButton("##" + x + "," + y, color, ImGuiColorEditFlags.NoTooltip);
+                    ImGui.colorButton("##" + x + "," + y, color, ImGuiColorEditFlags.NoTooltip | ImGuiColorEditFlags.NoDragDrop);
                     buttonsDown[x][y] = ImGui.isItemActive();
                 }
             }
