@@ -46,8 +46,6 @@ public final class ButtonPanel extends SubsystemBase {
 
     @Override
     public void periodic() {
-        lightStates[2 + 3 * WIDTH] = (System.currentTimeMillis() % 1000) > 500;
-
         byte[] packed = new byte[5];
         for (int x = 0; x < 9; x++) {
             for (int y = 0; y < 4; y++) {
