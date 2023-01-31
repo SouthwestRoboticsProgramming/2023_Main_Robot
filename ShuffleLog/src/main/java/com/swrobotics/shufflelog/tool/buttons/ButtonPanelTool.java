@@ -8,10 +8,14 @@ import imgui.flag.ImGuiStyleVar;
 
 public final class ButtonPanelTool implements Tool {
     private final ButtonPanel panel;
+    private final ReactionTime reactionTime;
 
     public ButtonPanelTool() {
         panel = new SerialButtonPanel();
 //        panel = new VirtualButtonPanel();
+
+        reactionTime = new ReactionTime(panel);
+        reactionTime.begin();
     }
 
     private void showGUI() {
@@ -43,15 +47,24 @@ public final class ButtonPanelTool implements Tool {
         ImGui.end();
     }
 
+    private ButtonPanel.SwitchState prevSwitch = ButtonPanel.SwitchState.DOWN;
+
     @Override
     public void process() {
-        boolean invertLight = panel.getSwitchState() == ButtonPanel.SwitchState.DOWN;
+        ButtonPanel.SwitchState switchState = panel.getSwitchState();
+        if (switchState == ButtonPanel.SwitchState.UP) {
+            if (prevSwitch == ButtonPanel.SwitchState.DOWN)
+                reactionTime.begin();
 
-        for (int x = 0; x < 9; x++) {
-            for (int y = 0; y < 4; y++) {
-                panel.setButtonLight(x, y, invertLight ^ panel.isButtonDown(x, y));
+            reactionTime.update();
+        } else {
+            for (int x = 0; x < 9; x++) {
+                for (int y = 0; y < 4; y++) {
+                    panel.setButtonLight(x, y, !panel.isButtonDown(x, y));
+                }
             }
         }
+        prevSwitch = switchState;
 
         panel.processIO();
         showGUI();
