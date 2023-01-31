@@ -109,7 +109,15 @@ public final class SerialButtonPanel implements ButtonPanel {
             if (availPorts.length == 0)
                 return;
 
-            serial = availPorts[0];
+            System.out.println("Available serial ports:");
+            for (SerialPort port : availPorts) {
+                if (port.getDescriptivePortName().contains("USB Serial")) {
+                    serial = port;
+                }
+            }
+            if (serial == null)
+                return;
+
             serial.openPort();
 
             waitingForStart = true;
