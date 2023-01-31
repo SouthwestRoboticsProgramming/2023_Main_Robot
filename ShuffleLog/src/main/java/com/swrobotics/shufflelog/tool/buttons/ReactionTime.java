@@ -1,9 +1,11 @@
 package com.swrobotics.shufflelog.tool.buttons;
 
 import com.swrobotics.shufflelog.util.Cooldown;
+import imgui.ImGui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class ReactionTime {
     private static final class Position {
@@ -12,6 +14,20 @@ public final class ReactionTime {
         public Position(int x, int y) {
             this.x = x;
             this.y = y;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Position position = (Position) o;
+            return x == position.x &&
+                    y == position.y;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
         }
     }
 
@@ -30,6 +46,7 @@ public final class ReactionTime {
     }
 
     public void begin() {
+        remainingPositions.clear();
         for (int y = 0; y < ButtonPanel.HEIGHT; y++) {
             for (int x = 0; x < ButtonPanel.WIDTH; x++) {
                 panel.setButtonLight(x, y, false);
@@ -55,6 +72,8 @@ public final class ReactionTime {
                 hasPressedChoice = true;
             prevWasDown = down;
         }
+
+        ImGui.text("Remaining positions: " + remainingPositions.size());
 
         if (nextLightCooldown.request()) {
             if (remainingPositions.isEmpty()) {

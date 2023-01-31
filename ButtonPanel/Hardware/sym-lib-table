@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "arcade_buttons")(type "KiCad")(uri "${KIPRJMOD}/arcade_buttons.kicad_sym")(options "")(descr ""))
+  (lib (name "teensy")(type "Legacy")(uri "${KIPRJMOD}/teensy_library/teensy.lib")(options "")(descr ""))
+)
