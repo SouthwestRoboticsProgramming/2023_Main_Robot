@@ -16,6 +16,7 @@ import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
+import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.Pathfinder;
@@ -63,6 +64,7 @@ public class RobotContainer {
     public final StatusLogging statuslogger = new StatusLogging(lights);
 
     private final XboxController controller = new XboxController(0);
+    private final ButtonPanel buttonPanel;
 
     private final MessengerClient messenger;
 
@@ -97,6 +99,7 @@ public class RobotContainer {
                 MESSENGER_PORT,
                 MESSENGER_NAME
         );
+        buttonPanel = new ButtonPanel(messenger);
 
         // Initialize block auto
         AutoBlocks.init(messenger, this);

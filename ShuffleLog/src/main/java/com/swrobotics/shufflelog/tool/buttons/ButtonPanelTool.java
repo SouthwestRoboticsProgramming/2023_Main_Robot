@@ -1,5 +1,6 @@
 package com.swrobotics.shufflelog.tool.buttons;
 
+import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.tool.Tool;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
@@ -9,13 +10,16 @@ import imgui.flag.ImGuiStyleVar;
 public final class ButtonPanelTool implements Tool {
     private final ButtonPanel panel;
     private final ReactionTime reactionTime;
+    private final RobotButtonIO io;
 
-    public ButtonPanelTool() {
-        panel = new SerialButtonPanel();
-//        panel = new VirtualButtonPanel();
+    public ButtonPanelTool(MessengerClient msg) {
+//        panel = new SerialButtonPanel();
+        panel = new VirtualButtonPanel();
 
         reactionTime = new ReactionTime(panel);
         reactionTime.begin();
+
+        io = new RobotButtonIO(msg, panel);
     }
 
     private void showGUI() {
@@ -52,17 +56,15 @@ public final class ButtonPanelTool implements Tool {
     @Override
     public void process() {
         ButtonPanel.SwitchState switchState = panel.getSwitchState();
-        if (switchState == ButtonPanel.SwitchState.UP) {
+        boolean isMatchMode = switchState == ButtonPanel.SwitchState.DOWN;
+        io.setEnabled(isMatchMode);
+        io.sendButtonData();
+
+        if (!isMatchMode) {
             if (prevSwitch == ButtonPanel.SwitchState.DOWN)
                 reactionTime.begin();
 
             reactionTime.update();
-        } else {
-            for (int x = 0; x < 9; x++) {
-                for (int y = 0; y < 4; y++) {
-                    panel.setButtonLight(x, y, !panel.isButtonDown(x, y));
-                }
-            }
         }
         prevSwitch = switchState;
 
