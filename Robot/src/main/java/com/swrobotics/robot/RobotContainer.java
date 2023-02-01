@@ -3,6 +3,7 @@ package com.swrobotics.robot;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
@@ -54,7 +55,7 @@ public class RobotContainer {
     private static final String MESSENGER_NAME = "Robot";
 
     // Create a way to choose between autonomous sequences
-    private final SendableChooser<Command> autoSelector;
+    private final SendableChooser<Supplier<Command>> autoSelector;
 
     // The robot's subsystems are defined here...
     public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
@@ -67,9 +68,6 @@ public class RobotContainer {
     private final ButtonPanel buttonPanel;
 
     private final MessengerClient messenger;
-
-    // A bit of a hack so that it gets the command on auto init FIXME-@rmheuer: Un-hackify this
-    private final Command blockAutoCommand;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -124,15 +122,13 @@ public class RobotContainer {
         Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
         Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, true).withTimeout(2.0); // Just drive forward
 
-        blockAutoCommand = new InstantCommand();
-
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
-        autoSelector.setDefaultOption("Taxi Dumb", taxiDumb);
-        autoSelector.addOption("No Auto", blankAuto);
-        autoSelector.addOption("Print Auto", printAuto);
-        autoSelector.addOption("Taxi Smart", taxiSmart);
-        autoSelector.addOption("Block Auto", blockAutoCommand);
+        autoSelector.setDefaultOption("Taxi Dumb", () -> taxiDumb);
+        autoSelector.addOption("No Auto", () -> blankAuto);
+        autoSelector.addOption("Print Auto", () -> printAuto);
+        autoSelector.addOption("Taxi Smart", () -> taxiSmart);
+        autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
 
         SmartDashboard.putData("Auto", autoSelector);
     }
@@ -162,15 +158,7 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        Command cmd = autoSelector.getSelected();
-        
-        // FIXME: Don't do this 
-        if (cmd == blockAutoCommand) {
-            System.out.println("Block autonomous detected, running command");
-            return AutoBlocks.getSelectedAutoCommand();
-        }
-        
-        return cmd;
+        return autoSelector.getSelected().get();
     }
 
     private static double deadband(double value, double deadband) {
