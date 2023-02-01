@@ -317,6 +317,7 @@ public final class NetworkTablesTool implements Tool {
             ImGui.endDragDropSource();
         }
         ImGui.tableNextColumn();
+        ImGui.setNextItemWidth(-1);
         editFn.run();
         ImGui.tableNextColumn();
         ImGui.text(valAcc.getType().getValueStr());
