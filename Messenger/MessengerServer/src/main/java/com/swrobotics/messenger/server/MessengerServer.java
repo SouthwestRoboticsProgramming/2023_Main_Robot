@@ -12,6 +12,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class MessengerServer {
+    private static final String MSG_GET_CLIENTS = "Messenger:GetClients";
+    private static final String MSG_CLIENTS = "Messenger:Clients";
+
     private static final MessengerServer INSTANCE = new MessengerServer();
     public static MessengerServer get() { return INSTANCE; }
 
@@ -53,6 +56,24 @@ public final class MessengerServer {
     public void onMessage(Message msg) {
         if (log != null)
             log.logMessage(msg);
+
+        if (msg.getType().equals(MSG_GET_CLIENTS)) {
+            try {
+                ByteArrayOutputStream b = new ByteArrayOutputStream();
+                DataOutputStream d = new DataOutputStream(b);
+
+                d.writeInt(clients.size());
+                for (Client client : clients) {
+                    d.writeUTF(client.getName());
+                }
+
+                dispatchMessage(new Message(MSG_CLIENTS, b.toByteArray()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return;
+        }
 
         dispatchMessage(msg);
     }

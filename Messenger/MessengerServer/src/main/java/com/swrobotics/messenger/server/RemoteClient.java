@@ -159,6 +159,11 @@ public final class RemoteClient implements Client, Runnable {
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public void sendMessage(Message msg) {
         outgoingMessages.add(msg);
     }

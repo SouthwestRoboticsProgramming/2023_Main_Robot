@@ -5,14 +5,15 @@ import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.StreamUtil;
 import com.swrobotics.shufflelog.tool.Tool;
+import com.swrobotics.shufflelog.util.Cooldown;
 import com.swrobotics.shufflelog.util.RollingBuffer;
 import imgui.ImGui;
-import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiCond;
-import imgui.flag.ImGuiTableColumnFlags;
-import imgui.flag.ImGuiTableFlags;
+import imgui.flag.*;
 import imgui.type.ImInt;
 import imgui.type.ImString;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class MessengerTool implements Tool {
     private static final int LOG_HISTORY_SIZE = 128;
@@ -26,6 +27,9 @@ public final class MessengerTool implements Tool {
     private final RollingBuffer<MessengerEvent> eventLog;
     private boolean prevConnected;
 
+    private final List<String> clientNames;
+    private final Cooldown clientsCooldown;
+
     public MessengerTool(ShuffleLog log) {
         shuffleLog = log;
         host = new ImString(64);
@@ -37,10 +41,14 @@ public final class MessengerTool implements Tool {
 
         msg = new MessengerClient(host.get(), port.get(), name.get());
         msg.addHandler(MessengerClient.EVENT_TYPE, this::onEvent);
+        msg.addHandler(MessengerClient.CLIENT_LIST_TYPE, this::onClients);
         log.setMessenger(msg);
 
         eventLog = new RollingBuffer<>(LOG_HISTORY_SIZE);
         prevConnected = false;
+
+        clientNames = new ArrayList<>();
+        clientsCooldown = new Cooldown(4_000_000_000L);
     }
 
     private void onEvent(String msgType, MessageReader reader) {
@@ -49,6 +57,14 @@ public final class MessengerTool implements Tool {
         String desc = reader.readString();
 
         eventLog.insert(new MessengerEvent(shuffleLog.getTimestamp(), type, name, desc));
+    }
+
+    private void onClients(String type, MessageReader reader) {
+        int count = reader.readInt();
+        clientNames.clear();
+        for (int i = 0; i < count; i++)
+            clientNames.add(reader.readString());
+        clientNames.sort(String.CASE_INSENSITIVE_ORDER);
     }
 
     private void fancyLabel(String label) {
@@ -98,6 +114,20 @@ public final class MessengerTool implements Tool {
             msg.reconnect(host.get(), port.get(), name.get());
     }
 
+    private void showClients() {
+        if (!ImGui.treeNodeEx("Connected clients (" + clientNames.size() + "):##clients", ImGuiTreeNodeFlags.DefaultOpen))
+            return;
+
+        if (clientsCooldown.request())
+            msg.send(MessengerClient.GET_CLIENTS_TYPE);
+
+        for (String client : clientNames) {
+            ImGui.text(client);
+        }
+
+        ImGui.treePop();
+    }
+
     private void showEventLog() {
         boolean connected = msg.isConnected();
         if (connected && !prevConnected) {
@@ -143,6 +173,8 @@ public final class MessengerTool implements Tool {
             ImGui.setWindowSize(500, 450, ImGuiCond.FirstUseEver);
 
             showConnectionParams();
+            ImGui.separator();
+            showClients();
             ImGui.separator();
             showEventLog();
         }
