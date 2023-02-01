@@ -84,7 +84,7 @@ public final class BlockStackInst {
                 continue;
             ImGui.pushID(i);
             int[] popupId = {0};
-            changed[0] |= block.draw(() -> {
+            boolean blockChanged = block.draw(() -> {
                 if (ImGui.beginPopupContextItem("block_popup_" + popupId[0]++)) {
                     if (ImGui.selectable("Delete block (" + block.getDef().getName() + ")")) {
                         removeBlock(block);
@@ -93,6 +93,7 @@ public final class BlockStackInst {
                     ImGui.endPopup();
                 }
             });
+            changed[0] |= blockChanged;
             changed[0] |= acceptBlock(i);
             ImGui.popID();
             i++;
