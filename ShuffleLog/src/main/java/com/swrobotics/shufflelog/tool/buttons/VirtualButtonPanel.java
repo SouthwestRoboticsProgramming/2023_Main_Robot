@@ -3,6 +3,7 @@ package com.swrobotics.shufflelog.tool.buttons;
 import imgui.ImGui;
 import imgui.flag.ImGuiColorEditFlags;
 import imgui.flag.ImGuiStyleVar;
+import imgui.type.ImBoolean;
 
 public final class VirtualButtonPanel implements ButtonPanel {
     private static final float[] LIGHT_ON = {1, 1, 1, 1};
@@ -10,6 +11,8 @@ public final class VirtualButtonPanel implements ButtonPanel {
 
     private final boolean[][] buttonsDown = new boolean[WIDTH][HEIGHT];
     private final boolean[][] lightsOn = new boolean[WIDTH][HEIGHT];
+
+    private final ImBoolean switchUp = new ImBoolean(false);
 
     @Override
     public boolean isButtonDown(int x, int y) {
@@ -28,13 +31,14 @@ public final class VirtualButtonPanel implements ButtonPanel {
 
     @Override
     public SwitchState getSwitchState() {
-        return SwitchState.DOWN;
+        return switchUp.get() ? SwitchState.UP : SwitchState.DOWN;
     }
 
     @Override
     public void processIO() {
         if (ImGui.begin("Virtual Button Panel")) {
             ImGui.setWindowSize(0, 0);
+            ImGui.checkbox("Switch", switchUp);
             ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);
             for (int y = 0; y < HEIGHT; y++) {
                 for (int x = 0; x < WIDTH; x++) {
