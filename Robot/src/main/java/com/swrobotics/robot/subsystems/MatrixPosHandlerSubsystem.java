@@ -30,10 +30,13 @@ public class MatrixPosHandlerSubsystem extends SubsystemBase {
             return;
         }
 
-        pathfindtopoint(matrixDefs.getMatrixPos(scoringTarget[0], scoringTarget[1]));
+        pathfindtopoint(scoringTarget[0], scoringTarget[1]);
     }
-    public void pathfindtopoint(MatrixPos pos) {
+    public void pathfindtopoint(int x, int y) {
+        MatrixPos pos = matrixDefs.getMatrixPos(x, y);
         PathfindToPointCommand driveCommand = new PathfindToPointCommand(container, pos.stopPosition);
+
+        panel.setLightOn(x,y, true);
 
         driveCommand.schedule();
     }
