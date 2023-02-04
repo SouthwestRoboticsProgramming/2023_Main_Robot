@@ -10,7 +10,7 @@ public class MatrixPos {
     public int x = 0;
     public int y = 0;
 
-    public MatrixPos(int x, int y, Translation2d stopPosition, Translation2d armPosition) {
+    public MatrixPos(int x, int y, Vec2d stopPosition, Translation2d armPosition) {
         this.stopPosition = stopPosition;
         this.armPosition = armPosition;
         this.x = x;
