@@ -35,6 +35,6 @@ public class MatrixPosHandlerSubsystem extends SubsystemBase {
     public void pathfindtopoint(MatrixPos pos) {
         PathfindToPointCommand driveCommand = new PathfindToPointCommand(container, pos.stopPosition);
 
-        driveCommand.execute();
+        driveCommand.schedule();
     }
 }
