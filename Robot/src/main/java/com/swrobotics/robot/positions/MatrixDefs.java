@@ -6,7 +6,7 @@ public class MatrixDefs {
     public MatrixPos[][] poses = new MatrixPos[9][3];
 
     public MatrixDefs() {
-        // TODO: Actually Construct
+        // TODO: Actually Construct working positions
     }
 
     public MatrixPos getMatrixPos(int x, int y) {
