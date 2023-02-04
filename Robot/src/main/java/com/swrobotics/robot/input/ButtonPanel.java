@@ -11,6 +11,9 @@ public final class ButtonPanel extends SubsystemBase {
     public static final int WIDTH = 9;
     public static final int HEIGHT = 4;
 
+    public static final int SCORING_WIDTH = 9;
+    public static final int SCORING_HEIGHT = 3;
+
     private final MessengerClient msg;
 
     private final boolean[] buttonStates;
@@ -27,6 +30,19 @@ public final class ButtonPanel extends SubsystemBase {
 
     public boolean isButtonDown(int x, int y) {
         return buttonStates[x + y * WIDTH];
+    }
+
+    public int[] getScoringButtons() {
+        for(int i = 0; i < SCORING_WIDTH; i++) {
+            for (int f = 0; f < SCORING_HEIGHT; f++) {
+               if(isButtonDown(i, f)) {
+                  return new int[]{i, f};
+               }
+            }
+        }
+
+        return new int[]{-1, -1};
+
     }
 
     public void setLightOn(int x, int y, boolean on) {
