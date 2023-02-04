@@ -49,6 +49,10 @@ public final class ButtonPanel extends SubsystemBase {
         lightStates[x + y * WIDTH] = on;
     }
 
+    public boolean isLightOn(int x, int y) {
+        return lightStates[x+y*WIDTH];
+    }
+
     private void onButtonData(String type, MessageReader reader) {
         byte[] packed = reader.readRaw(5);
         for (int i = 0; i < packed.length; i++) {
