@@ -1,9 +1,10 @@
 package com.swrobotics.robot.positions;
 
+import com.swrobotics.mathlib.Vec2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class MatrixPos {
-    public Translation2d stopPosition;
+    public Vec2d stopPosition;
     public Translation2d armPosition;
 
     public int x = 0;
