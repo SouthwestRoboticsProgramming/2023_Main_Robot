@@ -18,9 +18,7 @@ import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.input.ButtonPanel;
-import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
-import com.swrobotics.robot.subsystems.Lights;
-import com.swrobotics.robot.subsystems.Pathfinder;
+import com.swrobotics.robot.subsystems.*;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -34,7 +32,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import com.swrobotics.robot.subsystems.StatusLogging;
 
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -69,6 +66,8 @@ public class RobotContainer {
 
     private final MessengerClient messenger;
 
+
+    private final MatrixPosHandlerSubsystem pos_handler;
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
@@ -131,6 +130,8 @@ public class RobotContainer {
         autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
 
         SmartDashboard.putData("Auto", autoSelector);
+
+        pos_handler = new MatrixPosHandlerSubsystem(buttonPanel, this);
     }
 
     /**
