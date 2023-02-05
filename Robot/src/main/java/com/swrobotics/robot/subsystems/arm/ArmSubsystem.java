@@ -139,15 +139,17 @@ public final class ArmSubsystem extends SubsystemBase {
 
         double startTol = START_TOL.get();
         double stopTol = STOP_TOL.get();
-        double followTol = FOLLOW_TOL.get();
 
         ArmPose currentTarget = null;
+        Vec2d currentPoseVec = toStateSpaceVec(currentPose);
         if (!finder.isPathValid()) {
+            // Wait for it to become valid, and move directly to target in the meantime
+            // Ideally this should happen very rarely
             currentTarget = targetPose;
         } else {
             List<ArmPose> currentPath = finder.getPath();
 
-            Vec2d currentPoseVec = toStateSpaceVec(currentPose);
+            double minDist = Double.POSITIVE_INFINITY;
             for (int i = currentPath.size() - 1; i > 0; i--) {
                 ArmPose pose = currentPath.get(i);
                 Vec2d point = toStateSpaceVec(pose);
@@ -155,15 +157,16 @@ public final class ArmSubsystem extends SubsystemBase {
 
                 double dist = currentPoseVec.distanceToLineSegmentSq(point, prev);
 
-                if (dist < followTol * followTol) {
+                if (dist < minDist) {
                     currentTarget = pose;
-                    break;
+                    minDist = dist;
                 }
             }
 
-            // If we aren't near the path, go directly to target while pathfinder catches up
+            // Path is empty for some reason, maybe we are already at the target?
             if (currentTarget == null) {
-                currentTarget = targetPose;
+                idle();
+                return;
             }
         }
 
@@ -176,10 +179,10 @@ public final class ArmSubsystem extends SubsystemBase {
                 .sub(currentPose.bottomAngle, currentPose.topAngle);
 
         // Tolerance hysteresis so the motor doesn't do the shaky shaky
-        double magSq = towardsTarget.magnitudeSq();
-        if (magSq > startTol * startTol) {
+        double magSqToFinalTarget = toStateSpaceVec(targetPose).sub(currentPoseVec).magnitudeSq();
+        if (magSqToFinalTarget > startTol * startTol) {
             inTolerance = false;
-        } else if (magSq < stopTol * stopTol) {
+        } else if (magSqToFinalTarget < stopTol * stopTol) {
             inTolerance = true;
         }
 
@@ -191,7 +194,7 @@ public final class ArmSubsystem extends SubsystemBase {
             bottomMotorOut = 0;
             topMotorOut = 0;
         } else {
-            towardsTarget.normalize().mul(SPEED.get());
+            towardsTarget.mul(BOTTOM_GEAR_RATIO, TOP_GEAR_RATIO).normalize().mul(SPEED.get());
             bottomMotorOut = towardsTarget.x;
             topMotorOut = towardsTarget.y;
         }

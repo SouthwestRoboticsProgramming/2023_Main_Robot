@@ -29,6 +29,7 @@ public class BitfieldGrid extends Grid {
 
     public void set(int x, int y, boolean value) {
         data.set(x + y * width, value);
+        invalidateLineOfSightCache();
     }
 
     public void copyFrom(BitfieldGrid other) {

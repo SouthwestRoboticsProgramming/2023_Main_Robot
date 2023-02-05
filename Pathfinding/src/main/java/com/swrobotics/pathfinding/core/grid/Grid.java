@@ -43,6 +43,7 @@ public abstract class Grid {
 
     protected final int width;
     protected final int height;
+    private LineOfSightCache sightCache;
     private GridUnion parent;
     private UUID id;
 
@@ -51,6 +52,7 @@ public abstract class Grid {
         id = UUID.randomUUID();
         this.width = width;
         this.height = height;
+        sightCache = null;
     }
 
     private static final double SQRT_2_MINUS_2 = Math.sqrt(2) - 2;
@@ -176,7 +178,20 @@ public abstract class Grid {
         }
     }
 
-    public boolean lineOfSight(Point s, Point sp) {
+    protected void invalidateLineOfSightCache() {
+        if (sightCache != null)
+            sightCache.invalidate();
+    }
+
+    public boolean lineOfSight(Point a, Point b) {
+        // Avoid allocating cache if this grid is never checked
+        if (sightCache == null)
+            sightCache = new LineOfSightCache(this);
+
+        return sightCache.lineOfSight(a, b);
+    }
+
+    boolean calcLineOfSight(Point s, Point sp) {
         int x0 = s.x;
         int y0 = s.y;
         int x1 = sp.x;

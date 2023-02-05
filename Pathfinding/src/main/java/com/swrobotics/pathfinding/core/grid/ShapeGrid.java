@@ -36,12 +36,14 @@ public final class ShapeGrid extends BitfieldGrid {
         shapes.add(shape);
         shape.setParent(this);
         needsRegenerateBitfield = true;
+        invalidateLineOfSightCache();
     }
 
     public void removeShape(Shape shape) {
         shapes.remove(shape);
         shape.setParent(null);
         needsRegenerateBitfield = true;
+        invalidateLineOfSightCache();
     }
 
     private void regenerateBitfield() {

@@ -49,11 +49,14 @@ public final class GridUnion extends Grid {
 
         children.add(grid);
         grid.setParent(this);
+
+        invalidateLineOfSightCache();
     }
 
     public void removeGrid(Grid grid) {
         children.remove(grid);
         grid.setParent(null);
+        invalidateLineOfSightCache();
     }
 
     public Set<Grid> getChildren() {
