@@ -1,11 +1,12 @@
-package com.swrobotics.robot.subsystems.arm;
+package com.swrobotics.shared.arm;
 
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
+
+import static com.swrobotics.shared.arm.ArmConstants.*;
 
 public final class ArmPose {
     // FIXME: Set based on rules in game manual and dimensions of robot
@@ -19,8 +20,8 @@ public final class ArmPose {
 
         // Make sure it's possible for the arm to reach the position
         double lengthSq = x * x + y * y;
-        if (lengthSq > MathUtil.square(ArmSubsystem.BOTTOM_LENGTH + ArmSubsystem.TOP_LENGTH) + MathUtil.EPSILON
-            || lengthSq + MathUtil.EPSILON < MathUtil.square(ArmSubsystem.BOTTOM_LENGTH - ArmSubsystem.TOP_LENGTH)) {
+        if (lengthSq > MathUtil.square(BOTTOM_LENGTH + TOP_LENGTH) + MathUtil.EPSILON
+            || lengthSq + MathUtil.EPSILON < MathUtil.square(BOTTOM_LENGTH - TOP_LENGTH)) {
             return false;
         }
 
@@ -33,12 +34,12 @@ public final class ArmPose {
 
         if (!isEndPositionValid(position)) {
             String posFormat = String.format("(%.3f, %.3f)", position.getX(), position.getY());
-            DriverStation.reportWarning("Trying to set arm to illegal position: " + posFormat, false);
+            System.err.println("Trying to set arm to illegal position: " + posFormat);
             return null;
         }
 
-        double lengthA = ArmSubsystem.BOTTOM_LENGTH;
-        double lengthB = ArmSubsystem.TOP_LENGTH;
+        double lengthA = BOTTOM_LENGTH;
+        double lengthB = TOP_LENGTH;
         double targetX = position.getX();
         double targetY = position.getY();
 
@@ -64,12 +65,12 @@ public final class ArmPose {
     }
 
     public Translation2d getCenterPosition() {
-        return new Translation2d(ArmSubsystem.BOTTOM_LENGTH, new Rotation2d(bottomAngle));
+        return new Translation2d(BOTTOM_LENGTH, new Rotation2d(bottomAngle));
     }
 
     public Translation2d getEndPosition() {
-        Vec2d pos = new Vec2d(ArmSubsystem.BOTTOM_LENGTH, 0).rotateBy(CCWAngle.rad(bottomAngle))
-                .add(new Vec2d(ArmSubsystem.TOP_LENGTH, 0).rotateBy(CCWAngle.rad(topAngle)));
+        Vec2d pos = new Vec2d(BOTTOM_LENGTH, 0).rotateBy(CCWAngle.rad(bottomAngle))
+                .add(new Vec2d(TOP_LENGTH, 0).rotateBy(CCWAngle.rad(topAngle)));
 
         return new Translation2d(pos.x, pos.y);
     }

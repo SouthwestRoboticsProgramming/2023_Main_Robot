@@ -3,12 +3,14 @@ package com.swrobotics.robot.subsystems.arm;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTEntry;
+import com.swrobotics.lib.net.NTString;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.subsystems.arm.joint.ArmJoint;
 import com.swrobotics.robot.subsystems.arm.joint.PhysicalJoint;
 import com.swrobotics.robot.subsystems.arm.joint.ArmPhysicsSim;
+import com.swrobotics.shared.arm.ArmPose;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -17,19 +19,13 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.List;
-import java.util.Optional;
+
+import static com.swrobotics.robot.subsystems.arm.ArmPathfinder.toStateSpaceVec;
+import static com.swrobotics.shared.arm.ArmConstants.*;
 
 // All arm kinematics is treated as a 2d coordinate system, with
 // the X axis representing forward, and the Y axis representing up
 public final class ArmSubsystem extends SubsystemBase {
-    // Lengths of the arm segments in meters  FIXME
-    public static final double BOTTOM_LENGTH = 1.25;
-    public static final double TOP_LENGTH = 1;
-
-    // Gear ratios from motor output to arm joint movement  FIXME
-    public static final double BOTTOM_GEAR_RATIO = 600;
-    public static final double TOP_GEAR_RATIO = 300;
-
     // CAN IDs of the motors  FIXME
     private static final int BOTTOM_MOTOR_ID = 7612;
     private static final int TOP_MOTOR_ID = 7613;
@@ -37,6 +33,7 @@ public final class ArmSubsystem extends SubsystemBase {
     private static final NTDouble SPEED = new NTDouble("Arm/Speed", 0.5);
     private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);
     private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.02); // Must be larger than stop tolerance
+    private static final NTDouble FOLLOW_TOL = new NTDouble("Arm/Follow Tolerance", 0.04);
 
     private static final NTBoolean HOME_CALIBRATE = new NTBoolean("Arm/Home/Calibrate", false);
     private static final NTDouble HOME_BOTTOM = new NTDouble("Arm/Home/Bottom", 0);
@@ -50,7 +47,7 @@ public final class ArmSubsystem extends SubsystemBase {
     private static final NTEntry<Double> LOG_MOTOR_TOP = new NTDouble("Log/Arm/Motor Out Top", 0).setTemporary();
 
     private final ArmJoint topJoint, bottomJoint;
-    private final ArmPathSolver solver;
+    private final ArmPathfinder finder;
     private ArmPose targetPose;
     private boolean inTolerance;
 
@@ -84,7 +81,7 @@ public final class ArmSubsystem extends SubsystemBase {
         );
         SmartDashboard.putData("Arm", mechanism);
 
-        solver = new ArmPathSolver(msg);
+        finder = new ArmPathfinder(msg);
 
         ArmPose home = new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get());
         calibrate(home);
@@ -112,6 +109,13 @@ public final class ArmSubsystem extends SubsystemBase {
         sim.update();
     }
 
+    private void idle() {
+        LOG_MOTOR_BOTTOM.set(0.0);
+        LOG_MOTOR_TOP.set(0.0);
+        bottomJoint.setMotorOutput(0);
+        topJoint.setMotorOutput(0);
+    }
+
     @Override
     public void periodic() {
         ArmPose currentPose = getCurrentPose();
@@ -126,28 +130,44 @@ public final class ArmSubsystem extends SubsystemBase {
         LOG_CURRENT_TOP.set(currentPose.topAngle);
 
         if (targetPose == null) {
-            LOG_MOTOR_BOTTOM.set(0.0);
-            LOG_MOTOR_TOP.set(0.0);
-            bottomJoint.setMotorOutput(0);
-            topJoint.setMotorOutput(0);
+            idle();
             return;
         }
 
         targetVisualizer.setPose(targetPose);
+        finder.setInfo(currentPose, targetPose);
 
-        // Get next pose from path solver
-        // TODO: If moving solver to Pi, add latency correction like PathfindToPointCommand
-        Optional<List<ArmPose>> path = solver.findPath(currentPose, targetPose);
+        double startTol = START_TOL.get();
+        double stopTol = STOP_TOL.get();
+        double followTol = FOLLOW_TOL.get();
+
         ArmPose currentTarget = null;
-        if (path.isPresent()) {
-            List<ArmPose> poses = path.get();
-            if (poses.size() >= 2) {
-                currentTarget = path.get().get(1);
+        if (!finder.isPathValid()) {
+            currentTarget = targetPose;
+        } else {
+            List<ArmPose> currentPath = finder.getPath();
+
+            Vec2d currentPoseVec = toStateSpaceVec(currentPose);
+            for (int i = currentPath.size() - 1; i > 0; i--) {
+                ArmPose pose = currentPath.get(i);
+                Vec2d point = toStateSpaceVec(pose);
+                Vec2d prev = toStateSpaceVec(currentPath.get(i - 1));
+
+                double dist = currentPoseVec.distanceToLineSegmentSq(point, prev);
+
+                if (dist < followTol * followTol) {
+                    currentTarget = pose;
+                    status.set("following");
+                    break;
+                }
+            }
+
+            // If we aren't near the path, go directly to target while pathfinder catches up
+            if (currentTarget == null) {
+                currentTarget = targetPose;
             }
         }
 
-        if (currentTarget == null)
-            currentTarget = targetPose;
         LOG_TARGET_BOTTOM.set(currentTarget.bottomAngle);
         LOG_TARGET_TOP.set(currentTarget.topAngle);
 
@@ -158,8 +178,6 @@ public final class ArmSubsystem extends SubsystemBase {
 
         // Tolerance hysteresis so the motor doesn't do the shaky shaky
         double magSq = towardsTarget.magnitudeSq();
-        double startTol = START_TOL.get();
-        double stopTol = STOP_TOL.get();
         if (magSq > startTol * startTol) {
             inTolerance = false;
         } else if (magSq < stopTol * stopTol) {

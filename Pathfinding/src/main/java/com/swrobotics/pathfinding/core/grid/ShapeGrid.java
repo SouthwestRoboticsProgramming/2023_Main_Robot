@@ -1,4 +1,4 @@
-package com.swrobotics.pathfinding.grid;
+package com.swrobotics.pathfinding.core.grid;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -9,9 +9,9 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.swrobotics.messenger.client.MessageBuilder;
-import com.swrobotics.pathfinding.geom.RobotShape;
-import com.swrobotics.pathfinding.geom.Shape;
-import com.swrobotics.pathfinding.Field;
+import com.swrobotics.pathfinding.core.geom.RobotShape;
+import com.swrobotics.pathfinding.core.geom.Shape;
+import com.swrobotics.pathfinding.field.Field;
 import com.swrobotics.pathfinding.task.PathfinderTask;
 
 import java.lang.reflect.Type;

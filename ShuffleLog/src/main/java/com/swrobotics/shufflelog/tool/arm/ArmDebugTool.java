@@ -6,6 +6,7 @@ import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.tool.ViewportTool;
+import com.swrobotics.shufflelog.tool.field.path.grid.BitfieldGrid;
 import com.swrobotics.shufflelog.util.Cooldown;
 import imgui.ImGui;
 import imgui.flag.ImGuiDataType;
@@ -16,11 +17,13 @@ import processing.core.PGraphics;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public final class ArmDebugTool extends ViewportTool {
-    private static final String MSG_GET_STATESPACE = "Arm:GetStatespace";
-    private static final String MSG_STATESPACE = "Arm:Statespace";
-    private static final String MSG_ARM_PATH_UPDATE = "Arm:PathUpdate";
+    private static final String MSG_ARM_SET_INFO = "Pathfinder:Arm:SetInfo";
+    private static final String MSG_ARM_PATH = "Pathfinder:Arm:Path";
+    private static final String MSG_ARM_GET_GRID = "Pathfinder:Arm:GetGrid";
+    private static final String MSG_ARM_GRID = "Pathfinder:Arm:Grid";
 
     private static final double MIN_BOTTOM_ANGLE = 0;
     private static final double MAX_BOTTOM_ANGLE = Math.PI;
@@ -29,12 +32,12 @@ public final class ArmDebugTool extends ViewportTool {
 
     private final MessengerClient msg;
 
-    private boolean[][] stateSpace;
-    private boolean hasStateSpace;
-    private final Cooldown stateSpaceCooldown;
+    private BitfieldGrid grid;
+    private boolean hasGrid;
+    private final Cooldown gridCooldown;
 
-    private Vec2d current, target;
-    private List<Vec2d> path;
+    private final Vec2d current, target;
+    private final List<Vec2d> path;
     private boolean hasPath;
 
     private final ImDouble targetX, targetY;
@@ -47,47 +50,45 @@ public final class ArmDebugTool extends ViewportTool {
         target = new Vec2d(0, 0);
         path = new ArrayList<>();
 
-        hasStateSpace = false;
+        hasGrid = false;
         hasPath = false;
-        stateSpaceCooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
+        gridCooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
 
-        msg.addHandler(MSG_STATESPACE, this::onStateSpace);
-        msg.addHandler(MSG_ARM_PATH_UPDATE, this::onPathUpdate);
+        msg.addHandler(MSG_ARM_SET_INFO, this::onSetInfo);
+        msg.addHandler(MSG_ARM_PATH, this::onPath);
+        msg.addHandler(MSG_ARM_GRID, this::onGrid);
 
         targetX = new ImDouble(1);
         targetY = new ImDouble(1);
     }
 
-    private void onStateSpace(String type, MessageReader reader) {
-        int resolution = reader.readInt();
-        stateSpace = new boolean[resolution][resolution];
-        for (int bot = 0; bot < resolution; bot++) {
-            for (int top = 0; top < resolution; top++) {
-                boolean valid = reader.readBoolean();
-                stateSpace[bot][top] = valid;
-            }
-        }
-        hasStateSpace = true;
+    private void onSetInfo(String type, MessageReader reader) {
+        double currentX = reader.readDouble();
+        double currentY = reader.readDouble();
+        double targetX = reader.readDouble();
+        double targetY = reader.readDouble();
+        current.set(currentX, currentY);
+        target.set(targetX, targetY);
     }
 
-    private void onPathUpdate(String type, MessageReader reader) {
-        double currentBot = reader.readDouble();
-        double currentTop = reader.readDouble();
-        double targetBot = reader.readDouble();
-        double targetTop = reader.readDouble();
-        current = new Vec2d(currentBot, currentTop);
-        target = new Vec2d(targetBot, targetTop);
-
+    private void onPath(String type, MessageReader reader) {
         hasPath = reader.readBoolean();
-        if (hasPath) {
-            path.clear();
-            int count = reader.readInt();
-            for (int i = 0; i < count; i++) {
-                double x = reader.readDouble();
-                double y = reader.readDouble();
-                path.add(new Vec2d(x, y));
-            }
+        if (!hasPath)
+            return;
+
+        int count = reader.readInt();
+        path.clear();
+        for (int i = 0; i < count; i++) {
+            double bot = reader.readDouble();
+            double top = reader.readDouble();
+            path.add(new Vec2d(bot, top));
         }
+    }
+
+    private void onGrid(String type, MessageReader reader) {
+        grid = new BitfieldGrid(new UUID(0, 0));
+        grid.readContent(reader);
+        hasGrid = true;
     }
 
     private Vec2d toSSPos(Vec2d pose, int res) {
@@ -100,28 +101,28 @@ public final class ArmDebugTool extends ViewportTool {
     protected void drawViewportContent(PGraphics g) {
         g.background(0);
 
-        if (!hasStateSpace && stateSpaceCooldown.request()) {
-            msg.send(MSG_GET_STATESPACE);
+        if (!hasGrid && gridCooldown.request()) {
+            msg.send(MSG_ARM_GET_GRID);
             return;
         }
 
-        if (!hasStateSpace)
+        if (!hasGrid)
             return;
 
-        int res = stateSpace.length;
+        int res = grid.getWidth();
         g.scale(4);
         for (int bot = 0; bot < res; bot++) {
             for (int top = 0; top < res; top++) {
                 g.noStroke();
-                g.fill(stateSpace[bot][top] ? 255 : 128);
+                g.fill(grid.get(bot, top) ? 255 : 128);
                 g.rect(bot, top, 1, 1);
             }
         }
 
         Vec2d ssCurrent = toSSPos(current, res);
         Vec2d ssTarget = toSSPos(target, res);
-        ImGui.text("current " + ssCurrent);
-        ImGui.text("target " + ssTarget);
+        ImGui.text("Current " + ssCurrent);
+        ImGui.text("Target " + ssTarget);
 
         g.strokeWeight(2);
         g.stroke(255, 255, 0);
@@ -144,7 +145,7 @@ public final class ArmDebugTool extends ViewportTool {
 
     @Override
     protected void drawGuiContent() {
-        ImGui.text("Has statespace: " + hasStateSpace);
+        ImGui.text("Has statespace: " + hasGrid);
 
         boolean changed = false;
         changed |= ImGui.dragScalar("target x", ImGuiDataType.Double, targetX, 0.01f);

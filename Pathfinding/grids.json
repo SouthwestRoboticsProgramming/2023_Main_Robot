@@ -18,6 +18,13 @@
           "height": 8.2296,
           "rotation": 0.0,
           "inverted": false
+        },
+        {
+          "inverted": false,
+          "type": "CIRCLE",
+          "x": 4.0,
+          "y": 4.0,
+          "radius": 1.0
         }
       ]
     }

@@ -1,4 +1,4 @@
-package com.swrobotics.pathfinding.grid;
+package com.swrobotics.pathfinding.core.grid;
 
 public enum GridType {
     UNION((byte) 0, GridUnion.class),

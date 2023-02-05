@@ -1,4 +1,6 @@
-package com.swrobotics.pathfinding;
+package com.swrobotics.pathfinding.field;
+
+import com.swrobotics.pathfinding.core.grid.Point;
 
 /**
  * Cell coordinates have +X right and +Y down, and 1 unit corresponds to

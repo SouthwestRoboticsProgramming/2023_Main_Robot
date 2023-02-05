@@ -1,4 +1,4 @@
-package com.swrobotics.pathfinding.geom;
+package com.swrobotics.pathfinding.core.geom;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

@@ -1,5 +1,7 @@
 package com.swrobotics.robot.subsystems.arm;
 
+import com.swrobotics.shared.arm.ArmConstants;
+import com.swrobotics.shared.arm.ArmPose;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -13,14 +15,14 @@ public final class ArmVisualizer {
         MechanismRoot2d root = visualization.getRoot(name, x, y);
         bottom = root.append(new MechanismLigament2d(
                 "Bottom Arm",
-                ArmSubsystem.BOTTOM_LENGTH,
+                ArmConstants.BOTTOM_LENGTH,
                 0,
                 6,
                 new Color8Bit(bottomColor)
         ));
         top = bottom.append(new MechanismLigament2d(
                 "Top Arm",
-                ArmSubsystem.TOP_LENGTH,
+                ArmConstants.TOP_LENGTH,
                 0,
                 6,
                 new Color8Bit(topColor)

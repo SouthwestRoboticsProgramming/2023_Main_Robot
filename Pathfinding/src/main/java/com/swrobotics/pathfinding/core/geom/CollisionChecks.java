@@ -1,4 +1,4 @@
-package com.swrobotics.pathfinding.geom;
+package com.swrobotics.pathfinding.core.geom;
 
 public final class CollisionChecks {
     public static boolean checkCircleVsCircleRobot(Circle obj, Circle robot, double robotX, double robotY) {

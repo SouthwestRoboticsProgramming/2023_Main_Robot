@@ -1,4 +1,4 @@
-package com.swrobotics.pathfinding;
+package com.swrobotics.pathfinding.core.grid;
 
 import java.util.Objects;
 

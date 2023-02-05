@@ -1,6 +1,6 @@
 package com.swrobotics.robot.subsystems.arm.joint;
 
-import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
+import com.swrobotics.shared.arm.ArmConstants;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
@@ -29,8 +29,8 @@ public final class ArmPhysicsSim {
     }
 
     public ArmPhysicsSim() {
-        float bottomLen = (float) ArmSubsystem.BOTTOM_LENGTH;
-        float topLen = (float) ArmSubsystem.TOP_LENGTH;
+        float bottomLen = (float) ArmConstants.BOTTOM_LENGTH;
+        float topLen = (float) ArmConstants.TOP_LENGTH;
 
         physicsWorld = new World(new Vec2(0, -1));
 
@@ -48,7 +48,7 @@ public final class ArmPhysicsSim {
         anchorToBottomDef.localAnchorA = new Vec2(0, 0);
         anchorToBottomDef.localAnchorB = new Vec2(-bottomLen / 2, 0);
         anchorToBottomDef.enableMotor = true;
-        anchorToBottomDef.maxMotorTorque = 2f * (float) ArmSubsystem.BOTTOM_GEAR_RATIO;
+        anchorToBottomDef.maxMotorTorque = 2f * (float) ArmConstants.BOTTOM_GEAR_RATIO;
         anchorToBottomDef.motorSpeed = 0;
         RevoluteJoint bottomJoint = (RevoluteJoint) physicsWorld.createJoint(anchorToBottomDef);
 
@@ -58,12 +58,12 @@ public final class ArmPhysicsSim {
         bottomToTopDef.localAnchorA = new Vec2(bottomLen / 2, 0);
         bottomToTopDef.localAnchorB = new Vec2(-topLen / 2, 0);
         bottomToTopDef.enableMotor = true;
-        bottomToTopDef.maxMotorTorque = 2f * (float) ArmSubsystem.TOP_GEAR_RATIO;
+        bottomToTopDef.maxMotorTorque = 2f * (float) ArmConstants.TOP_GEAR_RATIO;
         bottomToTopDef.motorSpeed = 0;
         RevoluteJoint topJoint = (RevoluteJoint) physicsWorld.createJoint(bottomToTopDef);
 
-        this.bottomJoint = new SimJoint(bottom, bottomJoint, ArmSubsystem.BOTTOM_GEAR_RATIO);
-        this.topJoint = new SimJoint(top, topJoint, ArmSubsystem.TOP_GEAR_RATIO);
+        this.bottomJoint = new SimJoint(bottom, bottomJoint, ArmConstants.BOTTOM_GEAR_RATIO);
+        this.topJoint = new SimJoint(top, topJoint, ArmConstants.TOP_GEAR_RATIO);
     }
 
     public void update() {

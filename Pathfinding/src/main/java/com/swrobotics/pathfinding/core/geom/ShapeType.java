@@ -1,4 +1,4 @@
-package com.swrobotics.pathfinding.geom;
+package com.swrobotics.pathfinding.core.geom;
 
 public enum ShapeType {
     CIRCLE((byte) 0, Circle.class),

@@ -1,4 +1,4 @@
-package com.swrobotics.pathfinding.grid;
+package com.swrobotics.pathfinding.core.grid;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -8,12 +8,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.swrobotics.messenger.client.MessageBuilder;
-import com.swrobotics.pathfinding.Field;
-import com.swrobotics.pathfinding.Point;
-import com.swrobotics.pathfinding.geom.Circle;
-import com.swrobotics.pathfinding.geom.Rectangle;
-import com.swrobotics.pathfinding.geom.RobotShape;
-import com.swrobotics.pathfinding.geom.Shape;
+import com.swrobotics.pathfinding.core.finder.SpatialGraph;
+import com.swrobotics.pathfinding.field.Field;
+import com.swrobotics.pathfinding.core.geom.Circle;
+import com.swrobotics.pathfinding.core.geom.Rectangle;
+import com.swrobotics.pathfinding.core.geom.RobotShape;
+import com.swrobotics.pathfinding.core.geom.Shape;
 import com.swrobotics.pathfinding.task.PathfinderTask;
 
 import java.lang.reflect.Type;
@@ -51,6 +51,67 @@ public abstract class Grid {
         id = UUID.randomUUID();
         this.width = width;
         this.height = height;
+    }
+
+    private static final double SQRT_2_MINUS_2 = Math.sqrt(2) - 2;
+
+    public SpatialGraph<Point> asGraph() { return asGraph(1, 1); }
+    public SpatialGraph<Point> asGraph(double biasX, double biasY) {
+        // Pre-initialize point objects
+        int ptHeight = getPointHeight();
+        int ptWidth = getPointWidth();
+        Point[][] points = new Point[ptWidth][ptHeight];
+        for (int y = 0; y < ptHeight; y++) {
+            for (int x = 0; x < ptWidth; x++) {
+                points[x][y] = new Point(x, y);
+            }
+        }
+
+        // Pre-initialize neighbors array
+        Point[] neighbors = new Point[8];
+
+        return new SpatialGraph<>() {
+            @Override
+            public boolean lineOfSight(Point a, Point b) {
+                return Grid.this.lineOfSight(a, b);
+            }
+
+            @Override
+            public double heuristic(Point point, Point goal) {
+                return cost(point, goal);
+            }
+
+            @Override
+            public double cost(Point current, Point next) {
+                double dx = (current.x - next.x) * biasX;
+                double dy = (current.y - next.y) * biasY;
+
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
+            @Override
+            public Point[] getNeighbors(Point current, int[] countOut) {
+                int i = 0;
+
+                int w = getPointWidth();
+                int h = getPointHeight();
+                for (int x = -1; x <= 1; x++) {
+                    for (int y = -1; y <= 1; y++) {
+                        if (x == 0 && y == 0)
+                            continue;
+
+                        int px = current.x + x;
+                        int py = current.y + y;
+                        if (px >= 0 && px < w && py >= 0 && py < h && lineOfSight(current, points[px][py])) {
+                            neighbors[i++] = points[px][py];
+                        }
+                    }
+                }
+                countOut[0] = i;
+
+                return neighbors;
+            }
+        };
     }
 
     public String serializeToString() {

@@ -1,4 +1,4 @@
-package com.swrobotics.pathfinding.grid;
+package com.swrobotics.pathfinding.core.grid;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

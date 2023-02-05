@@ -60,6 +60,7 @@ dependencies {
     implementation project(':Messenger:MessengerClient')
     implementation project(':Profiler')
     implementation project(':MathLib')
+    implementation project(':Shared-Arm')
 
     implementation 'com.google.code.gson:gson:2.9.0'
 
@@ -97,6 +98,7 @@ jar {
     dependsOn ':Messenger:MessengerClient:jar'
     dependsOn ':Profiler:jar'
     dependsOn ':MathLib:jar'
+    dependsOn ':Shared-Arm:jar'
 
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
