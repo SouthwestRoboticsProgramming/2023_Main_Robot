@@ -33,7 +33,6 @@ public final class ArmSubsystem extends SubsystemBase {
     private static final NTDouble SPEED = new NTDouble("Arm/Speed", 0.5);
     private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);
     private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.02); // Must be larger than stop tolerance
-    private static final NTDouble FOLLOW_TOL = new NTDouble("Arm/Follow Tolerance", 0.04);
 
     private static final NTBoolean HOME_CALIBRATE = new NTBoolean("Arm/Home/Calibrate", false);
     private static final NTDouble HOME_BOTTOM = new NTDouble("Arm/Home/Bottom", 0);
