@@ -157,7 +157,6 @@ public final class ArmSubsystem extends SubsystemBase {
 
                 if (dist < followTol * followTol) {
                     currentTarget = pose;
-                    status.set("following");
                     break;
                 }
             }
