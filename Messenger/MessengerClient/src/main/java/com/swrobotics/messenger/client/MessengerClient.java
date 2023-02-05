@@ -112,7 +112,6 @@ public final class MessengerClient {
     }
 
     private void startConnectThread() {
-        System.out.println("Messenger: Starting connection thread");
         connectThread = new Thread(() -> {
             while (!connected.get() && !Thread.interrupted()) {
                 try {
