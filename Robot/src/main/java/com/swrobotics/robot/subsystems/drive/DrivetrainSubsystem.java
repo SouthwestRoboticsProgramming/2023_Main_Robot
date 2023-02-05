@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems;
+package com.swrobotics.robot.subsystems.drive;
 
 import java.util.HashMap;
 
@@ -7,6 +7,8 @@ import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
 
+import com.swrobotics.robot.subsystems.StatusLoggable;
+import com.swrobotics.robot.subsystems.StatusLogging;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;

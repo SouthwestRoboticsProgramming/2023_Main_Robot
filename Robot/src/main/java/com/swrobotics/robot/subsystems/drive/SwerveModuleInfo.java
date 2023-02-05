@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems;
+package com.swrobotics.robot.subsystems.drive;
 
 /**
  * Describes the IDs of a swerve module. This is used to allow swerve modules to be hot-swapped

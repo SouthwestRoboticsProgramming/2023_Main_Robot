@@ -2,14 +2,14 @@ package com.swrobotics.robot.commands;
 
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import com.swrobotics.robot.subsystems.DrivetrainSubsystem.StopPosition;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem.StopPosition;
 
 public class AutoBalanceCommand extends CommandBase {
 

@@ -2,8 +2,8 @@ package com.swrobotics.lib.swerve.commands;
 
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
-import com.swrobotics.robot.subsystems.Pathfinder;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
+import com.swrobotics.robot.subsystems.drive.Pathfinder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
