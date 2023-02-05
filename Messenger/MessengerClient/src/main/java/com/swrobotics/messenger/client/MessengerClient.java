@@ -112,6 +112,7 @@ public final class MessengerClient {
     }
 
     private void startConnectThread() {
+        System.out.println("Messenger: Starting connection thread");
         connectThread = new Thread(() -> {
             while (!connected.get() && !Thread.interrupted()) {
                 try {
@@ -208,8 +209,12 @@ public final class MessengerClient {
      * nothing. Message handlers will be invoked from this method.
      */
     public void readMessages() {
-        if (!isConnected())
-            return;
+        if (!isConnected()) {
+            if (connectThread == null)
+                startConnectThread();
+            else
+                return;
+        }
 
         try {
             while (in.available() > 0) {
