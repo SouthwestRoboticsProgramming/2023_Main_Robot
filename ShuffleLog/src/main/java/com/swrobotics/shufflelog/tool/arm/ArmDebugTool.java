@@ -30,6 +30,8 @@ public final class ArmDebugTool extends ViewportTool {
     private static final double MIN_TOP_ANGLE = 0;
     private static final double MAX_TOP_ANGLE = 2 * Math.PI;
 
+    private static final float SCALE = 4;
+
     private final MessengerClient msg;
 
     private BitfieldGrid grid;
@@ -101,16 +103,8 @@ public final class ArmDebugTool extends ViewportTool {
     protected void drawViewportContent(PGraphics g) {
         g.background(0);
 
-        if (!hasGrid && gridCooldown.request()) {
-            msg.send(MSG_ARM_GET_GRID);
-            return;
-        }
-
-        if (!hasGrid)
-            return;
-
         int res = grid.getWidth();
-        g.scale(4);
+        g.scale(SCALE);
         for (int bot = 0; bot < res; bot++) {
             for (int top = 0; top < res; top++) {
                 g.noStroke();
@@ -158,6 +152,15 @@ public final class ArmDebugTool extends ViewportTool {
                     .send();
         }
 
-        drawViewport();
+        if (!hasGrid && gridCooldown.request()) {
+            msg.send(MSG_ARM_GET_GRID);
+            return;
+        }
+
+        if (!hasGrid)
+            return;
+
+        int res = grid.getWidth();
+        drawViewport(res * SCALE, res * SCALE);
     }
 }
