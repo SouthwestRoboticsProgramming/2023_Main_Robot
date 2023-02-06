@@ -387,7 +387,8 @@ public final class Vec2d {
 
     /**
      * Computes the dot product between this vector and another vector.
-     * This is equivalent to the cosine of the angle between them.
+     * This is equivalent to the cosine of the angle between them multiplied
+     * by their magnitudes.
      *
      * @param o right hand side
      * @return dot product
