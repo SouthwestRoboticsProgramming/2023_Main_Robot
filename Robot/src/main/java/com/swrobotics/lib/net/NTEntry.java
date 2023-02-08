@@ -2,10 +2,12 @@ package com.swrobotics.lib.net;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.function.Supplier;
 
 /**
@@ -30,7 +32,8 @@ public abstract class NTEntry<T> implements Supplier<T> {
     public NTEntry(String path, T defaultVal) {
         changeListeners = new ArrayList<Runnable>();
 
-        NetworkTable table = NetworkTableInstance.getDefault().getTable("");
+        NetworkTableInstance inst = NetworkTableInstance.getDefault();
+        NetworkTable table = inst.getTable("");
         String[] parts = path.split("/");
         for (int i = 0; i < parts.length - 1; i++) {
             table = table.getSubTable(parts[i]);
@@ -42,9 +45,9 @@ public abstract class NTEntry<T> implements Supplier<T> {
             set(defaultVal);
 
         entry.setPersistent();
-        // entry.addListener((event) -> {
-        //     fireOnChanged();
-        // }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate); FIXME: Deprecated
+        inst.addListener(entry, EnumSet.of(NetworkTableEvent.Kind.kValueAll), (event) -> {
+            fireOnChanged();
+        });
     }
 
     public abstract void set(T value);
