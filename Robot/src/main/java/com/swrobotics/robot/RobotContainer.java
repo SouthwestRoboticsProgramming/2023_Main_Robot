@@ -16,6 +16,7 @@ import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
+import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
@@ -109,7 +110,8 @@ public class RobotContainer {
         HashMap<String, Command> eventMap = new HashMap<>();
 
         // Put your events from PathPlanner here
-        eventMap.put("marker1", new PrintCommand("Passed marker 1"));
+        eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
+        eventMap.put("BALANCE_BACKWARD", new BalanceSequenceCommand(this, true));
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
