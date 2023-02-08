@@ -46,7 +46,7 @@ public final class WaypointLayer implements FieldLayer {
 
         this.tool = tool;
         this.msg = msg;
-        cooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
+        cooldown = new Cooldown(ToolConstants.MSG_CONSTANT_QUERY_COOLDOWN_TIME);
 
         msg.addHandler(MSG_WAYPOINTS, this::onWaypoints);
 
@@ -83,7 +83,7 @@ public final class WaypointLayer implements FieldLayer {
 
     @Override
     public void processAlways() {
-        if (!hasWaypoints && cooldown.request())
+        if (cooldown.request())
             msg.send(MSG_GET_WAYPOINTS);
     }
 

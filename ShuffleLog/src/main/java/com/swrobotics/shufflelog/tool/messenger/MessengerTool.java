@@ -5,6 +5,7 @@ import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.StreamUtil;
 import com.swrobotics.shufflelog.tool.Tool;
+import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.util.Cooldown;
 import com.swrobotics.shufflelog.util.RollingBuffer;
 import imgui.ImGui;
@@ -48,7 +49,7 @@ public final class MessengerTool implements Tool {
         prevConnected = false;
 
         clientNames = new ArrayList<>();
-        clientsCooldown = new Cooldown(4_000_000_000L);
+        clientsCooldown = new Cooldown(ToolConstants.MSG_CONSTANT_QUERY_COOLDOWN_TIME);
     }
 
     private void onEvent(String msgType, MessageReader reader) {
