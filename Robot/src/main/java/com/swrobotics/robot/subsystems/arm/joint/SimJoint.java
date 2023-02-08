@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 // Not completely physically accurate but should reflect the
 // behavior of the real arm
 public final class SimJoint implements ArmJoint {
-    private static final double KG_PER_METER = 0.25;
+    private static final double KG_PER_METER = 1;
 
     private final DCMotorSim motor;
     private double offset;
