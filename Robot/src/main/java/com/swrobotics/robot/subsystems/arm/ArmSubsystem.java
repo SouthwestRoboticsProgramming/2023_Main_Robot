@@ -11,6 +11,7 @@ import com.swrobotics.robot.subsystems.arm.joint.ArmJoint;
 import com.swrobotics.robot.subsystems.arm.joint.PhysicalJoint;
 import com.swrobotics.robot.subsystems.arm.joint.ArmPhysicsSim;
 import com.swrobotics.shared.arm.ArmPose;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -30,13 +31,17 @@ public final class ArmSubsystem extends SubsystemBase {
     private static final int BOTTOM_MOTOR_ID = 7612;
     private static final int TOP_MOTOR_ID = 7613;
 
-    private static final NTDouble SPEED = new NTDouble("Arm/Speed", 0.5);
+    private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 0.5);
     private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);
-    private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.02); // Must be larger than stop tolerance
+    private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.04); // Must be larger than stop tolerance
 
     private static final NTBoolean HOME_CALIBRATE = new NTBoolean("Arm/Home/Calibrate", false);
     private static final NTDouble HOME_BOTTOM = new NTDouble("Arm/Home/Bottom", 0);
     private static final NTDouble HOME_TOP = new NTDouble("Arm/Home/Top", 0);
+
+    private static final NTDouble KP = new NTDouble("Arm/PID/kP", 8);
+    private static final NTDouble KI = new NTDouble("Arm/PID/kI", 0);
+    private static final NTDouble KD = new NTDouble("Arm/PID/kD", 0);
 
     private static final NTEntry<Double> LOG_CURRENT_BOTTOM = new NTDouble("Log/Arm/Current Bottom", 0).setTemporary();
     private static final NTEntry<Double> LOG_CURRENT_TOP = new NTDouble("Log/Arm/Current Top", 0).setTemporary();
@@ -47,6 +52,7 @@ public final class ArmSubsystem extends SubsystemBase {
 
     private final ArmJoint topJoint, bottomJoint;
     private final ArmPathfinder finder;
+    private final PIDController pid;
     private ArmPose targetPose;
     private boolean inTolerance;
 
@@ -86,6 +92,11 @@ public final class ArmSubsystem extends SubsystemBase {
         calibrate(home);
         targetPose = home;
         inTolerance = false;
+
+        pid = new PIDController(KP.get(), KI.get(), KD.get());
+        KP.onChange(() -> pid.setP(KP.get()));
+        KI.onChange(() -> pid.setI(KI.get()));
+        KD.onChange(() -> pid.setD(KD.get()));
 
         msg.addHandler("Debug:ArmSetTarget", (type, reader) -> {
             double x = reader.readDouble();
@@ -179,21 +190,26 @@ public final class ArmSubsystem extends SubsystemBase {
 
         // Tolerance hysteresis so the motor doesn't do the shaky shaky
         double magSqToFinalTarget = toStateSpaceVec(targetPose).sub(currentPoseVec).magnitudeSq();
+        boolean prevInTolerance = inTolerance;
         if (magSqToFinalTarget > startTol * startTol) {
             inTolerance = false;
         } else if (magSqToFinalTarget < stopTol * stopTol) {
             inTolerance = true;
         }
 
-        // Linear feedforward control
-        // Assumes gear friction overrides gravity, but will still
-        // account for slight movement
+        if (prevInTolerance && !inTolerance)
+            pid.reset();
+
         double bottomMotorOut, topMotorOut;
         if (inTolerance) {
             bottomMotorOut = 0;
             topMotorOut = 0;
         } else {
-            towardsTarget.mul(BOTTOM_GEAR_RATIO, TOP_GEAR_RATIO).normalize().mul(SPEED.get());
+            // PID towards final target so we don't slow down at each point
+            double pidOut = -pid.calculate(Math.sqrt(magSqToFinalTarget), 0);
+            pidOut = MathUtil.clamp(pidOut, 0, MAX_SPEED.get());
+
+            towardsTarget.mul(BOTTOM_GEAR_RATIO, TOP_GEAR_RATIO).boxNormalize().mul(pidOut);
             bottomMotorOut = towardsTarget.x;
             topMotorOut = towardsTarget.y;
         }
