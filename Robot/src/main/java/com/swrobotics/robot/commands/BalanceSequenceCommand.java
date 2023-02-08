@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 public class BalanceSequenceCommand extends SequentialCommandGroup {
     public BalanceSequenceCommand(RobotContainer robot, boolean fromOutsideCommunity) {
         Angle angle = Angle.ZERO;
-        if (fromOutsideCommunity) {
+        if (!fromOutsideCommunity) {
             angle = CCWAngle.deg(180);
         }
 
