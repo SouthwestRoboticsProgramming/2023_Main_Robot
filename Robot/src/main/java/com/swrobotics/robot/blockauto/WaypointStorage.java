@@ -68,9 +68,6 @@ public final class WaypointStorage {
     }
 
     public static void registerStaticWaypoint(String name, Vec2d position) {
-        if (waypoints.containsKey(name))
-            DriverStation.reportWarning("Static waypoint overwriting existing waypoint: " + name, true);
-
         waypoints.put(name, new Waypoint(position, false));
     }
 
