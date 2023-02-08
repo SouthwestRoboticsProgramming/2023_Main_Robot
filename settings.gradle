@@ -10,3 +10,5 @@ include 'Pathfinding'
 include 'Profiler'
 include 'ShuffleLog'
 include 'TaskManager'
+include 'Shared-Arm'
+

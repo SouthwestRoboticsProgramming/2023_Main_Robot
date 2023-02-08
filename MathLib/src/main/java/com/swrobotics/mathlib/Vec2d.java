@@ -536,6 +536,32 @@ public final class Vec2d {
     }
 
     /**
+     * Normalizes this vector by scaling it to be along the unit square. This
+     * guarantees that at least one of the components will be 1, unless this
+     * vector is (0, 0).
+     *
+     * @return this, normalized to the unit square
+     */
+    public Vec2d boxNormalize() {
+        return boxNormalize(this);
+    }
+
+    /**
+     * Normalizes this vector by scaling it to be along the unit square and
+     * stores the result in another vector. This guarantees that at least one
+     * of the components will be 1, unless this vector is (0, 0).
+     *
+     * @param dest destination vector
+     * @return dest
+     */
+    public Vec2d boxNormalize(Vec2d dest) {
+        double max = Math.max(Math.abs(x), Math.abs(y));
+        dest.x = x / max;
+        dest.y = y / max;
+        return dest;
+    }
+
+    /**
      * Negates this vector.
      *
      * @return this
