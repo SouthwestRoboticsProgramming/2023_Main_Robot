@@ -109,9 +109,12 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
     // Create a field sim to view where the odometry thinks we are
     public final Field2d field = new Field2d();
 
+
     private final SwerveModule[] modules;
     
     private final SwerveDriveOdometry odometry;
+
+    private Translation2d centerOfRotation = new Translation2d();
 
     private Translation2d translation = new Translation2d();
     private Rotation2d rotation = new Rotation2d();
@@ -206,6 +209,18 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
 
     public void setTargetRotation(Rotation2d targeRotation) {
         rotation = targeRotation;
+    }
+
+    public void setCenterOfRotation(Translation2d centerOfRotation) {
+        this.centerOfRotation = centerOfRotation;
+    }
+
+    public void resetCenterOfRotation() {
+        centerOfRotation = new Translation2d();
+    }
+
+    public Translation2d getCenterOfRotation() {
+        return centerOfRotation;
     }
 
     public Pose2d getPose() {
@@ -339,7 +354,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
                   states = setCircle(states);
                   break;
                default:
-                   states = kinematics.toSwerveModuleStates(speeds);
+                   states = kinematics.toSwerveModuleStates(speeds, centerOfRotation);
                    SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
                    break;
            }
