@@ -387,7 +387,8 @@ public final class Vec2d {
 
     /**
      * Computes the dot product between this vector and another vector.
-     * This is equivalent to the cosine of the angle between them.
+     * This is equivalent to the cosine of the angle between them multiplied
+     * by their magnitudes.
      *
      * @param o right hand side
      * @return dot product
@@ -531,6 +532,32 @@ public final class Vec2d {
         double mag = magnitude();
         dest.x = x / mag;
         dest.y = y / mag;
+        return dest;
+    }
+
+    /**
+     * Normalizes this vector by scaling it to be along the unit square. This
+     * guarantees that at least one of the components will be 1, unless this
+     * vector is (0, 0).
+     *
+     * @return this, normalized to the unit square
+     */
+    public Vec2d boxNormalize() {
+        return boxNormalize(this);
+    }
+
+    /**
+     * Normalizes this vector by scaling it to be along the unit square and
+     * stores the result in another vector. This guarantees that at least one
+     * of the components will be 1, unless this vector is (0, 0).
+     *
+     * @param dest destination vector
+     * @return dest
+     */
+    public Vec2d boxNormalize(Vec2d dest) {
+        double max = Math.max(Math.abs(x), Math.abs(y));
+        dest.x = x / max;
+        dest.y = y / max;
         return dest;
     }
 

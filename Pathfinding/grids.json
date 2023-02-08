@@ -11,6 +11,13 @@
       "type": "SHAPE",
       "shapes": [
         {
+          "inverted": false,
+          "type": "CIRCLE",
+          "x": 4.0,
+          "y": 4.0,
+          "radius": 1.0
+        },
+        {
           "type": "RECTANGLE",
           "x": 80.2296,
           "y": 4.1148,

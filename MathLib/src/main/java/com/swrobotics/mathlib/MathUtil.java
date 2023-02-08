@@ -12,6 +12,12 @@ public final class MathUtil {
     public static final double TAU = Math.PI * 2;
 
     /**
+     * A very small, effectively zero value to account for
+     * floating-point imprecision.
+     */
+    public static final double EPSILON = 0.000001;
+
+    /**
      * Constant containing exactly half the value of pi.
      */
     public static final double HALF_PI = Math.PI / 2;

@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2023.2.1"
+    id "edu.wpi.first.GradleRIO" version "2023.3.2"
 }
 
 sourceCompatibility = JavaVersion.VERSION_11
@@ -60,6 +60,7 @@ dependencies {
     implementation project(':Messenger:MessengerClient')
     implementation project(':Profiler')
     implementation project(':MathLib')
+    implementation project(':Shared-Arm')
 
     implementation 'com.google.code.gson:gson:2.9.0'
 
@@ -80,6 +81,8 @@ dependencies {
     nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
     simulationRelease wpi.sim.enableRelease()
 
+    implementation 'org.jbox2d:jbox2d-library:2.2.1.1'
+
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.mockito:mockito-core:2.+'
 }
@@ -95,6 +98,7 @@ jar {
     dependsOn ':Messenger:MessengerClient:jar'
     dependsOn ':Profiler:jar'
     dependsOn ':MathLib:jar'
+    dependsOn ':Shared-Arm:jar'
 
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)

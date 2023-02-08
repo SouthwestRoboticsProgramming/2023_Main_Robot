@@ -18,9 +18,10 @@ import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.input.ButtonPanel;
-import com.swrobotics.robot.subsystems.DrivetrainSubsystem;
+import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
-import com.swrobotics.robot.subsystems.Pathfinder;
+import com.swrobotics.robot.subsystems.drive.Pathfinder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -61,6 +62,8 @@ public class RobotContainer {
     public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
     public final Pathfinder pathfinder;
 
+    public final ArmSubsystem arm;
+
     public final Lights lights = new Lights();
     public final StatusLogging statuslogger = new StatusLogging(lights);
 
@@ -98,6 +101,7 @@ public class RobotContainer {
                 MESSENGER_NAME
         );
         buttonPanel = new ButtonPanel(messenger);
+        arm = new ArmSubsystem(messenger);
 
         // Initialize block auto
         AutoBlocks.init(messenger, this);

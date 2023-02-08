@@ -3,19 +3,21 @@ package com.swrobotics.pathfinding.task;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
-import com.swrobotics.pathfinding.Field;
-import com.swrobotics.pathfinding.Point;
-import com.swrobotics.pathfinding.finder.Pathfinder;
-import com.swrobotics.pathfinding.geom.Circle;
-import com.swrobotics.pathfinding.geom.Rectangle;
-import com.swrobotics.pathfinding.geom.RobotShape;
-import com.swrobotics.pathfinding.geom.Shape;
-import com.swrobotics.pathfinding.geom.ShapeType;
-import com.swrobotics.pathfinding.grid.BitfieldGrid;
-import com.swrobotics.pathfinding.grid.Grid;
-import com.swrobotics.pathfinding.grid.GridType;
-import com.swrobotics.pathfinding.grid.GridUnion;
-import com.swrobotics.pathfinding.grid.ShapeGrid;
+import com.swrobotics.pathfinding.arm.ArmFinderThread;
+import com.swrobotics.pathfinding.field.Field;
+import com.swrobotics.pathfinding.core.grid.Point;
+import com.swrobotics.pathfinding.core.finder.Pathfinder;
+import com.swrobotics.pathfinding.core.geom.Circle;
+import com.swrobotics.pathfinding.core.geom.Rectangle;
+import com.swrobotics.pathfinding.core.geom.RobotShape;
+import com.swrobotics.pathfinding.core.geom.Shape;
+import com.swrobotics.pathfinding.core.geom.ShapeType;
+import com.swrobotics.pathfinding.core.grid.BitfieldGrid;
+import com.swrobotics.pathfinding.core.grid.Grid;
+import com.swrobotics.pathfinding.core.grid.GridType;
+import com.swrobotics.pathfinding.core.grid.GridUnion;
+import com.swrobotics.pathfinding.core.grid.ShapeGrid;
+import com.swrobotics.shared.arm.ArmPose;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,6 +34,12 @@ public final class PathfinderTask {
     private static final String MSG_SET_POS = "Pathfinder:SetPos";
     private static final String MSG_SET_GOAL = "Pathfinder:SetGoal";
     private static final String MSG_PATH = "Pathfinder:Path";
+
+    // Arm API
+    private static final String MSG_ARM_SET_INFO = "Pathfinder:Arm:SetInfo";
+    private static final String MSG_ARM_PATH = "Pathfinder:Arm:Path";
+    private static final String MSG_ARM_GET_GRID = "Pathfinder:Arm:GetGrid";
+    private static final String MSG_ARM_GRID = "Pathfinder:Arm:Grid";
 
     // ShuffleLog API
     private static final String MSG_GET_FIELD_INFO = "Pathfinder:GetFieldInfo";
@@ -54,12 +62,16 @@ public final class PathfinderTask {
     private final RobotShape robot;
 
     private final GridUnion grids;
-    private final Pathfinder pathfinder;
+    private final Pathfinder<Point> pathfinder;
 
     private final Map<UUID, Grid> idToGrid;
     private final Map<UUID, Shape> idToShape;
 
     private boolean needsRecalcPath;
+
+    // Arm solving runs on second thread
+    private final ArmFinderThread armThread;
+    private List<ArmPose> lastArmPath;
 
     public PathfinderTask() {
         PathfinderConfigFile config = PathfinderConfigFile.load(CONFIG_FILE);
@@ -93,10 +105,16 @@ public final class PathfinderTask {
         msg.addHandler(MSG_GET_CELL_DATA, this::onGetCellData);
         msg.addHandler(MSG_GET_ROBOT_SHAPE, this::onGetRobotShape);
 
+        msg.addHandler(MSG_ARM_SET_INFO, this::onArmSetInfo);
+        msg.addHandler(MSG_ARM_GET_GRID, this::onArmGetGrid);
+
         pathfinder.setStart(new Point(0, 0));
         pathfinder.setGoal(new Point(0, 0));
 
         needsRecalcPath = true;
+
+        armThread = new ArmFinderThread();
+        lastArmPath = null;
 
         System.out.println("Pathfinder is running");
     }
@@ -303,7 +321,24 @@ public final class PathfinderTask {
         builder.send();
     }
 
+    private void onArmSetInfo(String type, MessageReader reader) {
+        double startBot = reader.readDouble();
+        double startTop = reader.readDouble();
+        double goalBot = reader.readDouble();
+        double goalTop = reader.readDouble();
+
+        armThread.setEndpoints(new ArmPose(startBot, startTop), new ArmPose(goalBot, goalTop));
+    }
+
+    private void onArmGetGrid(String type, MessageReader reader) {
+        MessageBuilder builder = msg.prepare(MSG_ARM_GRID);
+        armThread.getGrid().writeToMessengerNoTypeId(builder);
+        builder.send();
+    }
+
     public void run() {
+        armThread.start();
+
         while (true) {
             msg.readMessages();
 
@@ -324,6 +359,21 @@ public final class PathfinderTask {
                 builder.send();
 
                 needsRecalcPath = false;
+            }
+
+            List<ArmPose> armPath = armThread.getLatestPath();
+            if (armPath != lastArmPath) {
+                MessageBuilder builder = msg.prepare(MSG_ARM_PATH);
+                builder.addBoolean(armPath != null);
+                if (armPath != null) {
+                    builder.addInt(armPath.size());
+                    for (ArmPose pose : armPath) {
+                        builder.addDouble(pose.bottomAngle);
+                        builder.addDouble(pose.topAngle);
+                    }
+                }
+                builder.send();
+                lastArmPath = armPath;
             }
         }
     }

@@ -1,7 +1,6 @@
 package com.swrobotics.shufflelog.tool.buttons;
 
 import com.swrobotics.shufflelog.util.Cooldown;
-import imgui.ImGui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,8 +71,6 @@ public final class ReactionTime {
                 hasPressedChoice = true;
             prevWasDown = down;
         }
-
-        ImGui.text("Remaining positions: " + remainingPositions.size());
 
         if (nextLightCooldown.request()) {
             if (remainingPositions.isEmpty()) {

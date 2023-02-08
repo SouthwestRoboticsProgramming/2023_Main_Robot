@@ -4,6 +4,7 @@ import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.profiler.Profiler;
 import com.swrobotics.shufflelog.tool.MenuBarTool;
 import com.swrobotics.shufflelog.tool.Tool;
+import com.swrobotics.shufflelog.tool.arm.ArmDebugTool;
 import com.swrobotics.shufflelog.tool.blockauto.BlockAutoTool;
 import com.swrobotics.shufflelog.tool.buttons.ButtonPanelTool;
 import com.swrobotics.shufflelog.tool.data.DataLogTool;
@@ -126,6 +127,7 @@ public final class ShuffleLog extends PApplet {
         tools.add(new FieldViewTool(this));
         tools.add(new BlockAutoTool(this));
         tools.add(new ButtonPanelTool(messenger));
+        tools.add(new ArmDebugTool(this, messenger));
 
         startTime = System.currentTimeMillis();
     }
