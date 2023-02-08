@@ -3,13 +3,12 @@ package com.swrobotics.robot.subsystems.arm;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTEntry;
-import com.swrobotics.lib.net.NTString;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.subsystems.arm.joint.ArmJoint;
 import com.swrobotics.robot.subsystems.arm.joint.PhysicalJoint;
-import com.swrobotics.robot.subsystems.arm.joint.ArmPhysicsSim;
+import com.swrobotics.robot.subsystems.arm.joint.SimJoint;
 import com.swrobotics.shared.arm.ArmPose;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -59,15 +58,13 @@ public final class ArmSubsystem extends SubsystemBase {
     private final ArmVisualizer currentVisualizer;
     private final ArmVisualizer targetVisualizer;
 
-    private final ArmPhysicsSim sim;
+//    private final ArmPhysicsSim sim;
 
     public ArmSubsystem(MessengerClient msg) {
         if (RobotBase.isSimulation()) {
-            sim = new ArmPhysicsSim();
-            bottomJoint = sim.getBottomJoint();
-            topJoint = sim.getTopJoint();
+            bottomJoint = new SimJoint(BOTTOM_LENGTH, BOTTOM_GEAR_RATIO);
+            topJoint = new SimJoint(TOP_LENGTH, TOP_GEAR_RATIO);
         } else {
-            sim = null;
             bottomJoint = new PhysicalJoint(BOTTOM_MOTOR_ID, BOTTOM_GEAR_RATIO);
             topJoint = new PhysicalJoint(TOP_MOTOR_ID, TOP_GEAR_RATIO);
         }
@@ -112,11 +109,6 @@ public final class ArmSubsystem extends SubsystemBase {
 
     public ArmPose getCurrentPose() {
         return new ArmPose(bottomJoint.getCurrentAngle(), topJoint.getCurrentAngle());
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        sim.update();
     }
 
     private void idle() {
