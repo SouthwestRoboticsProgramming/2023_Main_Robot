@@ -64,6 +64,7 @@ public class Photon extends SubsystemBase {
             frontSim.addVisionTargets(layout);
             backSim.addVisionTargets(layout);
 
+            drive.showApriltags(layout);
         }
     }
 
