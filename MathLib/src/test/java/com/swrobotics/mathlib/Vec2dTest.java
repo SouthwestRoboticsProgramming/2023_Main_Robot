@@ -388,7 +388,7 @@ public final class Vec2dTest {
         vec = new Vec2d(-2, 1);
         assertSame(vec.boxNormalize(), vec);
         assertVecEquals(vec, -1, 0.5);
-        assertEquals(vec.angleTo(new Vec2d(-1, 1)).ccw().rad(), 0, 0.0001);
+        assertEquals(vec.angleTo(new Vec2d(-2, 1)).ccw().rad(), 0, 0.0001);
     }
 
     @Test
@@ -405,7 +405,7 @@ public final class Vec2dTest {
         assertSame(vec.boxNormalize(dest), dest);
         assertVecEquals(vec, -2, 1);
         assertVecEquals(dest, -1, 0.5);
-        assertEquals(dest.angleTo(new Vec2d(-1, 1)).ccw().rad(), 0, 0.0001);
+        assertEquals(dest.angleTo(new Vec2d(-2, 1)).ccw().rad(), 0, 0.0001);
     }
 
     @Test
