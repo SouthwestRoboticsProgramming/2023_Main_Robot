@@ -353,7 +353,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
                   states = setCircle(states);
                   break;
                default:
-                   states = kinematics.toSwerveModuleStates(speeds);
+                   states = kinematics.toSwerveModuleStates(speeds, centerOfRotation);
                    SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
                    break;
            }
