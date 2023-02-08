@@ -138,6 +138,7 @@ public final class MessengerClient {
                 } catch (Exception e) {
                     lastConnectFailException = e;
                     System.err.println("Messenger connection failed (" + e.getClass().getSimpleName() + ": " + e.getMessage() + ")");
+                    connected.set(false);
                 }
 
                 try {

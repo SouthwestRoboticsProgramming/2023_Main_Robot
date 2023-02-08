@@ -104,7 +104,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
 
     // Initialize a NavX over MXP port
     private final AHRS gyro = new AHRS(Port.kMXP);
-    private Rotation2d gyroOffset = new Rotation2d(); // Subtracted to get angle
+    private Rotation2d gyroOffset = new Rotation2d(-Math.PI / 2); // Subtracted to get angle
 
     // Create a field sim to view where the odometry thinks we are
     public final Field2d field = new Field2d();
@@ -171,8 +171,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
     }
 
     public Translation2d getTiltAsTranslation() {
-        // FIXME: May be swapped on final robot
-        return new Translation2d(gyro.getRoll(), gyro.getPitch());
+        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
     }
 
     private Rotation2d getRawGyroscopeRotation() {

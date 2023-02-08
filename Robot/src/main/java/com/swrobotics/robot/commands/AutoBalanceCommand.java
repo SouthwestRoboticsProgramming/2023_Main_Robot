@@ -13,18 +13,18 @@ import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem.StopPosition;
 
 public class AutoBalanceCommand extends CommandBase {
 
-    private static final NTDouble KP = new NTDouble("Drive/Balance/kP", 0.1);
+    private static final NTDouble KP = new NTDouble("Drive/Balance/kP", 0.05);
 
     private final DrivetrainSubsystem drive;
-    private final PIDController pid;
+    // private final PIDController pid;
 
     private final StopPosition firstStopPosition;
 
     public AutoBalanceCommand(RobotContainer robot) {
         drive = robot.drivetrainSubsystem;
-        pid = new PIDController(KP.get(), 0.0, 0.0);
+        // pid = new PIDController(KP.get(), 1000.0, 0.0);
 
-        KP.onChange(() -> pid.setP(KP.get()));
+        // KP.onChange(() -> pid.setP(KP.get()));
 
         firstStopPosition = drive.getStopPosition();
     }
@@ -36,14 +36,21 @@ public class AutoBalanceCommand extends CommandBase {
 
     @Override
     public void execute() {
-        System.out.println(drive.getTiltAsTranslation());
         var tilt = drive.getTiltAsTranslation().times(-1);
-        double magnitude = tilt.getNorm();
         Rotation2d rotation = new Rotation2d(tilt.getX(), tilt.getY());
 
-        double adjustmentAmount = pid.calculate(magnitude, 0.0);
+        // double adjustmentAmount = pid.calculate(magnitude, 0.0);
+        double adjustmentAmount = -0.4;
         Translation2d output = new Translation2d(adjustmentAmount, rotation);
         drive.setChassisSpeeds(new ChassisSpeeds(output.getX(), output.getY(), 0.0));
+    }
+
+    @Override
+    public boolean isFinished() {
+        var tilt = drive.getTiltAsTranslation().times(-1);
+        double magnitude = tilt.getNorm();
+        System.out.println("M: " + magnitude);
+        return Math.abs(magnitude) < 1.5;
     }
 
     @Override
