@@ -7,11 +7,13 @@ import imgui.type.ImString;
 public final class Waypoint {
     private ImDouble x, y;
     private String name;
+    private boolean editable;
 
-    public Waypoint(double x, double y, String name) {
+    public Waypoint(double x, double y, String name, boolean editable) {
         this.x = new ImDouble(x);
         this.y = new ImDouble(y);
         this.name = name;
+        this.editable = editable;
     }
 
     public void add(MessengerClient msg) {
@@ -42,5 +44,9 @@ public final class Waypoint {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isEditable() {
+        return editable;
     }
 }
