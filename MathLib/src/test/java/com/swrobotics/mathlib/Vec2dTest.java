@@ -379,6 +379,36 @@ public final class Vec2dTest {
     }
 
     @Test
+    public void test_boxNormalize_self() {
+        Vec2d vec = new Vec2d(39, 39);
+        assertSame(vec.boxNormalize(), vec);
+        assertVecEquals(vec, 1, 1);
+        assertEquals(vec.angleTo(new Vec2d(39, 39)).ccw().rad(), 0, 0.0001);
+
+        vec = new Vec2d(-2, 1);
+        assertSame(vec.boxNormalize(), vec);
+        assertVecEquals(vec, -1, 0.5);
+        assertEquals(vec.angleTo(new Vec2d(-1, 1)).ccw().rad(), 0, 0.0001);
+    }
+
+    @Test
+    public void test_boxNormalize_dest() {
+        Vec2d dest = new Vec2d();
+
+        Vec2d vec = new Vec2d(39, 39);
+        assertSame(vec.boxNormalize(dest), dest);
+        assertVecEquals(vec, 39, 39);
+        assertVecEquals(dest, 1, 1);
+        assertEquals(dest.angleTo(new Vec2d(39, 39)).ccw().rad(), 0, 0.0001);
+
+        vec = new Vec2d(-2, 1);
+        assertSame(vec.boxNormalize(dest), dest);
+        assertVecEquals(vec, -2, 1);
+        assertVecEquals(dest, -1, 0.5);
+        assertEquals(dest.angleTo(new Vec2d(-1, 1)).ccw().rad(), 0, 0.0001);
+    }
+
+    @Test
     public void test_negate_self() {
         Vec2d vec = new Vec2d(5, -1);
         assertSame(vec.negate(), vec);
