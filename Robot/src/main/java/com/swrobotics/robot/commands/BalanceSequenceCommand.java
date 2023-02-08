@@ -14,7 +14,7 @@ public class BalanceSequenceCommand extends SequentialCommandGroup {
         }
 
         addCommands(
-            new StartBalanceCommand(robot, angle, 0.75, false),
+            new StartBalanceCommand(robot, angle, 0.75, false).withTimeout(3),
             new AutoBalanceCommand(robot)
         );
     }
