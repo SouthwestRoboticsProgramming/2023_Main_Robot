@@ -25,6 +25,7 @@ import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
+import com.swrobotics.robot.subsystems.vision.Photon;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -64,6 +65,8 @@ public class RobotContainer {
     // The robot's subsystems are defined here...
     public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
     public final Pathfinder pathfinder;
+
+    public final Photon photon = new Photon(this);
 
     public final ArmSubsystem arm;
 
