@@ -8,6 +8,7 @@ import org.photonvision.RobotPoseEstimator;
 import org.photonvision.SimVisionSystem;
 import org.photonvision.RobotPoseEstimator.PoseStrategy;
 
+import com.swrobotics.lib.net.NTInteger;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 
@@ -22,6 +23,9 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Photon extends SubsystemBase {
+    // Telemetry log
+    private final NTInteger L_TARGETS_FOUND = new NTInteger("Vision/Targets Found", 0);
+
     // Drive to use for odometry
     private final DrivetrainSubsystem drive;
 
@@ -54,6 +58,8 @@ public class Photon extends SubsystemBase {
     private final RobotPoseEstimator poseEstimator;
 
     public Photon(RobotContainer robot) {
+        L_TARGETS_FOUND.setTemporary();
+
         drive = robot.drivetrainSubsystem;
 
         AprilTagFieldLayout layout;
@@ -91,6 +97,10 @@ public class Photon extends SubsystemBase {
             frontSim.processFrame(drive.getPose());
             backSim.processFrame(drive.getPose());
         }
+
+        L_TARGETS_FOUND.set(
+            frontCam.getLatestResult().targets.size() + 
+            backCam.getLatestResult().targets.size());
 
         // Update estimator with odometry readings
         poseEstimator.setReferencePose(drive.getPose());
