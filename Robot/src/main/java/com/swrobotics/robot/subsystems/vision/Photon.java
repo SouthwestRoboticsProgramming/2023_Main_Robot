@@ -54,7 +54,7 @@ public class Photon extends SubsystemBase {
         cameras.add(new Pair<>(frontCam, frontCamTransform));
         cameras.add(new Pair<>(backCam, backCamTransform));
 
-        poseEstimator = new RobotPoseEstimator(layout, PoseStrategy.AVERAGE_BEST_TARGETS, cameras);
+        poseEstimator = new RobotPoseEstimator(layout, PoseStrategy.LOWEST_AMBIGUITY, cameras);
 
         // Simulate cameras
         if (RobotBase.isSimulation()) {
@@ -95,9 +95,9 @@ public class Photon extends SubsystemBase {
             return;
         }
 
-        System.out.println("Targets found!");
+        // System.out.println("Targets found!" + frontCam.getLatestResult().targets.size());
 
-        System.out.println(estimatedPose.get().getFirst());
+        // System.out.println(estimatedPose.get().getFirst());
 
         // // Update drive with estimated pose
         drive.resetPose(estimatedPose.get().getFirst().toPose2d());
