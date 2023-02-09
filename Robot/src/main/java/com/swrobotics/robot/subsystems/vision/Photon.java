@@ -86,11 +86,6 @@ public class Photon extends SubsystemBase {
     }
 
     @Override
-    public void simulationPeriodic() {
-
-    }
-
-    @Override
     public void periodic() {
         if (RobotBase.isSimulation()) {
             frontSim.processFrame(drive.getPose());
