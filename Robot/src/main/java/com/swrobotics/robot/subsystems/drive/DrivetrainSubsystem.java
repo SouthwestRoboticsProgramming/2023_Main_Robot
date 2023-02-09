@@ -167,6 +167,9 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
 
         // FIXME: Change back to getGyroscopeRotation
         odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation(), getModulePositions());
+
+        // Initially start facing forward
+        resetPose(new Pose2d(0, 0, new Rotation2d(0)));
     }
 
     public Rotation2d getGyroscopeRotation() {

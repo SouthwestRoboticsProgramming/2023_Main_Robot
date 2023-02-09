@@ -1,10 +1,15 @@
 package com.swrobotics.robot.positions;
 
+import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
 import com.swrobotics.mathlib.Vec2d;
+import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.blockauto.WaypointStorage;
+import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 
 public final class ScoringPositions {
     private static final class Position {
@@ -55,10 +60,20 @@ public final class ScoringPositions {
 
     // FIXME: None of these are correct
     private static final Translation2d[] ARM_POSITIONS = {
-            new Translation2d(0.3, 0),
+            new Translation2d(1.5, 1.5),
             new Translation2d(0.9, 0.75),
-            new Translation2d(1.5, 1.5)
+            new Translation2d(0.3, 0)
     };
+
+    public static Command moveToPosition(RobotContainer robot, int column, int row) {
+        Vec2d fieldPos = getPosition(column);
+        Translation2d armPos = getArmPosition(row);
+
+        return new ParallelCommandGroup(
+                new PathfindToPointCommand(robot, fieldPos),
+                new MoveArmToPositionCommand(robot, armPos)
+        );
+    }
 
     public static Vec2d getPosition(int column) {
         return POSITIONS[column].get(DriverStation.getAlliance());
