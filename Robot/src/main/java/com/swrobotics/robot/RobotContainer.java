@@ -12,10 +12,12 @@ import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
 import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
+import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
@@ -118,7 +120,8 @@ public class RobotContainer {
         HashMap<String, Command> eventMap = new HashMap<>();
 
         // Put your events from PathPlanner here
-        eventMap.put("marker1", new PrintCommand("Passed marker 1"));
+        eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
+        eventMap.put("BALANCE_BACKWARD", new BalanceSequenceCommand(this, true));
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
@@ -129,7 +132,11 @@ public class RobotContainer {
 
         // Autos to just drive off the line
         Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
-        Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, true).withTimeout(2.0); // Just drive forward
+        Command taxiDumb = new DriveBlindCommand(this, CWAngle.deg(180), 0.5, true).withTimeout(2.0); // Just drive forward
+
+        Command balanceWall = builder.fullAuto(getPath("Balance Wall"));
+        Command balanceBarrier = builder.fullAuto(getPath("Balance Barrier"));
+        Command balanceClose = new BalanceSequenceCommand(this, false);
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
@@ -137,6 +144,13 @@ public class RobotContainer {
         autoSelector.addOption("No Auto", () -> blankAuto);
         autoSelector.addOption("Print Auto", () -> printAuto);
         autoSelector.addOption("Taxi Smart", () -> taxiSmart);
+
+        // Balance Autos
+        autoSelector.addOption("Balance Wall", () -> balanceWall);
+        autoSelector.addOption("Balance Barrier", () -> balanceBarrier);
+        autoSelector.addOption("Balance No Taxi", () -> balanceClose);
+
+        // Block Auto
         autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
 
         SmartDashboard.putData("Auto", autoSelector);
