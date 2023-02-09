@@ -28,7 +28,7 @@ public final class Styles {
     }
 
     public static void applyLight() {
-        loadFont("fonts/Roboto-Regular.ttf", 15);
+        loadFont("fonts/RobotoMono-Regular.ttf", 15);
 
         ImGui.styleColorsLight();
         ImGuiStyle style = ImGui.getStyle();
@@ -37,7 +37,7 @@ public final class Styles {
     }
 
     public static void applyDark() {
-        loadFont("fonts/Roboto-Regular.ttf", 15);
+        loadFont("fonts/RobotoMono-Regular.ttf", 15);
 
         ImGuiStyle style = ImGui.getStyle();
         style.setFrameRounding(4.0f);
