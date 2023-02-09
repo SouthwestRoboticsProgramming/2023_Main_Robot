@@ -2,6 +2,7 @@ package com.swrobotics.robot.positions;
 
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.blockauto.WaypointStorage;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -52,8 +53,19 @@ public final class ScoringPositions {
             new Position("Grid 8 (CONE)", BOTTOM_TO_LOWEST_CONE + 3 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT)
     };
 
+    // FIXME: None of these are correct
+    private static final Translation2d[] ARM_POSITIONS = {
+            new Translation2d(0.3, 0),
+            new Translation2d(0.9, 0.75),
+            new Translation2d(1.5, 1.5)
+    };
+
     public static Vec2d getPosition(int column) {
         return POSITIONS[column].get(DriverStation.getAlliance());
+    }
+
+    public static Translation2d getArmPosition(int row) {
+        return ARM_POSITIONS[row];
     }
 
     public static void update() {
