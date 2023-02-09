@@ -35,7 +35,7 @@ public final class ScoringPositions {
     private static final double BLUE_RIGHT_X = 4*12 + 6.25;
     private static final double RED_LEFT_X = BLUE_RIGHT_X + 542.7225;
 
-    private static final double ROBOT_SIZE_FW = 31; // FIXME
+    private static final double ROBOT_SIZE_FW = 32; // FIXME
     private static final double DIST_FROM_GRIDS = 6 + ROBOT_SIZE_FW / 2;
     private static final double BLUE_X = Units.inchesToMeters(BLUE_RIGHT_X + DIST_FROM_GRIDS);
     private static final double RED_X = Units.inchesToMeters(RED_LEFT_X - DIST_FROM_GRIDS);
