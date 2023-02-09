@@ -93,7 +93,8 @@ public class RobotContainer {
                 () -> -modifyAxis(controller.getRightX())
                 * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND,
                 () -> controller.getLeftBumper(),
-                () -> controller.getRightBumper()));
+                () -> controller.getRightBumper(),
+                () -> controller.getRightTriggerAxis() > 0.8));
 
         // Configure the rest of the button bindings
         configureButtonBindings();
