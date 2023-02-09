@@ -223,4 +223,8 @@ public final class ArmSubsystem extends SubsystemBase {
     public void setTargetPosition(Translation2d position) {
         targetPose = ArmPose.fromEndPosition(position);
     }
+
+    public boolean isInTolerance() {
+        return inTolerance;
+    }
 }
