@@ -30,8 +30,6 @@ public final class ArmPose {
     }
 
     public static ArmPose fromEndPosition(Translation2d position) {
-        System.out.println("Set position to: " + position);
-
         if (!isEndPositionValid(position)) {
             String posFormat = String.format("(%.3f, %.3f)", position.getX(), position.getY());
             System.err.println("Trying to set arm to illegal position: " + posFormat);
