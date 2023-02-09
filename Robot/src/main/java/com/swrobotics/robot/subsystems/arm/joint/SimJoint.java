@@ -1,36 +1,42 @@
 package com.swrobotics.robot.subsystems.arm.joint;
 
-import com.swrobotics.mathlib.MathUtil;
-import edu.wpi.first.math.util.Units;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.joints.RevoluteJoint;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
+// Not completely physically accurate but should reflect the
+// behavior of the real arm
 public final class SimJoint implements ArmJoint {
-    private static final double FREE_SPEED = Units.rotationsPerMinuteToRadiansPerSecond(5676);
+    private static final double KG_PER_METER = 1;
 
-    private final Body body;
-    private final RevoluteJoint joint;
-    private final double gearRatio;
+    private final DCMotorSim motor;
+    private double offset;
 
-    public SimJoint(Body body, RevoluteJoint joint, double gearRatio) {
-        this.body = body;
-        this.joint = joint;
-        this.gearRatio = gearRatio;
+    public SimJoint(double length, double gearRatio) {
+        // Calculate as if each segment is isolated (not accurate)
+        double mass = length * KG_PER_METER;
+        double moi = length * length * mass / 4;
+
+        motor = new DCMotorSim(DCMotor.getNEO(1), gearRatio, moi);
+        offset = 0;
     }
 
     @Override
     public double getCurrentAngle() {
-        return body.getAngle();
+        System.out.println("Motor: " + motor.getAngularPositionRad() + " " + motor.getAngularVelocityRPM());
+
+        return motor.getAngularPositionRad() + offset;
     }
 
     @Override
     public void setCurrentAngle(double angle) {
-        body.setTransform(body.getPosition(), (float) angle);
+        double current = motor.getAngularPositionRad();
+        offset = angle - current;
     }
 
     @Override
     public void setMotorOutput(double motor) {
-        // This is not how motors work but it's good enough for testing
-        joint.setMotorSpeed((float) (MathUtil.clamp(motor, -1, 1) * FREE_SPEED / gearRatio));
+        System.out.println("RUnning motor; ::: " + motor);
+        this.motor.setInputVoltage(motor * 12);
+        this.motor.update(0.02);
     }
 }

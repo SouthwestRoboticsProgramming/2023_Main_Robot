@@ -9,7 +9,11 @@ import com.swrobotics.lib.net.NTBoolean;
 
 import com.swrobotics.robot.subsystems.StatusLoggable;
 import com.swrobotics.robot.subsystems.StatusLogging;
+
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -167,6 +171,9 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
 
         // FIXME: Change back to getGyroscopeRotation
         odometry = new SwerveDriveOdometry(kinematics, getRawGyroscopeRotation(), getModulePositions());
+
+        // Initially start facing forward
+        resetPose(new Pose2d(0, 0, new Rotation2d(0)));
     }
 
     public Rotation2d getGyroscopeRotation() {
@@ -326,6 +333,16 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         System.out.println("<---------------------------------------------------------->");
         System.out.println("<--- Make sure to copy down new offsets into constants! --->");
         System.out.println("<---------------------------------------------------------->");
+    }
+
+    public void showApriltags(AprilTagFieldLayout layout) {
+
+        Pose2d[] poses = new Pose2d[layout.getTags().size()];
+        for (int i = 0; i < poses.length; i++) {
+            poses[i] = layout.getTags().get(i).pose.toPose2d();
+        }
+
+        field.getObject("Apriltags").setPoses(poses);
     }
 
     @Override

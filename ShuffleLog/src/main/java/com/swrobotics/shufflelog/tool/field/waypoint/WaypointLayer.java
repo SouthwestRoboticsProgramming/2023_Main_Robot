@@ -46,7 +46,7 @@ public final class WaypointLayer implements FieldLayer {
 
         this.tool = tool;
         this.msg = msg;
-        cooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
+        cooldown = new Cooldown(ToolConstants.MSG_CONSTANT_QUERY_COOLDOWN_TIME);
 
         msg.addHandler(MSG_WAYPOINTS, this::onWaypoints);
 
@@ -69,7 +69,8 @@ public final class WaypointLayer implements FieldLayer {
             String name = reader.readString();
             double x = reader.readDouble();
             double y = reader.readDouble();
-            waypoints.add(new Waypoint(x, y, name));
+            boolean editable = reader.readBoolean();
+            waypoints.add(new Waypoint(x, y, name, editable));
         }
 
         hasWaypoints = true;
@@ -82,7 +83,7 @@ public final class WaypointLayer implements FieldLayer {
 
     @Override
     public void processAlways() {
-        if (!hasWaypoints && cooldown.request())
+        if (cooldown.request())
             msg.send(MSG_GET_WAYPOINTS);
     }
 
@@ -176,7 +177,7 @@ public final class WaypointLayer implements FieldLayer {
             ImGui.endTable();
             ImGui.beginDisabled(!hasWaypoints);
             if (ImGui.button("Add new waypoint")) {
-                Waypoint newWp = new Waypoint(0, 0, uniqueify("New Waypoint", null));
+                Waypoint newWp = new Waypoint(0, 0, uniqueify("New Waypoint", null), true);
                 selection = newWp;
                 waypoints.add(newWp);
                 newWp.add(msg);
@@ -192,11 +193,13 @@ public final class WaypointLayer implements FieldLayer {
                 nameInput.set(oldName);
 
                 boolean changed, nameChanged;
+                ImGui.beginDisabled(!selection.isEditable());
                 fancyLabel("Name"); changed = nameChanged = ImGui.inputText("##name", nameInput);
                 fancyLabel("X");    changed |= ImGui.inputDouble("##x", selection.getX());
                 fancyLabel("Y");    changed |= ImGui.inputDouble("##y", selection.getY());
+                ImGui.endDisabled();
 
-                if (changed) {
+                if (changed && selection.isEditable()) {
                     selection.delete(msg);
                     if (nameChanged)
                         selection.setName(uniqueify(nameInput.get(), selection));

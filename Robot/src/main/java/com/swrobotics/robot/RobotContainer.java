@@ -12,16 +12,20 @@ import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
 import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
+import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.input.ButtonPanel;
+import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
+import com.swrobotics.robot.subsystems.vision.Photon;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -62,13 +66,16 @@ public class RobotContainer {
     public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
     public final Pathfinder pathfinder;
 
+    public final Photon photon = new Photon(this);
+
     public final ArmSubsystem arm;
 
     public final Lights lights = new Lights();
     public final StatusLogging statuslogger = new StatusLogging(lights);
 
     private final XboxController controller = new XboxController(0);
-    private final ButtonPanel buttonPanel;
+    public final ButtonPanel buttonPanel;
+    private final ScoreSelectorSubsystem scoreSelector;
 
     private final MessengerClient messenger;
 
@@ -86,10 +93,13 @@ public class RobotContainer {
         // Right stick X axis -> rotation
         drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(
                 drivetrainSubsystem,
-                () -> -modifyAxis(controller.getLeftY()) * DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND,
-                () -> -modifyAxis(controller.getLeftX()) * DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND,
+                () -> -modifyAxis(controller.getLeftY()) * (DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND / 2),
+                () -> -modifyAxis(controller.getLeftX()) * (DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND / 2),
                 () -> -modifyAxis(controller.getRightX())
-                        * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND));
+                * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND,
+                () -> controller.getLeftBumper(),
+                () -> controller.getRightBumper(),
+                () -> controller.getRightTriggerAxis() > 0.8));
 
         // Configure the rest of the button bindings
         configureButtonBindings();
@@ -102,6 +112,7 @@ public class RobotContainer {
         );
         buttonPanel = new ButtonPanel(messenger);
         arm = new ArmSubsystem(messenger);
+        scoreSelector = new ScoreSelectorSubsystem(this);
 
         // Initialize block auto
         AutoBlocks.init(messenger, this);
@@ -113,7 +124,8 @@ public class RobotContainer {
         HashMap<String, Command> eventMap = new HashMap<>();
 
         // Put your events from PathPlanner here
-        eventMap.put("marker1", new PrintCommand("Passed marker 1"));
+        eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
+        eventMap.put("BALANCE_BACKWARD", new BalanceSequenceCommand(this, true));
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
@@ -124,7 +136,11 @@ public class RobotContainer {
 
         // Autos to just drive off the line
         Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
-        Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, true).withTimeout(2.0); // Just drive forward
+        Command taxiDumb = new DriveBlindCommand(this, CWAngle.deg(180), 0.5, true).withTimeout(2.0); // Just drive forward
+
+        Command balanceWall = builder.fullAuto(getPath("Balance Wall"));
+        Command balanceBarrier = builder.fullAuto(getPath("Balance Barrier"));
+        Command balanceClose = new BalanceSequenceCommand(this, false);
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
@@ -132,6 +148,13 @@ public class RobotContainer {
         autoSelector.addOption("No Auto", () -> blankAuto);
         autoSelector.addOption("Print Auto", () -> printAuto);
         autoSelector.addOption("Taxi Smart", () -> taxiSmart);
+
+        // Balance Autos
+        autoSelector.addOption("Balance Wall", () -> balanceWall);
+        autoSelector.addOption("Balance Barrier", () -> balanceBarrier);
+        autoSelector.addOption("Balance No Taxi", () -> balanceClose);
+
+        // Block Auto
         autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
 
         SmartDashboard.putData("Auto", autoSelector);

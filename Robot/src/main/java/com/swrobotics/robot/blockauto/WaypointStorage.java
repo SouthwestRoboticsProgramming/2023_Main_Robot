@@ -4,6 +4,7 @@ import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 
 import java.io.*;
@@ -21,7 +22,17 @@ public final class WaypointStorage {
     private static final String MSG_WAYPOINTS = "Waypoints:List";
     private static MessengerClient msg;
 
-    private static final Map<String, Vec2d> waypoints = new HashMap<>();
+    private static final class Waypoint {
+        private final Vec2d position;
+        private final boolean editable;
+
+        public Waypoint(Vec2d position, boolean editable) {
+            this.position = position;
+            this.editable = editable;
+        }
+    }
+
+    private static final Map<String, Waypoint> waypoints = new HashMap<>();
 
     public static void init(MessengerClient msg) {
         WaypointStorage.msg = msg;
@@ -39,7 +50,10 @@ public final class WaypointStorage {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] tokens = line.split("\t");
-                waypoints.put(tokens[0], new Vec2d(Double.parseDouble(tokens[1]), Double.parseDouble(tokens[2])));
+                waypoints.put(
+                        tokens[0],
+                        new Waypoint(new Vec2d(Double.parseDouble(tokens[1]), Double.parseDouble(tokens[2])), true)
+                );
             }
 
             br.close();
@@ -50,7 +64,11 @@ public final class WaypointStorage {
     }
 
     public static Vec2d getWaypointLocation(String name) {
-        return waypoints.get(name);
+        return waypoints.get(name).position;
+    }
+
+    public static void registerStaticWaypoint(String name, Vec2d position) {
+        waypoints.put(name, new Waypoint(position, false));
     }
 
     private static void save() {
@@ -58,9 +76,15 @@ public final class WaypointStorage {
             FileWriter fw = new FileWriter(STORAGE_FILE);
             PrintWriter pw = new PrintWriter(fw);
 
-            for (Map.Entry<String, Vec2d> waypoint : waypoints.entrySet()) {
-                String name = waypoint.getKey();
-                Vec2d pos = waypoint.getValue();
+            for (Map.Entry<String, Waypoint> entry : waypoints.entrySet()) {
+                String name = entry.getKey();
+                Waypoint waypoint = entry.getValue();
+
+                // Don't need to save static waypoints
+                if (!waypoint.editable)
+                    continue;
+
+                Vec2d pos = waypoint.position;
                 pw.println(name + "\t" + pos.x + "\t" + pos.y);
             }
 
@@ -80,9 +104,10 @@ public final class WaypointStorage {
         builder.addInt(names.size());
         for (String name : names) {
             builder.addString(name);
-            Vec2d pos = waypoints.get(name);
-            builder.addDouble(pos.x);
-            builder.addDouble(pos.y);
+            Waypoint wp = waypoints.get(name);
+            builder.addDouble(wp.position.x);
+            builder.addDouble(wp.position.y);
+            builder.addBoolean(wp.editable);
         }
         builder.send();
     }
@@ -92,12 +117,22 @@ public final class WaypointStorage {
         double x = reader.readDouble();
         double y = reader.readDouble();
 
-        waypoints.put(name, new Vec2d(x, y));
+        // Don't overwrite static waypoints
+        Waypoint existing = waypoints.get(name);
+        if (existing != null && !existing.editable)
+            return;
+
+        waypoints.put(name, new Waypoint(new Vec2d(x, y), true));
         save();
     }
 
     private static void onRemoveWaypoint(String type, MessageReader reader) {
         String name = reader.readString();
+
+        // Don't remove static waypoints
+        if (waypoints.containsKey(name) && !waypoints.get(name).editable)
+            return;
+
         waypoints.remove(name);
         save();
     }

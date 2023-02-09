@@ -3,6 +3,9 @@ package com.swrobotics.shufflelog.tool.buttons;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.util.Cooldown;
+import imgui.ImGui;
+
+import java.util.Arrays;
 
 public final class RobotButtonIO {
     private static final String MSG_BUTTON_DATA = "ButtonPanel:Buttons";
@@ -37,7 +40,7 @@ public final class RobotButtonIO {
 
         byte[] packed = reader.readRaw(5);
         for (int i = 0; i < packed.length; i++) {
-            for (int j = 0; j < (i == ButtonPanel.WIDTH - 1 ? 8 : 4); j++) {
+            for (int j = 0; j < (i == 4 ? 4 : 8); j++) {
                 int x = i * 2 + j / 4;
                 int y = j % 4;
                 panel.setButtonLight(x, y, (packed[i] & (1 << j)) != 0);

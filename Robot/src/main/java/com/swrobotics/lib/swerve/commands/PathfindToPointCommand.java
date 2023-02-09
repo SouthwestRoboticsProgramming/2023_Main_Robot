@@ -74,7 +74,7 @@ public final class PathfindToPointCommand extends CommandBase {
             // If we aren't near the path at all, we need to wait for the pathfinder to make a valid path
             if (target == null) {
                 System.err.println("Waiting for pathfinder to catch up");
-                drive.setChassisSpeeds(new ChassisSpeeds(0, 0, 0));
+                drive.setTargetTranslation(new Translation2d(0, 0), true);
                 return;
             }
         }
