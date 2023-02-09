@@ -19,12 +19,16 @@ import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
+import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
+import com.swrobotics.robot.positions.ScoringPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
+import com.swrobotics.robot.subsystems.intake.GamePiece;
+import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.robot.subsystems.vision.Photon;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -69,6 +73,7 @@ public class RobotContainer {
     public final Photon photon = new Photon(this);
 
     public final ArmSubsystem arm;
+    public final IntakeSubsystem intake = new IntakeSubsystem();
 
     public final Lights lights = new Lights();
     public final StatusLogging statuslogger = new StatusLogging(lights);
@@ -101,9 +106,6 @@ public class RobotContainer {
                 () -> controller.getRightBumper(),
                 () -> controller.getRightTriggerAxis() > 0.8));
 
-        // Configure the rest of the button bindings
-        configureButtonBindings();
-
         // Initialize Messenger
         messenger = new MessengerClient(
                 RobotBase.isSimulation() ? MESSENGER_HOST_SIM : MESSENGER_HOST_ROBOT,
@@ -126,6 +128,9 @@ public class RobotContainer {
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_BACKWARD", new BalanceSequenceCommand(this, true));
+        for (int i = 0; i < 3; i++)
+            // 0 is highest, 3 is floor
+            eventMap.put("ARM_TO_" + i, new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(i)));
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
@@ -158,6 +163,9 @@ public class RobotContainer {
         autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
 
         SmartDashboard.putData("Auto", autoSelector);
+
+        // Configure the rest of the button bindings
+        configureButtonBindings();
     }
 
     /**
@@ -179,9 +187,18 @@ public class RobotContainer {
                 .whileTrue(new AutoBalanceCommand(this));
 
         new Trigger(() -> buttonPanel.isButtonDown(2, 3))
-                .onTrue(Commands.runOnce(() -> lights.set(Lights.Color.BLUE)));
+                .onTrue(Commands.runOnce(() -> {
+                    intake.setExpectedPiece(GamePiece.CUBE);
+                    lights.set(Lights.Color.BLUE);
+                }));
         new Trigger(() -> buttonPanel.isButtonDown(3, 3))
-                .onTrue(Commands.runOnce(() -> lights.set(Lights.Color.YELLOW)));
+                .onTrue(Commands.runOnce(() -> {
+                    intake.setExpectedPiece(GamePiece.CONE);
+                    lights.set(Lights.Color.YELLOW);
+                }));
+
+        new Trigger(controller::getAButton).onTrue(intake.intake());
+        new Trigger(controller::getYButton).onTrue(intake.eject());
     }
 
     /**
