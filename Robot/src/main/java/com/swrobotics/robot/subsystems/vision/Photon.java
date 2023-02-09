@@ -55,6 +55,7 @@ public class Photon extends SubsystemBase {
     private SimVisionSystem backSim;
 
     // Create a pose estimator to use multiple tags + multiple cameras to figure out where the robot is
+    // FIXME-Mason: Use PhotonPoseEstimator, RobotPoseEstimator is deprecated
     private final RobotPoseEstimator poseEstimator;
 
     public Photon(RobotContainer robot) {
