@@ -19,8 +19,10 @@ import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
+import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
+import com.swrobotics.robot.positions.ScoringPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
@@ -126,6 +128,9 @@ public class RobotContainer {
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_BACKWARD", new BalanceSequenceCommand(this, true));
+        for (int i = 0; i < 3; i++)
+            // 0 is highest, 3 is floor
+            eventMap.put("ARM_TO_" + i, new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(i)));
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
