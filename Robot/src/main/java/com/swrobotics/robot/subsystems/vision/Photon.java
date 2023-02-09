@@ -14,7 +14,10 @@ import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -24,10 +27,24 @@ public class Photon extends SubsystemBase {
 
     // Create cameras run through RPi
     private final PhotonCamera frontCam = new PhotonCamera("Front");
-    private final Transform3d frontCamTransform = new Transform3d(); // FIXME: Update with values from CAD / Real life
+    private final Transform3d frontCamTransform = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(0),  // X
+            Units.inchesToMeters(10),  // Y
+            Units.inchesToMeters(20)), // Z
+        new Rotation3d()); // Camera is facing perfectly forward
 
     private final PhotonCamera backCam = new PhotonCamera("Back");
-    private final Transform3d backCamTransform = new Transform3d(); // FIXME: Update with values from CAD / Real life
+    private final Transform3d backCamTransform = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(0),  // X
+            Units.inchesToMeters(10),  // Y
+            Units.inchesToMeters(20)), // Z
+        new Rotation3d(
+            0,
+            0,
+            Math.PI
+        )); // Camera is facing perfectly forward
 
     // Simulate cameras
     private SimVisionSystem frontSim;
