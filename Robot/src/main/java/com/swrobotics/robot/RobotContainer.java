@@ -178,10 +178,9 @@ public class RobotContainer {
         new Trigger(controller::getStartButton)
                 .whileTrue(new AutoBalanceCommand(this));
 
-        // FIXME: Probably wrong buttons
-        new Trigger(() -> buttonPanel.isButtonDown(1, 3))
-                .onTrue(Commands.runOnce(() -> lights.set(Lights.Color.BLUE)));
         new Trigger(() -> buttonPanel.isButtonDown(2, 3))
+                .onTrue(Commands.runOnce(() -> lights.set(Lights.Color.BLUE)));
+        new Trigger(() -> buttonPanel.isButtonDown(3, 3))
                 .onTrue(Commands.runOnce(() -> lights.set(Lights.Color.YELLOW)));
     }
 
