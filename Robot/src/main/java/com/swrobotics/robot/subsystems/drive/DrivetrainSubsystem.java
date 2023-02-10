@@ -303,6 +303,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
                                                  // rotation controller)
                 this::cheatChassisSpeeds, // Module states consumer used to output to the drive subsystem
                 eventMap,
+                true,
                 this // The drive subsystem. Used to properly set the requirements of path following
                      // commands
         );
