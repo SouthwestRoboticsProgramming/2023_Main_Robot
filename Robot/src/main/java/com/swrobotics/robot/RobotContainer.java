@@ -63,6 +63,8 @@ public class RobotContainer {
     private static final int MESSENGER_PORT = 5805;
     private static final String MESSENGER_NAME = "Robot";
 
+    private Robot robot;
+
     // Create a way to choose between autonomous sequences
     private final SendableChooser<Supplier<Command>> autoSelector;
 
@@ -87,10 +89,12 @@ public class RobotContainer {
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
-    public RobotContainer() {
+    public RobotContainer(Robot robot) {
         // Turn off joystick warnings
         DriverStation.silenceJoystickConnectionWarning(true);
 
+
+        this.robot = robot;
         // Set up the default command for the drivetrain.
         // The controls are for field-oriented driving:
         // Left stick Y axis -> forward and backwards movement
@@ -196,7 +200,10 @@ public class RobotContainer {
                     intake.setExpectedPiece(GamePiece.CONE);
                     lights.set(Lights.Color.YELLOW);
                 }));
-
+        new Trigger(() -> buttonPanel.isButtonDown(8, 3))
+                .onTrue(Commands.runOnce(() -> {
+                    robot.autonomousExit();
+                }));
         new Trigger(controller::getAButton).onTrue(intake.intake());
         new Trigger(controller::getYButton).onTrue(intake.eject());
     }

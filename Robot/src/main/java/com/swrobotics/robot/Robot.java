@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         // Create a RobotContainer to manage our subsystems and our buttons
-        robotContainer = new RobotContainer();
+        robotContainer = new RobotContainer(this);
     }
 
     /**
