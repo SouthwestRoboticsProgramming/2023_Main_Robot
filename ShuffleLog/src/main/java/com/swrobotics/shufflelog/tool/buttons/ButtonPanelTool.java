@@ -13,8 +13,8 @@ public final class ButtonPanelTool implements Tool {
     private final RobotButtonIO io;
 
     public ButtonPanelTool(MessengerClient msg) {
-//        panel = new SerialButtonPanel();
-        panel = new VirtualButtonPanel();
+        panel = new SerialButtonPanel();
+//        panel = new VirtualButtonPanel();
 
         reactionTime = new ReactionTime(panel);
         reactionTime.begin();

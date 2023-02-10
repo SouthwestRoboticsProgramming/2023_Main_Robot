@@ -1,5 +1,6 @@
 package com.swrobotics.robot;
 
+import com.swrobotics.robot.commands.arm.ManualArmControlCommand;
 import com.swrobotics.robot.positions.ScoringPositions;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -109,5 +110,11 @@ public class Robot extends TimedRobot {
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
         }
+    }
+
+    @Override
+    public void teleopInit() {
+        // Schedule manual arm control
+        new ManualArmControlCommand(robotContainer, robotContainer.armControlJoystick).schedule();
     }
 }

@@ -11,7 +11,6 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
-import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
@@ -19,6 +18,7 @@ import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
+import com.swrobotics.robot.commands.arm.ManualArmControlCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
@@ -33,10 +33,7 @@ import com.swrobotics.robot.subsystems.vision.Photon;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -81,6 +78,7 @@ public class RobotContainer {
     public final StatusLogging statuslogger = new StatusLogging(lights);
 
     private final XboxController controller = new XboxController(0);
+    public final Joystick armControlJoystick = new Joystick(1);
     public final ButtonPanel buttonPanel;
     private final ScoreSelectorSubsystem scoreSelector;
 
