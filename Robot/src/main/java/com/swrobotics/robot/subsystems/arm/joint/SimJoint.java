@@ -22,8 +22,6 @@ public final class SimJoint implements ArmJoint {
 
     @Override
     public double getCurrentAngle() {
-        System.out.println("Motor: " + motor.getAngularPositionRad() + " " + motor.getAngularVelocityRPM());
-
         return motor.getAngularPositionRad() + offset;
     }
 
@@ -35,7 +33,6 @@ public final class SimJoint implements ArmJoint {
 
     @Override
     public void setMotorOutput(double motor) {
-        System.out.println("RUnning motor; ::: " + motor);
         this.motor.setInputVoltage(motor * 12);
         this.motor.update(0.02);
     }
