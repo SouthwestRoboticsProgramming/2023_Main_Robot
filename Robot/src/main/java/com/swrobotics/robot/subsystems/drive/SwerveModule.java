@@ -146,7 +146,7 @@ public class SwerveModule {
         if (RobotBase.isSimulation()) {
             return simulatedDistance;
         }
-        return fromNativeDriveUnits(drive.getSelectedSensorPosition());
+        return fromNativeDrivePositionUnits(drive.getSelectedSensorPosition());
     }
 
     public Rotation2d getAbsoluteAngle() {
@@ -175,7 +175,7 @@ public class SwerveModule {
             return targetState.speedMetersPerSecond;
         }
 
-        return fromNativeDriveUnits(drive.getSelectedSensorVelocity());
+        return fromNativeDriveVelocityUnits(drive.getSelectedSensorVelocity());
     }
 
     private void calibrateWithAbsoluteEncoder() {
@@ -256,8 +256,12 @@ public class SwerveModule {
         return velocityMPS / driveEncoderVelocityToMPS;
     }
 
-    private double fromNativeDriveUnits(double units) {
+    private double fromNativeDriveVelocityUnits(double units) {
         return units / ((2048 / 10) * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
+    }
+
+    private double fromNativeDrivePositionUnits(double units) {
+        return units / (2048 * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
     }
 
 }
