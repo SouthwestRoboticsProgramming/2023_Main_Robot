@@ -36,7 +36,7 @@ public class AutoBalanceCommand extends CommandBase {
 
     @Override
     public void execute() {
-        var tilt = drive.getTiltAsTranslation().times(-1);
+        Translation2d tilt = drive.getTiltAsTranslation().times(-1);
         Rotation2d rotation = new Rotation2d(tilt.getX(), tilt.getY());
 
         // double adjustmentAmount = pid.calculate(magnitude, 0.0);
