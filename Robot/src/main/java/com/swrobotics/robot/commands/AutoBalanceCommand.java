@@ -40,7 +40,7 @@ public class AutoBalanceCommand extends CommandBase {
         Rotation2d rotation = new Rotation2d(tilt.getX(), tilt.getY());
 
         // double adjustmentAmount = pid.calculate(magnitude, 0.0);
-        double adjustmentAmount = -0.4;
+        double adjustmentAmount = -0.6;
         Translation2d output = new Translation2d(adjustmentAmount, rotation);
         drive.setChassisSpeeds(new ChassisSpeeds(output.getX(), output.getY(), 0.0));
     }

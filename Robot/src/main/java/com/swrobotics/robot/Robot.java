@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -88,7 +90,7 @@ public class Robot extends TimedRobot {
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
             // Follow up autonomous command with diagnostics on how quickly it ran
-            // autonomousCommand.andThen(
+            // autonomousCommand = autonomousCommand.andThen(
             //         new PrintCommand("Auto Completed!"),
             //         new RunCommand(() -> autonomousTimer.stop()));
             //         new RunCommand(() -> System.out.printf("Auto finished in %.3f seconds\n", autonomousTimer.get())

@@ -72,7 +72,7 @@ public class RobotContainer {
     public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
     public final Pathfinder pathfinder;
 
-    public final Photon photon = new Photon(this);
+    // public final Photon photon = new Photon(this);
 
     public final ArmSubsystem arm;
     public final IntakeSubsystem intake = new IntakeSubsystem();
@@ -145,11 +145,13 @@ public class RobotContainer {
 
         // Autos to just drive off the line
         Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
-        Command taxiDumb = new DriveBlindCommand(this, CWAngle.deg(180), 0.5, true).withTimeout(2.0); // Just drive forward
+        Command taxiDumb = new DriveBlindCommand(this, CWAngle.deg(180), 0.5, false).withTimeout(2.0); // Just drive forward
 
         Command balanceWall = builder.fullAuto(getPath("Balance Wall"));
         Command balanceBarrier = builder.fullAuto(getPath("Balance Barrier"));
         Command balanceClose = new BalanceSequenceCommand(this, false);
+        
+        Command hybridBalance = builder.fullAuto(getPath("Hybrid Balance"));
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
@@ -162,7 +164,8 @@ public class RobotContainer {
         autoSelector.addOption("Balance Wall", () -> balanceWall);
         autoSelector.addOption("Balance Barrier", () -> balanceBarrier);
         autoSelector.addOption("Balance No Taxi", () -> balanceClose);
-
+        
+        autoSelector.addOption("Hybrid Cube Balance Barrier", () -> hybridBalance);
         // Block Auto
         autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
 

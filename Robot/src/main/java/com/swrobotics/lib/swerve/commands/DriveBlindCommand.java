@@ -37,5 +37,6 @@ public class DriveBlindCommand extends CommandBase {
     @Override
     public void execute() {
         drive.setTargetTranslation(translation, true);
+        System.out.println("Drive blind: translation " + translation);
     }
 }
