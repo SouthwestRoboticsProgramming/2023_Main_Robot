@@ -1,5 +1,7 @@
 package com.swrobotics.lib.swerve.commands;
 
+import java.util.function.Supplier;
+
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
@@ -15,20 +17,28 @@ public class TurnToAngleCommand extends CommandBase {
 
     private final DrivetrainSubsystem drive;
     private final ProfiledPIDController pid;
-    private Rotation2d target;
+    private final Supplier<Angle> angle;
+    private final boolean robotRelative;
+    private Rotation2d robotOffset;
     
-    public TurnToAngleCommand(RobotContainer robot, Angle angle, boolean robotRelative) {
+    public TurnToAngleCommand(RobotContainer robot, Supplier<Angle> angle, boolean robotRelative) {
         drive = robot.drivetrainSubsystem;
-        target = angle.ccw().rotation2d();
-        if (robotRelative) {
-            target.plus(drive.getGyroscopeRotation());
-        }
+        this.angle = angle;
+        this.robotRelative = robotRelative;
+
+        robotOffset = drive.getGyroscopeRotation(); // Offset does not change from when the command is sheduled
+
+
         pid = new ProfiledPIDController(
             10, 2, 0, 
             new TrapezoidProfile.Constraints(6.28, 3.14));
         pid.enableContinuousInput(-Math.PI, Math.PI);
 
         pid.setTolerance(0.1);
+    }
+
+    private Rotation2d getTarget() {
+        return angle.get().ccw().rotation2d();
     }
 
     @Override
@@ -38,6 +48,13 @@ public class TurnToAngleCommand extends CommandBase {
 
     @Override
     public void execute() {
+        // Update the target
+        Rotation2d target = getTarget();
+
+        if (robotRelative) {
+            target.plus(robotOffset);
+        }
+
         drive.setTargetRotation(new Rotation2d(
             pid.calculate(
                 drive.getPose().getRotation().getRadians(),
@@ -49,9 +66,6 @@ public class TurnToAngleCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        System.out.println("Current: " + drive.getPose().getRotation().getDegrees());
-        System.out.println("Target: " + target.getDegrees());
-        System.out.println("Output " + pid.calculate(drive.getPose().getRotation().getRadians(), target.getRadians()));
-        return Math.abs(target.minus(drive.getPose().getRotation()).getRadians()) < ANGLE_TOLERANCE_RAD;
+        return Math.abs(getTarget().minus(drive.getPose().getRotation()).getRadians()) < ANGLE_TOLERANCE_RAD;
     }
 }
