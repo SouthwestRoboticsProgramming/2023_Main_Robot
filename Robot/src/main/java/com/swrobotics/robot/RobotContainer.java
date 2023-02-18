@@ -19,6 +19,7 @@ import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.Intake.IntakeCone;
+import com.swrobotics.robot.commands.Intake.IntakeCube;
 import com.swrobotics.robot.commands.arm.ManualArmControlCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.ButtonPanel;
@@ -200,8 +201,8 @@ public class RobotContainer {
                 .onTrue(Commands.runOnce(() -> {
                     robot.autonomousExit();
                 }));
-        new Trigger(controller::getAButton).onTrue(intake.Intake());
-        new Trigger(controller::getYButton).onTrue(intake.Outake(););
+        new Trigger(controller::getAButton).onTrue(new IntakeCone(intake));
+        new Trigger(controller::getYButton).onTrue(new IntakeCube(intake));
     }
 
     /**
