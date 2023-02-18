@@ -30,23 +30,23 @@ public class Photon extends SubsystemBase {
     private final DrivetrainSubsystem drive;
 
     private static final double POWER_TOWER_HEIGHT = 11.17; // Measured from floor
-    private static final double POWER_TOWER_X = -10.73; // Measured from intake center rivet
+    private static final double POWER_TOWER_X = 10.73; // Measured from intake center rivet
 
     // Create cameras run through RPi
     private final PhotonCamera frontCam = new PhotonCamera("Front");
     private final Transform3d frontCamTransform = new Transform3d(
         new Translation3d(
-            Units.inchesToMeters(POWER_TOWER_X),  // X
-            Units.inchesToMeters(-5.01),  // Y
-            Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Z
+            Units.inchesToMeters(-5.01),  // Forward
+            Units.inchesToMeters(POWER_TOWER_X),  // Right
+            Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Up
         new Rotation3d()); // Camera is facing perfectly forward
 
     private final PhotonCamera backCam = new PhotonCamera("Back");
     private final Transform3d backCamTransform = new Transform3d(
         new Translation3d(
-            Units.inchesToMeters(POWER_TOWER_X),  // X
-            Units.inchesToMeters(-7.71),  // Y
-            Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Z
+            Units.inchesToMeters(-7.71),  // Forward
+            Units.inchesToMeters(POWER_TOWER_X),  // Right
+            Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Up
         new Rotation3d(
             0,
             0,
@@ -92,6 +92,7 @@ public class Photon extends SubsystemBase {
             backSim.addVisionTargets(layout);
 
             drive.showApriltags(layout);
+            drive.showCameraPoses(frontCamTransform, backCamTransform);
         }
     }
 
