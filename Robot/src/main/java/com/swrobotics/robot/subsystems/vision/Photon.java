@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.photonvision.PhotonCamera;
-import org.photonvision.RobotPoseEstimator;
+import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.SimVisionSystem;
-import org.photonvision.RobotPoseEstimator.PoseStrategy;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import com.swrobotics.lib.net.NTInteger;
 import com.swrobotics.robot.RobotContainer;
@@ -29,26 +29,29 @@ public class Photon extends SubsystemBase {
     // Drive to use for odometry
     private final DrivetrainSubsystem drive;
 
+    private static final double POWER_TOWER_HEIGHT = 11.17; // Measured from floor
+    private static final double POWER_TOWER_X = 10.73; // Measured from intake center rivet
+
     // Create cameras run through RPi
     private final PhotonCamera frontCam = new PhotonCamera("Front");
     private final Transform3d frontCamTransform = new Transform3d(
         new Translation3d(
-            Units.inchesToMeters(0),  // X
-            Units.inchesToMeters(10),  // Y
-            Units.inchesToMeters(20)), // Z
+            Units.inchesToMeters(-5.01),  // Forward
+            Units.inchesToMeters(POWER_TOWER_X),  // Left
+            Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Up
         new Rotation3d()); // Camera is facing perfectly forward
 
     private final PhotonCamera backCam = new PhotonCamera("Back");
     private final Transform3d backCamTransform = new Transform3d(
         new Translation3d(
-            Units.inchesToMeters(0),  // X
-            Units.inchesToMeters(10),  // Y
-            Units.inchesToMeters(20)), // Z
+            Units.inchesToMeters(-7.71),  // Forward
+            Units.inchesToMeters(POWER_TOWER_X),  // Left
+            Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Up
         new Rotation3d(
             0,
             0,
             Math.PI
-        )); // Camera is facing perfectly forward
+        )); // Camera is facing perfectly backward
 
     // Simulate cameras
     private SimVisionSystem frontSim;
@@ -56,7 +59,7 @@ public class Photon extends SubsystemBase {
 
     // Create a pose estimator to use multiple tags + multiple cameras to figure out where the robot is
     // FIXME-Mason: Use PhotonPoseEstimator, RobotPoseEstimator is deprecated
-    private final RobotPoseEstimator poseEstimator;
+    private final PhotonPoseEstimator poseEstimator;
 
     public Photon(RobotContainer robot) {
         L_TARGETS_FOUND.setTemporary();
@@ -78,7 +81,7 @@ public class Photon extends SubsystemBase {
         cameras.add(new Pair<>(frontCam, frontCamTransform));
         cameras.add(new Pair<>(backCam, backCamTransform));
 
-        poseEstimator = new RobotPoseEstimator(layout, PoseStrategy.LOWEST_AMBIGUITY, cameras);
+        poseEstimator = new PhotonPoseEstimator(layout, PoseStrategy.AVERAGE_BEST_TARGETS , backCam, backCamTransform);
 
         // Simulate cameras
         if (RobotBase.isSimulation()) {
@@ -89,6 +92,7 @@ public class Photon extends SubsystemBase {
             backSim.addVisionTargets(layout);
 
             drive.showApriltags(layout);
+            drive.showCameraPoses(frontCamTransform, backCamTransform);
         }
     }
 
@@ -114,7 +118,7 @@ public class Photon extends SubsystemBase {
             return;
         }
 
-        if (estimatedPose.get().getFirst() == null) {
+        if (estimatedPose.get() == null) {
             return;
         }
 
@@ -123,7 +127,7 @@ public class Photon extends SubsystemBase {
         // System.out.println(estimatedPose.get().getFirst());
 
         // // Update drive with estimated pose
-        drive.resetPose(estimatedPose.get().getFirst().toPose2d());
+        drive.resetPose(estimatedPose.get().estimatedPose.toPose2d());
     }
 
 
