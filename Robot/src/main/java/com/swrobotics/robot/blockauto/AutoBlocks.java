@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public final class AutoBlocks {
     // Dropdown menu in ShuffleLog to select which auto to run
@@ -103,7 +104,7 @@ public final class AutoBlocks {
                 .text(" cw deg")
                 .text("Robot relative: ")
                 .paramBoolean("robot-relative", false)
-                .creator((params, robot) -> new TurnToAngleCommand(robot, (Angle) params[0], (boolean) params[1]));
+                .creator((params, robot) -> new TurnToAngleCommand(robot, (Supplier<Angle>) params[0], (boolean) params[1])); //FIXME: Unchecked Cast
     
         drive.newBlock("reset pose")
             .text("Reset pose to ")
