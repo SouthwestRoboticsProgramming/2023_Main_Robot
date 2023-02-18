@@ -23,8 +23,6 @@ public class Intake2 extends SubsystemBase {
     public final NTDouble CUBE_INTAKE_CONTINUE = new NTDouble("INTAKE/CUBE_INTAKE_CONTINUE", 0.25);
     public final NTDouble CONE_INTAKE_CONTINUE = new NTDouble("INTAKE/CONE_INTAKE_CONTINUE", 0.25);
 
-    public final NTDouble CUBE_OUTAKE_CONTINUE = new NTDouble("INTAKE/CUBE_OUTAKE_CONTINUE", 0.25);
-    public final NTDouble CONE_OUTAKE_CONTINUE = new NTDouble("INTAKE/CONE_OUTAKE_CONTINUE", 0.25);
 
     public Intake2() {
         motor = new PWMSparkMax(MOTOR_PORT);
