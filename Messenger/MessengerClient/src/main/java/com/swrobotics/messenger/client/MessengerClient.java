@@ -123,6 +123,7 @@ public final class MessengerClient {
                     out.writeUTF(name);
 
                     connected.set(true);
+                    System.out.println("Messenger connection established");
 
                     // Prioritize listening to EVENT_TYPE so that we receive our own events
                     // when listening to the rest of them
