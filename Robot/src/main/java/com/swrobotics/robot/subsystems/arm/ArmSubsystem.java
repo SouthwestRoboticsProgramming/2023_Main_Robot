@@ -27,16 +27,16 @@ import static com.swrobotics.shared.arm.ArmConstants.*;
 // the X axis representing forward, and the Y axis representing up
 public final class ArmSubsystem extends SubsystemBase {
     // CAN IDs of the motors  FIXME
-    private static final int BOTTOM_MOTOR_ID = 7612;
-    private static final int TOP_MOTOR_ID = 7613;
+    private static final int BOTTOM_MOTOR_ID = 23;
+    private static final int TOP_MOTOR_ID = 24;
 
     private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 0.5);
     private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);
     private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.04); // Must be larger than stop tolerance
 
     private static final NTBoolean HOME_CALIBRATE = new NTBoolean("Arm/Home/Calibrate", false);
-    private static final NTDouble HOME_BOTTOM = new NTDouble("Arm/Home/Bottom", 0);
-    private static final NTDouble HOME_TOP = new NTDouble("Arm/Home/Top", 0);
+    private static final NTDouble HOME_BOTTOM = new NTDouble("Arm/Home/Bottom",1/2 * Math.PI);
+    private static final NTDouble HOME_TOP = new NTDouble("Arm/Home/Top", 3/2 * Math.PI);
 
     private static final NTDouble KP = new NTDouble("Arm/PID/kP", 8);
     private static final NTDouble KI = new NTDouble("Arm/PID/kI", 0);
