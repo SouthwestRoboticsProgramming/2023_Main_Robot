@@ -18,6 +18,7 @@ import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
+import com.swrobotics.robot.commands.Intake.IntakeCone;
 import com.swrobotics.robot.commands.arm.ManualArmControlCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.ButtonPanel;
@@ -29,6 +30,7 @@ import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
+import com.swrobotics.robot.subsystems.intake2.Intake2;
 import com.swrobotics.robot.subsystems.vision.Photon;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -72,7 +74,7 @@ public class RobotContainer {
     // public final Photon photon = new Photon(this);
 
     public final ArmSubsystem arm;
-    public final IntakeSubsystem intake = new IntakeSubsystem();
+    public final Intake2 intake = new Intake2();
 
     public final Lights lights = new Lights();
     public final StatusLogging statuslogger = new StatusLogging(lights);
@@ -192,21 +194,14 @@ public class RobotContainer {
                 .whileTrue(new AutoBalanceCommand(this));
 
         new Trigger(() -> buttonPanel.isButtonDown(2, 3))
-                .onTrue(Commands.runOnce(() -> {
-                    intake.setExpectedPiece(GamePiece.CUBE);
-                    lights.set(Lights.Color.BLUE);
-                }));
-        new Trigger(() -> buttonPanel.isButtonDown(3, 3))
-                .onTrue(Commands.runOnce(() -> {
-                    intake.setExpectedPiece(GamePiece.CONE);
-                    lights.set(Lights.Color.YELLOW);
-                }));
+                .onTrue(new IntakeCone(intake));
+
         new Trigger(() -> buttonPanel.isButtonDown(8, 3))
                 .onTrue(Commands.runOnce(() -> {
                     robot.autonomousExit();
                 }));
-        new Trigger(controller::getAButton).onTrue(intake.intake());
-        new Trigger(controller::getYButton).onTrue(intake.eject());
+        new Trigger(controller::getAButton).onTrue(intake.Intake());
+        new Trigger(controller::getYButton).onTrue(intake.Outake(););
     }
 
     /**
