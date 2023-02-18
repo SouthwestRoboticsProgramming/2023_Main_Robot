@@ -37,7 +37,7 @@ public final class MessengerTool implements Tool {
         port = new ImInt(5805);
         name = new ImString(64);
 
-        host.set("localhost");
+        host.set("10.21.29.3");
         name.set("ShuffleLog");
 
         msg = new MessengerClient(host.get(), port.get(), name.get());

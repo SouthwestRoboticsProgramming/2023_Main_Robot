@@ -34,7 +34,7 @@ public final class NetworkTablesTool implements Tool {
     private static final String[] CONN_MODE_NAMES = {"Team Number", "Address"};
 
     private static final int DEFAULT_VERSION = VERSION_NT3;
-    private static final int DEFAULT_CONN_MODE = CONN_MODE_ADDRESS;
+    private static final int DEFAULT_CONN_MODE = CONN_MODE_TEAM_NUMBER;
     private static final String DEFAULT_HOST = "localhost";
     private static final int[] DEFAULT_PORT_PER_VERSION = {
             NetworkTableInstance.kDefaultPort3,
