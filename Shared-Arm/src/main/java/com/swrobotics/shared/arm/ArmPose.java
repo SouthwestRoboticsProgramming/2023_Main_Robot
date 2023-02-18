@@ -14,7 +14,10 @@ public final class ArmPose {
     private static final double MAX_VERT_EXTENT = 2;
     private static final double FLOOR_LEVEL = -0.5;
 
-    public static boolean isEndPositionValid(Translation2d endPos) {
+    private static final double MIN_LOWER_ANGLE = Math.toRadians(45);
+    private static final double MAX_LOWER_ANGLE = Math.toRadians(135);
+
+    private static boolean isEndPositionValid(Translation2d endPos) {
         double x = endPos.getX();
         double y = endPos.getY();
 
@@ -74,6 +77,11 @@ public final class ArmPose {
     }
 
     public boolean isValid() {
+        if (bottomAngle < MIN_LOWER_ANGLE)
+            return false;
+        if (bottomAngle > MAX_LOWER_ANGLE)
+            return false;
+
         return isEndPositionValid(getEndPosition());
     }
 

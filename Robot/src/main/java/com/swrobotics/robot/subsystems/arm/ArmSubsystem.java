@@ -65,8 +65,8 @@ public final class ArmSubsystem extends SubsystemBase {
             bottomJoint = new SimJoint(BOTTOM_LENGTH, BOTTOM_GEAR_RATIO);
             topJoint = new SimJoint(TOP_LENGTH, TOP_GEAR_RATIO);
         } else {
-            bottomJoint = new PhysicalJoint(BOTTOM_MOTOR_ID, BOTTOM_GEAR_RATIO);
-            topJoint = new PhysicalJoint(TOP_MOTOR_ID, TOP_GEAR_RATIO);
+            bottomJoint = new PhysicalJoint(BOTTOM_MOTOR_ID, BOTTOM_GEAR_RATIO, true);
+            topJoint = new PhysicalJoint(TOP_MOTOR_ID, TOP_GEAR_RATIO, false);
         }
 
         double extent = (BOTTOM_LENGTH + TOP_LENGTH) * 2;

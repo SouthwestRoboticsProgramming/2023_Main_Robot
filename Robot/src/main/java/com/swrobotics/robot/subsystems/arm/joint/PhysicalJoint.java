@@ -8,28 +8,42 @@ public final class PhysicalJoint implements ArmJoint {
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
     private final double gearRatio;
+    private final double flip;
 
-    public PhysicalJoint(int canId, double gearRatio) {
+    private double encoderOffset;
+
+    public PhysicalJoint(int canId, double gearRatio, boolean inverted) {
         motor = new CANSparkMax(canId, CANSparkMaxLowLevel.MotorType.kBrushless);
         encoder = motor.getEncoder();
         this.gearRatio = gearRatio;
+        this.flip = inverted ? -1 : 1;
 
         // Make encoder position be in rotations
         encoder.setPositionConversionFactor(1);
     }
 
+    private double getRawEncoderPos() {
+        return flip * encoder.getPosition();
+    }
+
+    private double getEncoderPos() {
+        return getRawEncoderPos() + encoderOffset;
+    }
+
     @Override
     public double getCurrentAngle() {
-        return encoder.getPosition() / gearRatio * 2 * Math.PI;
+        return getEncoderPos() / gearRatio * 2 * Math.PI;
     }
 
     @Override
     public void setCurrentAngle(double angle) {
-        encoder.setPosition(angle / (2 * Math.PI) * gearRatio);
+        double actualPos = getRawEncoderPos();
+        double expectedPos = angle / (2 * Math.PI) * gearRatio;
+        encoderOffset = expectedPos - actualPos;
     }
 
     @Override
     public void setMotorOutput(double out) {
-        motor.set(out);
+        motor.set(out * flip);
     }
 }

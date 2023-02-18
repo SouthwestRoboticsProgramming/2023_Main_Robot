@@ -104,7 +104,7 @@ public final class AutoBlocks {
                 .text(" cw deg")
                 .text("Robot relative: ")
                 .paramBoolean("robot-relative", false)
-                .creator((params, robot) -> new TurnToAngleCommand(robot, (Supplier<Angle>) params[0], (boolean) params[1])); //FIXME: Unchecked Cast
+                .creator((params, robot) -> new TurnToAngleCommand(robot, () -> (Angle) params[0], (boolean) params[1])); //FIXME: Unchecked Cast
     
         drive.newBlock("reset pose")
             .text("Reset pose to ")
