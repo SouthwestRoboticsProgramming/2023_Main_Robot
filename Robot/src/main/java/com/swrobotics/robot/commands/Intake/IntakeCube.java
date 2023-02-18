@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 public class IntakeCube extends CommandBase {
     private final Intake2 intake;
 
+    private boolean countdownstarted;
     private final NTDouble CONTINUE;
 
     private Timer timer;
@@ -42,6 +43,10 @@ public class IntakeCube extends CommandBase {
     }
     @Override
     public boolean isFinished() {
+        if(intake.cubeBeamIsBroken() && !countdownstarted) {
+            timer.start();
+            countdownstarted = !countdownstarted;
+        }
         return timer.hasElapsed(CONTINUE.get());
     }
 

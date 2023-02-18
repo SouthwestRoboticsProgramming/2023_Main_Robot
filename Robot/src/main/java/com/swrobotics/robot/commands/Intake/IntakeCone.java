@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 public class IntakeCone extends CommandBase {
     private final Intake2 intake;
 
+    private boolean countdownstarted = false;
+
     private final NTDouble CONTINUE;
 
     private Timer timer;
@@ -23,7 +25,6 @@ public class IntakeCone extends CommandBase {
 
     @Override
     public void initialize() {
-        timer.start();
         if(intake.hasElement.get()) {
             intake.Outake();
         } else {
@@ -43,6 +44,10 @@ public class IntakeCone extends CommandBase {
     }
     @Override
     public boolean isFinished() {
+        if(intake.coneBeamIsBroken() && !countdownstarted) {
+            timer.start();
+            countdownstarted = !countdownstarted;
+        }
         return timer.hasElapsed(CONTINUE.get());
     }
 
