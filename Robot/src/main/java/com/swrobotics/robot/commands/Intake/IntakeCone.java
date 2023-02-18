@@ -15,7 +15,7 @@ public class IntakeCone extends CommandBase {
 
     public IntakeCone(Intake2 intake) {
         this.intake = intake;
-        this.CONTINUE = intake.CONE_OUTAKE_CONTINUE;
+        this.CONTINUE = intake.CONE_INTAKE_CONTINUE;
         addRequirements(intake);
         timer = new Timer();
     }
