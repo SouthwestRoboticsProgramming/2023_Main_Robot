@@ -37,7 +37,7 @@ public class Photon extends SubsystemBase {
     private final Transform3d frontCamTransform = new Transform3d(
         new Translation3d(
             Units.inchesToMeters(-5.01),  // Forward
-            Units.inchesToMeters(POWER_TOWER_X),  // Right
+            Units.inchesToMeters(POWER_TOWER_X),  // Left
             Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Up
         new Rotation3d()); // Camera is facing perfectly forward
 
@@ -45,7 +45,7 @@ public class Photon extends SubsystemBase {
     private final Transform3d backCamTransform = new Transform3d(
         new Translation3d(
             Units.inchesToMeters(-7.71),  // Forward
-            Units.inchesToMeters(POWER_TOWER_X),  // Right
+            Units.inchesToMeters(POWER_TOWER_X),  // Left
             Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Up
         new Rotation3d(
             0,
