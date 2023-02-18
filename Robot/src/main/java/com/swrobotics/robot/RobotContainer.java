@@ -72,7 +72,7 @@ public class RobotContainer {
     public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
     public final Pathfinder pathfinder;
 
-    // public final Photon photon = new Photon(this);
+    public final Photon photon = new Photon(this);
 
     public final ArmSubsystem arm;
     // public final Intake2 intake = new Intake2();
