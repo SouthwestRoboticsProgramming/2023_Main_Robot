@@ -24,7 +24,22 @@ public class IntakeCone extends CommandBase {
     @Override
     public void initialize() {
         timer.start();
-        intake.Intake();
+        if(intake.hasElement.get()) {
+            intake.Outake();
+        } else {
+
+            intake.Intake();
+        }
+    }
+
+    @Override
+    public void end(boolean not_needed) {
+        timer.stop();
+        intake.Stop();
+        if (not_needed) {
+
+            intake.hasElement.set(!intake.hasElement.get());
+        }
     }
     @Override
     public boolean isFinished() {
