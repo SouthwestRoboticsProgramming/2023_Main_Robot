@@ -75,7 +75,7 @@ public class RobotContainer {
     // public final Photon photon = new Photon(this);
 
     public final ArmSubsystem arm;
-    public final Intake2 intake = new Intake2();
+    // public final Intake2 intake = new Intake2();
 
     public final Lights lights = new Lights();
     public final StatusLogging statuslogger = new StatusLogging(lights);
@@ -194,15 +194,15 @@ public class RobotContainer {
         new Trigger(controller::getStartButton)
                 .whileTrue(new AutoBalanceCommand(this));
 
-        new Trigger(() -> buttonPanel.isButtonDown(2, 3))
-                .onTrue(new IntakeCone(intake));
+        // new Trigger(() -> buttonPanel.isButtonDown(2, 3))
+        //         .onTrue(new IntakeCone(intake));
 
         new Trigger(() -> buttonPanel.isButtonDown(8, 3))
                 .onTrue(Commands.runOnce(() -> {
                     robot.autonomousExit();
                 }));
-        new Trigger(controller::getAButton).onTrue(new IntakeCone(intake));
-        new Trigger(controller::getYButton).onTrue(new IntakeCube(intake));
+        // new Trigger(controller::getAButton).onTrue(new IntakeCone(intake));
+        // new Trigger(controller::getYButton).onTrue(new IntakeCube(intake));
     }
 
     /**
