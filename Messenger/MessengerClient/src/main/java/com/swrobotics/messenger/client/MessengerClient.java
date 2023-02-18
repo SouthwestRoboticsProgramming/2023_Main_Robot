@@ -212,8 +212,8 @@ public final class MessengerClient {
         if (!isConnected()) {
             if (connectThread == null)
                 startConnectThread();
-            else
-                return;
+
+            return;
         }
 
         try {
