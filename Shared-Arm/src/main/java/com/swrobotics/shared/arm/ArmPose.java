@@ -29,7 +29,7 @@ public final class ArmPose {
         }
 
         // Make sure the position is legal according to rules and does not hit floor
-        return x >= -0.2 && x < MAX_HORIZ_EXTENT && y > FLOOR_LEVEL && y < MAX_VERT_EXTENT;
+        return x >= -0.2 && x < MAX_HORIZ_EXTENT /*&& y > FLOOR_LEVEL*/ && y < MAX_VERT_EXTENT;
     }
 
     public static ArmPose fromEndPosition(Translation2d position) {

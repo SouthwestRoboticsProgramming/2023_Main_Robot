@@ -133,9 +133,6 @@ public class RobotContainer {
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_BACKWARD", new BalanceSequenceCommand(this, true));
-        for (int i = 0; i < 3; i++)
-            // 0 is highest, 3 is floor
-            eventMap.put("ARM_TO_" + i, new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(i)));
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
@@ -203,6 +200,8 @@ public class RobotContainer {
                 }));
         // new Trigger(controller::getAButton).onTrue(new IntakeCone(intake));
         // new Trigger(controller::getYButton).onTrue(new IntakeCube(intake));
+
+        new Trigger(controller::getXButton).onTrue(new MoveArmToPositionCommand(this, arm.getHomeTarget()));
     }
 
     /**

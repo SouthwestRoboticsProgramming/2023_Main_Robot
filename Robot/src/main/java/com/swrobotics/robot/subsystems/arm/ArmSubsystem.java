@@ -49,11 +49,15 @@ public final class ArmSubsystem extends SubsystemBase {
     private static final NTEntry<Double> LOG_MOTOR_BOTTOM = new NTDouble("Log/Arm/Motor Out Bottom", 0).setTemporary();
     private static final NTEntry<Double> LOG_MOTOR_TOP = new NTDouble("Log/Arm/Motor Out Top", 0).setTemporary();
 
+    private static final NTEntry<Double> LOG_MAG = new NTDouble("Log/Arm/Error Mag", 0).setTemporary();
+    private static final NTEntry<Boolean> LOG_IN_TOLERANCE = new NTBoolean("Log/Arm/In Tolerance", false).setTemporary();
+    private static final NTEntry<Boolean> LOG_IN_TOLERANCE_H = new NTBoolean("Log/Arm/In Tolerance (Hysteresis)", false).setTemporary();
+
     private final ArmJoint topJoint, bottomJoint;
     private final ArmPathfinder finder;
     private final PIDController pid;
     private ArmPose targetPose;
-    private boolean inTolerance;
+    private boolean inToleranceHysteresis, inTolerance;
 
     private final ArmVisualizer currentVisualizer;
     private final ArmVisualizer targetVisualizer;
@@ -88,7 +92,7 @@ public final class ArmSubsystem extends SubsystemBase {
         ArmPose home = new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get());
         calibrate(home);
         targetPose = home;
-        inTolerance = false;
+        inToleranceHysteresis = false;
 
         pid = new PIDController(KP.get(), KI.get(), KD.get());
         KP.onChange(() -> pid.setP(KP.get()));
@@ -111,6 +115,10 @@ public final class ArmSubsystem extends SubsystemBase {
         return new ArmPose(bottomJoint.getCurrentAngle(), topJoint.getCurrentAngle());
     }
 
+    public Translation2d getHomeTarget() {
+        return new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get()).getEndPosition();
+    }
+
     private void idle() {
         LOG_MOTOR_BOTTOM.set(0.0);
         LOG_MOTOR_TOP.set(0.0);
@@ -130,6 +138,9 @@ public final class ArmSubsystem extends SubsystemBase {
         currentVisualizer.setPose(currentPose);
         LOG_CURRENT_BOTTOM.set(currentPose.bottomAngle);
         LOG_CURRENT_TOP.set(currentPose.topAngle);
+
+        LOG_IN_TOLERANCE.set(inTolerance);
+        LOG_IN_TOLERANCE_H.set(inToleranceHysteresis);
 
         if (targetPose == null) {
             idle();
@@ -182,18 +193,21 @@ public final class ArmSubsystem extends SubsystemBase {
 
         // Tolerance hysteresis so the motor doesn't do the shaky shaky
         double magSqToFinalTarget = toStateSpaceVec(targetPose).sub(currentPoseVec).magnitudeSq();
-        boolean prevInTolerance = inTolerance;
+        boolean prevInTolerance = inToleranceHysteresis;
+        LOG_MAG.set(Math.sqrt(magSqToFinalTarget));
         if (magSqToFinalTarget > startTol * startTol) {
-            inTolerance = false;
+            inToleranceHysteresis = false;
         } else if (magSqToFinalTarget < stopTol * stopTol) {
-            inTolerance = true;
+            inToleranceHysteresis = true;
         }
 
-        if (prevInTolerance && !inTolerance)
+        inTolerance = magSqToFinalTarget < startTol * startTol;
+
+        if (prevInTolerance && !inToleranceHysteresis)
             pid.reset();
 
         double bottomMotorOut, topMotorOut;
-        if (inTolerance) {
+        if (inToleranceHysteresis) {
             bottomMotorOut = 0;
             topMotorOut = 0;
         } else {

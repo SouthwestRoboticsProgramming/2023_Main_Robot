@@ -1,5 +1,7 @@
 package com.swrobotics.robot.commands.arm;
 
+import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
@@ -11,6 +13,9 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public final class ManualArmControlCommand extends CommandBase {
     private static final double MAX_RATE = 1; // Meters/s
+
+    private static final NTEntry<Double> L_TARGET_X = new NTDouble("Log/Arm/Target X", 0).setTemporary();
+    private static final NTEntry<Double> L_TARGET_Y = new NTDouble("Log/Arm/Target Y", 0).setTemporary();
 
     private final ArmSubsystem arm;
     private final XboxController joystick;
@@ -41,6 +46,8 @@ public final class ManualArmControlCommand extends CommandBase {
         ArmPose pose = ArmPose.fromEndPosition(newTarget);
         if (pose != null && pose.isValid()) {
             targetPos = newTarget;
+            L_TARGET_X.set(targetPos.getX());
+            L_TARGET_Y.set(targetPos.getY());
             arm.setTargetPosition(targetPos);
         }
     }

@@ -10,6 +10,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 
 public final class ScoringPositions {
     private static final class Position {
@@ -58,20 +59,20 @@ public final class ScoringPositions {
             new Position("Grid 8 (CONE)", BOTTOM_TO_LOWEST_CONE + 3 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT)
     };
 
-    // FIXME: None of these are correct
-    private static final Translation2d[] ARM_POSITIONS = {
-            new Translation2d(1.5, 1.5),
-            new Translation2d(0.9, 0.75),
-            new Translation2d(0.3, 0)
-    };
+    private static final Translation2d CUBE_UPPER = new Translation2d(1.619824, 0.662238);
+    private static final Translation2d CUBE_CENTER = new Translation2d(1.033470, 0.156015);
+    private static final Translation2d CONE_UPPER = new Translation2d(1.581727, 0.693982);
+    private static final Translation2d CONE_CENTER = new Translation2d(1.007948, 0.405284);
+    private static final Translation2d HYBRID = new Translation2d(0.536186, -0.183722);
 
     public static Command moveToPosition(RobotContainer robot, int column, int row) {
         Vec2d fieldPos = getPosition(column);
-        Translation2d armPos = getArmPosition(row);
+        Translation2d armPos = getArmPosition(row, column);
 
         return new ParallelCommandGroup(
                 new PathfindToPointCommand(robot, fieldPos),
-                new MoveArmToPositionCommand(robot, armPos)
+                new MoveArmToPositionCommand(robot, armPos),
+                new PrintCommand("The command is working!")
         );
     }
 
@@ -79,8 +80,16 @@ public final class ScoringPositions {
         return POSITIONS[column].get(DriverStation.getAlliance());
     }
 
-    public static Translation2d getArmPosition(int row) {
-        return ARM_POSITIONS[row];
+    private static boolean isCube(int column) {
+        return column == 1 || column == 4 || column == 7;
+    }
+
+    public static Translation2d getArmPosition(int row, int column) {
+        if (row == 2)
+            return HYBRID;
+        if (isCube(column))
+            return row == 0 ? CUBE_UPPER : CUBE_CENTER;
+        return row == 0 ? CONE_UPPER : CONE_CENTER;
     }
 
     public static void update() {
