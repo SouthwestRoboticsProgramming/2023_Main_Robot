@@ -3,6 +3,7 @@ package com.swrobotics.shufflelog;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.profiler.Profiler;
 import com.swrobotics.shufflelog.tool.MenuBarTool;
+import com.swrobotics.shufflelog.tool.PreMatchChecklistTool;
 import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.arm.ArmDebugTool;
 import com.swrobotics.shufflelog.tool.blockauto.BlockAutoTool;
@@ -118,7 +119,8 @@ public final class ShuffleLog extends PApplet {
         }
 
         tools.add(new MenuBarTool());
-        tools.add(new MessengerTool(this));
+        MessengerTool msg = new MessengerTool(this);
+        tools.add(msg);
         tools.add(new ShuffleLogProfilerTool(this));
         DataLogTool dataLog = new DataLogTool(this);
         tools.add(dataLog);
@@ -126,8 +128,10 @@ public final class ShuffleLog extends PApplet {
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new FieldViewTool(this));
         tools.add(new BlockAutoTool(this));
-        tools.add(new ButtonPanelTool(messenger));
+        ButtonPanelTool btn = new ButtonPanelTool(messenger);
+        tools.add(btn);
         tools.add(new ArmDebugTool(this, messenger));
+        tools.add(new PreMatchChecklistTool(msg, btn));
 
         startTime = System.currentTimeMillis();
     }

@@ -209,4 +209,8 @@ public final class MessengerTool implements Tool {
         }
         ImGui.end();
     }
+
+    public boolean isConnectedToRobot() {
+        return msg.isConnected() && host.get().equals("10.21.29.3") && port.get() == 5805;
+    }
 }
