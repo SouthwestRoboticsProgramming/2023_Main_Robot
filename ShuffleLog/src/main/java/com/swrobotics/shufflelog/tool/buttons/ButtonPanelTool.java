@@ -14,7 +14,6 @@ public final class ButtonPanelTool implements Tool {
 
     public ButtonPanelTool(MessengerClient msg) {
         panel = new SerialButtonPanel();
-//        panel = new VirtualButtonPanel();
 
         reactionTime = new ReactionTime(panel);
         reactionTime.begin();
