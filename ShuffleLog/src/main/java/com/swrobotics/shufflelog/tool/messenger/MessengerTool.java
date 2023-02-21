@@ -17,6 +17,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class MessengerTool implements Tool {
+    private static final class QuickConnect {
+        final String name;
+        final String host;
+        final int port;
+
+        public QuickConnect(String name, String host, int port) {
+            this.name = name;
+            this.host = host;
+            this.port = port;
+        }
+    }
+
+    private static final QuickConnect[] QUICK_CONNECTS = {
+            new QuickConnect("Robot", "10.21.29.3", 5805),
+            new QuickConnect("Simulation", "localhost", 5805)
+    };
+
     private static final int LOG_HISTORY_SIZE = 128;
 
     private final ShuffleLog shuffleLog;
@@ -75,11 +92,10 @@ public final class MessengerTool implements Tool {
         ImGui.setNextItemWidth(-1);
     }
 
-    private void showConnectionParams() {
-        boolean changed = false;
+    private void showConnectionParams(boolean changed) {
         if (ImGui.beginTable("conn_layout", 2, ImGuiTableFlags.SizingStretchProp)) {
             fancyLabel("Host:");
-            changed = ImGui.inputText("##conn_host", host);
+            changed |= ImGui.inputText("##conn_host", host);
 
             fancyLabel("Port:");
             changed |= ImGui.inputInt("##conn_port", port);
@@ -173,7 +189,19 @@ public final class MessengerTool implements Tool {
             ImGui.setWindowPos(50, 50, ImGuiCond.FirstUseEver);
             ImGui.setWindowSize(500, 450, ImGuiCond.FirstUseEver);
 
-            showConnectionParams();
+            ImGui.alignTextToFramePadding();
+            ImGui.text("Quick connect:");
+            boolean changed = false;
+            for (QuickConnect c : QUICK_CONNECTS) {
+                ImGui.sameLine();
+                if (ImGui.button(c.name)) {
+                    changed = true;
+                    host.set(c.host);
+                    port.set(c.port);
+                }
+            }
+
+            showConnectionParams(changed);
             ImGui.separator();
             showClients();
             ImGui.separator();
