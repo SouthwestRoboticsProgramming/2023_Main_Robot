@@ -210,7 +210,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         translation = targetTranslation;
 
         if (fieldRelative) {
-            translation.rotateBy(getGyroscopeRotation().times(-1));
+            translation = translation.rotateBy(getGyroscopeRotation().times(-1));
         }
     }
 
