@@ -63,14 +63,29 @@ public final class WaypointLayer implements FieldLayer {
     public void onWaypoints(String type, MessageReader reader) {
         int count = reader.readInt();
         waypoints.clear();
-        selection = null;
-        isSelectingPoint = false;
         for (int i = 0; i < count; i++) {
             String name = reader.readString();
             double x = reader.readDouble();
             double y = reader.readDouble();
             boolean editable = reader.readBoolean();
             waypoints.add(new Waypoint(x, y, name, editable));
+        }
+
+        if (selection != null) {
+            // Re-find selection
+
+            String selName = selection.getName();
+            selection = null;
+
+            for (Waypoint wp : waypoints) {
+                if (selName.equals(wp.getName())) {
+                    selection = wp;
+                }
+            }
+
+            if (selection == null) {
+                isSelectingPoint = false;
+            }
         }
 
         hasWaypoints = true;
