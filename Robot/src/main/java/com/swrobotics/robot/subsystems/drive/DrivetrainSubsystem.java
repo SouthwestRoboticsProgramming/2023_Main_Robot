@@ -194,7 +194,6 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         return Rotation2d.fromDegrees(gyro.getAngle());
     }
 
-    // FIXME-Mason: Do we need this? Vision calibrates the gyro already
     public void zeroGyroscope() {
         setGyroscopeRotation(new Rotation2d());
     }
