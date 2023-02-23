@@ -32,6 +32,7 @@ import com.swrobotics.robot.subsystems.drive.Pathfinder;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.robot.subsystems.intake2.Intake2;
+import com.swrobotics.robot.subsystems.intake3.Intake3Subsystem;
 import com.swrobotics.robot.subsystems.vision.Photon;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -75,6 +76,7 @@ public class RobotContainer {
     public final Photon photon = new Photon(this);
 
     public final ArmSubsystem arm;
+    public final Intake3Subsystem intake = new Intake3Subsystem();
     // public final Intake2 intake = new Intake2();
 
     public final Lights lights = new Lights();
@@ -190,6 +192,28 @@ public class RobotContainer {
         // Start button does leveling sequence on charger
         new Trigger(controller::getStartButton)
                 .whileTrue(new AutoBalanceCommand(this));
+
+        new Trigger(() -> buttonPanel.isButtonDown(2, 3))
+                .onTrue(Commands.runOnce(() -> {
+                    System.out.println("SET TO CUBE");
+                    intake.setExpectedPiece(GamePiece.CUBE);
+                    lights.set(Lights.Color.BLUE);
+                    buttonPanel.setLightOn(2, 3, true);
+                    buttonPanel.setLightOn(3, 3, false);
+                }).ignoringDisable(true));
+
+        new Trigger(() -> buttonPanel.isButtonDown(3, 3))
+                .onTrue(Commands.runOnce(() -> {
+                    System.out.println("SET TO CONE");
+                    intake.setExpectedPiece(GamePiece.CONE);
+                    lights.set(Lights.Color.YELLOW);
+                    buttonPanel.setLightOn(2, 3, false);
+                    buttonPanel.setLightOn(3, 3, true);
+                }).ignoringDisable(true));
+
+        new Trigger(() -> buttonPanel.isButtonDown(1, 3))
+                .onTrue(Commands.runOnce(intake::run))
+                .onFalse(Commands.runOnce(intake::stop));
 
         // new Trigger(() -> buttonPanel.isButtonDown(2, 3))
         //         .onTrue(new IntakeCone(intake));

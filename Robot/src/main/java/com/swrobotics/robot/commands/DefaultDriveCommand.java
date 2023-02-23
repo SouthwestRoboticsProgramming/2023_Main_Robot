@@ -15,7 +15,7 @@ public class DefaultDriveCommand extends CommandBase {
     private static final double SLOW_MODE_MULTIPLIER = 0.5;
     private static final double FAST_MODE_MULTIPLIER = 2.0;
 
-    private static final double MAX_ANGULAR_VELOCITY_MPS = 0.5;
+    private static final double MAX_ANGULAR_VELOCITY_RPS = Math.PI;
 
     private final DrivetrainSubsystem drivetrainSubsystem;
 
@@ -62,7 +62,7 @@ public class DefaultDriveCommand extends CommandBase {
 
         double x = translationXSupplier.getAsDouble() * multiplier;
         double y = translationYSupplier.getAsDouble() * multiplier;
-        double rotation = rotationSupplier.getAsDouble() * MAX_ANGULAR_VELOCITY_MPS;
+        double rotation = rotationSupplier.getAsDouble() * MAX_ANGULAR_VELOCITY_RPS;
 
         Rotation2d gyro = drivetrainSubsystem.getGyroscopeRotation();
 
