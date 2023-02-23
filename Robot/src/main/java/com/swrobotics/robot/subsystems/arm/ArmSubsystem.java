@@ -6,6 +6,7 @@ import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
+import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import com.swrobotics.robot.subsystems.arm.joint.ArmJoint;
 import com.swrobotics.robot.subsystems.arm.joint.PhysicalJoint;
 import com.swrobotics.robot.subsystems.arm.joint.SimJoint;
@@ -16,7 +17,6 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ import static com.swrobotics.shared.arm.ArmConstants.*;
 
 // All arm kinematics is treated as a 2d coordinate system, with
 // the X axis representing forward, and the Y axis representing up
-public final class ArmSubsystem extends SubsystemBase {
+public final class ArmSubsystem extends SwitchableSubsystemBase {
     // CAN IDs of the motors  FIXME
     private static final int BOTTOM_MOTOR_ID = 23;
     private static final int TOP_MOTOR_ID = 24;
@@ -224,6 +224,12 @@ public final class ArmSubsystem extends SubsystemBase {
         topJoint.setMotorOutput(topMotorOut);
         LOG_MOTOR_BOTTOM.set(bottomMotorOut);
         LOG_MOTOR_TOP.set(topMotorOut);
+    }
+
+    @Override
+    protected void onDisable() {
+        bottomJoint.setMotorOutput(0);
+        topJoint.setMotorOutput(0);
     }
 
     public void setTargetPosition(Translation2d position) {
