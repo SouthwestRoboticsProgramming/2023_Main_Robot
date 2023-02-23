@@ -176,6 +176,11 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         resetPose(new Pose2d(0, 0, new Rotation2d(0)));
     }
 
+    /**
+     * @deprecated use getPose().getRotation() outside of DrivetrainSubsystem
+     * @return rotation of robot, ccw +, 0 is forward from driver
+     */
+    @Deprecated
     public Rotation2d getGyroscopeRotation() {
         return gyro.getRotation2d().plus(gyroOffset);
     }
@@ -189,17 +194,18 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         return Rotation2d.fromDegrees(gyro.getAngle());
     }
 
+    // FIXME-Mason: Do we need this? Vision calibrates the gyro already
     public void zeroGyroscope() {
         setGyroscopeRotation(new Rotation2d());
     }
 
     /**
-     * 
+     *
      * @param newRotation New gyro rotation, CCW +
      */
-    public void setGyroscopeRotation(Rotation2d newRotation) {
+    private void setGyroscopeRotation(Rotation2d newRotation) {
         gyroOffset = getRawGyroscopeRotation().plus(newRotation);
-        resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
+//        resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
@@ -235,6 +241,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
     }
 
     public void resetPose(Pose2d newPose) {
+        setGyroscopeRotation(newPose.getRotation()); // Resetting pose recalibrates gyro!
         odometry.resetPosition(getGyroscopeRotation(), getModulePositions(), newPose);
     }
 

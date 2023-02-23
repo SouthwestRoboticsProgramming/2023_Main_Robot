@@ -15,8 +15,8 @@ public final class PathfindToPointCommand extends CommandBase {
     // Speed at which the robot tries to go
     private static final double VELOCITY = 1.0;
 
-    // Position tolerance in meters, must be larger than pathfinding tile
-    private static final double TOLERANCE = 0.175;
+    // Position tolerance in meters
+    private static final double TOLERANCE = 0.08;
 
     private final DrivetrainSubsystem drive;
     private final Pathfinder finder;

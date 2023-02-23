@@ -55,7 +55,16 @@ public final class Pathfinder extends SubsystemBase {
     }
 
     public List<Vec2d> getPath() {
-        return path;
+        if (path == null || path.isEmpty())
+            return path;
+
+        // Replace last point with actual target for more accuracy
+        List<Vec2d> pathCopy = new ArrayList<>(path);
+        if (!pathCopy.isEmpty()) {
+            pathCopy.set(pathCopy.size() - 1, new Vec2d(goalX, goalY));
+        }
+
+        return pathCopy;
     }
 
     private void setPosition(double x, double y) {
