@@ -2,11 +2,11 @@ package com.swrobotics.robot.subsystems.intake2;
 
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Intake2 extends SubsystemBase {
+public class Intake2 extends SwitchableSubsystemBase {
 
     public NTBoolean hasElement = new NTBoolean("INTAKE/HASELEMENT", false);
     public static final int MOTOR_PORT = 1;
@@ -50,6 +50,8 @@ public class Intake2 extends SubsystemBase {
         motor.set(0);
     }
 
-
-
+    @Override
+    protected void onDisable() {
+        Stop();
+    }
 }

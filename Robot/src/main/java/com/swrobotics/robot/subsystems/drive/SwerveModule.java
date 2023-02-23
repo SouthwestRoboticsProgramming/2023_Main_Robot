@@ -122,6 +122,11 @@ public class SwerveModule {
         drive.set(TalonFXControlMode.PercentOutput, driveOutput);
     }
 
+    public void stop() {
+        turn.set(TalonFXControlMode.PercentOutput, 0);
+        drive.set(TalonFXControlMode.PercentOutput, 0);
+    }
+
     /**
      * Get the current velocity and rotation of the module as read by the encoders
      * @return State measured by encoders 

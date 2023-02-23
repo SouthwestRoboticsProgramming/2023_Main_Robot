@@ -10,6 +10,7 @@ import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.robot.subsystems.StatusLoggable;
 import com.swrobotics.robot.subsystems.StatusLogging;
 
+import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -28,7 +29,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
 /*
@@ -39,7 +39,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable {
+public class DrivetrainSubsystem extends SwitchableSubsystemBase implements StatusLoggable {
 
     public StatusLogging logger;
 
@@ -360,6 +360,13 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
         }
 
         field.getObject("Cameras").setPoses(poses);
+    }
+
+    @Override
+    protected void onDisable() {
+        for (SwerveModule module : modules) {
+            module.stop();
+        }
     }
 
     @Override
