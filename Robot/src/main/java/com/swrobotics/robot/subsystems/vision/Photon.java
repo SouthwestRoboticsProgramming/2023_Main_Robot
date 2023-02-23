@@ -3,6 +3,9 @@ package com.swrobotics.robot.subsystems.vision;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.swrobotics.lib.net.NTBoolean;
+import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTEntry;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.SimVisionSystem;
@@ -127,8 +130,12 @@ public class Photon extends SubsystemBase {
         // System.out.println(estimatedPose.get().getFirst());
 
         // // Update drive with estimated pose
-        drive.resetPose(estimatedPose.get().estimatedPose.toPose2d());
+        L_MOVING.set(drive.isMoving());
+        if (!drive.isMoving())
+            drive.resetPose(estimatedPose.get().estimatedPose.toPose2d());
     }
+
+    private final NTEntry<Boolean> L_MOVING = new NTBoolean("Log/Moving", false).setTemporary();
 
 
 
