@@ -21,6 +21,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -70,8 +71,8 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
 
     private static final NTBoolean CALIBRATE = new NTBoolean("Swerve/Calibrate", false);
 
-    public static final double DRIVETRAIN_TRACKWIDTH_METERS = 0.3;
-    public static final double DRIVETRAIN_WHEELBASE_METERS = 0.3;
+    public static final double DRIVETRAIN_TRACKWIDTH_METERS = Units.inchesToMeters(18.5);
+    public static final double DRIVETRAIN_WHEELBASE_METERS = DRIVETRAIN_TRACKWIDTH_METERS;
 
     /**
      * The maximum velocity of the robot in meters per second.
@@ -94,7 +95,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements StatusLoggable
     // Here we calculate the theoretical maximum angular velocity. You can also
     // replace this with a measured amount.
     public static final double MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND /
-            Math.hypot(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0);
+            (2 * Math.PI * Math.hypot(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0));
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
             // Front left
