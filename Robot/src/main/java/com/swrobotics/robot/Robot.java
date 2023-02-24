@@ -1,5 +1,6 @@
 package com.swrobotics.robot;
 
+import com.swrobotics.lib.ThreadUtils;
 import com.swrobotics.robot.commands.arm.ManualArmControlCommand;
 import com.swrobotics.robot.positions.ScoringPositions;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -56,6 +57,9 @@ public class Robot extends TimedRobot {
         // robot's periodic
         // block in order for anything in the Command-based framework to work.
         CommandScheduler.getInstance().run();
+
+        // Run all operations queued to run on main thread
+        ThreadUtils.runMainThreadOperations();
 
         // Handle messages being sent by the raspberry pi
         robotContainer.getMessenger().readMessages();

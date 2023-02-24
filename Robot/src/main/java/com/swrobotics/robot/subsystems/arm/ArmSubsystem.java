@@ -35,8 +35,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.04); // Must be larger than stop tolerance
 
     private static final NTBoolean HOME_CALIBRATE = new NTBoolean("Arm/Home/Calibrate", false);
-    private static final NTDouble HOME_BOTTOM = new NTDouble("Arm/Home/Bottom",1/2 * Math.PI);
-    private static final NTDouble HOME_TOP = new NTDouble("Arm/Home/Top", 3/2 * Math.PI);
+    private static final NTDouble HOME_BOTTOM = new NTDouble("Arm/Home/Bottom",0.5 * Math.PI);
+    private static final NTDouble HOME_TOP = new NTDouble("Arm/Home/Top", -0.5 * Math.PI);
 
     private static final NTDouble KP = new NTDouble("Arm/PID/kP", 8);
     private static final NTDouble KI = new NTDouble("Arm/PID/kI", 0);

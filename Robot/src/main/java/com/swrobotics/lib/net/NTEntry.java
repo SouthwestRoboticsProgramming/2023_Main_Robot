@@ -1,5 +1,6 @@
 package com.swrobotics.lib.net;
 
+import com.swrobotics.lib.ThreadUtils;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableEvent;
@@ -63,11 +64,7 @@ public abstract class NTEntry<T> implements Supplier<T> {
 
     private void fireOnChanged() {
         for (Runnable listener : changeListeners) {
-            try {
-                listener.run();
-            } catch (Exception e) {
-                DriverStation.reportError("Could not complete NT onChange listener call.", false);
-            }
+            ThreadUtils.runOnMainThread(listener);
         }
     }
 }
