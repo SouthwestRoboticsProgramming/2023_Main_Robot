@@ -1,15 +1,12 @@
 package com.swrobotics.robot.subsystems.intake;
 
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.robot.RIOPorts;
 import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
-    private static final int MOTOR_PORT_PWM = 1;
-    private static final int CONE_BEAM_PORT_DIO = 0;
-    private static final int CUBE_BEAM_PORT_DIO = 1;
-
     private static final NTDouble SPEED = new NTDouble("Intake3/Speed", 0.2);
 
     private final PWMSparkMax motor;
@@ -19,9 +16,9 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     private GamePiece expectedPiece;
 
     public IntakeSubsystem() {
-        motor = new PWMSparkMax(MOTOR_PORT_PWM);
-        coneBeamBreak = new DigitalInput(CONE_BEAM_PORT_DIO);
-        cubeBeamBreak = new DigitalInput(CUBE_BEAM_PORT_DIO);
+        motor = new PWMSparkMax(RIOPorts.INTAKE_PWM);
+        coneBeamBreak = new DigitalInput(RIOPorts.INTAKE_SENSOR_CONE_DIO);
+        cubeBeamBreak = new DigitalInput(RIOPorts.INTAKE_SENSOR_CUBE_DIO);
 
         expectedPiece = GamePiece.CONE;
     }
