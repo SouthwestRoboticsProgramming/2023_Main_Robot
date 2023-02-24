@@ -1,100 +1,63 @@
 package com.swrobotics.robot.subsystems.intake;
 
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-// Slurp
-public final class IntakeSubsystem extends SubsystemBase {
-    private static final int MOTOR_PORT = 1; // FIXME
-    private static final int BEAM_BREAK_PORT = 1; // FIXME
+public final class IntakeSubsystem extends SwitchableSubsystemBase {
+    private static final int MOTOR_PORT_PWM = 1;
+    private static final int CONE_BEAM_PORT_DIO = 0;
+    private static final int CUBE_BEAM_PORT_DIO = 1;
 
-    private static final NTDouble SPEED = new NTDouble("Intake/Speed", 0.25);
-    private static final NTDouble CONTINUE_TIME = new NTDouble("Intake/Continue Time", 0.25);
-    private static final NTDouble EJECT_TIME = new NTDouble("Intake/Eject Time", 1);
+    private static final NTDouble SPEED = new NTDouble("Intake3/Speed", 0.2);
 
     private final PWMSparkMax motor;
-    private final DigitalInput beamBreak;
+    private final DigitalInput coneBeamBreak;
+    private final DigitalInput cubeBeamBreak;
 
-    private GamePiece expectedPiece, heldPiece;
+    private GamePiece expectedPiece;
 
     public IntakeSubsystem() {
-        motor = new PWMSparkMax(MOTOR_PORT);
-        beamBreak = new DigitalInput(BEAM_BREAK_PORT);
+        motor = new PWMSparkMax(MOTOR_PORT_PWM);
+        coneBeamBreak = new DigitalInput(CONE_BEAM_PORT_DIO);
+        cubeBeamBreak = new DigitalInput(CUBE_BEAM_PORT_DIO);
 
-        expectedPiece = heldPiece = GamePiece.CUBE;
+        expectedPiece = GamePiece.CONE;
+    }
+
+    public GamePiece getExpectedPiece() {
+        return expectedPiece;
     }
 
     public void setExpectedPiece(GamePiece expectedPiece) {
         this.expectedPiece = expectedPiece;
     }
 
-    private boolean isGamePiecePresent() {
-        System.out.println(beamBreak.get());
-        return !beamBreak.get();
+    public boolean isExpectedPiecePresent() {
+        DigitalInput sensor = expectedPiece == GamePiece.CONE ? coneBeamBreak : cubeBeamBreak;
+        return !sensor.get();
     }
 
-    public Command intake() {
-        CommandBase cmd = new CommandBase() {
-            final Timer timer = new Timer();
-
-            @Override
-            public void initialize() {
-                timer.start();
-            }
-
-            @Override
-            public void execute() {
-                heldPiece = expectedPiece;
-                motor.set(heldPiece.getIntakeDirection() * SPEED.get());
-                if (!isGamePiecePresent())
-                    timer.restart();
-            }
-
-            @Override
-            public boolean isFinished() {
-                return timer.hasElapsed(CONTINUE_TIME.get());
-            }
-
-            @Override
-            public void end(boolean cancelled) {
-                motor.set(0);
-            }
-        };
-        cmd.addRequirements(this);
-        return cmd;
+    public void run() {
+        if (isEnabled()) {
+            motor.set(expectedPiece.getIntakeDirection() * SPEED.get());
+        }
     }
 
-    public Command eject() {
-        CommandBase cmd = new CommandBase() {
-            final Timer timer = new Timer();
+    public void stop() {
+        motor.set(0);
+    }
 
-            @Override
-            public void initialize() {
-                timer.start();
-            }
+    @Override
+    public void onDisable() {
+        stop();
+    }
 
-            @Override
-            public void execute() {
-                motor.set(-heldPiece.getIntakeDirection() * SPEED.get());
-            }
-
-            @Override
-            public boolean isFinished() {
-                System.out.println(timer.get());
-                return timer.hasElapsed(EJECT_TIME.get());
-            }
-
-            @Override
-            public void end(boolean cancelled) {
-                motor.set(0);
-            }
-        };
-        cmd.addRequirements(this);
-        return cmd;
+    public void debugSetRunning(boolean running) {
+        if (running)
+            run();
+        else
+            stop();
     }
 }
