@@ -245,7 +245,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
         odometry.resetPosition(getGyroscopeRotation(), getModulePositions(), newPose);
     }
 
-    public void setModuleStates(SwerveModuleState[] states) {
+    private void setModuleStates(SwerveModuleState[] states) {
         for (int i = 0; i < modules.length; i++) {
             modules[i].setState(states[i]);
         }
