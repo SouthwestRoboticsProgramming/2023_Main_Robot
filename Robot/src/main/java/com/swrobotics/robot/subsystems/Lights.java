@@ -1,5 +1,6 @@
 package com.swrobotics.robot.subsystems;
 
+import com.swrobotics.robot.RIOPorts;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class Lights {
@@ -125,7 +126,7 @@ public class Lights {
         }
     }
 
-    private final Spark lights = new Spark(0); // The REV Blinkin is treated like a spark max
+    private final Spark lights = new Spark(RIOPorts.LIGHTS_PWM); // The REV Blinkin is treated like a spark
 
     private IndicatorMode currentMode = IndicatorMode.OFF;
 
