@@ -2,7 +2,7 @@ package com.swrobotics.robot.commands.intake;
 
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
-import com.swrobotics.robot.subsystems.intake3.Intake3Subsystem;
+import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
@@ -10,11 +10,11 @@ public final class IntakeCommand extends CommandBase {
     private static final NTDouble CONTINUE_TIME_CUBE = new NTDouble("Intake/Cube Continue Time", 0.5);
     private static final NTDouble CONTINUE_TIME_CONE = new NTDouble("Intake/Cone Continue Time", 0.5);
 
-    private final Intake3Subsystem intake;
+    private final IntakeSubsystem intake;
     private final Timer timer;
     private boolean prevSensor;
 
-    public IntakeCommand(Intake3Subsystem intake) {
+    public IntakeCommand(IntakeSubsystem intake) {
         this.intake = intake;
         timer = new Timer();
         prevSensor = intake.isExpectedPiecePresent();

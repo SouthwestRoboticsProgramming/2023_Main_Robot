@@ -18,21 +18,15 @@ import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
-import com.swrobotics.robot.commands.Intake.IntakeCone;
-import com.swrobotics.robot.commands.Intake.IntakeCube;
-import com.swrobotics.robot.commands.arm.ManualArmControlCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
-import com.swrobotics.robot.positions.ScoringPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
-import com.swrobotics.robot.subsystems.intake2.Intake2;
-import com.swrobotics.robot.subsystems.intake3.Intake3Subsystem;
 import com.swrobotics.robot.subsystems.vision.Photon;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -64,7 +58,7 @@ public class RobotContainer {
     private static final int MESSENGER_PORT = 5805;
     private static final String MESSENGER_NAME = "Robot";
 
-    private Robot robot;
+    private final Robot robot;
 
     // Create a way to choose between autonomous sequences
     private final SendableChooser<Supplier<Command>> autoSelector;
@@ -76,14 +70,12 @@ public class RobotContainer {
     public final Photon photon = new Photon(this);
 
     public final ArmSubsystem arm;
-    public final Intake3Subsystem intake = new Intake3Subsystem();
-    // public final Intake2 intake = new Intake2();
+    public final IntakeSubsystem intake = new IntakeSubsystem();
 
     public final Lights lights = new Lights();
     public final StatusLogging statuslogger = new StatusLogging(lights);
 
     private final XboxController controller = new XboxController(0);
-    public final Joystick armControlJoystick = new Joystick(1);
     public final ButtonPanel buttonPanel;
     private final ScoreSelectorSubsystem scoreSelector;
 
@@ -187,7 +179,7 @@ public class RobotContainer {
         // Back button zeros the gyroscope
         new Trigger(controller::getBackButton)
                 // No requirements because we don't need to interrupt anything
-                .onTrue(Commands.runOnce(() -> drivetrainSubsystem.zeroGyroscope()));
+                .onTrue(Commands.runOnce(drivetrainSubsystem::zeroGyroscope));
 
         // Start button does leveling sequence on charger
         new Trigger(controller::getStartButton)
@@ -215,17 +207,11 @@ public class RobotContainer {
                 .onTrue(Commands.runOnce(intake::run))
                 .onFalse(Commands.runOnce(intake::stop));
 
-        // new Trigger(() -> buttonPanel.isButtonDown(2, 3))
-        //         .onTrue(new IntakeCone(intake));
-
         new Trigger(() -> buttonPanel.isButtonDown(8, 3))
-                .onTrue(Commands.runOnce(() -> {
-                    robot.autonomousExit();
-                }));
-        // new Trigger(controller::getAButton).onTrue(new IntakeCone(intake));
-        // new Trigger(controller::getYButton).onTrue(new IntakeCube(intake));
+                .onTrue(Commands.runOnce(robot::autonomousExit));
 
-        new Trigger(controller::getXButton).onTrue(new MoveArmToPositionCommand(this, arm.getHomeTarget()));
+        new Trigger(controller::getXButton)
+                .onTrue(new MoveArmToPositionCommand(this, arm.getHomeTarget()));
     }
 
     /**
