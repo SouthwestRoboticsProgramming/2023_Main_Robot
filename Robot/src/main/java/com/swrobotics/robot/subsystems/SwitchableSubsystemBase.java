@@ -27,6 +27,10 @@ public abstract class SwitchableSubsystemBase implements Subsystem {
 
     protected void onDisable() {}
 
+    public boolean isEnabled() {
+        return enable.get();
+    }
+
     private void updateEnabled(boolean enabled) {
         if (enabled && !isScheduled)
             CommandScheduler.getInstance().registerSubsystem(this);
