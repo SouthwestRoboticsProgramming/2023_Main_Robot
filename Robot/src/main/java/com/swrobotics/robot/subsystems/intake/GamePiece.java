@@ -1,9 +1,8 @@
 package com.swrobotics.robot.subsystems.intake;
 
 public enum GamePiece {
-    // FIXME: Directions are probably wrong
-    CONE(1),
-    CUBE(-1);
+    CONE(-1),
+    CUBE(1);
 
     private final double intakeDirection;
 

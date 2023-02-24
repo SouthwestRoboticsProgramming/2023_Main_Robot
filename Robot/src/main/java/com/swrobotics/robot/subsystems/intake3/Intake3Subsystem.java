@@ -1,12 +1,12 @@
 package com.swrobotics.robot.subsystems.intake3;
 
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public final class Intake3Subsystem extends SubsystemBase {
+public final class Intake3Subsystem extends SwitchableSubsystemBase {
     private static final int MOTOR_PORT_PWM = 1;
     private static final int CONE_BEAM_PORT_DIO = 0;
     private static final int CUBE_BEAM_PORT_DIO = 1;
@@ -46,6 +46,11 @@ public final class Intake3Subsystem extends SubsystemBase {
 
     public void stop() {
         motor.set(0);
+    }
+
+    @Override
+    public void onDisable() {
+        stop();
     }
 
     public void debugSetRunning(boolean running) {
