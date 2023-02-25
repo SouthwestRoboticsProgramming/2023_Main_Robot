@@ -20,7 +20,7 @@ public class TurnToAngleCommand extends CommandBase {
     private final Supplier<Angle> angle;
     private final boolean robotRelative;
     private Rotation2d robotOffset;
-    
+
     public TurnToAngleCommand(RobotContainer robot, Supplier<Angle> angle, boolean robotRelative) {
         drive = robot.drivetrainSubsystem;
         this.angle = angle;
@@ -31,8 +31,8 @@ public class TurnToAngleCommand extends CommandBase {
 
 
         pid = new ProfiledPIDController(
-            10, 2, 0, 
-            new TrapezoidProfile.Constraints(6.28, 3.14));
+                10, 2, 0,
+                new TrapezoidProfile.Constraints(6.28, 3.14));
         pid.enableContinuousInput(-Math.PI, Math.PI);
 
         pid.setTolerance(0.1);
@@ -51,17 +51,21 @@ public class TurnToAngleCommand extends CommandBase {
     public void execute() {
         // Update the target
         Rotation2d target = getTarget();
+		setTargetRot(target);
+    }
 
+    public void setTargetRot(Rotation2d target) {
         if (robotRelative) {
             target.plus(robotOffset);
         }
 
         drive.setTargetRotation(new Rotation2d(
-            pid.calculate(
-                drive.getPose().getRotation().getRadians(),
-                target.getRadians()
-            )
+                pid.calculate(
+                        drive.getPose().getRotation().getRadians(),
+                        target.getRadians()
+                )
         ));
+
     }
 
 
