@@ -3,6 +3,8 @@ package com.swrobotics.robot.subsystems.arm.joint;
 public interface ArmJoint {
     // Counterclockwise from horizontal
     double getCurrentAngle();
+
+    void calibrateCanCoder(double homeAngle);
     void calibrateHome(double homeAngle);
 
     // Positive motor output should correspond to increase in angle

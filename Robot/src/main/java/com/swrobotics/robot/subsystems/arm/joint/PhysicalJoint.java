@@ -7,6 +7,7 @@ import com.revrobotics.RelativeEncoder;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
+import edu.wpi.first.wpilibj.DriverStation;
 
 public final class PhysicalJoint implements ArmJoint {
     private final CANSparkMax motor;
@@ -56,13 +57,26 @@ public final class PhysicalJoint implements ArmJoint {
     }
 
     @Override
+    public void calibrateCanCoder(double homeAngle) {
+        double current = getCurrentAngle();
+        double diff = current - homeAngle;
+
+        double diffCanCoder = diff * ArmSubsystem.JOINT_TO_CANCODER_RATIO;
+        if (Math.abs(diffCanCoder) > 180)
+            DriverStation.reportWarning("Arm is too far from home for CANCoder to work properly!", false);
+
+        canCoderOffset.set(diffCanCoder);
+    }
+
+    @Override
     public double getCurrentAngle() {
         return getEncoderPos() / gearRatio * 2 * Math.PI;
     }
 
     @Override
     public void calibrateHome(double homeAngle) {
-        // Get where the arm is, assuming it's relatively close to the home position
+        // Calculate where the arm is, assuming it's relatively close
+        // to the home position
         double actualAngle = homeAngle + getCanCoderAngle();
 
         double actualPos = getRawEncoderPos();

@@ -29,6 +29,7 @@ import static com.swrobotics.shared.arm.ArmConstants.*;
 // the X axis representing forward, and the Y axis representing up
 public final class ArmSubsystem extends SwitchableSubsystemBase {
     // Info relating to each physical arm, since they aren't identical
+    private static final NTBoolean OFFSET_CALIBRATE = new NTBoolean("Arm/Calibrate Offsets", false);
     private enum PhysicalArmInfo {
         // CANCoders should be calibrated to be at zero when arm is at home position
         ARM_1("Arm/Arm 1/Bottom Offset", "Arm/Arm 1/Top Offset"),
@@ -113,7 +114,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         finder = new ArmPathfinder(msg);
 
         ArmPose home = new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get());
-        calibrate(home);
+        calibrateHome(home);
         targetPose = home;
         inToleranceHysteresis = false;
 
@@ -129,7 +130,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         });
     }
 
-    private void calibrate(ArmPose homePose) {
+    private void calibrateHome(ArmPose homePose) {
         bottomJoint.calibrateHome(homePose.bottomAngle);
         topJoint.calibrateHome(homePose.topAngle);
     }
@@ -156,6 +157,12 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             HOME_BOTTOM.set(currentPose.bottomAngle);
             HOME_TOP.set(currentPose.topAngle);
             HOME_CALIBRATE.set(false);
+        }
+
+        if (OFFSET_CALIBRATE.get()) {
+            OFFSET_CALIBRATE.set(false);
+            bottomJoint.calibrateCanCoder(HOME_BOTTOM.get());
+            topJoint.calibrateCanCoder(HOME_TOP.get());
         }
 
         currentVisualizer.setPose(currentPose);
