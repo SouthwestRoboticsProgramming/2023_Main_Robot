@@ -27,6 +27,7 @@ import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
+import com.swrobotics.robot.subsystems.vision.Limelight;
 import com.swrobotics.robot.subsystems.vision.Photon;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -71,6 +72,8 @@ public class RobotContainer {
 
     public final ArmSubsystem arm;
     public final IntakeSubsystem intake = new IntakeSubsystem();
+
+    public final Limelight limelight = new Limelight();
 
     public final Lights lights = new Lights();
     public final StatusLogging statuslogger = new StatusLogging(lights);
