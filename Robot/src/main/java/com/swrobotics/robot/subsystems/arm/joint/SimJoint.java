@@ -26,9 +26,9 @@ public final class SimJoint implements ArmJoint {
     }
 
     @Override
-    public void setCurrentAngle(double angle) {
+    public void calibrateHome(double homeAngle) {
         double current = motor.getAngularPositionRad();
-        offset = angle - current;
+        offset = homeAngle - current;
     }
 
     @Override
