@@ -15,7 +15,7 @@ public class DefaultDriveCommand extends CommandBase {
     private static final double SLOW_MODE_MULTIPLIER = 0.5;
     private static final double FAST_MODE_MULTIPLIER = 2.0;
 
-    private static final double MAX_ANGULAR_VELOCITY_RPS = Math.PI;
+    private static final double MAX_ANGULAR_VELOCITY_RPS = Math.PI / 2;
 
     private final DrivetrainSubsystem drivetrainSubsystem;
 

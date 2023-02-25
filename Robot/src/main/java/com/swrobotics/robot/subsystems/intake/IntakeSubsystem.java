@@ -42,6 +42,12 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
         }
     }
 
+    public void eject() {
+        if (isEnabled()) {
+            motor.set(-expectedPiece.getIntakeDirection() * SPEED.get());
+        }
+    }
+
     public void stop() {
         motor.set(0);
     }

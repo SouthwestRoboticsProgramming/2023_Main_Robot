@@ -18,9 +18,11 @@ import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
+import com.swrobotics.robot.commands.arm.ManualArmControlCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
+import com.swrobotics.robot.positions.ScoringPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
@@ -115,6 +117,8 @@ public class RobotContainer {
         arm = new ArmSubsystem(messenger);
         scoreSelector = new ScoreSelectorSubsystem(this);
 
+//        arm.setDefaultCommand(new ManualArmControlCommand(this, null));
+
         // Initialize block auto
         AutoBlocks.init(messenger, this);
         WaypointStorage.init(messenger);
@@ -207,10 +211,24 @@ public class RobotContainer {
                 .onTrue(Commands.runOnce(intake::run))
                 .onFalse(Commands.runOnce(intake::stop));
 
+        new Trigger(() -> buttonPanel.isButtonDown(0, 3))
+                .onTrue(Commands.runOnce(intake::eject))
+                .onFalse(Commands.runOnce(intake::stop));
+
+        new Trigger(() -> buttonPanel.isButtonDown(4, 3))
+                .onTrue(new MoveArmToPositionCommand(
+                        this,
+                        () -> ScoringPositions.getPickupArmTargetPre(intake.getExpectedPiece())
+                ))
+                .onFalse(new MoveArmToPositionCommand(
+                        this,
+                        () -> ScoringPositions.getPickupArmTarget(intake.getExpectedPiece())
+                ));
+
         new Trigger(() -> buttonPanel.isButtonDown(8, 3))
                 .onTrue(Commands.runOnce(robot::autonomousExit));
 
-        new Trigger(controller::getXButton)
+        new Trigger(controller::getAButton)
                 .onTrue(new MoveArmToPositionCommand(this, arm.getHomeTarget()));
     }
 

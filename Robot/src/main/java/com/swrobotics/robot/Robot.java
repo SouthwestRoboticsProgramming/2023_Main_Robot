@@ -115,10 +115,4 @@ public class Robot extends TimedRobot {
             autonomousCommand.cancel();
         }
     }
-
-    @Override
-    public void teleopInit() {
-        // Schedule manual arm control
-        // new ManualArmControlCommand(robotContainer, robotContainer.armControlJoystick).schedule();
-    }
 }
