@@ -1,11 +1,22 @@
 package com.swrobotics.robot.positions;
 
+import java.util.function.Supplier;
+
 import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
+import com.swrobotics.lib.swerve.commands.TurnBlindCommand;
+import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
+import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.CCWAngle;
+import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -81,11 +92,16 @@ public final class ScoringPositions {
         Vec2d fieldPos = getPosition(column);
         Translation2d armPos = getArmPosition(row, column);
 
+        Supplier<Pose2d> pose = () -> robot.drivetrainSubsystem.getPose();
+        Supplier<Vec2d> robotPosition = () -> new Vec2d(pose.get().getX(), pose.get().getY());
+        Supplier<Angle> angle = () -> fieldPos.angleTo(robotPosition.get());
+
+        
         return new ParallelCommandGroup(
                 new PathfindToPointCommand(robot, fieldPos),
                 new MoveArmToPositionCommand(robot, armPos),
                 new PrintCommand("The command is working!")
-        );
+        ).deadlineWith(new TurnToAngleCommand(robot, angle, false).repeatedly());
     }
 
     public static Vec2d getPosition(int column) {
