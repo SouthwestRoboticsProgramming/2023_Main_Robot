@@ -94,7 +94,8 @@ public final class ScoringPositions {
 
         Supplier<Pose2d> pose = () -> robot.drivetrainSubsystem.getPose();
         Supplier<Vec2d> robotPosition = () -> new Vec2d(pose.get().getX(), pose.get().getY());
-        Supplier<Angle> angle = () -> fieldPos.angleTo(robotPosition.get());
+        Supplier<Angle> angle = () -> Angle.ZERO;
+        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) angle = () -> CWAngle.deg(180);
 
         
         return new ParallelCommandGroup(
