@@ -17,6 +17,11 @@ public final class ScoreSelectorSubsystem extends SubsystemBase {
         currentScoreCommand = null;
     }
 
+    public void cancelActiveScoreCommand() {
+        if (currentScoreCommand != null)
+            currentScoreCommand.cancel();
+    }
+
     @Override
     public void periodic() {
         for (int x = 0; x < ButtonPanel.WIDTH; x++) {

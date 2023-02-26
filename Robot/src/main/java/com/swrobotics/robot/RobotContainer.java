@@ -225,10 +225,16 @@ public class RobotContainer {
                         () -> ScoringPositions.getPickupArmTarget(intake.getExpectedPiece())
                 ));
 
-        new Trigger(() -> buttonPanel.isButtonDown(8, 3))
-                .onTrue(Commands.runOnce(robot::autonomousExit));
+        new Trigger(() -> buttonPanel.isButtonDown(5, 3))
+                .onTrue(new MoveArmToPositionCommand(this, ScoringPositions.HOLD_TARGET));
 
-        new Trigger(controller::getAButton)
+        new Trigger(() -> buttonPanel.isButtonDown(8, 3))
+                .onTrue(Commands.runOnce(() -> {
+                    scoreSelector.cancelActiveScoreCommand();
+                    robot.autonomousExit();
+                }));
+
+        new Trigger(() -> buttonPanel.isButtonDown(6, 3))
                 .onTrue(new MoveArmToPositionCommand(this, arm.getHomeTarget()));
     }
 

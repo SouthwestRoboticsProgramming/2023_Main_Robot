@@ -3,6 +3,7 @@ package com.swrobotics.robot.subsystems.drive;
 import java.util.HashMap;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
@@ -28,7 +29,7 @@ import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.*;
 
 
 /*
@@ -313,7 +314,19 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
                 true,
                 this // The drive subsystem. Used to properly set the requirements of path following
                      // commands
-        );
+        ) {
+            @Override
+            public CommandBase fullAuto(PathPlannerTrajectory trajectory) {
+                return new SequentialCommandGroup(
+                        super.fullAuto(trajectory), // Run the path
+                        new InstantCommand(() -> {
+                            // Fix the odometry pose
+                            Pose2d currentPose = getPose();
+
+                        })
+                );
+            }
+        };
 
         return autoBuilder;
     }
