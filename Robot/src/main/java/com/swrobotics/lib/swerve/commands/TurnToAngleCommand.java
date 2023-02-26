@@ -27,7 +27,7 @@ public class TurnToAngleCommand extends CommandBase {
         this.robotRelative = robotRelative;
 
         // FIXME: It can change if apriltags updates it or pathplanner resets pose
-        robotOffset = drive.getGyroscopeRotation(); // Offset does not change from when the command is sheduled
+        robotOffset = drive.getPose().getRotation(); // Offset does not change from when the command is sheduled
 
 
         pid = new ProfiledPIDController(
