@@ -97,6 +97,17 @@ public final class ScoringPositions {
         Supplier<Angle> angle = () -> Angle.ZERO;
         if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) angle = () -> CWAngle.deg(180);
 
+        /* Check which way the robot should turn so that it turns towards the center of the field */
+
+        // Get angle to center of the field
+        Vec2d centerField = new Vec2d(16.4846 / 2, 8.0035 / 2);
+        Supplier<Angle> angleToCenterField = () -> robotPosition.get().angleTo(centerField);
+
+        System.out.println(angleToCenterField.get().cw());
+        System.out.println(angleToCenterField.get().ccw());
+        Supplier<Boolean> shouldTurnClockwise = () -> angleToCenterField.get().cw().rad() < angleToCenterField.get().ccw().rad();
+
+        // System.out.println("SH?: " + shouldTurnClockwise.get());
         
         return new ParallelCommandGroup(
                 new PathfindToPointCommand(robot, fieldPos),
