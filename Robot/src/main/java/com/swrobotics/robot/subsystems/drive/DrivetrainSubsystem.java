@@ -186,14 +186,8 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
         activePathPlannerCommands = 0;
     }
 
-    /**
-     * FIXME: Don't use!
-     *
-     * @deprecated use getPose().getRotation() outside of DrivetrainSubsystem, this only works on blue alliance!
-     * @return rotation of robot, ccw +, 0 is forward from driver
-     */
-    @Deprecated
-    public Rotation2d getGyroscopeRotation() {
+    // Keep this private - use getPose().getRotation() instead
+    private Rotation2d getGyroscopeRotation() {
         return gyro.getRotation2d().plus(gyroOffset);
     }
 

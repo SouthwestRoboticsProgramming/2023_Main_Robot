@@ -30,7 +30,7 @@ public class DriveBlindCommand extends CommandBase {
     public void initialize() {
         // Make it relative to the current angle
         if (robotRelative) {
-            translation = translation.rotateBy(drive.getGyroscopeRotation());
+            translation = translation.rotateBy(drive.getPose().getRotation());
         }
     }
 
