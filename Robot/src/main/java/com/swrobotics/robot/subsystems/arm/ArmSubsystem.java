@@ -54,7 +54,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTEntry<Boolean> LOG_IN_TOLERANCE_H = new NTBoolean("Log/Arm/In Tolerance (Hysteresis)", false).setTemporary();
 
     private final ArmJoint topJoint, bottomJoint;
-    private final ArmPathfinder finder;
+//    private final ArmPathfinder finder;
     private final PIDController pid;
     private ArmPose targetPose;
     private boolean inToleranceHysteresis, inTolerance;
@@ -87,7 +87,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         );
         SmartDashboard.putData("Arm", mechanism);
 
-        finder = new ArmPathfinder(msg);
+//        finder = new ArmPathfinder(msg);
 
         ArmPose home = new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get());
         calibrate(home);
@@ -148,40 +148,40 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         }
 
         targetVisualizer.setPose(targetPose);
-        finder.setInfo(currentPose, targetPose);
+//        finder.setInfo(currentPose, targetPose);
 
         double startTol = START_TOL.get();
         double stopTol = STOP_TOL.get();
 
         ArmPose currentTarget = null;
         Vec2d currentPoseVec = toStateSpaceVec(currentPose);
-        if (!finder.isPathValid()) {
+//        if (!finder.isPathValid()) {
             // Wait for it to become valid, and move directly to target in the meantime
             // Ideally this should happen very rarely
             currentTarget = targetPose;
-        } else {
-            List<ArmPose> currentPath = finder.getPath();
-
-            double minDist = Double.POSITIVE_INFINITY;
-            for (int i = currentPath.size() - 1; i > 0; i--) {
-                ArmPose pose = currentPath.get(i);
-                Vec2d point = toStateSpaceVec(pose);
-                Vec2d prev = toStateSpaceVec(currentPath.get(i - 1));
-
-                double dist = currentPoseVec.distanceToLineSegmentSq(point, prev);
-
-                if (dist < minDist) {
-                    currentTarget = pose;
-                    minDist = dist;
-                }
-            }
-
-            // Path is empty for some reason, maybe we are already at the target?
-            if (currentTarget == null) {
-                idle();
-                return;
-            }
-        }
+//        } else {
+//            List<ArmPose> currentPath = finder.getPath();
+//
+//            double minDist = Double.POSITIVE_INFINITY;
+//            for (int i = currentPath.size() - 1; i > 0; i--) {
+//                ArmPose pose = currentPath.get(i);
+//                Vec2d point = toStateSpaceVec(pose);
+//                Vec2d prev = toStateSpaceVec(currentPath.get(i - 1));
+//
+//                double dist = currentPoseVec.distanceToLineSegmentSq(point, prev);
+//
+//                if (dist < minDist) {
+//                    currentTarget = pose;
+//                    minDist = dist;
+//                }
+//            }
+//
+//            // Path is empty for some reason, maybe we are already at the target?
+//            if (currentTarget == null) {
+//                idle();
+//                return;
+//            }
+//        }
 
         LOG_TARGET_BOTTOM.set(currentTarget.bottomAngle);
         LOG_TARGET_TOP.set(currentTarget.topAngle);
