@@ -1,6 +1,7 @@
 package com.swrobotics.robot.subsystems.drive;
 
 import java.util.HashMap;
+import java.util.List;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.PathPlannerTrajectory;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
@@ -116,7 +118,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
     // Create a field sim to view where the odometry thinks we are
     public final Field2d field = new Field2d();
-
+    private final FieldObject2d ppPose = field.getObject("PathPlanner pose");
 
     private final SwerveModule[] modules;
     
@@ -127,6 +129,8 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
     private Translation2d translation = new Translation2d();
     private Rotation2d rotation = new Rotation2d();
     private ChassisSpeeds speeds = new ChassisSpeeds();
+
+    private int activePathPlannerCommands;
     
     public DrivetrainSubsystem() {
 
@@ -178,10 +182,14 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
         // Initially start facing forward
         resetPose(new Pose2d(0, 0, new Rotation2d(0)));
+
+        activePathPlannerCommands = 0;
     }
 
     /**
-     * @deprecated use getPose().getRotation() outside of DrivetrainSubsystem
+     * FIXME: Don't use!
+     *
+     * @deprecated use getPose().getRotation() outside of DrivetrainSubsystem, this only works on blue alliance!
      * @return rotation of robot, ccw +, 0 is forward from driver
      */
     @Deprecated
@@ -239,10 +247,50 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
         return centerOfRotation;
     }
 
+    /**
+     * Gets the field-relative WPI pose of the robot.
+     *
+     * @return the good pose
+     */
     public Pose2d getPose() {
+        // If on blue alliance or not running PathPlanner, pose is correct already
+        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue || !isPathPlannerRunning())
+            return getPathPlannerPose();
+
+        // Otherwise, we need to flip the pose to be correct
+        Pose2d currentPose = getPathPlannerPose();
+
+        // Undo PathPlanner pose flipping vertically
+        Pose2d asBlue = new Pose2d(
+                new Translation2d(currentPose.getX(), FIELD_HEIGHT_METERS - currentPose.getY()),
+                currentPose.getRotation().times(-1)
+        );
+
+        // Flip horizontally to be on red alliance side (actual position)
+        return new Pose2d(
+                new Translation2d(FIELD_WIDTH_METERS - asBlue.getX(), asBlue.getY()),
+                new Rotation2d(MathUtil.wrap(Math.PI - asBlue.getRotation().getRadians(), 0, 2 * Math.PI))
+        );
+    }
+
+    /**
+     * Gets the pose that PathPlanner uses that is transformed when on red alliance
+     *
+     * @return the wacky pose
+     */
+    public Pose2d getPathPlannerPose() {
         return odometry.getPoseMeters();
     }
 
+    public boolean isPathPlannerRunning() {
+        return activePathPlannerCommands > 0;
+    }
+
+    /**
+     * Resets the current odometry pose. Do not use while PathPlanner is running!
+     *
+     * @param newPose new pose measurement to calibrate
+     */
     public void resetPose(Pose2d newPose) {
         setGyroscopeRotation(newPose.getRotation()); // Resetting pose recalibrates gyro!
         odometry.resetPosition(getGyroscopeRotation(), getModulePositions(), newPose);
@@ -307,7 +355,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
         // starts, not every time you want to create an auto command. A good place to
         // put this is in RobotContainer along with your subsystems.
         SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
-                this::getPose, // Pose2d supplier
+                this::getPathPlannerPose, // Pose2d supplier
                 this::resetPose, // Pose2d consumer, used to reset odometry at the beginning of auto
                 kinematics, // SwerveDriveKinematics
                 new PIDConstants(0.0, 0.0, 0.0), // PID constants to correct for translation error (used to create the X
@@ -321,26 +369,15 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
                      // commands
         ) {
             @Override
-            public CommandBase fullAuto(PathPlannerTrajectory trajectory) {
+            public CommandBase fullAuto(List<PathPlannerTrajectory> trajectorySet) {
                 return new SequentialCommandGroup(
-                        super.fullAuto(trajectory), // Run the path
-                        new InstantCommand(() -> { // Fix the odometry pose
-                            if (DriverStation.getAlliance() == DriverStation.Alliance.Blue)
-                                return;
-                            Pose2d currentPose = getPose();
-
-                            // Undo PathPlanner pose flipping vertically
-                            Pose2d asBlue = new Pose2d(
-                                    new Translation2d(currentPose.getX(), FIELD_HEIGHT_METERS - currentPose.getY()),
-                                    currentPose.getRotation().times(-1)
-                            );
-
-                            // Flip horizontally to be on red alliance side (actual position)
-                            Pose2d asRed = new Pose2d(
-                                    new Translation2d(FIELD_WIDTH_METERS - asBlue.getX(), asBlue.getY()),
-                                    new Rotation2d(MathUtil.wrap(Math.PI - asBlue.getRotation().getRadians(), 0, 2 * Math.PI))
-                            );
-                            DrivetrainSubsystem.this.resetPose(asRed);
+                        new InstantCommand(() -> activePathPlannerCommands++),
+                        super.fullAuto(trajectorySet), // Run the path
+                        new InstantCommand(() -> {
+                            // If no longer running PathPlanner, fix pose
+                            if (activePathPlannerCommands == 1)
+                                DrivetrainSubsystem.this.resetPose(getPose());
+                            activePathPlannerCommands--; // Decrement after so getPose() returns good pose above
                         })
                 );
             }
@@ -447,7 +484,8 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
         } else {
             odometry.update(getGyroscopeRotation(), getModulePositions());
         }
-        
+
+        ppPose.setPose(getPathPlannerPose());
         field.setRobotPose(getPose());
 
         // Check if it should calibrate the wheels

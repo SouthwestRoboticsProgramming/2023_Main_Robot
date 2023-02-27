@@ -131,7 +131,7 @@ public class Photon extends SubsystemBase {
 
         // // Update drive with estimated pose
         L_MOVING.set(drive.isMoving());
-        if (!drive.isMoving())
+        if (!drive.isMoving() && !drive.isPathPlannerRunning())
             drive.resetPose(estimatedPose.get().estimatedPose.toPose2d());
     }
 
