@@ -64,11 +64,7 @@ public class DefaultDriveCommand extends CommandBase {
         double y = translationYSupplier.getAsDouble() * multiplier;
         double rotation = rotationSupplier.getAsDouble() * MAX_ANGULAR_VELOCITY_RPS;
 
-        Rotation2d gyro = drivetrainSubsystem.getGyroscopeRotation();
-
-        if (RobotBase.isSimulation()) {
-            gyro = drivetrainSubsystem.getPose().getRotation(); // Use odometry to drive in sim
-        }
+        Rotation2d gyro = drivetrainSubsystem.getPose().getRotation();
 
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
             x,
