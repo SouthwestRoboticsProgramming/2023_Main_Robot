@@ -92,33 +92,13 @@ public final class ScoringPositions {
         Vec2d fieldPos = getPosition(column);
         Translation2d armPos = getArmPosition(row, column);
 
-        Supplier<Pose2d> pose = () -> robot.drivetrainSubsystem.getPose();
-        Supplier<Vec2d> robotPosition = () -> new Vec2d(pose.get().getX(), pose.get().getY());
-        Supplier<Angle> angle = () -> Angle.ZERO;
-        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) angle = () -> CWAngle.deg(180);
+        double angle = DriverStation.getAlliance() == DriverStation.Alliance.Blue ? 180 : 0;
 
-        /* Check which way the robot should turn so that it turns towards the center of the field */
-
-        // Compare position to center of the field to determine which way to rotate
-        Vec2d centerField = new Vec2d(16.4846 / 2, 8.0035 / 2);
-        Pose2d center = new Pose2d(new Translation2d(16.4846 / 2, 8.0035 / 2), angle.get().ccw().rotation2d());
-        
-
-        Supplier<Rotation2d> angleToCenter = () -> new Transform2d(center, pose.get()).getRotation();
-
-        System.out.println(angleToCenter.get());
-
-        System.out.println("Should turn clockwise? " + (angleToCenter.get().getDegrees() > 0));
-
-        // Supplier<Boolean> shouldTurnClockwise = () -> angleToCenterField.get().cw().rad() < angleToCenterField.get().ccw().rad();
-
-        // System.out.println("SH?: " + shouldTurnClockwise.get());
-        
         return new ParallelCommandGroup(
                 new PathfindToPointCommand(robot, fieldPos),
                 new MoveArmToPositionCommand(robot, armPos),
                 new PrintCommand("The command is working!")
-        ).deadlineWith(new TurnToAngleCommand(robot, angle, false).repeatedly());
+        ).deadlineWith(new TurnWithArmSafetyCommand(robot, () -> CCWAngle.deg(angle), fieldPos).repeatedly());
     }
 
     public static Vec2d getPosition(int column) {

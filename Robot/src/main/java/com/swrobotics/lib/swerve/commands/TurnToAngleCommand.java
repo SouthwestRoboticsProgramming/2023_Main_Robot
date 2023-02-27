@@ -31,15 +31,23 @@ public class TurnToAngleCommand extends CommandBase {
 
 
         pid = new ProfiledPIDController(
-            10, 2, 0, 
+            10, 0, 0,
             new TrapezoidProfile.Constraints(6.28, 3.14));
         pid.enableContinuousInput(-Math.PI, Math.PI);
 
         pid.setTolerance(0.1);
     }
 
-    private Rotation2d getTarget() {
+    protected Angle getTargetAngle() {
+        return angle.get();
+    }
+
+    protected Rotation2d getTarget() {
         return angle.get().ccw().rotation2d();
+    }
+
+    protected ProfiledPIDController getPID() {
+        return pid;
     }
 
     @Override
