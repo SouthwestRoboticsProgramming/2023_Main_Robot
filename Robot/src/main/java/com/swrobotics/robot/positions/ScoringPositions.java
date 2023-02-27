@@ -99,13 +99,18 @@ public final class ScoringPositions {
 
         /* Check which way the robot should turn so that it turns towards the center of the field */
 
-        // Get angle to center of the field
+        // Compare position to center of the field to determine which way to rotate
         Vec2d centerField = new Vec2d(16.4846 / 2, 8.0035 / 2);
-        Supplier<Angle> angleToCenterField = () -> robotPosition.get().angleTo(centerField);
+        Pose2d center = new Pose2d(new Translation2d(16.4846 / 2, 8.0035 / 2), angle.get().ccw().rotation2d());
+        
 
-        System.out.println(angleToCenterField.get().cw());
-        System.out.println(angleToCenterField.get().ccw());
-        Supplier<Boolean> shouldTurnClockwise = () -> angleToCenterField.get().cw().rad() < angleToCenterField.get().ccw().rad();
+        Supplier<Rotation2d> angleToCenter = () -> new Transform2d(center, pose.get()).getRotation();
+
+        System.out.println(angleToCenter.get());
+
+        System.out.println("Should turn clockwise? " + (angleToCenter.get().getDegrees() > 0));
+
+        // Supplier<Boolean> shouldTurnClockwise = () -> angleToCenterField.get().cw().rad() < angleToCenterField.get().ccw().rad();
 
         // System.out.println("SH?: " + shouldTurnClockwise.get());
         
