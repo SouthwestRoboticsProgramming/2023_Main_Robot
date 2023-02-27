@@ -52,7 +52,7 @@ public final class PhysicalJoint implements ArmJoint {
         double raw = canCoder.getAbsolutePosition();
         double offset = canCoderOffset.get();
 
-        double relative = MathUtil.wrap(raw + offset, -180, 180);
+        double relative = MathUtil.wrap(raw - offset, -180, 180);
         return relative / ArmSubsystem.JOINT_TO_CANCODER_RATIO;
     }
 
