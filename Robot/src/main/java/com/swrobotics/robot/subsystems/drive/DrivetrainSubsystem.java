@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
 
+import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.robot.subsystems.StatusLoggable;
 import com.swrobotics.robot.subsystems.StatusLogging;
 
@@ -24,6 +25,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -297,6 +299,9 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
         setChassisSpeeds(kinematics.toChassisSpeeds(states));
     }
 
+    private static final double FIELD_WIDTH_METERS = Units.inchesToMeters(54*12+1);
+    private static final double FIELD_HEIGHT_METERS = 8.02;
+
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {
         // Create the AutoBuilder. This only needs to be created once when robot code
         // starts, not every time you want to create an auto command. A good place to
@@ -319,10 +324,23 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
             public CommandBase fullAuto(PathPlannerTrajectory trajectory) {
                 return new SequentialCommandGroup(
                         super.fullAuto(trajectory), // Run the path
-                        new InstantCommand(() -> {
-                            // Fix the odometry pose
+                        new InstantCommand(() -> { // Fix the odometry pose
+                            if (DriverStation.getAlliance() == DriverStation.Alliance.Blue)
+                                return;
                             Pose2d currentPose = getPose();
 
+                            // Undo PathPlanner pose flipping vertically
+                            Pose2d asBlue = new Pose2d(
+                                    new Translation2d(currentPose.getX(), FIELD_HEIGHT_METERS - currentPose.getY()),
+                                    currentPose.getRotation().times(-1)
+                            );
+
+                            // Flip horizontally to be on red alliance side (actual position)
+                            Pose2d asRed = new Pose2d(
+                                    new Translation2d(FIELD_WIDTH_METERS - asBlue.getX(), asBlue.getY()),
+                                    new Rotation2d(MathUtil.wrap(Math.PI - asBlue.getRotation().getRadians(), 0, 2 * Math.PI))
+                            );
+                            DrivetrainSubsystem.this.resetPose(asRed);
                         })
                 );
             }
