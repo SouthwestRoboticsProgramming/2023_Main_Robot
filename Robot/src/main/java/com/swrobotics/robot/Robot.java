@@ -112,12 +112,6 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void teleopInit()
-    {
-        new TurnWithArmSafetyCommand(robotContainer, () -> null, new Translation2d(0, 0)).schedule();
-    }
-
-    @Override
     public void autonomousExit() {
         if (autonomousCommand != null) {
             autonomousCommand.cancel();

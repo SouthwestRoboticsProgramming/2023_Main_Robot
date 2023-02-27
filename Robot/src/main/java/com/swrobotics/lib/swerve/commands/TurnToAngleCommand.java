@@ -31,7 +31,7 @@ public class TurnToAngleCommand extends CommandBase {
 
 
         pid = new ProfiledPIDController(
-            10, 0, 0,
+            10, 2, 0,
             new TrapezoidProfile.Constraints(6.28, 3.14));
         pid.enableContinuousInput(-Math.PI, Math.PI);
 
