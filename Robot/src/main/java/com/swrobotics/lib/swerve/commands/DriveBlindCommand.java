@@ -12,7 +12,8 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 public class DriveBlindCommand extends CommandBase {
     private final DrivetrainSubsystem drive;
 
-    private Translation2d translation;
+    private final Translation2d translation;
+    private Translation2d currentTranslation;
     private final boolean robotRelative;
 
     public DriveBlindCommand(RobotContainer robot, Angle direction, double velocityMetersPerSecond, boolean robotRelative) {
@@ -30,13 +31,15 @@ public class DriveBlindCommand extends CommandBase {
     public void initialize() {
         // Make it relative to the current angle
         if (robotRelative) {
-            translation = translation.rotateBy(drive.getPose().getRotation());
+            currentTranslation = translation.rotateBy(drive.getPose().getRotation());
+        } else {
+            currentTranslation = translation;
         }
     }
 
     @Override
     public void execute() {
-        drive.setTargetTranslation(translation, true);
+        drive.setTargetTranslation(currentTranslation, true);
         System.out.println("Drive blind: translation " + translation);
     }
 }
