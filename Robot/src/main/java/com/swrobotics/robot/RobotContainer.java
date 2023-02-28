@@ -75,7 +75,7 @@ public class RobotContainer {
     public final IntakeSubsystem intake = new IntakeSubsystem();
 
     public final Lights lights = new Lights();
-    public final StatusLogging statuslogger = new StatusLogging(lights);
+    // public final StatusLogging statuslogger = new StatusLogging(lights);
 
     private final XboxController controller = new XboxController(0);
     public final ButtonPanel buttonPanel;
