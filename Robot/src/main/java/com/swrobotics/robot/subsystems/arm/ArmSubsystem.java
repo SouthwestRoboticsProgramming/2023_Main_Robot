@@ -50,14 +50,13 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTEntry<Double> LOG_MOTOR_TOP = new NTDouble("Log/Arm/Motor Out Top", 0).setTemporary();
 
     private static final NTEntry<Double> LOG_MAG = new NTDouble("Log/Arm/Error Mag", 0).setTemporary();
-    private static final NTEntry<Boolean> LOG_IN_TOLERANCE = new NTBoolean("Log/Arm/In Tolerance", false).setTemporary();
     private static final NTEntry<Boolean> LOG_IN_TOLERANCE_H = new NTBoolean("Log/Arm/In Tolerance (Hysteresis)", false).setTemporary();
 
     private final ArmJoint topJoint, bottomJoint;
 //    private final ArmPathfinder finder;
     private final PIDController pid;
     private ArmPose targetPose;
-    private boolean inToleranceHysteresis, inTolerance;
+    private boolean inToleranceHysteresis;
 
     private final ArmVisualizer currentVisualizer;
     private final ArmVisualizer targetVisualizer;
@@ -139,7 +138,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         LOG_CURRENT_BOTTOM.set(currentPose.bottomAngle);
         LOG_CURRENT_TOP.set(currentPose.topAngle);
 
-        LOG_IN_TOLERANCE.set(inTolerance);
         LOG_IN_TOLERANCE_H.set(inToleranceHysteresis);
 
         if (targetPose == null) {
@@ -201,8 +199,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             inToleranceHysteresis = true;
         }
 
-        inTolerance = magSqToFinalTarget < startTol * startTol;
-
         if (prevInTolerance && !inToleranceHysteresis)
             pid.reset();
 
@@ -237,6 +233,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     }
 
     public boolean isInTolerance() {
-        return inTolerance;
+        Vec2d currentPoseVec = toStateSpaceVec(getCurrentPose());
+        double magSqToFinalTarget = toStateSpaceVec(targetPose).sub(currentPoseVec).magnitudeSq();
+
+        double tol = STOP_TOL.get();
+        return magSqToFinalTarget < tol * tol;
     }
 }
