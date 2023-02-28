@@ -131,6 +131,15 @@ public class RobotContainer {
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this));
 
+        eventMap.put("CUBE_MID", new PrintCommand("Cube high"));
+
+        eventMap.put("CUBE_HIGH",
+            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 1))
+            .andThen(
+                Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+                Commands.run(intake::eject, intake).withTimeout(3)));
+        
+
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
 
@@ -148,6 +157,8 @@ public class RobotContainer {
         
         Command hybridBalance = builder.fullAuto(getPath("Hybrid Balance"));
 
+        Command cubeMidBalance = builder.fullAuto(getPath("Cube Mid Balance"));
+
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
         autoSelector.setDefaultOption("Taxi Dumb", () -> taxiDumb);
@@ -163,6 +174,8 @@ public class RobotContainer {
         autoSelector.addOption("Hybrid Cube Balance Barrier", () -> hybridBalance);
         // Block Auto
         autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
+
+        autoSelector.addOption("Cube Mid Balance", () -> cubeMidBalance);
 
         SmartDashboard.putData("Auto", autoSelector);
 
