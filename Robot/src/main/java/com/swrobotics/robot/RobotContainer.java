@@ -131,12 +131,16 @@ public class RobotContainer {
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this));
 
-        eventMap.put("CUBE_MID", new PrintCommand("Cube high"));
-
-        eventMap.put("CUBE_HIGH",
-            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 1))
+        eventMap.put("CUBE_MID",
+            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 7))
             .andThen(
                 Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+                Commands.run(intake::eject, intake).withTimeout(3)));
+
+        eventMap.put("CONE_MID",
+            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 6))
+            .andThen(
+                Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
                 Commands.run(intake::eject, intake).withTimeout(3)));
         
 
@@ -158,6 +162,7 @@ public class RobotContainer {
         Command hybridBalance = builder.fullAuto(getPath("Hybrid Balance"));
 
         Command cubeMidBalance = builder.fullAuto(getPath("Cube Mid Balance"));
+        Command coneMidBalance = builder.fullAuto(getPath("Cone Mid Balance"));
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
@@ -176,6 +181,7 @@ public class RobotContainer {
         autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
 
         autoSelector.addOption("Cube Mid Balance", () -> cubeMidBalance);
+        autoSelector.addOption("Cone Mid Balance", () -> coneMidBalance);
 
         SmartDashboard.putData("Auto", autoSelector);
 
