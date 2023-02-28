@@ -163,6 +163,8 @@ public class RobotContainer {
 
         Command cubeMidBalance = builder.fullAuto(getPath("Cube Mid Balance"));
         Command coneMidBalance = builder.fullAuto(getPath("Cone Mid Balance"));
+        Command cubeMidWallBalance = builder.fullAuto(getPath("Cube Mid Wall Balance"));
+        Command coneMidWallBalance = builder.fullAuto(getPath("Cone Mid Wall Balance"));
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
@@ -182,6 +184,9 @@ public class RobotContainer {
 
         autoSelector.addOption("Cube Mid Balance", () -> cubeMidBalance);
         autoSelector.addOption("Cone Mid Balance", () -> coneMidBalance);
+        
+        autoSelector.addOption("Cube Mid Wall Balance", () -> cubeMidWallBalance);
+        autoSelector.addOption("Cone Mid Wall Balance", () -> coneMidWallBalance);
 
         SmartDashboard.putData("Auto", autoSelector);
 
