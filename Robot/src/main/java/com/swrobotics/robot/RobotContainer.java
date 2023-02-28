@@ -24,6 +24,7 @@ import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
 import com.swrobotics.robot.positions.ScoringPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
+import com.swrobotics.robot.subsystems.arnold.Arnold;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
@@ -77,6 +78,7 @@ public class RobotContainer {
     public final Lights lights = new Lights();
     // public final StatusLogging statuslogger = new StatusLogging(lights);
 
+    public final Arnold arnold = new Arnold(RIOPorts.ARNOLD_LEFT_PWM, RIOPorts.ARNOLD_RIGHT_PWM);
     private final XboxController controller = new XboxController(0);
     public final ButtonPanel buttonPanel;
     private final ScoreSelectorSubsystem scoreSelector;
