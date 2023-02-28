@@ -2,6 +2,7 @@ package com.swrobotics.robot.commands;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
@@ -66,14 +67,18 @@ public class DefaultDriveCommand extends CommandBase {
 
         Rotation2d gyro = drivetrainSubsystem.getPose().getRotation();
 
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            x,
-            y,
-            rotation,
-            gyro);
-
+        ChassisSpeeds speeds;
         if (robotRelativeSupplier.getAsBoolean()) {
             speeds = new ChassisSpeeds(x, y, rotation);
+        } else if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) {
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                    x, y, rotation, gyro
+            );
+        } else {
+            // Flip for red alliance perspective
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                    -x, -y, rotation, gyro
+            );
         }
 
         drivetrainSubsystem.setChassisSpeeds(speeds);
