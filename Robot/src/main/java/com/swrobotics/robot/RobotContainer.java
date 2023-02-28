@@ -129,8 +129,20 @@ public class RobotContainer {
         HashMap<String, Command> eventMap = new HashMap<>();
 
         // Put your events from PathPlanner here
-        eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
-        eventMap.put("BALANCE_BACKWARD", new BalanceSequenceCommand(this, true));
+        eventMap.put("BALANCE", new BalanceSequenceCommand(this));
+
+        eventMap.put("CUBE_MID",
+            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 7))
+            .andThen(
+                Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+                Commands.run(intake::eject, intake).withTimeout(3)));
+
+        eventMap.put("CONE_MID",
+            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 6))
+            .andThen(
+                Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
+                Commands.run(intake::eject, intake).withTimeout(3)));
+        
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
@@ -145,9 +157,14 @@ public class RobotContainer {
 
         Command balanceWall = builder.fullAuto(getPath("Balance Wall"));
         Command balanceBarrier = builder.fullAuto(getPath("Balance Barrier"));
-        Command balanceClose = new BalanceSequenceCommand(this, false);
+        Command balanceClose = new BalanceSequenceCommand(this);
         
         Command hybridBalance = builder.fullAuto(getPath("Hybrid Balance"));
+
+        Command cubeMidBalance = builder.fullAuto(getPath("Cube Mid Balance"));
+        Command coneMidBalance = builder.fullAuto(getPath("Cone Mid Balance"));
+        Command cubeMidWallBalance = builder.fullAuto(getPath("Cube Mid Wall Balance"));
+        Command coneMidWallBalance = builder.fullAuto(getPath("Cone Mid Wall Balance"));
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
@@ -164,6 +181,12 @@ public class RobotContainer {
         autoSelector.addOption("Hybrid Cube Balance Barrier", () -> hybridBalance);
         // Block Auto
         autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
+
+        autoSelector.addOption("Cube Mid Balance", () -> cubeMidBalance);
+        autoSelector.addOption("Cone Mid Balance", () -> coneMidBalance);
+        
+        autoSelector.addOption("Cube Mid Wall Balance", () -> cubeMidWallBalance);
+        autoSelector.addOption("Cone Mid Wall Balance", () -> coneMidWallBalance);
 
         SmartDashboard.putData("Auto", autoSelector);
 

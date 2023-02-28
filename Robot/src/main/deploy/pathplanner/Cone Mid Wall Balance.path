@@ -2,13 +2,13 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 1.7841690384235467,
-        "y": 4.933080635392041
+        "x": 1.841264879110955,
+        "y": 1.5872643711099388
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.7841690384235456,
-        "y": 4.933080635392041
+        "x": 2.6291874805971833,
+        "y": 1.0391443005108238
       },
       "holonomicAngle": 180.0,
       "isReversal": false,
@@ -17,28 +17,28 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "CONE_HIGH"
+          "CONE_MID"
         ],
         "executionBehavior": "parallel",
-        "waitBehavior": "none",
-        "waitTime": 0
+        "waitBehavior": "deadline",
+        "waitTime": 5.0
       }
     },
     {
       "anchorPoint": {
-        "x": 6.74008801009055,
-        "y": 4.601924759405074
+        "x": 3.930972648270083,
+        "y": 0.6052159112865225
       },
       "prevControl": {
-        "x": 4.193613515432159,
-        "y": 4.624763095680038
+        "x": 2.8804091796217772,
+        "y": 0.5367009024616345
       },
       "nextControl": {
-        "x": 4.193613515432159,
-        "y": 4.624763095680038
+        "x": 4.583303048453994,
+        "y": 0.6477591982550375
       },
-      "holonomicAngle": 0,
-      "isReversal": true,
+      "holonomicAngle": 90.0,
+      "isReversal": false,
       "velOverride": null,
       "isLocked": false,
       "isStopPoint": false,
@@ -51,22 +51,22 @@
     },
     {
       "anchorPoint": {
-        "x": 1.8184265428359916,
-        "y": 4.282188051555591
+        "x": 6.25,
+        "y": 2.6666
       },
       "prevControl": {
-        "x": 3.702589285520452,
-        "y": 4.841727290292188
+        "x": 6.191967939491435,
+        "y": 1.0391443005108238
       },
       "nextControl": null,
-      "holonomicAngle": 180.0,
+      "holonomicAngle": 0.0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "CUBE_HIGH"
+          "BALANCE"
         ],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
@@ -74,18 +74,5 @@
       }
     }
   ],
-  "markers": [
-    {
-      "position": 0.2036363636363146,
-      "names": [
-        "PREPARE"
-      ]
-    },
-    {
-      "position": 1.0,
-      "names": [
-        "INTAKE"
-      ]
-    }
-  ]
+  "markers": []
 }
