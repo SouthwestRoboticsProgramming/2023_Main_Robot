@@ -129,8 +129,7 @@ public class RobotContainer {
         HashMap<String, Command> eventMap = new HashMap<>();
 
         // Put your events from PathPlanner here
-        eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
-        eventMap.put("BALANCE_BACKWARD", new BalanceSequenceCommand(this, true));
+        eventMap.put("BALANCE", new BalanceSequenceCommand(this));
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
@@ -145,7 +144,7 @@ public class RobotContainer {
 
         Command balanceWall = builder.fullAuto(getPath("Balance Wall"));
         Command balanceBarrier = builder.fullAuto(getPath("Balance Barrier"));
-        Command balanceClose = new BalanceSequenceCommand(this, false);
+        Command balanceClose = new BalanceSequenceCommand(this);
         
         Command hybridBalance = builder.fullAuto(getPath("Hybrid Balance"));
 
