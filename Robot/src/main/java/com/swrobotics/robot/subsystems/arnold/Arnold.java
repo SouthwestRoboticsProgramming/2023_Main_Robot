@@ -44,4 +44,8 @@ public class Arnold extends SubsystemBase {
     public void setState(ArnoldState state) {
         this.state = state;
     }
+
+    public boolean isSpinning() {
+        return (state == ArnoldState.IN || state == ArnoldState.OUT);
+    }
 }
