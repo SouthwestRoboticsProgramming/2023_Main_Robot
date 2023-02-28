@@ -20,9 +20,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.*;
 
 public final class ScoringPositions {
     private static final class Position {
@@ -94,11 +92,52 @@ public final class ScoringPositions {
 
         double angle = DriverStation.getAlliance() == DriverStation.Alliance.Blue ? 180 : 0;
 
-        return new ParallelCommandGroup(
+        ParallelCommandGroup driveAndArm = new ParallelCommandGroup(
                 new PathfindToPointCommand(robot, fieldPos),
-                new MoveArmToPositionCommand(robot, armPos),
-                new PrintCommand("The command is working!")
-        ).deadlineWith(new TurnWithArmSafetyCommand(robot, () -> CCWAngle.deg(angle), fieldPos).repeatedly());
+                new MoveArmToPositionCommand(robot, armPos)
+        );
+
+        TurnWithArmSafetyCommand turn = new TurnWithArmSafetyCommand(robot, () -> CCWAngle.deg(angle), fieldPos);
+        RepeatCommand turnRepeat = turn.repeatedly();
+        return new CommandBase() {
+            boolean driveDone = false;
+            {
+                CommandScheduler.getInstance().registerComposedCommands(driveAndArm, turnRepeat);
+                m_requirements.addAll(driveAndArm.getRequirements());
+                m_requirements.addAll(turnRepeat.getRequirements());
+            }
+
+            @Override
+            public void initialize() {
+                driveAndArm.initialize();
+                turnRepeat.initialize();
+            }
+
+            @Override
+            public void execute() {
+                if (!driveDone) {
+                    driveAndArm.execute();
+                    if (driveAndArm.isFinished()) {
+                        driveAndArm.end(false);
+                        driveDone = true;
+                    }
+                }
+
+                turnRepeat.execute();
+            }
+
+            @Override
+            public void end(boolean cancelled) {
+                if (!driveDone)
+                    driveAndArm.end(true);
+                turnRepeat.end(cancelled);
+            }
+
+            @Override
+            public boolean isFinished() {
+                return driveDone && turn.isFinished();
+            }
+        };
     }
 
     public static Vec2d getPosition(int column) {

@@ -3,9 +3,10 @@ package com.swrobotics.robot.positions;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
+import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.RobotContainer;
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -63,7 +64,7 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
         // Angle wrapping magic - we set the wrap point towards the
         // edge to avoid, and disable continuity, so the PID won't
         // make the robot pass through it
-        ProfiledPIDController pid = getPID();
+        PIDController pid = getPID();
         double currentIn, targetIn;
         switch (state) {
             case UNCONSTRAINED:
@@ -85,14 +86,14 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
                 throw new AssertionError();
         }
 
-        // Reset PID if state has changed (prevents I and profile jump
-        // when wrap point changes)
+        // Reset PID if state has changed
         if (state != prevState)
-            pid.reset(currentIn);
+            pid.reset();
         prevState = state;
 
         // Turn
         double pidOut = pid.calculate(currentIn, targetIn);
+        pidOut = MathUtil.clamp(pidOut, -MAX_ROTATIONAL_VEL, MAX_ROTATIONAL_VEL);
         robot.drivetrainSubsystem.setTargetRotation(new Rotation2d(pidOut));
     }
 }
