@@ -4,10 +4,7 @@ import com.swrobotics.shufflelog.tool.buttons.ButtonPanelTool;
 import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiCond;
-import imgui.flag.ImGuiPopupFlags;
 import imgui.flag.ImGuiTreeNodeFlags;
-import imgui.type.ImBoolean;
 
 import java.util.function.Supplier;
 
@@ -29,6 +26,7 @@ public final class PreMatchChecklistTool implements Tool {
     }
 
     private final Entry[] entries;
+    private boolean hasSetFocus;
     private boolean open;
 
     public PreMatchChecklistTool(MessengerTool msg, ButtonPanelTool btn) {
@@ -49,6 +47,7 @@ public final class PreMatchChecklistTool implements Tool {
                 new Entry("Are you behind the white line?")
         };
 
+        hasSetFocus = false;
         open = true;
     }
 
@@ -58,7 +57,9 @@ public final class PreMatchChecklistTool implements Tool {
             return;
 
         if (ImGui.begin("Pre-Match Checklist")) {
-            ImGui.setWindowFocus(); // Always be on top
+            if (!hasSetFocus)
+                ImGui.setWindowFocus(); // Always be on top
+            hasSetFocus = true;
 
             for (Entry entry : entries) {
                 int flags;

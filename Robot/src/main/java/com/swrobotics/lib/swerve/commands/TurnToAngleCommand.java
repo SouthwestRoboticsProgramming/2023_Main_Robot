@@ -12,23 +12,17 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class TurnToAngleCommand extends CommandBase {
-
     private static final double ANGLE_TOLERANCE_RAD = 0.05;
 
     private final DrivetrainSubsystem drive;
     private final ProfiledPIDController pid;
     private final Supplier<Angle> angle;
     private final boolean robotRelative;
-    private Rotation2d robotOffset;
-    
+
     public TurnToAngleCommand(RobotContainer robot, Supplier<Angle> angle, boolean robotRelative) {
         drive = robot.drivetrainSubsystem;
         this.angle = angle;
         this.robotRelative = robotRelative;
-
-        // FIXME: It can change if apriltags updates it or pathplanner resets pose
-        robotOffset = drive.getPose().getRotation(); // Offset does not change from when the command is sheduled
-
 
         pid = new ProfiledPIDController(
             10, 2, 0,
@@ -61,7 +55,7 @@ public class TurnToAngleCommand extends CommandBase {
         Rotation2d target = getTarget();
 
         if (robotRelative) {
-            target.plus(robotOffset);
+            target = target.plus(drive.getPose().getRotation());
         }
 
         drive.setTargetRotation(new Rotation2d(
@@ -71,7 +65,6 @@ public class TurnToAngleCommand extends CommandBase {
             )
         ));
     }
-
 
     @Override
     public boolean isFinished() {
