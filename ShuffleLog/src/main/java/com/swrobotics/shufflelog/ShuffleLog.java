@@ -25,17 +25,22 @@ import imgui.extension.implot.ImPlot;
 import imgui.extension.implot.ImPlotContext;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.system.MemoryStack;
 import processing.core.PApplet;
 import processing.core.PFont;
 
 import java.io.*;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class ShuffleLog extends PApplet {
     private static final String LAYOUT_FILE = "layout.ini";
+    private static final String PERSISTENCE_FILE = "persistence.properties";
     private static final int THREAD_POOL_SIZE = 4;
 
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
@@ -47,6 +52,7 @@ public final class ShuffleLog extends PApplet {
     private final List<Tool> removedTools = new ArrayList<>();
 
     // Things shared between tools
+    private Properties persistence;
     private final ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     private MessengerClient messenger;
 
@@ -68,7 +74,17 @@ public final class ShuffleLog extends PApplet {
             throw new RuntimeException("Failed to load WPILib libraries", e);
         }
 
-        size(1280, 720, P2D);
+        persistence = new Properties();
+        try {
+            persistence.load(new FileReader(PERSISTENCE_FILE));
+        } catch (IOException e) {
+            System.err.println("Failed to load persistence file");
+            e.printStackTrace();
+        }
+
+        int width = Integer.parseInt(persistence.getProperty("window.width", "1280"));
+        int height = Integer.parseInt(persistence.getProperty("window.height", "720"));
+        size(width, height, P2D);
     }
 
     private void saveDefaultLayout() {
@@ -101,6 +117,11 @@ public final class ShuffleLog extends PApplet {
 
         surface.setResizable(true);
         long windowHandle = (long) surface.getNative();
+
+        // Move window to previous position
+        int x = Integer.parseInt(persistence.getProperty("window.x", "0"));
+        int y = Integer.parseInt(persistence.getProperty("window.y", "0"));
+        GLFW.glfwSetWindowPos(windowHandle, x, y);
 
         ImGui.createContext();
         imPlotCtx = ImPlot.createContext();
@@ -193,6 +214,27 @@ public final class ShuffleLog extends PApplet {
     public void exit() {
         ImPlot.destroyContext(imPlotCtx);
         ImGui.destroyContext();
+
+        long windowHandle = (long) surface.getNative();
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer x = stack.mallocInt(1);
+            IntBuffer y = stack.mallocInt(1);
+
+            GLFW.glfwGetWindowPos(windowHandle, x, y);
+            persistence.setProperty("window.x", String.valueOf(x.get(0)));
+            persistence.setProperty("window.y", String.valueOf(y.get(0)));
+
+            GLFW.glfwGetWindowSize(windowHandle, x, y);
+            persistence.setProperty("window.width", String.valueOf(x.get(0)));
+            persistence.setProperty("window.height", String.valueOf(y.get(0)));
+        }
+
+        try {
+            persistence.store(new FileWriter(PERSISTENCE_FILE), "ShuffleLog persistent data");
+        } catch (IOException e) {
+            System.err.println("Failed to save persistent data");
+            e.printStackTrace();
+        }
 
         super.exit();
     }
