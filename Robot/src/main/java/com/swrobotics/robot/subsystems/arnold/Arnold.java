@@ -31,13 +31,15 @@ public class Arnold extends SubsystemBase {
             case IN:
                 left_side.set(-Speed.get());
                 right_side.set(-Speed.get());
+                break;
             case OUT:
                 right_side.set(Speed.get());
                 left_side.set(Speed.get());
+                break;
             case STOP:
                 left_side.set(0);
                 right_side.set(0);
-
+                break;
         }
     }
 
