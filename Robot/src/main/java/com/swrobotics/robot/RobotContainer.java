@@ -11,6 +11,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
+import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
@@ -150,20 +151,20 @@ public class RobotContainer {
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
 
-        // Add your pre-generated autos here...
+        // Autos that don't do anything
         Command blankAuto = new InstantCommand();
         Command printAuto = new PrintCommand("Auto chooser is working!");
 
         // Autos to just drive off the line
         Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
-        Command taxiDumb = new DriveBlindCommand(this, CWAngle.deg(180), 0.5, false).withTimeout(2.0); // Just drive forward
+        Command taxiDumb = new DriveBlindCommand(this, DrivetrainSubsystem::getAllianceForward, 0.5, false).withTimeout(2.0); // Just drive forward
 
+        // Autos that just balance
         Command balanceWall = builder.fullAuto(getPath("Balance Wall"));
         Command balanceBarrier = builder.fullAuto(getPath("Balance Barrier"));
         Command balanceClose = new BalanceSequenceCommand(this);
-        
-        Command hybridBalance = builder.fullAuto(getPath("Hybrid Balance"));
 
+        // Autos that score and then balance
         Command cubeMidBalance = builder.fullAuto(getPath("Cube Mid Balance"));
         Command coneMidBalance = builder.fullAuto(getPath("Cone Mid Balance"));
         Command cubeMidWallBalance = builder.fullAuto(getPath("Cube Mid Wall Balance"));
@@ -172,24 +173,27 @@ public class RobotContainer {
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
         autoSelector.setDefaultOption("Taxi Dumb", () -> taxiDumb);
-        autoSelector.addOption("No Auto", () -> blankAuto);
-        autoSelector.addOption("Print Auto", () -> printAuto);
-        autoSelector.addOption("Taxi Smart", () -> taxiSmart);
-
+        // autoSelector.addOption("Print Auto", () -> printAuto); Just for debugging
+        
         // Balance Autos
         autoSelector.addOption("Balance Wall", () -> balanceWall);
         autoSelector.addOption("Balance Barrier", () -> balanceBarrier);
         autoSelector.addOption("Balance No Taxi", () -> balanceClose);
         
-        autoSelector.addOption("Hybrid Cube Balance Barrier", () -> hybridBalance);
-        // Block Auto
-        autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
-
+        // Score and balance barrier side
         autoSelector.addOption("Cube Mid Balance", () -> cubeMidBalance);
         autoSelector.addOption("Cone Mid Balance", () -> coneMidBalance);
         
+        // Score and balance wall side
         autoSelector.addOption("Cube Mid Wall Balance", () -> cubeMidWallBalance);
         autoSelector.addOption("Cone Mid Wall Balance", () -> coneMidWallBalance);
+        
+        // Autos that we would rather not use
+        autoSelector.addOption("No Auto", () -> blankAuto);
+        autoSelector.addOption("Taxi Smart", () -> taxiSmart);
+
+        // Block Auto
+        autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
 
         SmartDashboard.putData("Auto", autoSelector);
 
