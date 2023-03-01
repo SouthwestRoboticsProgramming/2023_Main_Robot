@@ -8,6 +8,10 @@ public final class RIOPorts {
     public static final int LIGHTS_PWM = 0;
     public static final int INTAKE_PWM = 1; // Blue tape
 
+    public static final int ARNOLD_LEFT_PWM = 2;
+
+    public static final int ARNOLD_RIGHT_PWM = 3;
+
     public static final int INTAKE_SENSOR_CONE_DIO = 0;
     public static final int INTAKE_SENSOR_CUBE_DIO = 1;
     public static final int ARM_DETECT_DIO = 2;
