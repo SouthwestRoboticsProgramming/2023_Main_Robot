@@ -11,6 +11,7 @@ import com.swrobotics.lib.net.NTBoolean;
 
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
+import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.robot.subsystems.StatusLoggable;
 import com.swrobotics.robot.subsystems.StatusLogging;
@@ -49,6 +50,10 @@ import edu.wpi.first.wpilibj2.command.*;
 public class DrivetrainSubsystem extends SwitchableSubsystemBase implements StatusLoggable {
     public static Angle getAllianceForward() {
         return DriverStation.getAlliance() == DriverStation.Alliance.Blue ? Angle.ZERO : CCWAngle.deg(180);
+    }
+
+    public static Angle getAllianceReverse() {
+        return DriverStation.getAlliance() == DriverStation.Alliance.Blue ? CWAngle.deg(180) : Angle.ZERO;
     }
 
     public StatusLogging logger;
