@@ -154,7 +154,7 @@ public class RobotContainer {
 
         // Autos to just drive off the line
         Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
-        Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, false).withTimeout(2.0); // Just drive forward
+        Command taxiDumb = new DriveBlindCommand(this, DrivetrainSubsystem::getAllianceForward, 0.5, false).withTimeout(2.0); // Just drive forward
 
         // Autos that just balance
         Command balanceWall = builder.fullAuto(getPath("Balance Wall"));
