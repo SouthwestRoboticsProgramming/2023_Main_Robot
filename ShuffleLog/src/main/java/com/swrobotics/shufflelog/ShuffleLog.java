@@ -22,6 +22,7 @@ import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.extension.imguizmo.ImGuizmo;
 import imgui.extension.implot.ImPlot;
+import imgui.extension.implot.ImPlotContext;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import processing.core.PApplet;
@@ -39,6 +40,7 @@ public final class ShuffleLog extends PApplet {
 
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
+    private ImPlotContext imPlotCtx;
 
     private final List<Tool> tools = new ArrayList<>();
     private final List<Tool> addedTools = new ArrayList<>();
@@ -101,7 +103,7 @@ public final class ShuffleLog extends PApplet {
         long windowHandle = (long) surface.getNative();
 
         ImGui.createContext();
-        ImPlot.createContext();
+        imPlotCtx = ImPlot.createContext();
 
         ImGuiIO io = ImGui.getIO();
         io.setIniFilename(LAYOUT_FILE);
@@ -185,6 +187,14 @@ public final class ShuffleLog extends PApplet {
         Profiler.pop();
 
         Profiler.endMeasurements();
+    }
+
+    @Override
+    public void exit() {
+        ImPlot.destroyContext(imPlotCtx);
+        ImGui.destroyContext();
+
+        super.exit();
     }
 
     @Override
