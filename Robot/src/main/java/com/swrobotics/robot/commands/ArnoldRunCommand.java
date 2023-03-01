@@ -17,7 +17,7 @@ public class ArnoldRunCommand extends CommandBase {
     @Override
     public void execute() {
         boolean isSpinning = arnold.isSpinning();
-        buttonPanel.setLightOn(7, 3, isSpinning);
+        buttonPanel.setLightOn(7, 3, !isSpinning);
         if (!isSpinning) {
             arnold.setState(Arnold.ArnoldState.IN);
         } else {

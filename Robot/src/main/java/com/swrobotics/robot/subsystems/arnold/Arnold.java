@@ -12,7 +12,7 @@ public class Arnold extends SubsystemBase {
     }
 
     private ArnoldState state = ArnoldState.STOP;
-    private NTDouble Speed = new NTDouble("ARNOLD/SPEED", 0.75);
+    private NTDouble Speed = new NTDouble("ARNOLD/SPEED", 0.25);
 
     private final PWMTalonSRX left_side;
     private final PWMTalonSRX right_side;
@@ -40,6 +40,7 @@ public class Arnold extends SubsystemBase {
                 left_side.set(0);
                 right_side.set(0);
                 break;
+
         }
     }
 
