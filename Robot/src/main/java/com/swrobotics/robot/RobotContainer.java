@@ -15,6 +15,7 @@ import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.blockauto.WaypointStorage;
+import com.swrobotics.robot.commands.ArnoldRunCommand;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
@@ -261,6 +262,9 @@ public class RobotContainer {
 
         new Trigger(() -> buttonPanel.isButtonDown(6, 3))
                 .onTrue(new MoveArmToPositionCommand(this, arm.getHomeTarget()));
+
+        new Trigger(() -> buttonPanel.isButtonDown(7, 3))
+                .onTrue(new ArnoldRunCommand(arnold, buttonPanel));
     }
 
     /**
