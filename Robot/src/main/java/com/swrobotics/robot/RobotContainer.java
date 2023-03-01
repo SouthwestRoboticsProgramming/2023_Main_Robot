@@ -19,7 +19,6 @@ import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
-import com.swrobotics.robot.commands.arm.ManualArmControlCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
@@ -41,7 +40,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import com.swrobotics.robot.subsystems.StatusLogging;
 
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -130,7 +128,8 @@ public class RobotContainer {
         HashMap<String, Command> eventMap = new HashMap<>();
 
         // Put your events from PathPlanner here
-        eventMap.put("BALANCE", new BalanceSequenceCommand(this));
+        eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
+        eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
         eventMap.put("CUBE_MID",
             new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 7))
@@ -154,37 +153,43 @@ public class RobotContainer {
 
         // Autos to just drive off the line
         Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
-        Command taxiDumb = new DriveBlindCommand(this, Angle.ZERO, 0.5, false).withTimeout(2.0); // Just drive forward
+        Command taxiDumb = new DriveBlindCommand(this, CWAngle.deg(180), 0.5, false).withTimeout(2.0); // Just drive forward
 
         // Autos that just balance
         Command balanceWall = builder.fullAuto(getPath("Balance Wall"));
         Command balanceBarrier = builder.fullAuto(getPath("Balance Barrier"));
-        Command balanceClose = new BalanceSequenceCommand(this);
+        Command balanceClose = new BalanceSequenceCommand(this, false);
 
         // Autos that score and then balance
         Command cubeMidBalance = builder.fullAuto(getPath("Cube Mid Balance"));
         Command coneMidBalance = builder.fullAuto(getPath("Cone Mid Balance"));
         Command cubeMidWallBalance = builder.fullAuto(getPath("Cube Mid Wall Balance"));
         Command coneMidWallBalance = builder.fullAuto(getPath("Cone Mid Wall Balance"));
+        Command coneMidBalanceShort = builder.fullAuto(getPath("Cone Mid Short Balance"));
+        Command cubeMidBalanceShort = builder.fullAuto(getPath("Cone Mid Short Balance"));
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
         autoSelector.setDefaultOption("Taxi Dumb", () -> taxiDumb);
         // autoSelector.addOption("Print Auto", () -> printAuto); Just for debugging
         
-        // Balance Autos
+        // Balance Autos (15 / 12 pts)
         autoSelector.addOption("Balance Wall", () -> balanceWall);
         autoSelector.addOption("Balance Barrier", () -> balanceBarrier);
         autoSelector.addOption("Balance No Taxi", () -> balanceClose);
         
-        // Score and balance barrier side
+        // Score and balance barrier side (19 pts)
         autoSelector.addOption("Cube Mid Balance", () -> cubeMidBalance);
         autoSelector.addOption("Cone Mid Balance", () -> coneMidBalance);
         
         // Score and balance wall side
         autoSelector.addOption("Cube Mid Wall Balance", () -> cubeMidWallBalance);
         autoSelector.addOption("Cone Mid Wall Balance", () -> coneMidWallBalance);
-        
+
+        // Score and balance without taxi (16 pts)
+        autoSelector.addOption("Cube Mid Balance Short", () -> cubeMidBalanceShort);
+        autoSelector.addOption("Cone Mid Balance Short", () -> coneMidBalanceShort);
+
         // Autos that we would rather not use
         autoSelector.addOption("No Auto", () -> blankAuto);
         autoSelector.addOption("Taxi Smart", () -> taxiSmart);
