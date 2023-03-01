@@ -16,6 +16,7 @@ import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.blockauto.WaypointStorage;
+import com.swrobotics.robot.commands.ArnoldRunCommand;
 import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
@@ -24,6 +25,7 @@ import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
 import com.swrobotics.robot.positions.ScoringPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
+import com.swrobotics.robot.subsystems.arnold.Arnold;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
@@ -76,6 +78,7 @@ public class RobotContainer {
     public final Lights lights = new Lights();
     // public final StatusLogging statuslogger = new StatusLogging(lights);
 
+    public final Arnold arnold = new Arnold(RIOPorts.ARNOLD_LEFT_PWM, RIOPorts.ARNOLD_RIGHT_PWM);
     private final XboxController controller = new XboxController(0);
     public final ButtonPanel buttonPanel;
     private final ScoreSelectorSubsystem scoreSelector;
@@ -153,7 +156,7 @@ public class RobotContainer {
 
         // Autos to just drive off the line
         Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
-        Command taxiDumb = new DriveBlindCommand(this, CWAngle.deg(180), 0.5, false).withTimeout(2.0); // Just drive forward
+        Command taxiDumb = new DriveBlindCommand(this, DrivetrainSubsystem::getAllianceForward, 0.5, false).withTimeout(2.0); // Just drive forward
 
         // Autos that just balance
         Command balanceWall = builder.fullAuto(getPath("Balance Wall"));
@@ -268,6 +271,9 @@ public class RobotContainer {
 
         new Trigger(() -> buttonPanel.isButtonDown(6, 3))
                 .onTrue(new MoveArmToPositionCommand(this, arm.getHomeTarget()));
+
+        new Trigger(() -> buttonPanel.isButtonDown(7, 3))
+                .onTrue(new ArnoldRunCommand(arnold, buttonPanel));
     }
 
     /**
