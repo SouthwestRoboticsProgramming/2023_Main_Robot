@@ -60,6 +60,7 @@ public final class ShuffleLog extends PApplet {
 
     @Override
     public void settings() {
+        System.out.println("Loading wpilib jni");
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         WPIMathJNI.Helper.setExtractOnStaticLoad(false);
@@ -74,17 +75,21 @@ public final class ShuffleLog extends PApplet {
             throw new RuntimeException("Failed to load WPILib libraries", e);
         }
 
+        System.out.println("Loading persistence file");
         persistence = new Properties();
         try {
             persistence.load(new FileReader(PERSISTENCE_FILE));
         } catch (IOException e) {
-            System.err.println("Failed to load persistence file");
+            System.err.println("Failed to load persistence file, using defaults");
             e.printStackTrace();
         }
 
         int width = Integer.parseInt(persistence.getProperty("window.width", "1280"));
         int height = Integer.parseInt(persistence.getProperty("window.height", "720"));
+        System.out.println("Created window: " + width + "x" + height);
         size(width, height, P2D);
+
+        System.out.println("Settings complete");
     }
 
     private void saveDefaultLayout() {
@@ -113,15 +118,19 @@ public final class ShuffleLog extends PApplet {
 
     @Override
     public void setup() {
+        System.out.println("Enter setup");
         saveDefaultLayout();
+        System.out.println("Saved default layout");
 
         surface.setResizable(true);
         long windowHandle = (long) surface.getNative();
+        System.out.println("Got window handle: " + windowHandle);
 
         // Move window to previous position
         int x = Integer.parseInt(persistence.getProperty("window.x", "0"));
         int y = Integer.parseInt(persistence.getProperty("window.y", "0"));
-        GLFW.glfwSetWindowPos(windowHandle, x, y);
+//        GLFW.glfwSetWindowPos(windowHandle, x, y);
+        System.out.println("Set window pos " + x + ", " + y);
 
         ImGui.createContext();
         imPlotCtx = ImPlot.createContext();
@@ -134,12 +143,15 @@ public final class ShuffleLog extends PApplet {
         imGuiGlfw.init(windowHandle, true);
         imGuiGl3.init();
 
+        System.out.println("ImGui init done");
+
         // Set default font
         try {
             textFont(new PFont(getClass().getClassLoader().getResourceAsStream("fonts/PTSans-Regular-14.vlw")));
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Default Processing font loaded");
 
         tools.add(new MenuBarTool());
         MessengerTool msg = new MessengerTool(this);
@@ -157,10 +169,14 @@ public final class ShuffleLog extends PApplet {
         tools.add(new PreMatchChecklistTool(msg, btn));
 
         startTime = System.currentTimeMillis();
+
+        System.out.println("Tools initialized");
     }
 
     @Override
     public void draw() {
+        System.out.println("Begin draw");
+
         Profiler.beginMeasurements("Root");
 
         if (messenger != null) {
@@ -208,6 +224,8 @@ public final class ShuffleLog extends PApplet {
         Profiler.pop();
 
         Profiler.endMeasurements();
+
+        System.out.println("End draw");
     }
 
     @Override
@@ -215,19 +233,19 @@ public final class ShuffleLog extends PApplet {
         ImPlot.destroyContext(imPlotCtx);
         ImGui.destroyContext();
 
-        long windowHandle = (long) surface.getNative();
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer x = stack.mallocInt(1);
-            IntBuffer y = stack.mallocInt(1);
-
-            GLFW.glfwGetWindowPos(windowHandle, x, y);
-            persistence.setProperty("window.x", String.valueOf(x.get(0)));
-            persistence.setProperty("window.y", String.valueOf(y.get(0)));
-
-            GLFW.glfwGetWindowSize(windowHandle, x, y);
-            persistence.setProperty("window.width", String.valueOf(x.get(0)));
-            persistence.setProperty("window.height", String.valueOf(y.get(0)));
-        }
+//        long windowHandle = (long) surface.getNative();
+//        try (MemoryStack stack = MemoryStack.stackPush()) {
+//            IntBuffer x = stack.mallocInt(1);
+//            IntBuffer y = stack.mallocInt(1);
+//0
+//            GLFW.glfwGetWindowPos(windowHandle, x, y);
+//            persistence.setProperty("window.x", String.valueOf(x.get(0)));
+//            persistence.setProperty("window.y", String.valueOf(y.get(0)));
+//
+//            GLFW.glfwGetWindowSize(windowHandle, x, y);
+//            persistence.setProperty("window.width", String.valueOf(x.get(0)));
+//            persistence.setProperty("window.height", String.valueOf(y.get(0)));
+//        }
 
         try {
             persistence.store(new FileWriter(PERSISTENCE_FILE), "ShuffleLog persistent data");
