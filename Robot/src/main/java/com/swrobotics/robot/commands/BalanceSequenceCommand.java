@@ -2,8 +2,6 @@ package com.swrobotics.robot.commands;
 
 import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
 import com.swrobotics.mathlib.Angle;
-import com.swrobotics.mathlib.CWAngle;
-import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.robot.RobotContainer;
 
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
@@ -21,7 +19,7 @@ public class BalanceSequenceCommand extends SequentialCommandGroup {
 
         addCommands(
             new StartBalanceCommand(robot, angle, -1.5, false).withTimeout(3),
-            new DriveBlindCommand(robot, angle, -1.5, false).withTimeout(1), // Keep driving for 1 second
+            new DriveBlindCommand(robot, angle, -1, false).withTimeout(0.5), // Keep driving for 1 second
             new AutoBalanceCommand(robot)
         );
     }

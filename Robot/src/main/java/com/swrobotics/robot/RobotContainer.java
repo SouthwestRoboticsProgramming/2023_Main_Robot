@@ -138,13 +138,13 @@ public class RobotContainer {
             new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 7))
             .andThen(
                 Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
-                Commands.run(intake::eject, intake).withTimeout(3)));
+                Commands.run(intake::eject, intake).withTimeout(2)));
 
         eventMap.put("CONE_MID",
             new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 6))
             .andThen(
                 Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
-                Commands.run(intake::eject, intake).withTimeout(3)));
+                Commands.run(intake::eject, intake).withTimeout(2)));
         
 
         // Allow for easy creation of autos using PathPlanner
