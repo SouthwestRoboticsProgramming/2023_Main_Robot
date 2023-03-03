@@ -147,7 +147,6 @@ public class RobotContainer {
                 new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 6)),
                 Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
                 Commands.run(intake::eject, intake).withTimeout(2)));
-        
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
