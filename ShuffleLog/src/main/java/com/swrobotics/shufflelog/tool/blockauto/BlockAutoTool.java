@@ -7,6 +7,7 @@ import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.util.Cooldown;
+import imgui.ImGui;
 import imgui.ImGuiViewport;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.flag.ImGuiTableFlags;
@@ -298,6 +299,12 @@ public final class BlockAutoTool implements Tool {
     @Override
     public void process() {
         if (begin("Block Auto")) {
+            if (!msg.isConnected()) {
+                ImGui.textDisabled("Not connected");
+                end();
+                return;
+            }
+
             if (beginTable("layout", 3, ImGuiTableFlags.BordersInner | ImGuiTableFlags.Resizable)) {
                 if (!receivedCategories && blockDefsQueryCooldown.request())
                     msg.send(MSG_QUERY_BLOCK_DEFS);

@@ -118,6 +118,9 @@ public final class TagTrackerLayer implements FieldLayer {
 
     @Override
     public void draw(PGraphics g) {
+        if (!msg.isConnected())
+            return;
+
         if (!hasEnvironment && queryEnvironmentCooldown.request())
             msg.send(MSG_QUERY_ENVIRONMENT);
 
@@ -214,6 +217,11 @@ public final class TagTrackerLayer implements FieldLayer {
     @Override
     public void showGui() {
         ImGui.checkbox("Show Tags", showTags);
+
+        if (!msg.isConnected()) {
+            ImGui.textDisabled("Not connected");
+            return;
+        }
 
         if (ImGui.button("Refresh")) {
             selection = null;

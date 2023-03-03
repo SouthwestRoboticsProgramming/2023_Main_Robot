@@ -171,6 +171,9 @@ public final class PathfindingLayer implements FieldLayer {
 
     @Override
     public void draw(PGraphics g) {
+        if (!msg.isConnected())
+            return;
+
         if (grid == null && reqGridsCooldown.request()) {
             msg.send(MSG_GET_GRIDS);
         }
@@ -625,8 +628,10 @@ public final class PathfindingLayer implements FieldLayer {
         ImGui.checkbox("Show shapes", showShapes);
         ImGui.checkbox("Show path", showPath);
         ImGui.separator();
-        ImGui.text(followerStatus);
-        ImGui.separator();
+        if (!msg.isConnected()) {
+            ImGui.textDisabled("Not connected");
+            return;
+        }
         if (grid != null) {
             if (ImGui.beginTable("grids", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable)) {
                 hoveredNode = null;

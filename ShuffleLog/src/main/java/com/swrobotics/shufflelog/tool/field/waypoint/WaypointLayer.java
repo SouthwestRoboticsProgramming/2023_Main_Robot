@@ -112,6 +112,9 @@ public final class WaypointLayer implements FieldLayer {
 
     @Override
     public void draw(PGraphics g) {
+        if (!msg.isConnected())
+            return;
+
         if (!show.get())
             return;
 
@@ -165,6 +168,11 @@ public final class WaypointLayer implements FieldLayer {
     public void showGui() {
         ImGui.checkbox("Show", show);
         ImGui.separator();
+
+        if (!msg.isConnected()) {
+            ImGui.textDisabled("Not connected");
+            return;
+        }
 
         if (ImGui.button("Refresh")) {
             hasWaypoints = false;
