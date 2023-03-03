@@ -52,6 +52,13 @@ public final class TagTrackerLayer implements FieldLayer {
 
         msg.addHandler(MSG_ENVIRONMENT, this::onEnvironment);
 
+        msg.addDisconnectHandler(() -> {
+            hasEnvironment = false;
+            selection = null;
+            tags.clear();
+            cameras.clear();
+        });
+
         // TODO: This should come from the tag tracker estimate
         robotPose = new RobotPose(new Vector3f(1, 1, 1), new Matrix4f().translate(new Vector3f(0, -4, 0)));
 
@@ -77,6 +84,9 @@ public final class TagTrackerLayer implements FieldLayer {
     }
 
     private void onEnvironment(String type, MessageReader reader) {
+        tags.clear();
+        cameras.clear();
+
         int tagCount = reader.readInt();
         for (int i = 0; i < tagCount; i++) {
             double size = reader.readDouble();

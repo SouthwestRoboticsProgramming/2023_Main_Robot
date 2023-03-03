@@ -58,6 +58,14 @@ public final class WaypointLayer implements FieldLayer {
         selection = null;
         hover = null;
         isSelectingPoint = false;
+
+        msg.addDisconnectHandler(() -> {
+            waypoints.clear();
+            hasWaypoints = false;
+            selection = null;
+            hover = null;
+            isSelectingPoint = false;
+        });
     }
 
     public void onWaypoints(String type, MessageReader reader) {

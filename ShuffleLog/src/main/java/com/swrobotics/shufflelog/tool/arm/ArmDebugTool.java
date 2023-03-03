@@ -60,6 +60,11 @@ public final class ArmDebugTool extends ViewportTool {
         msg.addHandler(MSG_ARM_PATH, this::onPath);
         msg.addHandler(MSG_ARM_GRID, this::onGrid);
 
+        msg.addDisconnectHandler(() -> {
+            hasGrid = false;
+            hasPath = false;
+        });
+
         targetX = new ImDouble(1);
         targetY = new ImDouble(1);
     }

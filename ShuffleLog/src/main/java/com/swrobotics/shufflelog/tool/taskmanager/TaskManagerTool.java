@@ -90,6 +90,11 @@ public final class TaskManagerTool implements Tool {
         logTools = new HashMap<>();
 
         receivedTasks = false;
+
+        msg.addDisconnectHandler(() -> {
+            receivedTasks = false;
+            tasks.clear();
+        });
     }
 
     private RemoteNode evalPath(String path) {

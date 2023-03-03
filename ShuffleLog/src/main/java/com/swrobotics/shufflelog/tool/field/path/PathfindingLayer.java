@@ -90,6 +90,15 @@ public final class PathfindingLayer implements FieldLayer {
         msg.addHandler(MSG_SET_GOAL, this::onSetGoal);
         msg.addHandler(MSG_ROBOT_SHAPE, this::onRobotShape);
 
+        msg.addDisconnectHandler(() -> {
+            fieldInfo = null;
+            path = null;
+            grid = null;
+            cellData = null;
+            needsRefreshCellData = true;
+            robotShape = null;
+        });
+
         showGridLines = new ImBoolean(false);
         showGridCells = new ImBoolean(true);
         showShapes = new ImBoolean(true);

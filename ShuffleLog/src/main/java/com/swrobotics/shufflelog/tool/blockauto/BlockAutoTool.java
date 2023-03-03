@@ -87,6 +87,13 @@ public final class BlockAutoTool implements Tool {
         msg.addHandler(MSG_PUBLISH_CONFIRM, this::onPublishConfirm);
         msg.addHandler(MSG_DELETE_CONFIRM, this::onDeleteConfirm);
 
+        msg.addDisconnectHandler(() -> {
+            receivedSequences = false;
+            receivedCategories = false;
+            activeSeqName = null;
+            activeSeqStack = null;
+        });
+
         blockDefsQueryCooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
         categories = new ArrayList<>();
         receivedCategories = false;
