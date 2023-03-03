@@ -135,14 +135,16 @@ public class RobotContainer {
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
         eventMap.put("CUBE_MID",
-            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 7))
+            new MoveArmToPositionCommand(this, new Translation2d(0.6, ScoringPositions.getArmPosition(1, 7).getY()))
             .andThen(
+                new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 7)),
                 Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
                 Commands.run(intake::eject, intake).withTimeout(2)));
 
         eventMap.put("CONE_MID",
-            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 6))
+            new MoveArmToPositionCommand(this, new Translation2d(0.6, ScoringPositions.getArmPosition(1, 6).getY()))
             .andThen(
+                new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 6)),
                 Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
                 Commands.run(intake::eject, intake).withTimeout(2)));
         
@@ -222,7 +224,7 @@ public class RobotContainer {
 
         // Start button does leveling sequence on charger
         new Trigger(controller::getStartButton)
-                .whileTrue(new AutoBalanceCommand(this));
+                .onTrue(new BalanceSequenceCommand(this, false));
 
         new Trigger(() -> buttonPanel.isButtonDown(2, 3))
                 .onTrue(Commands.runOnce(() -> {

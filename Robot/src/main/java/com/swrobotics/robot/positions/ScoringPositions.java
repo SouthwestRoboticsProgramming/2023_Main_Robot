@@ -70,12 +70,12 @@ public final class ScoringPositions {
     private static final Translation2d[] CONE_POSITIONS = {CONE_UPPER, CONE_CENTER, CONE_LOWER};
 
     private static final Translation2d CONE_PICKUP = new Translation2d(0.671102, 0.758571);
-    private static final Translation2d CUBE_PICKUP = new Translation2d(0.766450, 0.666299);
+    private static final Translation2d CUBE_PICKUP = new Translation2d(0.766450, 0.666299 - 0.1);
     private static final double PRE_HEIGHT = 0.15;
     private static final Translation2d CONE_PICKUP_PRE = new Translation2d(CONE_PICKUP.getX(), CONE_PICKUP.getY() + PRE_HEIGHT);
-    private static final Translation2d CUBE_PICKUP_PRE = new Translation2d(CUBE_PICKUP.getX(), CUBE_PICKUP.getY() + PRE_HEIGHT);
+    private static final Translation2d CUBE_PICKUP_PRE = new Translation2d(CUBE_PICKUP.getX(), CUBE_PICKUP.getY() + PRE_HEIGHT + 0.1);
 
-    public static final Translation2d HOLD_TARGET = new Translation2d(0.539397, Units.inchesToMeters(11.5 - 13 + 2.25));
+    public static final Translation2d HOLD_TARGET = new Translation2d(0.689397, Units.inchesToMeters(11.5 - 13 + 2.25));
 
     public static Command moveToPosition(RobotContainer robot, int column, int row) {
         Vec2d fieldPos = getPosition(column);
