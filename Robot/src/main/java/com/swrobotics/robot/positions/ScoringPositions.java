@@ -88,14 +88,18 @@ public final class ScoringPositions {
 
     private static Command moveArm(RobotContainer robot, int column, int row) {
         Translation2d armPos = getArmPosition(row, column);
+        Translation2d up = new Translation2d(
+            0.6,
+            armPos.getY()
+        );
+
+        Translation2d currentPos = robot.arm.getCurrentPose().getEndPosition();
+        double distToTarget = currentPos.getDistance(armPos);
+        double distToUp = currentPos.getDistance(up);
+        System.out.println("Target: " + distToTarget + ", up: " + distToUp);
 
         MoveArmToPositionCommand toTarget = new MoveArmToPositionCommand(robot, armPos);
-        if (row == 1 || row == 0) {
-            Translation2d up = new Translation2d(
-                0.6,
-                armPos.getY()
-            );
-
+        if ((row == 1 || row == 0) && distToUp < distToTarget) {
             MoveArmToPositionCommand upFirst = new MoveArmToPositionCommand(robot, up);
             return upFirst.andThen(toTarget);
         }
