@@ -96,7 +96,6 @@ public final class ScoringPositions {
         Translation2d currentPos = robot.arm.getCurrentPose().getEndPosition();
         double distToTarget = currentPos.getDistance(armPos);
         double distToUp = currentPos.getDistance(up);
-        System.out.println("Target: " + distToTarget + ", up: " + distToUp);
 
         MoveArmToPositionCommand toTarget = new MoveArmToPositionCommand(robot, armPos);
         if ((row == 1 || row == 0) && distToUp < distToTarget) {
