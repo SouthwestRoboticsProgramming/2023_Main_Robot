@@ -134,7 +134,7 @@ public class RobotContainer {
         .andThen(
             new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 7)),
             Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
-            Commands.run(intake::eject, intake).withTimeout(2));
+            Commands.run(intake::eject, intake).withTimeout(1.0));
 
         Command coneMid =new MoveArmToPositionCommand(this, new Translation2d(0.6, ScoringPositions.getArmPosition(1, 6).getY()))
         .andThen(
@@ -150,7 +150,8 @@ public class RobotContainer {
             
 
         eventMap.put("CONE_MID", coneMid);
-            
+        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ScoringPositions.HOLD_TARGET));
+        // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
         
 
         // Allow for easy creation of autos using PathPlanner
@@ -175,7 +176,7 @@ public class RobotContainer {
         Command cubeMidWallBalance = builder.fullAuto(getPath("Cube Mid Wall Balance"));
         Command coneMidWallBalance = builder.fullAuto(getPath("Cone Mid Wall Balance"));
         Command coneMidBalanceShort = builder.fullAuto(getPath("Cone Mid Short Balance"));
-        Command cubeMidBalanceShort = builder.fullAuto(getPath("Cone Mid Short Balance"));
+        Command cubeMidBalanceShort = builder.fullAuto(getPath("Cube Mid Short Balance"));
 
         // Advanced taxi autos that prepare us for next cycle
         Command getOfOfTheWayWall = builder.fullAuto(getPath("Get Out Of The Way Wall"));
@@ -190,7 +191,7 @@ public class RobotContainer {
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
-        autoSelector.setDefaultOption("Taxi Dumb", () -> taxiDumb);
+        autoSelector.addOption("Taxi Dumb", () -> taxiDumb);
         // autoSelector.addOption("Print Auto", () -> printAuto); Just for debugging
         
         // Balance Autos (15 / 12 pts)
@@ -226,7 +227,7 @@ public class RobotContainer {
 
         // Autos that we would rather not use
         autoSelector.addOption("No Auto", () -> blankAuto);
-        autoSelector.addOption("Taxi Smart", () -> taxiSmart);
+        autoSelector.setDefaultOption("Taxi Smart", () -> taxiSmart);
 
         // Block Auto
         autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);

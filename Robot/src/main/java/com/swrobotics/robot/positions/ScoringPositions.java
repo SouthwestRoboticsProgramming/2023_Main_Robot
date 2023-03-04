@@ -44,7 +44,7 @@ public final class ScoringPositions {
     private static final double RED_LEFT_X = BLUE_RIGHT_X + 542.7225;
 
     private static final double ROBOT_SIZE_FW = 33;
-    private static final double DIST_FROM_GRIDS = 9 + ROBOT_SIZE_FW / 2;
+    private static final double DIST_FROM_GRIDS = 3 + ROBOT_SIZE_FW / 2;
     private static final double BLUE_X = Units.inchesToMeters(BLUE_RIGHT_X + DIST_FROM_GRIDS);
     private static final double RED_X = Units.inchesToMeters(RED_LEFT_X - DIST_FROM_GRIDS);
 
@@ -60,10 +60,10 @@ public final class ScoringPositions {
             new Position("Grid 8 (CONE)", BOTTOM_TO_LOWEST_CONE + 3 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT)
     };
 
-    private static final Translation2d CUBE_UPPER = new Translation2d(1.501206, 1.393604);
-    private static final Translation2d CUBE_CENTER = new Translation2d(1.436464, 0.575931);
+    private static final Translation2d CUBE_UPPER = new Translation2d(1.501206, 1.393604 - 0.15 - Units.inchesToMeters(6));
+    private static final Translation2d CUBE_CENTER = new Translation2d(1.436464 - 0.15, 0.575931);
     private static final Translation2d CUBE_LOWER = new Translation2d(1.007295, 0.362655);
-    private static final Translation2d CONE_UPPER = new Translation2d(1.42892, 1.533184 + Units.inchesToMeters(2));
+    private static final Translation2d CONE_UPPER = new Translation2d(1.42892 + Units.inchesToMeters(3), 1.533184 + Units.inchesToMeters(2) - Units.inchesToMeters(18));
     private static final Translation2d CONE_CENTER = new Translation2d(1.076355, 0.872756);
     private static final Translation2d CONE_LOWER = new Translation2d(0.929547, 0.093047);
     private static final Translation2d[] CUBE_POSITIONS = {CUBE_UPPER, CUBE_CENTER, CUBE_LOWER};
@@ -77,14 +77,29 @@ public final class ScoringPositions {
 
     public static final Translation2d HOLD_TARGET = new Translation2d(0.689397, Units.inchesToMeters(11.5 - 13 + 2.25));
 
-    public static Command moveToPosition(RobotContainer robot, int column, int row) {
-        Vec2d fieldPos = getPosition(column);
+    private static Command moveArm(RobotContainer robot, int column, int row) {
         Translation2d armPos = getArmPosition(row, column);
 
+        MoveArmToPositionCommand toTarget = new MoveArmToPositionCommand(robot, armPos);
+        if (row == 1 || row == 0) {
+            Translation2d up = new Translation2d(
+                0.6,
+                armPos.getY()
+            );
+
+            MoveArmToPositionCommand upFirst = new MoveArmToPositionCommand(robot, up);
+            return upFirst.andThen(toTarget);
+        }
+
+        return toTarget;
+    }
+
+    public static Command moveToPosition(RobotContainer robot, int column, int row) {
+        Vec2d fieldPos = getPosition(column);
+        
         return new ParallelCommandGroup(
                 new PathfindToPointCommand(robot, fieldPos),
-                new MoveArmToPositionCommand(robot, armPos),
-                new PrintCommand("The command is working!")
+                moveArm(robot, column, row)
         );
     }
 

@@ -45,6 +45,8 @@ public final class SerialButtonPanel implements ButtonPanel {
     private static final int SWITCH_GROUP = 0;
     private static final int SWITCH_BIT = 128;
 
+    private static final int TIMEOUT = 1000;
+
     private SerialPort serial;
     private boolean waitingForStart;
     private final byte[] readBuf = new byte[GROUP_COUNT];
@@ -56,6 +58,8 @@ public final class SerialButtonPanel implements ButtonPanel {
 
     private final Cooldown lightDataCooldown;
     private boolean needsLightUpdate;
+
+    private long lastDataTimestamp;
 
     public SerialButtonPanel() {
         Arrays.fill(buttonStates, (byte) 0);
@@ -103,6 +107,12 @@ public final class SerialButtonPanel implements ButtonPanel {
 
     @Override
     public void processIO() {
+        if (serial != null && System.currentTimeMillis() - lastDataTimestamp > TIMEOUT) {
+            System.err.println("Button panel timed out");
+            serial.closePort();
+            serial = null;
+        }
+
         // If not connected, try to connect
         if (serial == null) {
             SerialPort[] availPorts = SerialPort.getCommPorts();
@@ -122,6 +132,8 @@ public final class SerialButtonPanel implements ButtonPanel {
 
             waitingForStart = true;
             readIdx = 0;
+
+            lastDataTimestamp = System.currentTimeMillis() + 3000; // Add some time for port to open
         }
 
         // Write out light data
@@ -152,6 +164,8 @@ public final class SerialButtonPanel implements ButtonPanel {
             } else {
                 readBuf[readIdx++] = b;
                 if (readIdx == readBuf.length) {
+                    lastDataTimestamp = System.currentTimeMillis();
+
                     System.arraycopy(readBuf, 0, buttonStates, 0, GROUP_COUNT);
                     switchState = (readBuf[SWITCH_GROUP] & SWITCH_BIT) != 0 ? SwitchState.UP : SwitchState.DOWN;
                     waitingForStart = true;
