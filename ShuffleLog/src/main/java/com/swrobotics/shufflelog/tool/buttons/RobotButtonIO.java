@@ -15,14 +15,14 @@ public final class RobotButtonIO {
     private static final int UPDATES_PER_SECOND = 50;
 
     private final MessengerClient msg;
-    private final ButtonPanel panel;
+    private final ButtonPanel[] panels;
     private final Cooldown updateCooldown;
 
     private boolean enabled;
 
-    public RobotButtonIO(MessengerClient msg, ButtonPanel panel) {
+    public RobotButtonIO(MessengerClient msg, ButtonPanel... panels) {
         this.msg = msg;
-        this.panel = panel;
+        this.panels = panels;
         updateCooldown = new Cooldown(1_000_000_000L / UPDATES_PER_SECOND);
 
         msg.addHandler(MSG_LIGHT_DATA, this::onLightData);
@@ -43,7 +43,8 @@ public final class RobotButtonIO {
             for (int j = 0; j < (i == 4 ? 4 : 8); j++) {
                 int x = i * 2 + j / 4;
                 int y = j % 4;
-                panel.setButtonLight(x, y, (packed[i] & (1 << j)) != 0);
+                for (ButtonPanel panel : panels)
+                    panel.setButtonLight(x, y, (packed[i] & (1 << j)) != 0);
             }
         }
     }
@@ -56,8 +57,12 @@ public final class RobotButtonIO {
         for (int x = 0; x < 9; x++) {
             for (int y = 0; y < 4; y++) {
                 byte bit = (byte) (1 << (y + (x % 2) * 4));
-                if (panel.isButtonDown(x, y))
-                    packed[x / 2] |= bit;
+                for (ButtonPanel panel : panels) {
+                    // Button is registered as pressed if it's pressed on
+                    // any panel
+                    if (panel.isButtonDown(x, y))
+                        packed[x / 2] |= bit;
+                }
             }
         }
 

@@ -9,16 +9,18 @@ import imgui.flag.ImGuiStyleVar;
 
 public final class ButtonPanelTool implements Tool {
     private final ButtonPanel panel;
+    private final VirtualButtonPanel virtualPanel;
     private final ReactionTime reactionTime;
     private final RobotButtonIO io;
 
     public ButtonPanelTool(MessengerClient msg) {
         panel = new SerialButtonPanel();
+        virtualPanel = new VirtualButtonPanel();
 
         reactionTime = new ReactionTime(panel);
         reactionTime.begin();
 
-        io = new RobotButtonIO(msg, panel);
+        io = new RobotButtonIO(msg, panel, virtualPanel);
     }
 
     private void showGUI() {
@@ -68,6 +70,7 @@ public final class ButtonPanelTool implements Tool {
         prevSwitch = switchState;
 
         panel.processIO();
+        virtualPanel.processIO();
         showGUI();
     }
 
