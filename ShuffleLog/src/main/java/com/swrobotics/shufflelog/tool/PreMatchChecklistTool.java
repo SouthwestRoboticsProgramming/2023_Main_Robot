@@ -32,7 +32,8 @@ public final class PreMatchChecklistTool implements Tool {
     public PreMatchChecklistTool(MessengerTool msg) {
         entries = new Entry[]{
                 new Entry("Is the driver station open?"),
-                new Entry("Is the Xbox controller connected in port 0?"),
+                new Entry("Is the driver controller connected in port 0?"),
+                new Entry("Is the manipulator controller connected in port 1?"),
 //                new Entry("Is the button panel connected?")
 //                        .withChecker(btn::isConnected),
                 new Entry(
