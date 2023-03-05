@@ -1,5 +1,8 @@
 package com.swrobotics.lib.input;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -71,6 +74,11 @@ public final class InputButton implements InputElement {
         return this;
     }
 
+    public InputButton onRising(Command command) {
+        onRising(() -> CommandScheduler.getInstance().schedule(command));
+        return this;
+    }
+
     /**
      * Adds a function that will be called whenever the button is released.
      * This function will be invoked on each periodic where {@link #isFalling()}
@@ -81,6 +89,11 @@ public final class InputButton implements InputElement {
      */
     public InputButton onFalling(Runnable fallingFn) {
         onFalling.add(fallingFn);
+        return this;
+    }
+
+    public InputButton onFalling(Command command) {
+        onFalling(() -> CommandScheduler.getInstance().schedule(command));
         return this;
     }
 

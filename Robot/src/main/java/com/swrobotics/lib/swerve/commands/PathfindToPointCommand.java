@@ -21,12 +21,16 @@ public final class PathfindToPointCommand extends CommandBase {
     private final DrivetrainSubsystem drive;
     private final Pathfinder finder;
 
-    private final Vec2d goal;
+    private Vec2d goal;
     private boolean finished;
 
     public PathfindToPointCommand(RobotContainer robot, Vec2d goal) {
         drive = robot.drivetrainSubsystem;
         finder = robot.pathfinder;
+        this.goal = goal;
+    }
+
+    public void setGoal(Vec2d goal) {
         this.goal = goal;
     }
 
