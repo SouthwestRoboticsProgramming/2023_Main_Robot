@@ -25,6 +25,13 @@ public final class ButtonPanelTool implements Tool {
 
     private void showGUI() {
         if (ImGui.begin("Button Panel")) {
+            if (!io.isConnected()) {
+                ImGui.pushStyleColor(ImGuiCol.Text, 1.0f, 0.0f, 0.0f, 1.0f);
+                ImGui.textWrapped("MESSENGER NOT CONNECTED TO ROBOT");
+                ImGui.popStyleColor();
+                ImGui.separator();
+            }
+
             if (!panel.isConnected()) {
                 ImGui.text("Not connected");
             } else {

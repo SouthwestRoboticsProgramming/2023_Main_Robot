@@ -70,4 +70,8 @@ public final class RobotButtonIO {
                 .addRaw(packed)
                 .send();
     }
+
+    public boolean isConnected() {
+        return msg.isConnected();
+    }
 }

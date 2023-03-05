@@ -90,6 +90,11 @@ public final class TaskManagerTool implements Tool {
         logTools = new HashMap<>();
 
         receivedTasks = false;
+
+        msg.addDisconnectHandler(() -> {
+            receivedTasks = false;
+            tasks.clear();
+        });
     }
 
     private RemoteNode evalPath(String path) {
@@ -573,6 +578,12 @@ public final class TaskManagerTool implements Tool {
     @Override
     public void process() {
         if (ImGui.begin("Task Manager [" + name + "]")) {
+            if (!msg.isConnected()) {
+                ImGui.textDisabled("Not connected");
+                ImGui.end();
+                return;
+            }
+
             if (!receivedTasks && reqTasksCooldown.request()) {
                 msg.send(name + MSG_LIST_TASKS);
             }

@@ -232,6 +232,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         targetPose = ArmPose.fromEndPosition(position);
     }
 
+    public ArmPose getTargetPose() {
+        return targetPose;
+    }
+
     public boolean isInTolerance() {
         if (targetPose == null)
             return true;

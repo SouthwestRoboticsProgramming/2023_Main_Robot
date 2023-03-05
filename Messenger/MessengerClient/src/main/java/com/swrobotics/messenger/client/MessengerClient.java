@@ -46,6 +46,7 @@ public final class MessengerClient {
 
     private final Set<String> listening;
     private final Set<Handler> handlers;
+    private final Set<Runnable> disconnectHandlers;
 
     private Exception lastConnectFailException;
 
@@ -74,6 +75,7 @@ public final class MessengerClient {
 
         listening = Collections.synchronizedSet(new HashSet<>());
         handlers = new HashSet<>();
+        disconnectHandlers = new HashSet<>();
 
         lastConnectFailException = null;
 
@@ -94,9 +96,11 @@ public final class MessengerClient {
         this.port = port;
         this.name = name;
 
-        send(DISCONNECT);
-        disconnectSocket();
-        connected.set(false);
+        if (connected.get()) {
+            send(DISCONNECT);
+            disconnectSocket();
+            connected.set(false);
+        }
 
         startConnectThread();
     }
@@ -199,6 +203,10 @@ public final class MessengerClient {
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        for (Runnable handler : disconnectHandlers) {
+            handler.run();
         }
 
         prevServerHeartbeatTimestamp = -1;
@@ -314,6 +322,15 @@ public final class MessengerClient {
                 listen(type);
             }
         }
+    }
+
+    /**
+     * Registers a function to call whenever the client disconnects.
+     *
+     * @param handler handler to call
+     */
+    public void addDisconnectHandler(Runnable handler) {
+        disconnectHandlers.add(handler);
     }
 
     private void listen(String type) {

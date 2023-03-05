@@ -130,22 +130,27 @@ public class RobotContainer {
 
         HashMap<String, Command> eventMap = new HashMap<>();
 
+        Command cubeMid = new MoveArmToPositionCommand(this, new Translation2d(0.6, ScoringPositions.getArmPosition(1, 7).getY()))
+        .andThen(
+            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 7)),
+            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+        Command coneMid =new MoveArmToPositionCommand(this, new Translation2d(0.6, ScoringPositions.getArmPosition(1, 6).getY()))
+        .andThen(
+            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 6)),
+            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
+            Commands.run(intake::eject, intake).withTimeout(2));
+
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
-        eventMap.put("CUBE_MID",
-            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 7))
-            .andThen(
-                Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
-                Commands.run(intake::eject, intake).withTimeout(2)));
+        eventMap.put("CUBE_MID", cubeMid);
 
-        eventMap.put("CONE_MID",
-            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 6))
-            .andThen(
-                Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
-                Commands.run(intake::eject, intake).withTimeout(2)));
-        
+        eventMap.put("CONE_MID", coneMid);
+        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ScoringPositions.HOLD_TARGET));
+        // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
@@ -169,11 +174,22 @@ public class RobotContainer {
         Command cubeMidWallBalance = builder.fullAuto(getPath("Cube Mid Wall Balance"));
         Command coneMidWallBalance = builder.fullAuto(getPath("Cone Mid Wall Balance"));
         Command coneMidBalanceShort = builder.fullAuto(getPath("Cone Mid Short Balance"));
-        Command cubeMidBalanceShort = builder.fullAuto(getPath("Cone Mid Short Balance"));
+        Command cubeMidBalanceShort = builder.fullAuto(getPath("Cube Mid Short Balance"));
+
+        // Advanced taxi autos that prepare us for next cycle
+        Command getOfOfTheWayWall = builder.fullAuto(getPath("Get Out Of The Way Wall"));
+        Command getOfOfTheWayBarrier = builder.fullAuto(getPath("Get Out Of The Way Barrier"));
+
+        // Autos that do no balance but score
+        Command cubeAndRunBarrier = builder.fullAuto(getPath("Cube and Run Barrier"));
+        Command cubeAndRunMid = builder.fullAuto(getPath("Cube and Run Mid"));
+        Command cubeAndRunWall = builder.fullAuto(getPath("Cube and Run Wall"));
+
+        // Autos that just do cube or cone mid
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
-        autoSelector.setDefaultOption("Taxi Dumb", () -> taxiDumb);
+        autoSelector.addOption("Taxi Dumb", () -> taxiDumb);
         // autoSelector.addOption("Print Auto", () -> printAuto); Just for debugging
         
         // Balance Autos (15 / 12 pts)
@@ -193,9 +209,23 @@ public class RobotContainer {
         autoSelector.addOption("Cube Mid Balance Short", () -> cubeMidBalanceShort);
         autoSelector.addOption("Cone Mid Balance Short", () -> coneMidBalanceShort);
 
+        // Just score and don't move (4 pts)
+        autoSelector.addOption("Just Cube Mid", () -> cubeMid);
+        autoSelector.addOption("Just Cone Mid", () -> coneMid);
+
+        // Prepare for next cycle without scoring (3 pts)
+        autoSelector.addOption("Run Away Wall", () -> getOfOfTheWayWall);
+        autoSelector.addOption("Run Away Barrier", () -> getOfOfTheWayBarrier);
+
+        // Score cube then prepare for next cycle (7 pts)
+        autoSelector.addOption("Cube and Run Barrier", () -> cubeAndRunBarrier);
+        autoSelector.addOption("Cube and Run Mid", () -> cubeAndRunMid);
+        autoSelector.addOption("Cube and Run Wall", () -> cubeAndRunWall);
+
+
         // Autos that we would rather not use
         autoSelector.addOption("No Auto", () -> blankAuto);
-        autoSelector.addOption("Taxi Smart", () -> taxiSmart);
+        autoSelector.setDefaultOption("Taxi Smart", () -> taxiSmart);
 
         // Block Auto
         autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
@@ -222,7 +252,7 @@ public class RobotContainer {
 
         // Start button does leveling sequence on charger
         new Trigger(controller::getStartButton)
-                .whileTrue(new AutoBalanceCommand(this));
+                .onTrue(new BalanceSequenceCommand(this, false));
 
         new Trigger(() -> buttonPanel.isButtonDown(2, 3))
                 .onTrue(Commands.runOnce(() -> {
