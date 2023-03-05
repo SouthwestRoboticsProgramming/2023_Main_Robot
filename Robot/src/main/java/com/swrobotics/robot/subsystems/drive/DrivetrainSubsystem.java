@@ -376,14 +376,13 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
             public CommandBase fullAuto(List<PathPlannerTrajectory> trajectorySet) {
                 return new SequentialCommandGroup(
                         new InstantCommand(() -> activePathPlannerCommands++),
-                        super.fullAuto(trajectorySet), // Run the path
-                        new InstantCommand(() -> {
-                            // If no longer running PathPlanner, fix pose
-                            if (activePathPlannerCommands == 1)
-                                DrivetrainSubsystem.this.resetPose(getPose());
-                            activePathPlannerCommands--; // Decrement after so getPose() returns good pose above
-                        })
-                );
+                        super.fullAuto(trajectorySet) // Run the path
+                ).finallyDo((cancelled) -> {
+                    // If no longer running PathPlanner, fix pose
+                    if (activePathPlannerCommands == 1)
+                        DrivetrainSubsystem.this.resetPose(getPose());
+                    activePathPlannerCommands--; // Decrement after so getPose() returns good pose above
+                });
             }
         };
 

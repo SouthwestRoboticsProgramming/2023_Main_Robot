@@ -232,6 +232,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         targetPose = ArmPose.fromEndPosition(position);
     }
 
+    public ArmPose getTargetPose() {
+        return targetPose;
+    }
+
     public boolean isInTolerance() {
         Vec2d currentPoseVec = toStateSpaceVec(getCurrentPose());
         double magSqToFinalTarget = toStateSpaceVec(targetPose).sub(currentPoseVec).magnitudeSq();
