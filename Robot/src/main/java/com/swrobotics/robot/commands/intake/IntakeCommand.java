@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public final class IntakeCommand extends CommandBase {
-    private static final NTDouble CONTINUE_TIME_CUBE = new NTDouble("Intake/Cube Continue Time", 0.5);
-    private static final NTDouble CONTINUE_TIME_CONE = new NTDouble("Intake/Cone Continue Time", 0.5);
+    public static final NTDouble CONTINUE_TIME_CUBE = new NTDouble("Intake/Cube Continue Time", 0.5);
+    public static final NTDouble CONTINUE_TIME_CONE = new NTDouble("Intake/Cone Continue Time", 0.5);
 
     private final IntakeSubsystem intake;
     private final Timer timer;

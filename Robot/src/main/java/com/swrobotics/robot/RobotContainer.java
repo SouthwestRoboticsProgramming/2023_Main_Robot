@@ -21,6 +21,7 @@ import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
+import com.swrobotics.robot.commands.intake.IntakeCommand;
 import com.swrobotics.robot.input.ButtonPanel;
 import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
 import com.swrobotics.robot.positions.ScoringPositions;
@@ -146,6 +147,8 @@ public class RobotContainer {
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
+        eventMap.put("INTAKE_CUBE", Commands.runOnce(intake::run).withTimeout(IntakeCommand.CONTINUE_TIME_CUBE.get()));
+        
         eventMap.put("CUBE_MID", cubeMid);
 
         eventMap.put("CONE_MID", coneMid);
