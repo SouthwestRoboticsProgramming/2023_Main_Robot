@@ -163,10 +163,10 @@ public final class ShuffleLog extends PApplet {
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new FieldViewTool(this));
         tools.add(new BlockAutoTool(this));
-        ButtonPanelTool btn = new ButtonPanelTool(messenger);
-        tools.add(btn);
+//        ButtonPanelTool btn = new ButtonPanelTool(messenger);
+//        tools.add(btn);
         tools.add(new ArmDebugTool(this, messenger));
-        tools.add(new PreMatchChecklistTool(msg, btn));
+        tools.add(new PreMatchChecklistTool(msg));
 
         startTime = System.currentTimeMillis();
 

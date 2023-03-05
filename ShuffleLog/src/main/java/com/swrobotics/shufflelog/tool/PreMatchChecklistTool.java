@@ -29,12 +29,12 @@ public final class PreMatchChecklistTool implements Tool {
     private boolean hasSetFocus;
     private boolean open;
 
-    public PreMatchChecklistTool(MessengerTool msg, ButtonPanelTool btn) {
+    public PreMatchChecklistTool(MessengerTool msg) {
         entries = new Entry[]{
                 new Entry("Is the driver station open?"),
                 new Entry("Is the Xbox controller connected in port 0?"),
-                new Entry("Is the button panel connected?")
-                        .withChecker(btn::isConnected),
+//                new Entry("Is the button panel connected?")
+//                        .withChecker(btn::isConnected),
                 new Entry(
                         "Is Messenger connected to the robot?",
                         "Make sure the host is '10.21.29.3' and port is 5805."
