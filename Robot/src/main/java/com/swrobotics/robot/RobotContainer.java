@@ -194,7 +194,7 @@ public class RobotContainer {
         Command cubeAndTaxiOverAndRunToLowWall = builder.fullAuto(getPath("Cube Mid Taxi over CS and Run Low Wall"));
         Command cubeAndTaxiOveerAndIntake = builder.fullAuto(getPath("Cube Mid Taxi over CS and Intake Cube"));
         Command cubeAndTaxiOverCsAndBal = builder.fullAuto(getPath("Cube Mid Taxi over CS and Bal"));
-
+        Command cubeAndIntakeLowWTaxiOverCSAndBal = builder.fullAuto(getPath("Cube Mid Taxi over CS Intake and Bal"));
         // Autos that just do cube or cone mid
 
         // Create a chooser to select the autonomous
@@ -216,6 +216,7 @@ public class RobotContainer {
         autoSelector.addOption("Taxi Over CS and Intake", () -> cubeAndTaxiOverAndRunToLowWall);
         autoSelector.addOption("Taxi Over CS and Go To Barrier White Line", () -> cubeAndTaxiOverAndWhiteLine);
         autoSelector.addOption("Taxi Over and Intake Barrier Side", () -> cubeAndTaxiOverCSAndScoopANDWHITELINE);
+        autoSelector.addOption("TaxiOver CS and Intake Low and Balance", () -> cubeAndIntakeLowWTaxiOverCSAndBal);
         
         // Score and balance barrier side (19 pts)
         autoSelector.addOption("Cube Mid Balance", () -> cubeMidBalance);
