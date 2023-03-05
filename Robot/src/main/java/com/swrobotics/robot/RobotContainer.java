@@ -185,17 +185,34 @@ public class RobotContainer {
         Command cubeAndRunMid = builder.fullAuto(getPath("Cube and Run Mid"));
         Command cubeAndRunWall = builder.fullAuto(getPath("Cube and Run Wall"));
 
+        // Autos that Go Over the Charge Station
+        Command cubeAndTaxiOverCSAndScoopANDWHITELINE = builder.fullAuto(getPath("Cube Mid Taxi over CS and Scoope and Go To Corner"));
+        Command cubeAndTaxiOverAndWhiteLine = builder.fullAuto(getPath("Cube Mid Taxi over CS and Go To White Line"));
+        Command cubeAndTaxiOverAndRunToLowWall = builder.fullAuto(getPath("Cube Mid Taxi over CS and Run Low Wall"));
+        Command cubeAndTaxiOveerAndIntake = builder.fullAuto(getPath("Cube Mid Taxi over CS and Intake Cube"));
+        Command cubeAndTaxiOverCsAndBal = builder.fullAuto(getPath("Cube Mid Taxi over CS and Bal"));
+
         // Autos that just do cube or cone mid
 
         // Create a chooser to select the autonomous
         autoSelector = new SendableChooser<>();
         autoSelector.addOption("Taxi Dumb", () -> taxiDumb);
         // autoSelector.addOption("Print Auto", () -> printAuto); Just for debugging
+
+
         
         // Balance Autos (15 / 12 pts)
         autoSelector.addOption("Balance Wall", () -> balanceWall);
         autoSelector.addOption("Balance Barrier", () -> balanceBarrier);
         autoSelector.addOption("Balance No Taxi", () -> balanceClose);
+        autoSelector.addOption("Score and Over Charge Station and Bal", () -> cubeAndTaxiOverCsAndBal);
+
+
+        // Center Score and Taxi
+        autoSelector.addOption("Taxi Over CS and Intake", () -> cubeAndTaxiOveerAndIntake);
+        autoSelector.addOption("Taxi Over CS and Intake", () -> cubeAndTaxiOverAndRunToLowWall);
+        autoSelector.addOption("Taxi Over CS and Go To Barrier White Line", () -> cubeAndTaxiOverAndWhiteLine);
+        autoSelector.addOption("Taxi Over and Intake Barrier Side", () -> cubeAndTaxiOverCSAndScoopANDWHITELINE);
         
         // Score and balance barrier side (19 pts)
         autoSelector.addOption("Cube Mid Balance", () -> cubeMidBalance);
