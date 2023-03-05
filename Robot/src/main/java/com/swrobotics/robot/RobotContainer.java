@@ -147,12 +147,10 @@ public class RobotContainer {
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
         eventMap.put("CUBE_MID", cubeMid);
-            
 
         eventMap.put("CONE_MID", coneMid);
         eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ScoringPositions.HOLD_TARGET));
         // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
-        
 
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
