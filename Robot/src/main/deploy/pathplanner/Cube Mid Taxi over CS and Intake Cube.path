@@ -99,13 +99,13 @@
     {
       "position": 0.0,
       "names": [
-        "event"
+        "SCORE"
       ]
     },
     {
       "position": 3.0,
       "names": [
-        "Intake"
+        "INTAKE"
       ]
     }
   ]
