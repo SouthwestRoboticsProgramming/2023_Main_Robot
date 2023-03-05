@@ -105,7 +105,8 @@
     {
       "position": 3.0,
       "names": [
-        "INTAKE"
+        "INTAKE_CUBE",
+        "ARM_DEFAULT"
       ]
     }
   ]
