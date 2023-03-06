@@ -23,7 +23,7 @@ dependencies {
 
 jar {
     dependsOn ':Messenger:MessengerClient:jar'
-    dependsOn ':TaskManager:TaskManager-FileSystem'
+    dependsOn ':TaskManager:TaskManager-FileSystem:jar'
 
     manifest {
         attributes 'Main-Class': 'com.swrobotics.taskmanager.TaskManagerMain'
