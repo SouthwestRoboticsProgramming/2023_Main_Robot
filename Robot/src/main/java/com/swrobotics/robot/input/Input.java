@@ -11,6 +11,7 @@ import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -209,6 +210,9 @@ public final class Input extends SubsystemBase {
 
     @Override
     public void periodic() {
+        if (!DriverStation.isTeleop())
+            return;
+
         driverPeriodic();
         manipulatorPeriodic();
     }
