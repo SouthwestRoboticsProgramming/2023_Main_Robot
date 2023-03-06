@@ -33,6 +33,7 @@ import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.robot.subsystems.vision.Photon;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.*;
@@ -128,6 +129,9 @@ public class RobotContainer {
         // Initialize pathfinder to be able to drive to any point on the field
         pathfinder = new Pathfinder(messenger, drivetrainSubsystem);
 
+        // Selector to choose where we score
+
+
         HashMap<String, Command> eventMap = new HashMap<>();
 
         Command cubeMid = new MoveArmToPositionCommand(this, new Translation2d(0.6, ScoringPositions.getArmPosition(1, 7).getY()))
@@ -142,13 +146,32 @@ public class RobotContainer {
             Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
             Commands.run(intake::eject, intake).withTimeout(2));
 
+        Command cubeHigh = new MoveArmToPositionCommand(this, new Translation2d(0.6, ScoringPositions.getArmPosition(0, 7).getY()))
+        .andThen(
+            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(0, 7)),
+            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+
+            
+        Command coneHigh = new MoveArmToPositionCommand(this, new Translation2d(0.6, ScoringPositions.getArmPosition(0, 6).getY()))
+        .andThen(
+            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(0, 6)),
+            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+        SendableChooser<Pair<Command, Command>> positionSelector = new SendableChooser<>();
+        positionSelector.addOption("High", new Pair<Command, Command>(cubeHigh, coneHigh));
+        positionSelector.setDefaultOption("Mid", new Pair<Command, Command>(cubeMid, coneMid));
+
+        SmartDashboard.putData("Auto Position", positionSelector);
+
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
-        eventMap.put("CUBE_MID", cubeMid);
-
-        eventMap.put("CONE_MID", coneMid);
+        eventMap.put("SCORE_CUBE", positionSelector.getSelected().getFirst());
+        eventMap.put("SCORE_CONE", positionSelector.getSelected().getSecond());
         eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ScoringPositions.HOLD_TARGET));
         // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
 
