@@ -103,6 +103,7 @@ public final class Input extends SubsystemBase {
         } else {
             setCommandEnabled(snapDriveCmd, false);
             setCommandEnabled(snapTurnCmd, false);
+            driver.setRumble(0);
         }
     }
 
