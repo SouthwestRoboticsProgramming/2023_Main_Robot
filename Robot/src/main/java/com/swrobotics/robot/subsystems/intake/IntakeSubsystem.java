@@ -11,16 +11,12 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble CONE_HOLD = new NTDouble("Intake3/Cone Hold", 0.1);
 
     private final PWMSparkMax motor;
-    private final DigitalInput coneBeamBreak;
-    private final DigitalInput cubeBeamBreak;
 
     private GamePiece expectedPiece;
     private boolean running;
 
     public IntakeSubsystem() {
         motor = new PWMSparkMax(RIOPorts.INTAKE_PWM);
-        coneBeamBreak = new DigitalInput(RIOPorts.INTAKE_SENSOR_CONE_DIO);
-        cubeBeamBreak = new DigitalInput(RIOPorts.INTAKE_SENSOR_CUBE_DIO);
 
         expectedPiece = GamePiece.CONE;
         running = false;
@@ -36,11 +32,6 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
         // Become more stopped
         if (!running)
             stop();
-    }
-
-    public boolean isExpectedPiecePresent() {
-        DigitalInput sensor = expectedPiece == GamePiece.CONE ? coneBeamBreak : cubeBeamBreak;
-        return !sensor.get();
     }
 
     public void run() {
