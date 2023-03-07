@@ -55,7 +55,7 @@ public final class Input extends SubsystemBase {
         snapDriveCmd = new PathfindToPointCommand(robot, null);
         snapTurnCmd = new TurnToAngleCommand(robot, () -> snapAngle, false);
 
-        prevArmTarget = null;
+        prevArmTarget = SnapPositions.DEFAULT;
         armNudge = new Translation2d(0, 0);
     }
 
@@ -196,17 +196,28 @@ public final class Input extends SubsystemBase {
                 break;
         }
 
-        Translation2d armTarget = getArmTarget();
-        if (!armTarget.equals(prevArmTarget))
-            armNudge = new Translation2d(0, 0);
-        prevArmTarget = armTarget;
-
+        // Update arm nudge
         armNudge = armNudge.plus(new Translation2d(
-                deadband(manipulator.leftStickX.get()) * NUDGE_PER_PERIODIC,
-                deadband(-manipulator.leftStickY.get()) * NUDGE_PER_PERIODIC
-        ));
+            deadband(manipulator.leftStickX.get()) * NUDGE_PER_PERIODIC,
+            deadband(-manipulator.leftStickY.get()) * NUDGE_PER_PERIODIC
+            ));
 
-        robot.arm.setTargetPosition(armTarget.plus(armNudge));
+        Translation2d armTarget = getArmTarget();
+
+
+        // If it is moving to a new target
+        if (!armTarget.equals(prevArmTarget)) {
+            armNudge = new Translation2d(0, 0);
+
+            // Move to an intermediate position first
+            robot.arm.setTargetPosition(new Translation2d(0.6, Math.max(armTarget.getY(), prevArmTarget.getY())));
+            if (!robot.arm.isInTolerance()) {
+                return; // Keep moving to the intermediate position
+            }
+        }
+                
+        robot.arm.setTargetPosition(getArmTarget().plus(armNudge));
+        prevArmTarget = armTarget;
     }
 
     @Override
