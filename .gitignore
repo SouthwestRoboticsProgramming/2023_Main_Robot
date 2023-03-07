@@ -36,6 +36,7 @@ local.properties
 
 # ImGui storage files
 ShuffleLog/layout.ini
+ShuffleLog/persistence.properties
 **/imgui.ini
 **/simgui.json
 **/simgui-ds.json

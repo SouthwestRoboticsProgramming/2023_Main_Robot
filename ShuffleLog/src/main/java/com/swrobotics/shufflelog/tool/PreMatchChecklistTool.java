@@ -4,10 +4,7 @@ import com.swrobotics.shufflelog.tool.buttons.ButtonPanelTool;
 import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiCond;
-import imgui.flag.ImGuiPopupFlags;
 import imgui.flag.ImGuiTreeNodeFlags;
-import imgui.type.ImBoolean;
 
 import java.util.function.Supplier;
 
@@ -29,14 +26,16 @@ public final class PreMatchChecklistTool implements Tool {
     }
 
     private final Entry[] entries;
+    private boolean hasSetFocus;
     private boolean open;
 
-    public PreMatchChecklistTool(MessengerTool msg, ButtonPanelTool btn) {
+    public PreMatchChecklistTool(MessengerTool msg) {
         entries = new Entry[]{
                 new Entry("Is the driver station open?"),
-                new Entry("Is the Xbox controller connected in port 0?"),
-                new Entry("Is the button panel connected?")
-                        .withChecker(btn::isConnected),
+                new Entry("Is the driver controller connected in port 0?"),
+                new Entry("Is the manipulator controller connected in port 1?"),
+//                new Entry("Is the button panel connected?")
+//                        .withChecker(btn::isConnected),
                 new Entry(
                         "Is Messenger connected to the robot?",
                         "Make sure the host is '10.21.29.3' and port is 5805."
@@ -49,6 +48,7 @@ public final class PreMatchChecklistTool implements Tool {
                 new Entry("Are you behind the white line?")
         };
 
+        hasSetFocus = false;
         open = true;
     }
 
@@ -58,7 +58,9 @@ public final class PreMatchChecklistTool implements Tool {
             return;
 
         if (ImGui.begin("Pre-Match Checklist")) {
-            ImGui.setWindowFocus(); // Always be on top
+            if (!hasSetFocus)
+                ImGui.setWindowFocus(); // Always be on top
+            hasSetFocus = true;
 
             for (Entry entry : entries) {
                 int flags;

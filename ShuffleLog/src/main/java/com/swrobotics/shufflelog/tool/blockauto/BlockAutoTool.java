@@ -7,6 +7,7 @@ import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.util.Cooldown;
+import imgui.ImGui;
 import imgui.ImGuiViewport;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.flag.ImGuiTableFlags;
@@ -86,6 +87,13 @@ public final class BlockAutoTool implements Tool {
         msg.addHandler(MSG_SEQUENCE_DATA, this::onSequenceData);
         msg.addHandler(MSG_PUBLISH_CONFIRM, this::onPublishConfirm);
         msg.addHandler(MSG_DELETE_CONFIRM, this::onDeleteConfirm);
+
+        msg.addDisconnectHandler(() -> {
+            receivedSequences = false;
+            receivedCategories = false;
+            activeSeqName = null;
+            activeSeqStack = null;
+        });
 
         blockDefsQueryCooldown = new Cooldown(ToolConstants.MSG_QUERY_COOLDOWN_TIME);
         categories = new ArrayList<>();
@@ -291,6 +299,12 @@ public final class BlockAutoTool implements Tool {
     @Override
     public void process() {
         if (begin("Block Auto")) {
+            if (!msg.isConnected()) {
+                ImGui.textDisabled("Not connected");
+                end();
+                return;
+            }
+
             if (beginTable("layout", 3, ImGuiTableFlags.BordersInner | ImGuiTableFlags.Resizable)) {
                 if (!receivedCategories && blockDefsQueryCooldown.request())
                     msg.send(MSG_QUERY_BLOCK_DEFS);

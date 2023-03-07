@@ -8,12 +8,14 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble SPEED = new NTDouble("Intake3/Speed", 0.2);
+    private static final NTDouble CONE_HOLD = new NTDouble("Intake3/Cone Hold", 0.1);
 
     private final PWMSparkMax motor;
     private final DigitalInput coneBeamBreak;
     private final DigitalInput cubeBeamBreak;
 
     private GamePiece expectedPiece;
+    private boolean running;
 
     public IntakeSubsystem() {
         motor = new PWMSparkMax(RIOPorts.INTAKE_PWM);
@@ -21,6 +23,7 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
         cubeBeamBreak = new DigitalInput(RIOPorts.INTAKE_SENSOR_CUBE_DIO);
 
         expectedPiece = GamePiece.CONE;
+        running = false;
     }
 
     public GamePiece getExpectedPiece() {
@@ -29,6 +32,10 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
 
     public void setExpectedPiece(GamePiece expectedPiece) {
         this.expectedPiece = expectedPiece;
+
+        // Become more stopped
+        if (!running)
+            stop();
     }
 
     public boolean isExpectedPiecePresent() {
@@ -39,16 +46,25 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     public void run() {
         if (isEnabled()) {
             motor.set(expectedPiece.getIntakeDirection() * SPEED.get());
+            running = true;
+        }
+    }
+
+    public void eject() {
+        if (isEnabled()) {
+            motor.set(-expectedPiece.getIntakeDirection() * SPEED.get());
+            running = true;
         }
     }
 
     public void stop() {
-        motor.set(0);
+        motor.set(expectedPiece == GamePiece.CONE ? (expectedPiece.getIntakeDirection() * CONE_HOLD.get()) : 0);
+        running = false;
     }
 
     @Override
     public void onDisable() {
-        stop();
+        motor.set(0);
     }
 
     public void debugSetRunning(boolean running) {

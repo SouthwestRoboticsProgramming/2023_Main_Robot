@@ -14,6 +14,8 @@ public final class PhysicalJoint implements ArmJoint {
 
     public PhysicalJoint(int canId, double gearRatio, boolean inverted) {
         motor = new CANSparkMax(canId, CANSparkMaxLowLevel.MotorType.kBrushless);
+        motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+
         encoder = motor.getEncoder();
         this.gearRatio = gearRatio;
         this.flip = inverted ? -1 : 1;
