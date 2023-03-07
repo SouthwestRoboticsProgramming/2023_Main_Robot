@@ -7,7 +7,7 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.8299999999999979,
+        "x": 2.8300000000000023,
         "y": 2.73
       },
       "holonomicAngle": 180.0,
@@ -136,7 +136,7 @@
         "y": 2.7326680398928795
       },
       "nextControl": null,
-      "holonomicAngle": 180.0,
+      "holonomicAngle": 0.0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
