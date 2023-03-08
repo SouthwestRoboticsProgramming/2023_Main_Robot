@@ -12,16 +12,20 @@ public class Limelight extends SubsystemBase {
     private static final NTBoolean LIGHTS_ON = new NTBoolean("Limelight/Lights_On", true);
     private static final NTBoolean TARGET_FOUND = new NTBoolean("Limelight/Target found", false);
 
+    private static final NTBoolean DRIVER_MODE = new NTBoolean("Limelight/Driver_Mode", false);
+
     private final NetworkTableEntry xAngle;
     private final NetworkTableEntry yAngle;
     private final NetworkTableEntry targetArea;
     private final NetworkTableEntry isValidTarget;
 
+    private final NetworkTableEntry driverModeOn;
+
     private final NetworkTableEntry lightsOn;
 
     public Limelight() {
         LIGHTS_ON.set(true); // Default to lights on so as not to forget
-
+        DRIVER_MODE.set(false); // Same As Above
         TARGET_FOUND.setTemporary(); // Logging
 
         NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
@@ -29,11 +33,17 @@ public class Limelight extends SubsystemBase {
         yAngle = table.getEntry("ty");
         targetArea = table.getEntry("ta");
         isValidTarget = table.getEntry("tv");
+        driverModeOn = table.getEntry("camMode");
 
         lightsOn = table.getEntry("ledMode");
 
         // Lights are on by default but can be changed any time
         LIGHTS_ON.onChange(() -> setLights(LIGHTS_ON.get()));
+
+        // Driver Mode is Off By Default
+        DRIVER_MODE.onChange(() -> setDriverMode(DRIVER_MODE.get()));
+
+        PIPELINE.onChange(() -> setPipeline(PIPELINE.get()));
     }
 
     public Rotation2d getXAngle() {
@@ -65,4 +75,12 @@ public class Limelight extends SubsystemBase {
         // Update log with data
         TARGET_FOUND.set(targetFound());
     }
+
+    public void setDriverMode(boolean on) {
+        int value = 0;
+        if (on) value = 1;
+
+        driverModeOn.setNumber(value);
+    }
+
 }
