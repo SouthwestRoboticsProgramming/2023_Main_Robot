@@ -2,6 +2,7 @@ package com.swrobotics.robot.subsystems.vision;
 
 import com.swrobotics.lib.net.NTBoolean;
 
+import com.swrobotics.lib.net.NTInteger;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -12,6 +13,7 @@ public class Limelight extends SubsystemBase {
     private static final NTBoolean LIGHTS_ON = new NTBoolean("Limelight/Lights_On", true);
     private static final NTBoolean TARGET_FOUND = new NTBoolean("Limelight/Target found", false);
 
+    private static final NTInteger PIPELINE = new NTInteger("Limelight/Pipeline", 0);
     private static final NTBoolean DRIVER_MODE = new NTBoolean("Limelight/Driver_Mode", false);
 
     private final NetworkTableEntry xAngle;
@@ -22,6 +24,8 @@ public class Limelight extends SubsystemBase {
     private final NetworkTableEntry driverModeOn;
 
     private final NetworkTableEntry lightsOn;
+
+    private final NetworkTableEntry currentPipeline;
 
     public Limelight() {
         LIGHTS_ON.set(true); // Default to lights on so as not to forget
@@ -34,6 +38,8 @@ public class Limelight extends SubsystemBase {
         targetArea = table.getEntry("ta");
         isValidTarget = table.getEntry("tv");
         driverModeOn = table.getEntry("camMode");
+        currentPipeline = table.getEntry("pipeline");
+
 
         lightsOn = table.getEntry("ledMode");
 
@@ -81,6 +87,14 @@ public class Limelight extends SubsystemBase {
         if (on) value = 1;
 
         driverModeOn.setNumber(value);
+    }
+
+    public void setPipeline(int pipeline) {
+        if (pipeline < 0 || pipeline > 9) {
+            throw new IllegalArgumentException("Pipeline must be between 0 and 9");
+        }
+
+        currentPipeline.setNumber(pipeline);
     }
 
 }
