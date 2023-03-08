@@ -2,6 +2,7 @@ package com.swrobotics.robot.subsystems.vision;
 
 import com.swrobotics.lib.net.NTBoolean;
 
+import com.swrobotics.lib.net.NTDoubleArray;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -14,8 +15,13 @@ public class Limelight extends SubsystemBase {
 
     private final NetworkTableEntry xAngle;
     private final NetworkTableEntry yAngle;
+
     private final NetworkTableEntry targetArea;
     private final NetworkTableEntry isValidTarget;
+
+    private final NetworkTableEntry crop;
+    public NTDoubleArray UPPER_BOX = new NTDoubleArray("LIMELIGHT_AUTO_AIM", -1, 1, -1, 1);
+    public NTDoubleArray LOWER_BOX = new NTDoubleArray("LIMELIGHT_AUTO_AIM", -1,1,-1,1);
 
     private final NetworkTableEntry lightsOn;
 
@@ -29,8 +35,8 @@ public class Limelight extends SubsystemBase {
         yAngle = table.getEntry("ty");
         targetArea = table.getEntry("ta");
         isValidTarget = table.getEntry("tv");
-
         lightsOn = table.getEntry("ledMode");
+        crop = table.getEntry("crop");
 
         // Lights are on by default but can be changed any time
         LIGHTS_ON.onChange(() -> setLights(LIGHTS_ON.get()));
@@ -64,5 +70,17 @@ public class Limelight extends SubsystemBase {
     public void periodic() {
         // Update log with data
         TARGET_FOUND.set(targetFound());
+    }
+
+
+    // As Per: https://docs.limelightvision.io/en/latest/networktables_api.html#camera-controls
+    // This Should Work
+    public void setCrop(double[] crops) {
+
+        // Java Should Have Compile Time Array Length Verification
+        if(crops.length != 4) {
+            throw new IllegalArgumentException("Crops Must Have 4 Values");
+        }
+        crop.setDoubleArray(crops);
     }
 }
