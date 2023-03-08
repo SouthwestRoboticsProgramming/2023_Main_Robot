@@ -7,6 +7,7 @@ import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.RobotContainer;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -64,7 +65,7 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
         // Angle wrapping magic - we set the wrap point towards the
         // edge to avoid, and disable continuity, so the PID won't
         // make the robot pass through it
-        PIDController pid = getPID();
+        ProfiledPIDController pid = getPID();
         double currentIn, targetIn;
         switch (state) {
             case UNCONSTRAINED:
@@ -88,7 +89,7 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
 
         // Reset PID if state has changed
         if (state != prevState)
-            pid.reset();
+            // pid.reset();
         prevState = state;
 
         // Turn
