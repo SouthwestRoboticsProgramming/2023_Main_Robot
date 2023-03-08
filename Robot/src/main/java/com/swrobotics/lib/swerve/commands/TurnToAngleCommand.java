@@ -18,27 +18,19 @@ public class TurnToAngleCommand extends CommandBase {
     public static final double MAX_ROTATIONAL_VEL = Math.PI / 2;
 
     private final DrivetrainSubsystem drive;
-    private final ProfiledPIDController pid;
+    private final PIDController pid;
     private final Supplier<Angle> angle;
     private final boolean robotRelative;
-    private Rotation2d robotOffset;
 
     public TurnToAngleCommand(RobotContainer robot, Supplier<Angle> angle, boolean robotRelative) {
         drive = robot.drivetrainSubsystem;
         this.angle = angle;
         this.robotRelative = robotRelative;
 
-        // FIXME: It can change if apriltags updates it or pathplanner resets pose
-        robotOffset = drive.getPose().getRotation(); // Offset does not change from when the command is sheduled
-
-
-        pid = new ProfiledPIDController(
-                10, 2, 0,
-                new TrapezoidProfile.Constraints(6.28, 3.14));
+        pid = new PIDController(10, 2, 0);
         pid.enableContinuousInput(-Math.PI, Math.PI);
 
         pid.setTolerance(0.1);
-        setTargetRot(drive.getPose().getRotation());
     }
 
     protected Angle getTargetAngle() {
@@ -49,34 +41,30 @@ public class TurnToAngleCommand extends CommandBase {
         return angle.get().ccw().rotation2d();
     }
 
-    protected ProfiledPIDController getPID() {
+    protected PIDController getPID() {
         return pid;
     }
 
     @Override
     public void initialize() {
-        // pid.reset();
+        pid.reset();
     }
 
     @Override
     public void execute() {
         // Update the target
         Rotation2d target = getTarget();
-		setTargetRot(target);
-    }
 
-    public void setTargetRot(Rotation2d target) {
         if (robotRelative) {
             target = target.plus(drive.getPose().getRotation());
         }
 
         drive.setTargetRotation(new Rotation2d(
-                pid.calculate(
+                MathUtil.clamp(pid.calculate(
                         drive.getPose().getRotation().getRadians(),
                         target.getRadians()
-                )
+                ), -MAX_ROTATIONAL_VEL, MAX_ROTATIONAL_VEL)
         ));
-
     }
 
     @Override
