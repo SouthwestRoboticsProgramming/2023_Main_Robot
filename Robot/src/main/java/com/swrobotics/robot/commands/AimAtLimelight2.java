@@ -12,16 +12,23 @@ public class AimAtLimelight2 extends TurnToAngleCommand {
     private final Limelight limelight;
 
 
-    public AimAtLimelight2(RobotContainer robot) {
-        super(robot, null, true);
+    public AimAtLimelight2(RobotContainer robot, Supplier<Angle> angleSupplier) {
+        super(robot, angleSupplier, true);
 
         this.limelight = robot.limelight;
+    
     }
 	
 
     @Override
     public void execute() {
+
+        if (limelight.targetFound()) {
         Rotation2d target = limelight.getXAngle();
+        
         setTargetRot(target);
+        }
+
+        
     }
 }

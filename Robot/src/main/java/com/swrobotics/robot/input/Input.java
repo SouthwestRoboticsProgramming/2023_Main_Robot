@@ -5,8 +5,10 @@ import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
+import com.swrobotics.robot.commands.AimAtLimelight2;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.positions.SnapPositions;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,6 +16,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.Supplier;
 
 public final class Input extends SubsystemBase {
     public enum IntakeMode {
@@ -57,6 +60,8 @@ public final class Input extends SubsystemBase {
 
         prevArmTarget = null;
         armNudge = new Translation2d(0, 0);
+
+        
     }
 
     private double deadband(double val) {
@@ -89,6 +94,7 @@ public final class Input extends SubsystemBase {
         return driver.rightTrigger.get() > 0.8;
     }
 
+
     private void driverPeriodic() {
         if (driver.leftBumper.isPressed()) {
             SnapPositions.SnapStatus snap = SnapPositions.getSnap(robot.drivetrainSubsystem.getPose());
@@ -105,6 +111,10 @@ public final class Input extends SubsystemBase {
             setCommandEnabled(snapTurnCmd, false);
             driver.setRumble(0);
         }
+    }
+
+    public boolean testLimelight() {
+        return driver.b.isFalling();
     }
 
     // ---- Manipulator controls ----
@@ -216,5 +226,13 @@ public final class Input extends SubsystemBase {
 
         driverPeriodic();
         manipulatorPeriodic();
+
+        if(driver.b.isPressed()) {
+            Supplier<Angle> angleSupplier = () -> Angle.ZERO;
+
+            new AimAtLimelight2(robot, angleSupplier).schedule();
+        }
+
+     
     }
 }

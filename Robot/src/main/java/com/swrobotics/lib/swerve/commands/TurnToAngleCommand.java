@@ -18,7 +18,7 @@ public class TurnToAngleCommand extends CommandBase {
     public static final double MAX_ROTATIONAL_VEL = Math.PI / 2;
 
     private final DrivetrainSubsystem drive;
-    private final PIDController pid;
+    private final ProfiledPIDController pid;
     private final Supplier<Angle> angle;
     private final boolean robotRelative;
     private Rotation2d robotOffset;
@@ -29,7 +29,7 @@ public class TurnToAngleCommand extends CommandBase {
         this.robotRelative = robotRelative;
 
         // FIXME: It can change if apriltags updates it or pathplanner resets pose
-        robotOffset = drive.getGyroscopeRotation(); // Offset does not change from when the command is sheduled
+        robotOffset = drive.getPose().getRotation(); // Offset does not change from when the command is sheduled
 
 
         pid = new ProfiledPIDController(
@@ -38,6 +38,7 @@ public class TurnToAngleCommand extends CommandBase {
         pid.enableContinuousInput(-Math.PI, Math.PI);
 
         pid.setTolerance(0.1);
+        setTargetRot(drive.getPose().getRotation());
     }
 
     protected Angle getTargetAngle() {
@@ -48,13 +49,13 @@ public class TurnToAngleCommand extends CommandBase {
         return angle.get().ccw().rotation2d();
     }
 
-    protected PIDController getPID() {
+    protected ProfiledPIDController getPID() {
         return pid;
     }
 
     @Override
     public void initialize() {
-        pid.reset();
+        // pid.reset();
     }
 
     @Override
