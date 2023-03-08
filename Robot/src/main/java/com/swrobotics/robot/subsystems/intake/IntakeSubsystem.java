@@ -6,6 +6,7 @@ import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
+    private static final NTDouble L_INTAKE_SPEED = (NTDouble) new NTDouble("Intake/Current Speed", 0).setTemporary();
     private static final NTDouble CONE_HOLD = new NTDouble("Intake/Cone Hold", -0.1);
 
     private final PWMSparkMax motor;
@@ -61,5 +62,10 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
             run();
         else
             stop();
+    }
+
+    @Override
+    public void periodic() {
+        L_INTAKE_SPEED.set(motor.get());
     }
 }
