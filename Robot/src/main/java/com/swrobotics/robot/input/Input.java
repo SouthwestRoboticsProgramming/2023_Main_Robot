@@ -6,9 +6,11 @@ import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
+import com.swrobotics.robot.commands.LimelightAutoAimCommand;
 import com.swrobotics.robot.positions.SnapPositions;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
+import com.swrobotics.robot.subsystems.vision.Limelight;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -19,6 +21,10 @@ public final class Input extends SubsystemBase {
     public enum IntakeMode {
         INTAKE, EJECT, OFF
     }
+
+
+    // FIXME: NULL = Smelly
+    LimelightAutoAimCommand limelightAutoAimCommand = null;
 
     private static final int DRIVER_PORT = 0;
     private static final int MANIPULATOR_PORT = 1;
@@ -104,6 +110,14 @@ public final class Input extends SubsystemBase {
             setCommandEnabled(snapDriveCmd, false);
             setCommandEnabled(snapTurnCmd, false);
             driver.setRumble(0);
+        }
+
+        if(driver.b.isFalling()) {
+            limelightAutoAimCommand = new LimelightAutoAimCommand(robot.drivetrainSubsystem, new Limelight());
+            limelightAutoAimCommand.schedule();
+        } else if (driver.b.isRising()) {
+            limelightAutoAimCommand.cancel();
+            limelightAutoAimCommand = null;
         }
     }
 
