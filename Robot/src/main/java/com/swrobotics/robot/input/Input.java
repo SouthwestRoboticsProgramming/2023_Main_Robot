@@ -116,7 +116,9 @@ public final class Input extends SubsystemBase {
             limelightAutoAimCommand = new LimelightAutoAimCommand(robot.drivetrainSubsystem, new Limelight());
             limelightAutoAimCommand.schedule();
         } else if (driver.b.isRising()) {
-            limelightAutoAimCommand.cancel();
+            if (limelightAutoAimCommand.isScheduled()) {
+                limelightAutoAimCommand.cancel();
+            }
             limelightAutoAimCommand = null;
         }
     }
