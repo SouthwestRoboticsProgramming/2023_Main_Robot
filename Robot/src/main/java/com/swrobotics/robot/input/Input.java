@@ -18,6 +18,19 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public final class Input extends SubsystemBase {
+    /* 
+     * left bumper:   set to cube
+     * right bumper:  set to cone
+     * left trigger:  eject
+     * a:             floor pickup
+     * b:             shelf pickup
+     * dpad up:       top score
+     * dpad down:     mid score
+     * analog sticks: arm nudge
+     * 
+     * nothing pressed: default arm
+     */
+
     public enum IntakeMode {
         INTAKE, EJECT, OFF
     }
@@ -50,6 +63,7 @@ public final class Input extends SubsystemBase {
     private Translation2d armNudge;
 
     private double lastSpeed = 0;
+    private GamePiece gamePiece;
 
     public Input(RobotContainer robot) {
         this.robot = robot;
@@ -60,11 +74,15 @@ public final class Input extends SubsystemBase {
         driver.back.onRising(robot.drivetrainSubsystem::zeroGyroscope);
         driver.start.onRising(new BalanceSequenceCommand(robot, false));
 
+        manipulator.leftBumper.onRising(() -> gamePiece = GamePiece.CUBE);
+        manipulator.rightBumper.onRising(() -> gamePiece = GamePiece.CONE);
+
         snapDriveCmd = new PathfindToPointCommand(robot, null);
         snapTurnCmd = new TurnToAngleCommand(robot, () -> snapAngle, false);
 
         prevArmTarget = SnapPositions.DEFAULT;
         armNudge = new Translation2d(0, 0);
+        gamePiece = GamePiece.CUBE;
     }
 
     private double deadband(double val) {
@@ -136,7 +154,11 @@ public final class Input extends SubsystemBase {
     // ---- Manipulator controls ----
 
     private GamePiece getGamePiece() {
-        return manipulator.leftBumper.isPressed() ? GamePiece.CUBE : GamePiece.CONE;
+        return gamePiece;
+    }
+
+    private boolean isEject() {
+        return manipulator.leftTrigger.get() > 0.8;
     }
 
     public Translation2d getArmTarget() {
@@ -145,14 +167,9 @@ public final class Input extends SubsystemBase {
         if (manipulator.dpad.down.isPressed())
             return getArmMid();
 
-        if (manipulator.x.isPressed()) {
-            if (manipulator.a.isPressed())
-                return getSubstationPickup();
-            else
-                return SnapPositions.PICKUP_PRE;
-        }
-
         if (manipulator.b.isPressed())
+            return getSubstationPickup();
+        if (manipulator.a.isPressed())
             return robot.arm.getHomeTarget();
 
         return SnapPositions.DEFAULT;
@@ -177,10 +194,10 @@ public final class Input extends SubsystemBase {
     }
 
     private IntakeMode getIntakeMode() {
-        if (manipulator.rightBumper.isPressed())
+        if (isEject())
             return IntakeMode.EJECT;
 
-        if (manipulator.b.isPressed() || manipulator.x.isPressed() || manipulator.a.isPressed())
+        if (manipulator.a.isPressed() || manipulator.b.isPressed())
             return IntakeMode.INTAKE;
 
         return IntakeMode.OFF;
@@ -244,6 +261,13 @@ public final class Input extends SubsystemBase {
                 
         robot.arm.setTargetPosition(getArmTarget().plus(armNudge));
         prevArmTarget = armTarget;
+
+        armNudge = armNudge.plus(new Translation2d(
+                deadband(manipulator.leftStickX.get()) * NUDGE_PER_PERIODIC,
+                deadband(-manipulator.leftStickY.get()) * NUDGE_PER_PERIODIC
+        ));
+
+        robot.arm.setTargetPosition(armTarget.plus(armNudge));
     }
 
     @Override
