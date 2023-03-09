@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTEntry;
+import com.swrobotics.mathlib.CCWAngle;
+import com.swrobotics.mathlib.Vec2d;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.SimVisionSystem;
@@ -44,25 +48,26 @@ public class Photon extends SubsystemBase {
             Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Up
         new Rotation3d()); // Camera is facing perfectly forward
 
-//    private final PhotonCamera backCam = new PhotonCamera("Back");
-//    private final Transform3d backCamTransform = new Transform3d(
-//        new Translation3d(
-//            Units.inchesToMeters(-7.71),  // Forward
-//            Units.inchesToMeters(POWER_TOWER_X),  // Left
-//            Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Up
-//        new Rotation3d(
-//            0,
-//            0,
-//            Math.PI
-//        )); // Camera is facing perfectly backward
+    private final PhotonCamera backCam = new PhotonCamera("Back");
+    private final Transform3d backCamTransform = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(-7.71),  // Forward
+            Units.inchesToMeters(POWER_TOWER_X),  // Left
+            Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Up
+        new Rotation3d(
+            0,
+            0,
+            Math.PI
+        )); // Camera is facing perfectly backward
 
     // Simulate cameras
     private SimVisionSystem frontSim;
-//    private SimVisionSystem backSim;
+    private SimVisionSystem backSim;
 
     // Create a pose estimator to use multiple tags + multiple cameras to figure out where the robot is
     // FIXME-Mason: Use PhotonPoseEstimator, RobotPoseEstimator is deprecated
-    private final PhotonPoseEstimator poseEstimator;
+    private final PhotonPoseEstimator frontPoseEstimator;
+    private final PhotonPoseEstimator backPoseEstimator;
 
     public Photon(RobotContainer robot) {
         L_TARGETS_FOUND.setTemporary();
@@ -84,15 +89,16 @@ public class Photon extends SubsystemBase {
         cameras.add(new Pair<>(frontCam, frontCamTransform));
 //        cameras.add(new Pair<>(backCam, backCamTransform));
 
-        poseEstimator = new PhotonPoseEstimator(layout, PoseStrategy.AVERAGE_BEST_TARGETS, frontCam, frontCamTransform);
+        frontPoseEstimator = new PhotonPoseEstimator(layout, PoseStrategy.AVERAGE_BEST_TARGETS, frontCam, frontCamTransform);
+        backPoseEstimator = new PhotonPoseEstimator(layout, PoseStrategy.AVERAGE_BEST_TARGETS, backCam, backCamTransform);
 
         // Simulate cameras
         if (RobotBase.isSimulation()) {
             frontSim = new SimVisionSystem("Front", 70, frontCamTransform, 9000, 320, 240, 0); // FIXME: FOV
-//            backSim = new SimVisionSystem("Back", 70, backCamTransform, 9000, 320, 240, 0); // FIXME: FOV
+            backSim = new SimVisionSystem("Back", 70, backCamTransform, 9000, 320, 240, 0); // FIXME: FOV
 
             frontSim.addVisionTargets(layout);
-//            backSim.addVisionTargets(layout);
+            backSim.addVisionTargets(layout);
 
             drive.showApriltags(layout);
             drive.showCameraPoses(frontCamTransform);
@@ -107,22 +113,39 @@ public class Photon extends SubsystemBase {
         }
 
         L_TARGETS_FOUND.set(
-            frontCam.getLatestResult().targets.size()/* +
-            backCam.getLatestResult().targets.size()*/);
+            frontCam.getLatestResult().targets.size() +
+            backCam.getLatestResult().targets.size());
 
         // Update estimator with odometry readings
-        poseEstimator.setReferencePose(drive.getPose());
+        frontPoseEstimator.setReferencePose(drive.getPose());
+        backPoseEstimator.setReferencePose(drive.getPose());
 
         // Read cameras and estimate poses
-        var estimatedPose = poseEstimator.update();
+        var estimatedPoseFront = frontPoseEstimator.update();
+        var estimatedPoseBack = backPoseEstimator.update();
 
-        // No targets found / impossible to estimate
-        if (estimatedPose.isEmpty()) {
+        if (estimatedPoseFront.isEmpty() && estimatedPoseBack.isEmpty())
             return;
-        }
 
-        if (estimatedPose.get() == null) {
-            return;
+        Pose2d poseOut;
+        if (estimatedPoseBack.isEmpty()) {
+            poseOut = estimatedPoseFront.get().estimatedPose.toPose2d();
+        } else if (estimatedPoseFront.isEmpty()) {
+            poseOut = estimatedPoseBack.get().estimatedPose.toPose2d();
+        } else {
+            // Average
+            Pose2d frontPose = estimatedPoseFront.get().estimatedPose.toPose2d();
+            Pose2d backPose = estimatedPoseBack.get().estimatedPose.toPose2d();
+
+            double avgRot = new Vec2d(CCWAngle.rad(frontPose.getRotation().getRadians()), 1)
+                    .add(new Vec2d(CCWAngle.rad(backPose.getRotation().getRadians()), 1))
+                    .angle().ccw().rad();
+
+            poseOut = new Pose2d(
+                    (frontPose.getX() + backPose.getX()) / 2,
+                    (frontPose.getY() + backPose.getY()) / 2,
+                    new Rotation2d(avgRot)
+            );
         }
 
         // System.out.println("Targets found!" + frontCam.getLatestResult().targets.size());
@@ -132,7 +155,7 @@ public class Photon extends SubsystemBase {
         // // Update drive with estimated pose
         L_MOVING.set(drive.isMoving());
         if (!drive.isMoving() && !drive.isPathPlannerRunning())
-            drive.resetPose(estimatedPose.get().estimatedPose.toPose2d());
+            drive.resetPose(poseOut);
     }
 
     private final NTEntry<Boolean> L_MOVING = new NTBoolean("Log/Moving", false).setTemporary();
