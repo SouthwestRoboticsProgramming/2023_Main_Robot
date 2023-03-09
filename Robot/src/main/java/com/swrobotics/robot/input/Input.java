@@ -32,8 +32,8 @@ public final class Input extends SubsystemBase {
     private static final double DEADBAND = 0.1;
 
     private static final double SLOW_MODE_MULTIPLIER = 0.5;
-    private static final double FAST_MODE_MULTIPLIER = 2.0;
-    private static final Angle MAX_ROTATION = AbsoluteAngle.rad(Math.PI / 2);
+    private static final double FAST_SPEED = 4.11;
+    private static final Angle MAX_ROTATION = AbsoluteAngle.rad(Math.PI);
 
     private static final double NUDGE_PER_PERIODIC = 0.25 * 0.02;
 
@@ -49,6 +49,8 @@ public final class Input extends SubsystemBase {
     private Translation2d prevArmTarget;
     private Translation2d armNudge;
 
+    private double lastSpeed = 0;
+
     public Input(RobotContainer robot) {
         this.robot = robot;
 
@@ -61,7 +63,7 @@ public final class Input extends SubsystemBase {
         snapDriveCmd = new PathfindToPointCommand(robot, null);
         snapTurnCmd = new TurnToAngleCommand(robot, () -> snapAngle, false);
 
-        prevArmTarget = null;
+        prevArmTarget = SnapPositions.DEFAULT;
         armNudge = new Translation2d(0, 0);
     }
 
@@ -75,14 +77,22 @@ public final class Input extends SubsystemBase {
 //        boolean slowMode = driver.leftBumper.isPressed();
         boolean fastMode = driver.rightBumper.isPressed();
 
-        double multiplier = 1;
+        double speed = 1.5;
 //        if (slowMode)
 //            multiplier *= SLOW_MODE_MULTIPLIER;
-        if (fastMode)
-            multiplier *= FAST_MODE_MULTIPLIER;
+        if (fastMode) {
+            speed = FAST_SPEED;
+        }
 
-        double x = -deadband(driver.leftStickY.get()) * multiplier;
-        double y = -deadband(driver.leftStickX.get()) * multiplier;
+        if (speed != lastSpeed) {
+            speed = (speed + lastSpeed) / 2;
+            // FIXME: Accual decceleration
+        }
+
+        lastSpeed = speed;
+
+        double x = -deadband(driver.leftStickY.get()) * speed;
+        double y = -deadband(driver.leftStickX.get()) * speed;
 
         return new Vec2d(x, y);
     }
@@ -212,17 +222,28 @@ public final class Input extends SubsystemBase {
                 break;
         }
 
-        Translation2d armTarget = getArmTarget();
-        if (!armTarget.equals(prevArmTarget))
-            armNudge = new Translation2d(0, 0);
-        prevArmTarget = armTarget;
-
+        // Update arm nudge
         armNudge = armNudge.plus(new Translation2d(
-                deadband(manipulator.leftStickX.get()) * NUDGE_PER_PERIODIC,
-                deadband(-manipulator.leftStickY.get()) * NUDGE_PER_PERIODIC
-        ));
+            deadband(manipulator.rightStickX.get()) * NUDGE_PER_PERIODIC,
+            deadband(-manipulator.rightStickY.get()) * NUDGE_PER_PERIODIC
+            ));
 
-        robot.arm.setTargetPosition(armTarget.plus(armNudge));
+        Translation2d armTarget = getArmTarget();
+
+
+        // If it is moving to a new target
+        if (!armTarget.equals(prevArmTarget)) {
+            armNudge = new Translation2d(0, 0);
+
+            // Move to an intermediate position first
+            robot.arm.setTargetPosition(new Translation2d(0.6, Math.max(armTarget.getY(), prevArmTarget.getY())));
+            if (!robot.arm.isInTolerance()) {
+                return; // Keep moving to the intermediate position
+            }
+        }
+                
+        robot.arm.setTargetPosition(getArmTarget().plus(armNudge));
+        prevArmTarget = armTarget;
     }
 
     @Override
