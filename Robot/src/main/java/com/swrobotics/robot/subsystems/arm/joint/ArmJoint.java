@@ -5,6 +5,9 @@ public interface ArmJoint {
     double getCurrentAngle();
     void setCurrentAngle(double angle);
 
+    // Angular velocity - CCW radians/second
+    double getCurrentAngularVelocity();
+
     // Positive motor output should correspond to increase in angle
     void setMotorOutput(double motor);
 }

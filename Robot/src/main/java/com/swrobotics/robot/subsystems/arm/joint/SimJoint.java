@@ -26,6 +26,11 @@ public final class SimJoint implements ArmJoint {
     }
 
     @Override
+    public double getCurrentAngularVelocity() {
+        return motor.getAngularVelocityRadPerSec();
+    }
+
+    @Override
     public void setCurrentAngle(double angle) {
         double current = motor.getAngularPositionRad();
         offset = angle - current;
