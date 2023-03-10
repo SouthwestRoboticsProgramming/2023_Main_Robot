@@ -1,5 +1,7 @@
 package com.swrobotics.robot.positions;
 
+import java.text.BreakIterator;
+
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
@@ -123,9 +125,15 @@ public final class SnapPositions {
         if (absDiff < ANGLE_SNAP_TOL) {
             snapAngle = pose.getRotation();
 
+            // Check that it should be using the limelight
             if (closest.isCone() && USE_LIMELIGHT.get()/* && limelight.targetFound()*/) {
                 System.out.println("Using limelight!");
-                snapAngle = snapAngle.plus(Rotation2d.fromDegrees(limelight.getXAngle().getDegrees()));
+                Rotation2d limelightReading = limelight.getXAngle();
+
+                 // Check that the auto turn wouldn't pull it out of snap tolerance
+                if (Math.abs(limelightReading.getDegrees()) < ANGLE_SNAP_TOL) {
+                    snapAngle = snapAngle.plus(limelightReading);
+                }
             }
         }
                 
