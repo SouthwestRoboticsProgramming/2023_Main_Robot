@@ -60,6 +60,11 @@ public final class ArmDebugTool extends ViewportTool {
         msg.addHandler(MSG_ARM_PATH, this::onPath);
         msg.addHandler(MSG_ARM_GRID, this::onGrid);
 
+        msg.addDisconnectHandler(() -> {
+            hasGrid = false;
+            hasPath = false;
+        });
+
         targetX = new ImDouble(1);
         targetY = new ImDouble(1);
     }
@@ -102,6 +107,8 @@ public final class ArmDebugTool extends ViewportTool {
     @Override
     protected void drawViewportContent(PGraphics g) {
         g.background(0);
+        if (!msg.isConnected())
+            return;
 
         int res = grid.getWidth();
         g.scale(SCALE);
@@ -139,6 +146,11 @@ public final class ArmDebugTool extends ViewportTool {
 
     @Override
     protected void drawGuiContent() {
+        if (!msg.isConnected()) {
+            ImGui.textDisabled("Not connected");
+            return;
+        }
+
         ImGui.text("Has statespace: " + hasGrid);
 
         boolean changed = false;

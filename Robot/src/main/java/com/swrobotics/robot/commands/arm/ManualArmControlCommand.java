@@ -31,12 +31,6 @@ public final class ManualArmControlCommand extends CommandBase {
     }
 
     @Override
-    public InterruptionBehavior getInterruptionBehavior() {
-        // Prioritize continuing this command
-        return InterruptionBehavior.kCancelIncoming;
-    }
-
-    @Override
     public void execute() {
         double dt = 0.02;
         double dx = MathUtil.deadband(joystick.getLeftX(), 0.1) * MAX_RATE * dt;

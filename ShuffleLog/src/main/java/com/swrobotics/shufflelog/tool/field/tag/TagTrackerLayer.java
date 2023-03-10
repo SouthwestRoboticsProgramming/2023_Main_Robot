@@ -52,6 +52,13 @@ public final class TagTrackerLayer implements FieldLayer {
 
         msg.addHandler(MSG_ENVIRONMENT, this::onEnvironment);
 
+        msg.addDisconnectHandler(() -> {
+            hasEnvironment = false;
+            selection = null;
+            tags.clear();
+            cameras.clear();
+        });
+
         // TODO: This should come from the tag tracker estimate
         robotPose = new RobotPose(new Vector3f(1, 1, 1), new Matrix4f().translate(new Vector3f(0, -4, 0)));
 
@@ -77,6 +84,9 @@ public final class TagTrackerLayer implements FieldLayer {
     }
 
     private void onEnvironment(String type, MessageReader reader) {
+        tags.clear();
+        cameras.clear();
+
         int tagCount = reader.readInt();
         for (int i = 0; i < tagCount; i++) {
             double size = reader.readDouble();
@@ -108,6 +118,9 @@ public final class TagTrackerLayer implements FieldLayer {
 
     @Override
     public void draw(PGraphics g) {
+        if (!msg.isConnected())
+            return;
+
         if (!hasEnvironment && queryEnvironmentCooldown.request())
             msg.send(MSG_QUERY_ENVIRONMENT);
 
@@ -204,6 +217,11 @@ public final class TagTrackerLayer implements FieldLayer {
     @Override
     public void showGui() {
         ImGui.checkbox("Show Tags", showTags);
+
+        if (!msg.isConnected()) {
+            ImGui.textDisabled("Not connected");
+            return;
+        }
 
         if (ImGui.button("Refresh")) {
             selection = null;

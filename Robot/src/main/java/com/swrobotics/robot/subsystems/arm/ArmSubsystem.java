@@ -20,8 +20,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 
-import java.util.List;
-
 import static com.swrobotics.robot.subsystems.arm.ArmPathfinder.toStateSpaceVec;
 import static com.swrobotics.shared.arm.ArmConstants.*;
 
@@ -73,14 +71,13 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTEntry<Double> LOG_MOTOR_TOP = new NTDouble("Log/Arm/Motor Out Top", 0).setTemporary();
 
     private static final NTEntry<Double> LOG_MAG = new NTDouble("Log/Arm/Error Mag", 0).setTemporary();
-    private static final NTEntry<Boolean> LOG_IN_TOLERANCE = new NTBoolean("Log/Arm/In Tolerance", false).setTemporary();
     private static final NTEntry<Boolean> LOG_IN_TOLERANCE_H = new NTBoolean("Log/Arm/In Tolerance (Hysteresis)", false).setTemporary();
 
     private final ArmJoint topJoint, bottomJoint;
-    private final ArmPathfinder finder;
+//    private final ArmPathfinder finder;
     private final PIDController pid;
     private ArmPose targetPose;
-    private boolean inToleranceHysteresis, inTolerance;
+    private boolean inToleranceHysteresis;
 
     private final ArmVisualizer currentVisualizer;
     private final ArmVisualizer targetVisualizer;
@@ -112,7 +109,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         );
         SmartDashboard.putData("Arm", mechanism);
 
-        finder = new ArmPathfinder(msg);
+//        finder = new ArmPathfinder(msg);
 
         ArmPose home = new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get());
         calibrateHome(home);
@@ -172,7 +169,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         LOG_CURRENT_BOTTOM.set(currentPose.bottomAngle);
         LOG_CURRENT_TOP.set(currentPose.topAngle);
 
-        LOG_IN_TOLERANCE.set(inTolerance);
         LOG_IN_TOLERANCE_H.set(inToleranceHysteresis);
 
         if (targetPose == null) {
@@ -181,40 +177,40 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         }
 
         targetVisualizer.setPose(targetPose);
-        finder.setInfo(currentPose, targetPose);
+//        finder.setInfo(currentPose, targetPose);
 
         double startTol = START_TOL.get();
         double stopTol = STOP_TOL.get();
 
         ArmPose currentTarget = null;
         Vec2d currentPoseVec = toStateSpaceVec(currentPose);
-        if (!finder.isPathValid()) {
+//        if (!finder.isPathValid()) {
             // Wait for it to become valid, and move directly to target in the meantime
             // Ideally this should happen very rarely
             currentTarget = targetPose;
-        } else {
-            List<ArmPose> currentPath = finder.getPath();
-
-            double minDist = Double.POSITIVE_INFINITY;
-            for (int i = currentPath.size() - 1; i > 0; i--) {
-                ArmPose pose = currentPath.get(i);
-                Vec2d point = toStateSpaceVec(pose);
-                Vec2d prev = toStateSpaceVec(currentPath.get(i - 1));
-
-                double dist = currentPoseVec.distanceToLineSegmentSq(point, prev);
-
-                if (dist < minDist) {
-                    currentTarget = pose;
-                    minDist = dist;
-                }
-            }
-
-            // Path is empty for some reason, maybe we are already at the target?
-            if (currentTarget == null) {
-                idle();
-                return;
-            }
-        }
+//        } else {
+//            List<ArmPose> currentPath = finder.getPath();
+//
+//            double minDist = Double.POSITIVE_INFINITY;
+//            for (int i = currentPath.size() - 1; i > 0; i--) {
+//                ArmPose pose = currentPath.get(i);
+//                Vec2d point = toStateSpaceVec(pose);
+//                Vec2d prev = toStateSpaceVec(currentPath.get(i - 1));
+//
+//                double dist = currentPoseVec.distanceToLineSegmentSq(point, prev);
+//
+//                if (dist < minDist) {
+//                    currentTarget = pose;
+//                    minDist = dist;
+//                }
+//            }
+//
+//            // Path is empty for some reason, maybe we are already at the target?
+//            if (currentTarget == null) {
+//                idle();
+//                return;
+//            }
+//        }
 
         LOG_TARGET_BOTTOM.set(currentTarget.bottomAngle);
         LOG_TARGET_TOP.set(currentTarget.topAngle);
@@ -233,8 +229,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         } else if (magSqToFinalTarget < stopTol * stopTol) {
             inToleranceHysteresis = true;
         }
-
-        inTolerance = magSqToFinalTarget < startTol * startTol;
 
         if (prevInTolerance && !inToleranceHysteresis)
             pid.reset();
@@ -269,7 +263,18 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         targetPose = ArmPose.fromEndPosition(position);
     }
 
+    public ArmPose getTargetPose() {
+        return targetPose;
+    }
+
     public boolean isInTolerance() {
-        return inTolerance;
+        if (targetPose == null)
+            return true;
+
+        Vec2d currentPoseVec = toStateSpaceVec(getCurrentPose());
+        double magSqToFinalTarget = toStateSpaceVec(targetPose).sub(currentPoseVec).magnitudeSq();
+
+        double tol = STOP_TOL.get();
+        return magSqToFinalTarget < tol * tol;
     }
 }

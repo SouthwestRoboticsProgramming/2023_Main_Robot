@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public final class AutoBlocks {
     // Dropdown menu in ShuffleLog to select which auto to run
@@ -88,7 +87,7 @@ public final class AutoBlocks {
                 .text(" seconds")
                 .text("Robot relative: ")
                 .paramBoolean("robot-relative", false)
-                .creator((params, robot) -> new DriveBlindCommand(robot, (Angle) params[1], (double) params[0], (boolean) params[3]).withTimeout((double) params[2]));
+                .creator((params, robot) -> new DriveBlindCommand(robot, () -> (Angle) params[1], (double) params[0], (boolean) params[3]).withTimeout((double) params[2]));
 
         drive.newBlock("blind turn for time")
                 .text("Turn at ")
