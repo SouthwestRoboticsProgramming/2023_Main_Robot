@@ -13,8 +13,12 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 
 public final class SnapPositions {
+
+    private static final NTBoolean USE_LIMELIGHT = new NTBoolean("Snap/Use limelight", true);
+
     public static final class SnapPosition {
         private final Pose2d bluePose;
+        private final boolean isCone;
 
         public SnapPosition(double x, double y, double rot, boolean isCone) {
             bluePose = new Pose2d(Units.inchesToMeters(x), Units.inchesToMeters(y), new Rotation2d(rot));
@@ -93,7 +97,7 @@ public final class SnapPositions {
 
     public static final Translation2d DEFAULT = new Translation2d(0.689397, Units.inchesToMeters(11.5 - 13 + 2.25));
 
-    public static SnapStatus getSnap(Pose2d currentPose) {
+    public static SnapStatus getSnap(Pose2d currentPose, Limelight limelight) {
         double minDist = Double.POSITIVE_INFINITY;
         SnapPosition closest = null;
         for (SnapPosition pos : POSITIONS) {
@@ -106,7 +110,6 @@ public final class SnapPositions {
             }
         }
 
-        System.out.println(minDist);
         if (closest == null || minDist > SNAP_RADIUS)
             return new SnapStatus(null, null);
 
@@ -115,7 +118,17 @@ public final class SnapPositions {
                 .getAbsDiff(CCWAngle.rad(pose.getRotation().getRadians()))
                 .deg();
 
-        Rotation2d snapAngle = absDiff < ANGLE_SNAP_TOL ? pose.getRotation() : null;
+        
+        Rotation2d snapAngle = null;
+        if (absDiff < ANGLE_SNAP_TOL) {
+            snapAngle = pose.getRotation();
+
+            if (closest.isCone() && USE_LIMELIGHT.get()/* && limelight.targetFound()*/) {
+                System.out.println("Using limelight!");
+                snapAngle = snapAngle.plus(Rotation2d.fromDegrees(limelight.getXAngle().getDegrees()));
+            }
+        }
+                
 
         return new SnapStatus(pose.getTranslation(), snapAngle);
     }

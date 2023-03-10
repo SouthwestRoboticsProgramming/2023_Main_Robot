@@ -9,8 +9,6 @@ import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.LimelightAutoAimCommand;
 import com.swrobotics.robot.positions.SnapPositions;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
-import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
-import com.swrobotics.robot.subsystems.vision.Limelight;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -22,8 +20,6 @@ public final class Input extends SubsystemBase {
         INTAKE, EJECT, OFF
     }
 
-
-    // FIXME: NULL = Smelly
     LimelightAutoAimCommand limelightAutoAimCommand = null;
 
     private static final int DRIVER_PORT = 0;
@@ -107,7 +103,7 @@ public final class Input extends SubsystemBase {
 
     private void driverPeriodic() {
         if (driver.leftBumper.isPressed()) {
-            SnapPositions.SnapStatus snap = SnapPositions.getSnap(robot.drivetrainSubsystem.getPose());
+            SnapPositions.SnapStatus snap = SnapPositions.getSnap(robot.drivetrainSubsystem.getPose(), robot.limelight);
             snapToPosition(snap.snapPosition);
             snapToAngle(snap.snapRotation);
 
@@ -122,15 +118,15 @@ public final class Input extends SubsystemBase {
             driver.setRumble(0);
         }
 
-        if(driver.b.isFalling()) {
-            limelightAutoAimCommand = new LimelightAutoAimCommand(robot.drivetrainSubsystem, new Limelight());
-            limelightAutoAimCommand.schedule();
-        } else if (driver.b.isRising()) {
-            if (limelightAutoAimCommand.isScheduled()) {
-                limelightAutoAimCommand.cancel();
-            }
-            limelightAutoAimCommand = null;
-        }
+        // if(driver.b.isFalling()) {
+        //     limelightAutoAimCommand = new LimelightAutoAimCommand(robot.drivetrainSubsystem, new Limelight());
+        //     limelightAutoAimCommand.schedule();
+        // } else if (driver.b.isRising()) {
+        //     if (limelightAutoAimCommand.isScheduled()) {
+        //         limelightAutoAimCommand.cancel();
+        //     }
+        //     limelightAutoAimCommand = null;
+        // }
     }
 
     // ---- Manipulator controls ----
@@ -140,11 +136,16 @@ public final class Input extends SubsystemBase {
     }
 
     public Translation2d getArmTarget() {
-        if (manipulator.dpad.up.isPressed())
+        if (manipulator.dpad.up.isPressed()) {
+            robot.limelight.setPipeline(1);
             return getArmHigh();
-        if (manipulator.dpad.down.isPressed())
-            return getArmMid();
+        }
 
+        if (manipulator.dpad.down.isPressed()) {
+            robot.limelight.setPipeline(0);
+            return getArmMid();
+        }
+        
         if (manipulator.x.isPressed()) {
             if (manipulator.a.isPressed())
                 return getSubstationPickup();
