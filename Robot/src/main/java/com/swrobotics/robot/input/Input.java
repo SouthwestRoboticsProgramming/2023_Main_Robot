@@ -11,6 +11,8 @@ import com.swrobotics.robot.positions.SnapPositions;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.robot.subsystems.vision.Limelight;
+
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -55,6 +57,8 @@ public final class Input extends SubsystemBase {
     private final XboxController driver;
     private final XboxController manipulator;
 
+    private final SlewRateLimiter limiter;
+
     private final PathfindToPointCommand snapDriveCmd;
     private final TurnToAngleCommand snapTurnCmd;
     private Angle snapAngle;
@@ -62,7 +66,6 @@ public final class Input extends SubsystemBase {
     private Translation2d prevArmTarget;
     private Translation2d armNudge;
 
-    private double lastSpeed = 0;
     private GamePiece gamePiece;
 
     public Input(RobotContainer robot) {
@@ -83,6 +86,13 @@ public final class Input extends SubsystemBase {
         prevArmTarget = SnapPositions.DEFAULT;
         armNudge = new Translation2d(0, 0);
         gamePiece = GamePiece.CUBE;
+
+        /*
+         * The limiter acts to reduce sudden acceleration and decelleration when going into or dropping out of
+         * fast mode. It doesn't effect the sticks directly as that was not a problem that we faced. Instead,
+         * it just effects fast mode ramping.
+         */
+        limiter = new SlewRateLimiter(2, -2, 0);
     }
 
     private double deadband(double val) {
@@ -102,12 +112,7 @@ public final class Input extends SubsystemBase {
             speed = FAST_SPEED;
         }
 
-        if (speed != lastSpeed) {
-            speed = (speed + lastSpeed) / 2;
-            // FIXME: Accual decceleration
-        }
-
-        lastSpeed = speed;
+        speed = limiter.calculate(speed);
 
         double x = -deadband(driver.leftStickY.get()) * speed;
         double y = -deadband(driver.leftStickX.get()) * speed;
