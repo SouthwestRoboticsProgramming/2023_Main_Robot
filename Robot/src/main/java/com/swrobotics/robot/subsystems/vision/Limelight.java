@@ -86,14 +86,6 @@ public class Limelight extends SubsystemBase {
         LIGHTS_ON.set(on);
     }
 
-    @Override
-    public void periodic() {
-        // Update log with data
-        TARGET_FOUND.set(targetFound());
-    }
-
-
-
     // As Per: https://docs.limelightvision.io/en/latest/networktables_api.html#camera-controls
     // This Should Work
     public void setCrop(double[] crops) {

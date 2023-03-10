@@ -126,8 +126,7 @@ public final class SnapPositions {
             snapAngle = pose.getRotation();
 
             // Check that it should be using the limelight
-            if (closest.isCone() && USE_LIMELIGHT.get()/* && limelight.targetFound()*/) {
-                System.out.println("Using limelight!");
+            if (closest.isCone() && USE_LIMELIGHT.get() && limelight.targetFound()) {
                 Rotation2d limelightReading = limelight.getXAngle();
 
                  // Check that the auto turn wouldn't pull it out of snap tolerance
