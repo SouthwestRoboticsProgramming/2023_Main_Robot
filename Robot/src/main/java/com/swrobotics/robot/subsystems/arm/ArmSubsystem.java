@@ -48,8 +48,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final int TOP_MOTOR_ID = 24;
 
     // FIXME
-    private static final int BOTTOM_CANCODER_ID = 7431;
-    private static final int TOP_CANCODER_ID = 7432;
+    private static final int BOTTOM_CANCODER_ID = 13;
+    private static final int TOP_CANCODER_ID = 14;
 
     public static final double JOINT_TO_CANCODER_RATIO = 3;
 
@@ -90,8 +90,9 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             bottomJoint = new SimJoint(BOTTOM_LENGTH, BOTTOM_GEAR_RATIO);
             topJoint = new SimJoint(TOP_LENGTH, TOP_GEAR_RATIO);
         } else {
-            DigitalInput armDetect = new DigitalInput(RIOPorts.ARM_DETECT_DIO);
-            PhysicalArmInfo armInfo = armDetect.get() ? PhysicalArmInfo.ARM_1 : PhysicalArmInfo.ARM_2;
+//            DigitalInput armDetect = new DigitalInput(RIOPorts.ARM_DETECT_DIO);
+//            PhysicalArmInfo armInfo = armDetect.get() ? PhysicalArmInfo.ARM_1 : PhysicalArmInfo.ARM_2;
+            PhysicalArmInfo armInfo = PhysicalArmInfo.ARM_1;
 
             bottomJoint = new PhysicalJoint(BOTTOM_MOTOR_ID, BOTTOM_CANCODER_ID, BOTTOM_GEAR_RATIO, armInfo.bottomOffset, true);
             topJoint = new PhysicalJoint(TOP_MOTOR_ID, TOP_CANCODER_ID, TOP_GEAR_RATIO, armInfo.topOffset, false);
@@ -161,8 +162,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
         if (OFFSET_CALIBRATE.get()) {
             OFFSET_CALIBRATE.set(false);
-            bottomJoint.calibrateCanCoder(HOME_BOTTOM.get());
-            topJoint.calibrateCanCoder(HOME_TOP.get());
+
+            // Assume arm is physically in home position
+            bottomJoint.calibrateCanCoder();
+            topJoint.calibrateCanCoder();
         }
 
         currentVisualizer.setPose(currentPose);

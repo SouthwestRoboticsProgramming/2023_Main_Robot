@@ -6,8 +6,14 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.mathlib.MathUtil;
-import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
-import edu.wpi.first.wpilibj.DriverStation;
+
+// Calibrating CANCoder:
+//   Assume arm is physically in home position
+//   Zero CANCoders (zero on cancoder = home position)
+
+// Calibrating home:
+//   Assume arm is within 60 degrees of home so CANCoders work
+//   Set encoder to scaled current angle of home position + encoder angle
 
 public final class PhysicalJoint implements ArmJoint {
     private final CANSparkMax motor;
@@ -39,33 +45,16 @@ public final class PhysicalJoint implements ArmJoint {
         this.canCoderOffset = canCoderOffset;
     }
 
-    private double getRawEncoderPos() {
-        return flip * encoder.getPosition();
-    }
+    private double getRawEncoderPos() { return flip * encoder.getPosition(); }
+    private double getEncoderPos() { return getRawEncoderPos() + encoderOffset; }
 
-    private double getEncoderPos() {
-        return getRawEncoderPos() + encoderOffset;
-    }
+    private double getRawCanCoderPos() { return flip * canCoder.getAbsolutePosition(); }
+    private double getCanCoderPos() { return MathUtil.wrap(getRawCanCoderPos() + canCoderOffset.get(), -180, 180); }
 
-    // Gets the offset from home measured by the CANCoder, in joint radians
-    private double getCanCoderAngle() {
-        double raw = canCoder.getAbsolutePosition();
-        double offset = canCoderOffset.get();
-
-        double relative = MathUtil.wrap(raw - offset, -180, 180);
-        return relative / ArmSubsystem.JOINT_TO_CANCODER_RATIO;
-    }
-
+    // Called when specified in NT
     @Override
-    public void calibrateCanCoder(double homeAngle) {
-        double current = getCurrentAngle();
-        double diff = current - homeAngle;
-
-        double diffCanCoder = diff * ArmSubsystem.JOINT_TO_CANCODER_RATIO;
-        if (Math.abs(diffCanCoder) > 180)
-            DriverStation.reportWarning("Arm is too far from home for CANCoder to work properly!", false);
-
-        canCoderOffset.set(diffCanCoder);
+    public void calibrateCanCoder() {
+        canCoderOffset.set(-getCanCoderPos());
     }
 
     @Override
@@ -73,11 +62,10 @@ public final class PhysicalJoint implements ArmJoint {
         return getEncoderPos() / gearRatio * 2 * Math.PI;
     }
 
+    // Called on startup
     @Override
     public void calibrateHome(double homeAngle) {
-        // Calculate where the arm is, assuming it's relatively close
-        // to the home position
-        double actualAngle = homeAngle + getCanCoderAngle();
+        double actualAngle = homeAngle + Math.toRadians(getCanCoderPos());
 
         double actualPos = getRawEncoderPos();
         double expectedPos = actualAngle / (2 * Math.PI) * gearRatio;

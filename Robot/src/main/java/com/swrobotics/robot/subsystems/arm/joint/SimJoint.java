@@ -26,7 +26,7 @@ public final class SimJoint implements ArmJoint {
     }
 
     @Override
-    public void calibrateCanCoder(double homeAngle) {
+    public void calibrateCanCoder() {
         // Don't need to do anything
     }
 
