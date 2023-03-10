@@ -75,13 +75,7 @@ public class Limelight extends SubsystemBase {
         lightsOn.setNumber(value);
         LIGHTS_ON.set(on);
     }
-
-    @Override
-    public void periodic() {
-        // Update log with data
-        TARGET_FOUND.set(targetFound());
-    }
-
+    
     public void setDriverMode(boolean on) {
         int value = 0;
         if (on) value = 1;
@@ -96,5 +90,12 @@ public class Limelight extends SubsystemBase {
 
         currentPipeline.setNumber(pipeline);
     }
+
+    @Override
+    public void periodic() {
+        // Update log with data
+        TARGET_FOUND.set(targetFound());
+    }
+
 
 }
