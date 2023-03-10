@@ -1,9 +1,10 @@
 package com.swrobotics.robot.positions;
 
+import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.mathlib.CCWAngle;
-import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
-import com.swrobotics.robot.subsystems.intake.GamePiece;
+import com.swrobotics.robot.subsystems.vision.Limelight;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -15,12 +16,17 @@ public final class SnapPositions {
     public static final class SnapPosition {
         private final Pose2d bluePose;
 
-        public SnapPosition(double x, double y, double rot) {
+        public SnapPosition(double x, double y, double rot, boolean isCone) {
             bluePose = new Pose2d(Units.inchesToMeters(x), Units.inchesToMeters(y), new Rotation2d(rot));
+            this.isCone = isCone;
         }
 
         public Pose2d getPose() {
             return DrivetrainSubsystem.flipForAlliance(bluePose);
+        }
+
+        public boolean isCone() {
+            return isCone;
         }
     }
 
@@ -59,18 +65,18 @@ public final class SnapPositions {
 
     private static final SnapPosition[] POSITIONS = {
             // Grids
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CUBE, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + CONE_SPAN_ACROSS_CUBE, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + CONE_SPAN_ACROSS_CUBE + CONE_SPAN_ADJACENT, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CUBE + CUBE_SPAN, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + 2 * CONE_SPAN_ACROSS_CUBE + CONE_SPAN_ADJACENT, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + 2 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CUBE + 2 * CUBE_SPAN, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + 3 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT, Math.PI),
+            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE, Math.PI, true),
+            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CUBE, Math.PI, false),
+            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + CONE_SPAN_ACROSS_CUBE, Math.PI, true),
+            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + CONE_SPAN_ACROSS_CUBE + CONE_SPAN_ADJACENT, Math.PI, true),
+            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CUBE + CUBE_SPAN, Math.PI, false),
+            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + 2 * CONE_SPAN_ACROSS_CUBE + CONE_SPAN_ADJACENT, Math.PI, true),
+            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + 2 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT, Math.PI, true),
+            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CUBE + 2 * CUBE_SPAN, Math.PI, false),
+            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + 3 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT, Math.PI, true),
 
             // Substation  FIXME
-            new SnapPosition(Units.metersToInches(15), Units.metersToInches(7), 0)
+            new SnapPosition(Units.metersToInches(15), Units.metersToInches(7), 0, false)
     };
 
     public static final Translation2d CUBE_UPPER = new Translation2d(1.501206, 1.393604 - 0.15 - Units.inchesToMeters(6));
