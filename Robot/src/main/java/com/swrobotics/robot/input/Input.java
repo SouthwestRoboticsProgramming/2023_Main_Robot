@@ -9,8 +9,7 @@ import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.LimelightAutoAimCommand;
 import com.swrobotics.robot.positions.SnapPositions;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
-import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
-import com.swrobotics.robot.subsystems.vision.Limelight;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;

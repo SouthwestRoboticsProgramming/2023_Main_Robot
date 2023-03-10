@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.swrobotics.lib.net.NTBoolean;
-import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTEntry;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;

@@ -18,8 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 
-import java.util.List;
-
 import static com.swrobotics.robot.subsystems.arm.ArmPathfinder.toStateSpaceVec;
 import static com.swrobotics.shared.arm.ArmConstants.*;
 

@@ -1,9 +1,7 @@
 package com.swrobotics.robot.positions;
 
 import com.swrobotics.mathlib.CCWAngle;
-import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
-import com.swrobotics.robot.subsystems.intake.GamePiece;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
