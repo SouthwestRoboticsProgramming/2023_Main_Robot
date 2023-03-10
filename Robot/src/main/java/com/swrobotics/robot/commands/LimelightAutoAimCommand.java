@@ -19,10 +19,10 @@ public class LimelightAutoAimCommand extends CommandBase {
     private final Limelight limelight;
     private final PIDController pidController;
 
-    public LimelightAutoAimCommand(DrivetrainSubsystem drivetrainSubsystem, Limelight limelight) {
+    public LimelightAutoAimCommand(DrivetrainSubsystem drivetrainSubsystem, Limelight limelight, int pipeline) {
         this.drivetrainSubsystem = drivetrainSubsystem;
         this.limelight = limelight;
-
+        limelight.setPipeline(pipeline);
         pidController = new PIDController(10, 2, 0);
         pidController.enableContinuousInput(-Math.PI, Math.PI);
 
