@@ -242,7 +242,12 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         topJoint.setMotorOutput(0);
     }
 
+    private static final NTEntry<Double> L_TARGET_X = new NTDouble("Log/Arm/Target X", 0).setTemporary();
+    private static final NTEntry<Double> L_TARGET_Y = new NTDouble("Log/Arm/Target Y", 0).setTemporary();
+
     public void setTargetPosition(Translation2d position) {
+        L_TARGET_X.set(position.getX());
+        L_TARGET_Y.set(position.getY());
         targetPose = ArmPose.fromEndPosition(position);
     }
 
