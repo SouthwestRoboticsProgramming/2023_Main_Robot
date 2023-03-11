@@ -10,6 +10,7 @@ import com.swrobotics.robot.commands.LimelightAutoAimCommand;
 import com.swrobotics.robot.positions.SnapPositions;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -196,7 +197,7 @@ public final class Input extends SubsystemBase {
         if (isEject())
             return IntakeMode.EJECT;
 
-        if (manipulator.a.isPressed() || manipulator.b.isPressed())
+        if (manipulator.a.isPressed() || manipulator.b.isPressed() || manipulator.rightTrigger.get() > 0.8)
             return IntakeMode.INTAKE;
 
         return IntakeMode.OFF;
@@ -209,18 +210,36 @@ public final class Input extends SubsystemBase {
             cmd.cancel();
     }
 
-    private void snapToPosition(Translation2d position) {
-        if (position != null)
-            snapDriveCmd.setGoal(new Vec2d(position.getX(), position.getY()));
+    private static final double SNAP_DRIVE_TOL = 0.05;
+    private static final double SNAP_TURN_TOL = Math.toRadians(2);
 
-        setCommandEnabled(snapDriveCmd, position != null);
+    private void snapToPosition(Translation2d position) {
+        if (position == null) {
+            setCommandEnabled(snapDriveCmd, false);
+            return;
+        }
+
+        snapDriveCmd.setGoal(new Vec2d(position.getX(), position.getY()));
+
+        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
+        double dist = currentPose.getTranslation().minus(position).getNorm();
+
+        setCommandEnabled(snapDriveCmd, dist > SNAP_DRIVE_TOL);
     }
 
     private void snapToAngle(Rotation2d angle) {
-        if (angle != null)
-            snapAngle = CCWAngle.rad(angle.getRadians());
+        if (angle == null) {
+            setCommandEnabled(snapTurnCmd, false);
+            return;
+        }
 
-        setCommandEnabled(snapTurnCmd, angle != null);
+        snapAngle = CCWAngle.rad(angle.getRadians());
+
+        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
+        double angleDiff = CCWAngle.rad(angle.getRadians())
+            .getAbsDiff(CCWAngle.rad(currentPose.getRotation().getRadians())).rad();
+
+        setCommandEnabled(snapTurnCmd, angleDiff < SNAP_TURN_TOL);
     }
 
     private void manipulatorPeriodic() {
