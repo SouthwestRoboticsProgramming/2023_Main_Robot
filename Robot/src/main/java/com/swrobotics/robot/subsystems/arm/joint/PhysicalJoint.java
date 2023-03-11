@@ -3,7 +3,6 @@ package com.swrobotics.robot.subsystems.arm.joint;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
-import edu.wpi.first.math.util.Units;
 
 public final class PhysicalJoint implements ArmJoint {
     private final CANSparkMax motor;
@@ -36,12 +35,6 @@ public final class PhysicalJoint implements ArmJoint {
     @Override
     public double getCurrentAngle() {
         return getEncoderPos() / gearRatio * 2 * Math.PI;
-    }
-
-    @Override
-    public double getCurrentAngularVelocity() {
-        double encoderVelRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity());
-        return encoderVelRadPerSec * flip / gearRatio;
     }
 
     @Override

@@ -6,8 +6,6 @@ import com.swrobotics.mathlib.Vec2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
-import java.util.Objects;
-
 import static com.swrobotics.shared.arm.ArmConstants.*;
 
 public final class ArmPose {
@@ -93,19 +91,5 @@ public final class ArmPose {
                 "bottomAngle=" + bottomAngle +
                 ", topAngle=" + topAngle +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ArmPose armPose = (ArmPose) o;
-        return Double.compare(armPose.bottomAngle, bottomAngle) == 0 &&
-                Double.compare(armPose.topAngle, topAngle) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(bottomAngle, topAngle);
     }
 }

@@ -12,9 +12,7 @@ import com.swrobotics.robot.subsystems.arm.joint.PhysicalJoint;
 import com.swrobotics.robot.subsystems.arm.joint.SimJoint;
 import com.swrobotics.shared.arm.ArmPose;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -26,10 +24,11 @@ import static com.swrobotics.shared.arm.ArmConstants.*;
 // All arm kinematics is treated as a 2d coordinate system, with
 // the X axis representing forward, and the Y axis representing up
 public final class ArmSubsystem extends SwitchableSubsystemBase {
-    // CAN IDs of the motors
+    // CAN IDs of the motors  FIXME
     private static final int BOTTOM_MOTOR_ID = 23;
     private static final int TOP_MOTOR_ID = 24;
 
+    private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 0.5);
     private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);
     private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.04); // Must be larger than stop tolerance
 
@@ -37,8 +36,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble HOME_BOTTOM = new NTDouble("Arm/Home/Bottom",0.5 * Math.PI);
     private static final NTDouble HOME_TOP = new NTDouble("Arm/Home/Top", -0.5 * Math.PI);
 
-    private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 1);
-    private static final NTDouble MAX_ACCEL = new NTDouble("Arm/Max Acceleration", 2);
     private static final NTDouble KP = new NTDouble("Arm/PID/kP", 8);
     private static final NTDouble KI = new NTDouble("Arm/PID/kI", 0);
     private static final NTDouble KD = new NTDouble("Arm/PID/kD", 0);
@@ -54,16 +51,15 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTEntry<Boolean> LOG_IN_TOLERANCE_H = new NTBoolean("Log/Arm/In Tolerance (Hysteresis)", false).setTemporary();
 
     private final ArmJoint topJoint, bottomJoint;
-    private final ProfiledPIDController pid;
-    private ArmPose prevTargetPose, targetPose;
+//    private final ArmPathfinder finder;
+    private final PIDController pid;
+    private ArmPose targetPose;
     private boolean inToleranceHysteresis;
 
     private final ArmVisualizer currentVisualizer;
     private final ArmVisualizer targetVisualizer;
 
-    private static TrapezoidProfile.Constraints profileConstraints() {
-        return new TrapezoidProfile.Constraints(MAX_SPEED.get(), MAX_ACCEL.get());
-    }
+//    private final ArmPhysicsSim sim;
 
     public ArmSubsystem(MessengerClient msg) {
         if (RobotBase.isSimulation()) {
@@ -87,17 +83,18 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
                 Color.kDarkRed, Color.kRed
         );
         SmartDashboard.putData("Arm", mechanism);
+
+//        finder = new ArmPathfinder(msg);
+
         ArmPose home = new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get());
         calibrate(home);
         targetPose = home;
         inToleranceHysteresis = false;
 
-        pid = new ProfiledPIDController(KP.get(), KI.get(), KD.get(), profileConstraints());
+        pid = new PIDController(KP.get(), KI.get(), KD.get());
         KP.onChange(() -> pid.setP(KP.get()));
         KI.onChange(() -> pid.setI(KI.get()));
         KD.onChange(() -> pid.setD(KD.get()));
-        MAX_SPEED.onChange(() -> pid.setConstraints(profileConstraints()));
-        MAX_ACCEL.onChange(() -> pid.setConstraints(profileConstraints()));
 
         msg.addHandler("Debug:ArmSetTarget", (type, reader) -> {
             double x = reader.readDouble();
@@ -191,28 +188,17 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
                 .sub(currentPose.bottomAngle, currentPose.topAngle);
 
         // Tolerance hysteresis so the motor doesn't do the shaky shaky
-        double magToFinalTarget = toStateSpaceVec(targetPose).sub(currentPoseVec).magnitude();
+        double magSqToFinalTarget = toStateSpaceVec(targetPose).sub(currentPoseVec).magnitudeSq();
         boolean prevInTolerance = inToleranceHysteresis;
-        LOG_MAG.set(magToFinalTarget);
-        if (magToFinalTarget > startTol) {
+        LOG_MAG.set(Math.sqrt(magSqToFinalTarget));
+        if (magSqToFinalTarget > startTol * startTol) {
             inToleranceHysteresis = false;
-        } else if (magToFinalTarget < stopTol) {
+        } else if (magSqToFinalTarget < stopTol * stopTol) {
             inToleranceHysteresis = true;
         }
 
-        if (prevInTolerance && !inToleranceHysteresis || !targetPose.equals(prevTargetPose)) {
-            final double dt = 0.01; // Arbitrarily small number
-
-            double bottomVel = bottomJoint.getCurrentAngularVelocity();
-            double topVel = topJoint.getCurrentAngularVelocity();
-
-            Vec2d estFuture = new Vec2d(currentPoseVec).add(bottomVel * dt, topVel * dt);
-            double velocity = magToFinalTarget - toStateSpaceVec(targetPose).sub(estFuture).magnitude();
-            velocity /= dt;
-
-            pid.reset(magToFinalTarget, velocity);
-        }
-        prevTargetPose = targetPose;
+        if (prevInTolerance && !inToleranceHysteresis)
+            pid.reset();
 
         double bottomMotorOut, topMotorOut;
         if (inToleranceHysteresis) {
@@ -220,10 +206,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             topMotorOut = 0;
         } else {
             // PID towards final target so we don't slow down at each point
-            double pidOut = -pid.calculate(magToFinalTarget, 0);
-
-            double maxSpeed = MAX_SPEED.get();
-            pidOut = MathUtil.clamp(pidOut, -maxSpeed, maxSpeed);
+            double pidOut = -pid.calculate(Math.sqrt(magSqToFinalTarget), 0);
+            pidOut = MathUtil.clamp(pidOut, 0, MAX_SPEED.get());
 
             towardsTarget.mul(BOTTOM_GEAR_RATIO, TOP_GEAR_RATIO).boxNormalize().mul(pidOut);
             bottomMotorOut = towardsTarget.x;
