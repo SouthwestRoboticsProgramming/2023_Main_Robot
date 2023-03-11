@@ -46,7 +46,11 @@ public class Photon extends SubsystemBase {
             Units.inchesToMeters(-5.01),  // Forward
             Units.inchesToMeters(POWER_TOWER_X),  // Left
             Units.inchesToMeters(POWER_TOWER_HEIGHT)), // Up
-        new Rotation3d()); // Camera is facing perfectly forward
+        new Rotation3d(
+            0,
+            0,
+            Math.toRadians(-17.78208933)
+        )); // Camera is facing perfectly forward
 
     private final PhotonCamera backCam = new PhotonCamera("Back");
     private final Transform3d backCamTransform = new Transform3d(
@@ -57,7 +61,7 @@ public class Photon extends SubsystemBase {
         new Rotation3d(
             0,
             0,
-            Math.PI
+            Math.toRadians(17.78208933)
         )); // Camera is facing perfectly backward
 
     // Simulate cameras
