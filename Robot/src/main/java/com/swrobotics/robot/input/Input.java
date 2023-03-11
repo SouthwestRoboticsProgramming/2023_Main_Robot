@@ -27,7 +27,7 @@ public final class Input extends SubsystemBase {
      * dpad down:     mid score
      * analog sticks: arm nudge
      * 
-     * nothing pressed: default arm
+     * x pressed: default arm
      */
 
     public enum IntakeMode {
@@ -50,6 +50,9 @@ public final class Input extends SubsystemBase {
     private static final double NUDGE_PER_PERIODIC = 0.25 * 0.02;
 
     private final RobotContainer robot;
+	
+	
+	private Translation2d currentSnapPosition = SnapPositions.DEFAULT;
 
     private final XboxController driver;
     private final XboxController manipulator;
@@ -159,19 +162,22 @@ public final class Input extends SubsystemBase {
     private boolean isEject() {
         return manipulator.leftTrigger.get() > 0.8;
     }
+	
 
     public Translation2d getArmTarget() {
         if (manipulator.dpad.up.isPressed())
-            return getArmHigh();
+			currentSnapPosition = getArmHigh();
         if (manipulator.dpad.down.isPressed())
-            return getArmMid();
-
+			currentSnapPosition = getArmMid();
         if (manipulator.b.isPressed())
-            return getSubstationPickup();
+			currentSnapPosition = getSubstationPickup();
         if (manipulator.a.isPressed())
-            return robot.arm.getHomeTarget();
+            currentSnapPosition = robot.arm.getHomeTarget();
+		if (manipulator.x.isPressed())
+			currentSnapPosition = SnapPositions.DEFAULT;
 
-        return SnapPositions.DEFAULT;
+
+        return currentSnapPosition;
     }
 
     private Translation2d getArmHigh() {
