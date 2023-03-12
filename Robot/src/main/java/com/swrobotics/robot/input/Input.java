@@ -1,6 +1,7 @@
 package com.swrobotics.robot.input;
 
 import com.swrobotics.lib.input.XboxController;
+import com.swrobotics.lib.net.NTTranslation2d;
 import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.mathlib.*;
@@ -60,7 +61,6 @@ public final class Input extends SubsystemBase {
     private Angle snapAngle;
 
     private Translation2d prevArmTarget;
-    private Translation2d armNudge;
 
     private double lastSpeed = 0;
     private GamePiece gamePiece;
@@ -80,8 +80,7 @@ public final class Input extends SubsystemBase {
         snapDriveCmd = new PathfindToPointCommand(robot, null);
         snapTurnCmd = new TurnToAngleCommand(robot, () -> snapAngle, false);
 
-        prevArmTarget = SnapPositions.DEFAULT;
-        armNudge = new Translation2d(0, 0);
+        prevArmTarget = SnapPositions.DEFAULT.getTranslation();
         gamePiece = GamePiece.CUBE;
     }
 
@@ -161,7 +160,7 @@ public final class Input extends SubsystemBase {
         return manipulator.leftTrigger.get() > 0.8;
     }
 
-    public Translation2d getArmTarget() {
+    public NTTranslation2d getArmTarget() {
         if (manipulator.dpad.up.isPressed())
             return getArmHigh();
         if (manipulator.dpad.down.isPressed())
@@ -170,24 +169,24 @@ public final class Input extends SubsystemBase {
         if (manipulator.b.isPressed())
             return getSubstationPickup();
         if (manipulator.a.isPressed())
-            return robot.arm.getHomeTarget();
+            return null; // Zero position
 
         return SnapPositions.DEFAULT;
     }
 
-    private Translation2d getArmHigh() {
+    private NTTranslation2d getArmHigh() {
         if (getGamePiece() == GamePiece.CUBE)
             return SnapPositions.CUBE_UPPER;
         return SnapPositions.CONE_UPPER;
     }
 
-    private Translation2d getArmMid() {
+    private NTTranslation2d getArmMid() {
         if (getGamePiece() == GamePiece.CUBE)
             return SnapPositions.CUBE_CENTER;
         return SnapPositions.CONE_CENTER;
     }
 
-    private Translation2d getSubstationPickup() {
+    private NTTranslation2d getSubstationPickup() {
         if (getGamePiece() == GamePiece.CUBE)
             return SnapPositions.CUBE_PICKUP;
         return SnapPositions.CONE_PICKUP;
@@ -258,13 +257,17 @@ public final class Input extends SubsystemBase {
         }
 
         // Update arm nudge
-        armNudge = armNudge.plus(new Translation2d(
+        Translation2d armNudge = new Translation2d(
             deadband(manipulator.rightStickX.get()) * NUDGE_PER_PERIODIC,
             deadband(-manipulator.rightStickY.get()) * NUDGE_PER_PERIODIC
-            ));
+        );
+        armNudge = armNudge.plus(new Translation2d(
+                deadband(manipulator.leftStickX.get()) * NUDGE_PER_PERIODIC,
+                deadband(-manipulator.leftStickY.get()) * NUDGE_PER_PERIODIC
+        ));
 
-        Translation2d armTarget = getArmTarget();
-
+        NTTranslation2d ntArmTarget = getArmTarget();
+        Translation2d armTarget = ntArmTarget == null ? robot.arm.getHomeTarget() : ntArmTarget.getTranslation();
 
         // If it is moving to a new target
         if (!armTarget.equals(prevArmTarget)) {
@@ -276,16 +279,15 @@ public final class Input extends SubsystemBase {
                 return; // Keep moving to the intermediate position
             }
         }
-                
-        robot.arm.setTargetPosition(getArmTarget().plus(armNudge));
         prevArmTarget = armTarget;
 
-        armNudge = armNudge.plus(new Translation2d(
-                deadband(manipulator.leftStickX.get()) * NUDGE_PER_PERIODIC,
-                deadband(-manipulator.leftStickY.get()) * NUDGE_PER_PERIODIC
-        ));
+        armTarget = armTarget.plus(armNudge);
+        if (ntArmTarget != null && ntArmTarget != SnapPositions.DEFAULT) {
+            ntArmTarget.set(armTarget);
+            prevArmTarget = armTarget;
+        }
 
-        robot.arm.setTargetPosition(armTarget.plus(armNudge));
+        robot.arm.setTargetPosition(armTarget);
     }
 
     @Override
