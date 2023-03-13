@@ -18,8 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 
-import java.util.List;
-
 import static com.swrobotics.robot.subsystems.arm.ArmPathfinder.toStateSpaceVec;
 import static com.swrobotics.shared.arm.ArmConstants.*;
 
@@ -228,7 +226,12 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         topJoint.setMotorOutput(0);
     }
 
+    private static final NTEntry<Double> L_TARGET_X = new NTDouble("Log/Arm/Target X", 0).setTemporary();
+    private static final NTEntry<Double> L_TARGET_Y = new NTDouble("Log/Arm/Target Y", 0).setTemporary();
+
     public void setTargetPosition(Translation2d position) {
+        L_TARGET_X.set(position.getX());
+        L_TARGET_Y.set(position.getY());
         targetPose = ArmPose.fromEndPosition(position);
     }
 

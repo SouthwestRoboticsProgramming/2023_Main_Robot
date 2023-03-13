@@ -1,22 +1,13 @@
 package com.swrobotics.robot.positions;
 
-import java.util.function.Supplier;
-
 import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
-import com.swrobotics.lib.swerve.commands.TurnBlindCommand;
-import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
-import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
-import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
