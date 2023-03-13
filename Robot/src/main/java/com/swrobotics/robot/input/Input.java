@@ -1,6 +1,7 @@
 package com.swrobotics.robot.input;
 
 import com.swrobotics.lib.input.XboxController;
+import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.mathlib.*;
@@ -33,10 +34,11 @@ public final class Input extends SubsystemBase {
      * nothing pressed: default arm
      */
 
+    private static final NTDouble SPEED_RATE_LIMIT = new NTDouble("Input/Speed Slew Limit", 2);
+
     public enum IntakeMode {
         INTAKE, EJECT, OFF
     }
-
 
     // FIXME: NULL = Smelly
     LimelightAutoAimCommand limelightAutoAimCommand = null;
@@ -57,7 +59,7 @@ public final class Input extends SubsystemBase {
     private final XboxController driver;
     private final XboxController manipulator;
 
-    private final SlewRateLimiter limiter;
+    private SlewRateLimiter limiter;
 
     private final PathfindToPointCommand snapDriveCmd;
     private final TurnToAngleCommand snapTurnCmd;
@@ -92,7 +94,12 @@ public final class Input extends SubsystemBase {
          * fast mode. It doesn't effect the sticks directly as that was not a problem that we faced. Instead,
          * it just effects fast mode ramping.
          */
-        limiter = new SlewRateLimiter(2, -2, 0);
+        double rate = SPEED_RATE_LIMIT.get();
+        limiter = new SlewRateLimiter(rate, -rate, 0);
+        SPEED_RATE_LIMIT.onChange(() -> {
+            double newRate = SPEED_RATE_LIMIT.get();
+            limiter = new SlewRateLimiter(newRate, -newRate, 0);
+        });
     }
 
     private double deadband(double val) {
