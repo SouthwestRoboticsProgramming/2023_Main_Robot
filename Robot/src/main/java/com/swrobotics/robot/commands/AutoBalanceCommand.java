@@ -1,6 +1,5 @@
 package com.swrobotics.robot.commands;
 
-import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 
@@ -11,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem.StopPosition;
 
 public class AutoBalanceCommand extends CommandBase {
-    private static final NTDouble ADJUST_AMOUNT = new NTDouble("Auto Balance/Adjust Amount", -0.3);
 
     private final DrivetrainSubsystem drive;
 

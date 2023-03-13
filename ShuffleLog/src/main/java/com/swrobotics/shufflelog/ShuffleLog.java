@@ -13,6 +13,7 @@ import com.swrobotics.shufflelog.tool.data.nt.NetworkTablesTool;
 import com.swrobotics.shufflelog.tool.field.FieldViewTool;
 import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
 import com.swrobotics.shufflelog.tool.profile.ShuffleLogProfilerTool;
+import com.swrobotics.shufflelog.tool.taskmanager.RoboRIOFilesTool;
 import com.swrobotics.shufflelog.tool.taskmanager.TaskManagerTool;
 import edu.wpi.first.math.WPIMathJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
@@ -60,7 +61,6 @@ public final class ShuffleLog extends PApplet {
 
     @Override
     public void settings() {
-        System.out.println("Loading wpilib jni");
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         WPIMathJNI.Helper.setExtractOnStaticLoad(false);
@@ -75,7 +75,6 @@ public final class ShuffleLog extends PApplet {
             throw new RuntimeException("Failed to load WPILib libraries", e);
         }
 
-        System.out.println("Loading persistence file");
         persistence = new Properties();
         try {
             persistence.load(new FileReader(PERSISTENCE_FILE));
@@ -86,10 +85,7 @@ public final class ShuffleLog extends PApplet {
 
         int width = Integer.parseInt(persistence.getProperty("window.width", "1280"));
         int height = Integer.parseInt(persistence.getProperty("window.height", "720"));
-        System.out.println("Created window: " + width + "x" + height);
         size(width, height, P2D);
-
-        System.out.println("Settings complete");
     }
 
     private void saveDefaultLayout() {
@@ -118,19 +114,15 @@ public final class ShuffleLog extends PApplet {
 
     @Override
     public void setup() {
-        System.out.println("Enter setup");
         saveDefaultLayout();
-        System.out.println("Saved default layout");
 
         surface.setResizable(true);
         long windowHandle = (long) surface.getNative();
-        System.out.println("Got window handle: " + windowHandle);
 
         // Move window to previous position
         int x = Integer.parseInt(persistence.getProperty("window.x", "0"));
         int y = Integer.parseInt(persistence.getProperty("window.y", "0"));
 //        GLFW.glfwSetWindowPos(windowHandle, x, y);
-        System.out.println("Set window pos " + x + ", " + y);
 
         ImGui.createContext();
         imPlotCtx = ImPlot.createContext();
@@ -143,15 +135,12 @@ public final class ShuffleLog extends PApplet {
         imGuiGlfw.init(windowHandle, true);
         imGuiGl3.init();
 
-        System.out.println("ImGui init done");
-
         // Set default font
         try {
             textFont(new PFont(getClass().getClassLoader().getResourceAsStream("fonts/PTSans-Regular-14.vlw")));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Default Processing font loaded");
 
         tools.add(new MenuBarTool());
         MessengerTool msg = new MessengerTool(this);
@@ -161,22 +150,19 @@ public final class ShuffleLog extends PApplet {
         tools.add(dataLog);
         tools.add(new NetworkTablesTool(threadPool));
         tools.add(new TaskManagerTool(this, "TaskManager"));
+        tools.add(new RoboRIOFilesTool(this));
         tools.add(new FieldViewTool(this));
         tools.add(new BlockAutoTool(this));
-        ButtonPanelTool btn = new ButtonPanelTool(messenger);
-        tools.add(btn);
+//        ButtonPanelTool btn = new ButtonPanelTool(messenger);
+//        tools.add(btn);
         tools.add(new ArmDebugTool(this, messenger));
-        tools.add(new PreMatchChecklistTool(msg, btn));
+        tools.add(new PreMatchChecklistTool(msg));
 
         startTime = System.currentTimeMillis();
-
-        System.out.println("Tools initialized");
     }
 
     @Override
     public void draw() {
-        System.out.println("Begin draw");
-
         Profiler.beginMeasurements("Root");
 
         if (messenger != null) {
@@ -224,12 +210,12 @@ public final class ShuffleLog extends PApplet {
         Profiler.pop();
 
         Profiler.endMeasurements();
-
-        System.out.println("End draw");
     }
 
     @Override
     public void exit() {
+        messenger.disconnect();
+
         ImPlot.destroyContext(imPlotCtx);
         ImGui.destroyContext();
 

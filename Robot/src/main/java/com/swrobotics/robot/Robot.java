@@ -1,16 +1,11 @@
 package com.swrobotics.robot;
 
 import com.swrobotics.lib.ThreadUtils;
-import com.swrobotics.robot.commands.arm.ManualArmControlCommand;
 import com.swrobotics.robot.positions.ScoringPositions;
-import com.swrobotics.robot.positions.TurnWithArmSafetyCommand;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 
 /**
  * The VM is configured to automatically run this class, and to call the

@@ -229,6 +229,8 @@ public final class FieldViewTool extends ViewportTool {
                 cameraDist.set(8);
             }
 
+            ImGui.text(String.valueOf(getCursorPos()));
+
             ImGui.separator();
 
             ImVec2 pos = ImGui.getWindowPos();

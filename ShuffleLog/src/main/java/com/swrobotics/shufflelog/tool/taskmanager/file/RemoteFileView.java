@@ -246,7 +246,7 @@ public final class RemoteFileView {
     }
 
     private void showDirectory(RemoteDirectory dir, boolean isRoot) {
-        String dirName = isRoot ? "Tasks Root" : dir.getName();
+        String dirName = isRoot ? "Root" : dir.getName();
 
         boolean open = ImGui.treeNodeEx(dirName, ImGuiTreeNodeFlags.SpanFullWidth | (isRoot ? ImGuiTreeNodeFlags.DefaultOpen : 0));
         if (ImGui.beginDragDropSource()) {

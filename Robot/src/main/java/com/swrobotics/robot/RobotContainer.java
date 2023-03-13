@@ -11,18 +11,13 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
-import com.swrobotics.mathlib.Angle;
-import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.blockauto.AutoBlocks;
 import com.swrobotics.robot.blockauto.WaypointStorage;
-import com.swrobotics.robot.commands.ArnoldRunCommand;
-import com.swrobotics.robot.commands.AutoBalanceCommand;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
-import com.swrobotics.robot.input.ButtonPanel;
-import com.swrobotics.robot.positions.ScoreSelectorSubsystem;
+import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.positions.ScoringPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.arnold.Arnold;
@@ -31,6 +26,7 @@ import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
+import com.swrobotics.robot.subsystems.vision.Limelight;
 import com.swrobotics.robot.subsystems.vision.Photon;
 
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
@@ -43,8 +39,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -68,10 +62,12 @@ public class RobotContainer {
     private final SendableChooser<Supplier<Command>> autoSelector;
 
     // The robot's subsystems are defined here...
+    public final Input input;
     public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
     public final Pathfinder pathfinder;
 
     public final Photon photon = new Photon(this);
+    public final Limelight limelight = new Limelight();
 
     public final ArmSubsystem arm;
     public final IntakeSubsystem intake = new IntakeSubsystem();
@@ -80,9 +76,9 @@ public class RobotContainer {
     // public final StatusLogging statuslogger = new StatusLogging(lights);
 
     public final Arnold arnold = new Arnold(RIOPorts.ARNOLD_LEFT_PWM, RIOPorts.ARNOLD_RIGHT_PWM);
-    private final XboxController controller = new XboxController(0);
-    public final ButtonPanel buttonPanel;
-    private final ScoreSelectorSubsystem scoreSelector;
+//    private final XboxController controller = new XboxController(0);
+//    public final ButtonPanel buttonPanel;
+//    private final ScoreSelectorSubsystem scoreSelector;
 
     private final MessengerClient messenger;
 
@@ -90,25 +86,10 @@ public class RobotContainer {
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer(Robot robot) {
+        this.robot = robot;
+
         // Turn off joystick warnings
         DriverStation.silenceJoystickConnectionWarning(true);
-
-
-        this.robot = robot;
-        // Set up the default command for the drivetrain.
-        // The controls are for field-oriented driving:
-        // Left stick Y axis -> forward and backwards movement
-        // Left stick X axis -> left and right movement
-        // Right stick X axis -> rotation
-        drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(
-                drivetrainSubsystem,
-                () -> -modifyAxis(controller.getLeftY()) * (DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND / 2),
-                () -> -modifyAxis(controller.getLeftX()) * (DrivetrainSubsystem.MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND / 2),
-                () -> -modifyAxis(controller.getRightX())
-                * DrivetrainSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND,
-                () -> controller.getLeftBumper(),
-                () -> controller.getRightBumper(),
-                () -> controller.getRightTriggerAxis() > 0.8));
 
         // Initialize Messenger
         messenger = new MessengerClient(
@@ -116,12 +97,9 @@ public class RobotContainer {
                 MESSENGER_PORT,
                 MESSENGER_NAME
         );
-        new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
-        buttonPanel = new ButtonPanel(messenger);
-        arm = new ArmSubsystem(messenger);
-        scoreSelector = new ScoreSelectorSubsystem(this);
 
-//        arm.setDefaultCommand(new ManualArmControlCommand(this, null));
+        new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
+        arm = new ArmSubsystem(messenger);
 
         // Initialize block auto
         AutoBlocks.init(messenger, this);
@@ -129,6 +107,9 @@ public class RobotContainer {
 
         // Initialize pathfinder to be able to drive to any point on the field
         pathfinder = new Pathfinder(messenger, drivetrainSubsystem);
+
+        input = new Input(this);
+        drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(drivetrainSubsystem, input));
 
         HashMap<String, Command> eventMap = new HashMap<>();
 
@@ -235,7 +216,7 @@ public class RobotContainer {
         SmartDashboard.putData("Auto", autoSelector);
 
         // Configure the rest of the button bindings
-        configureButtonBindings();
+//        configureButtonBindings();
     }
 
     /**
@@ -246,67 +227,67 @@ public class RobotContainer {
      * it to a {@link
      * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
-    private void configureButtonBindings() {
-        // Back button zeros the gyroscope
-        new Trigger(controller::getBackButton)
-                // No requirements because we don't need to interrupt anything
-                .onTrue(Commands.runOnce(drivetrainSubsystem::zeroGyroscope));
-
-        // Start button does leveling sequence on charger
-        new Trigger(controller::getStartButton)
-                .onTrue(new BalanceSequenceCommand(this, false));
-
-        new Trigger(() -> buttonPanel.isButtonDown(2, 3))
-                .onTrue(Commands.runOnce(() -> {
-                    System.out.println("SET TO CUBE");
-                    intake.setExpectedPiece(GamePiece.CUBE);
-                    lights.set(Lights.Color.BLUE);
-                    buttonPanel.setLightOn(2, 3, true);
-                    buttonPanel.setLightOn(3, 3, false);
-                }).ignoringDisable(true));
-
-        new Trigger(() -> buttonPanel.isButtonDown(3, 3))
-                .onTrue(Commands.runOnce(() -> {
-                    System.out.println("SET TO CONE");
-                    intake.setExpectedPiece(GamePiece.CONE);
-                    lights.set(Lights.Color.YELLOW);
-                    buttonPanel.setLightOn(2, 3, false);
-                    buttonPanel.setLightOn(3, 3, true);
-                }).ignoringDisable(true));
-
-        new Trigger(() -> buttonPanel.isButtonDown(1, 3))
-                .onTrue(Commands.runOnce(intake::run))
-                .onFalse(Commands.runOnce(intake::stop));
-
-        new Trigger(() -> buttonPanel.isButtonDown(0, 3))
-                .onTrue(Commands.runOnce(intake::eject))
-                .onFalse(Commands.runOnce(intake::stop));
-
-        new Trigger(() -> buttonPanel.isButtonDown(4, 3))
-                .onTrue(new MoveArmToPositionCommand(
-                        this,
-                        () -> ScoringPositions.getPickupArmTargetPre(intake.getExpectedPiece())
-                ))
-                .onFalse(new MoveArmToPositionCommand(
-                        this,
-                        () -> ScoringPositions.getPickupArmTarget(intake.getExpectedPiece())
-                ));
-
-        new Trigger(() -> buttonPanel.isButtonDown(5, 3))
-                .onTrue(new MoveArmToPositionCommand(this, ScoringPositions.HOLD_TARGET));
-
-        new Trigger(() -> buttonPanel.isButtonDown(8, 3))
-                .onTrue(Commands.runOnce(() -> {
-                    scoreSelector.cancelActiveScoreCommand();
-                    robot.autonomousExit();
-                }));
-
-        new Trigger(() -> buttonPanel.isButtonDown(6, 3))
-                .onTrue(new MoveArmToPositionCommand(this, arm.getHomeTarget()));
-
-        new Trigger(() -> buttonPanel.isButtonDown(7, 3))
-                .onTrue(new ArnoldRunCommand(arnold, buttonPanel));
-    }
+//    private void configureButtonBindings() {
+//        // Back button zeros the gyroscope
+//        new Trigger(controller::getBackButton)
+//                // No requirements because we don't need to interrupt anything
+//                .onTrue(Commands.runOnce(drivetrainSubsystem::zeroGyroscope));
+//
+//        // Start button does leveling sequence on charger
+//        new Trigger(controller::getStartButton)
+//                .onTrue(new BalanceSequenceCommand(this, false));
+//
+//        new Trigger(() -> buttonPanel.isButtonDown(2, 3))
+//                .onTrue(Commands.runOnce(() -> {
+//                    System.out.println("SET TO CUBE");
+//                    intake.setExpectedPiece(GamePiece.CUBE);
+//                    lights.set(Lights.Color.BLUE);
+//                    buttonPanel.setLightOn(2, 3, true);
+//                    buttonPanel.setLightOn(3, 3, false);
+//                }).ignoringDisable(true));
+//
+//        new Trigger(() -> buttonPanel.isButtonDown(3, 3))
+//                .onTrue(Commands.runOnce(() -> {
+//                    System.out.println("SET TO CONE");
+//                    intake.setExpectedPiece(GamePiece.CONE);
+//                    lights.set(Lights.Color.YELLOW);
+//                    buttonPanel.setLightOn(2, 3, false);
+//                    buttonPanel.setLightOn(3, 3, true);
+//                }).ignoringDisable(true));
+//
+//        new Trigger(() -> buttonPanel.isButtonDown(1, 3))
+//                .onTrue(Commands.runOnce(intake::run))
+//                .onFalse(Commands.runOnce(intake::stop));
+//
+//        new Trigger(() -> buttonPanel.isButtonDown(0, 3))
+//                .onTrue(Commands.runOnce(intake::eject))
+//                .onFalse(Commands.runOnce(intake::stop));
+//
+//        new Trigger(() -> buttonPanel.isButtonDown(4, 3))
+//                .onTrue(new MoveArmToPositionCommand(
+//                        this,
+//                        () -> ScoringPositions.getPickupArmTargetPre(intake.getExpectedPiece())
+//                ))
+//                .onFalse(new MoveArmToPositionCommand(
+//                        this,
+//                        () -> ScoringPositions.getPickupArmTarget(intake.getExpectedPiece())
+//                ));
+//
+//        new Trigger(() -> buttonPanel.isButtonDown(5, 3))
+//                .onTrue(new MoveArmToPositionCommand(this, ScoringPositions.HOLD_TARGET));
+//
+//        new Trigger(() -> buttonPanel.isButtonDown(8, 3))
+//                .onTrue(Commands.runOnce(() -> {
+//                    scoreSelector.cancelActiveScoreCommand();
+//                    robot.autonomousExit();
+//                }));
+//
+//        new Trigger(() -> buttonPanel.isButtonDown(6, 3))
+//                .onTrue(new MoveArmToPositionCommand(this, arm.getHomeTarget()));
+//
+//        new Trigger(() -> buttonPanel.isButtonDown(7, 3))
+//                .onTrue(new ArnoldRunCommand(arnold, buttonPanel));
+//    }
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -317,30 +298,7 @@ public class RobotContainer {
         return autoSelector.getSelected().get();
     }
 
-    private static double deadband(double value, double deadband) {
-        if (Math.abs(value) > deadband) {
-            if (value > 0.0) {
-                return (value - deadband) / (1.0 - deadband);
-            } else {
-                return (value + deadband) / (1.0 - deadband);
-            }
-        } else {
-            return 0.0;
-        }
-    }
-
-    private static double modifyAxis(double value) {
-        // Deadband
-        value = deadband(value, 0.15);
-
-        // Square the axis
-        value = Math.copySign(value * value, value);
-
-        return value;
-    }
-
     private static List<PathPlannerTrajectory> getPath(String name) {
-
         List<PathPlannerTrajectory> path = PathPlanner.loadPathGroup(name, new PathConstraints(2.0, 1.0));
         if (path != null) {
             return path;
