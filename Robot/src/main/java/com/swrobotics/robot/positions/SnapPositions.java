@@ -76,8 +76,8 @@ public final class SnapPositions {
     public static final Translation2d CONE_UPPER = new Translation2d(1.42892 + Units.inchesToMeters(3), 1.533184 + Units.inchesToMeters(2) - Units.inchesToMeters(18));
     public static final Translation2d CONE_CENTER = new Translation2d(1.076355, 0.872756);
 
-    public static final Translation2d CONE_PICKUP = new Translation2d(0.671102, 0.758571);
-    public static final Translation2d CUBE_PICKUP = new Translation2d(0.766450, 0.666299 - 0.1);
+    public static final Translation2d CONE_PICKUP = new Translation2d(1.3157, 0.7451 + 0.1);
+    public static final Translation2d CUBE_PICKUP = new Translation2d(1.3157, 0.7451 + 0.075);
     public static final Translation2d PICKUP_PRE = new Translation2d(
             (CONE_PICKUP.getX() + CUBE_PICKUP.getX()) / 2,
             Math.max(CONE_PICKUP.getY(), CUBE_PICKUP.getY()) + 0.15
