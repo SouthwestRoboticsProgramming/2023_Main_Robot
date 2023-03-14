@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble L_INTAKE_SPEED = (NTDouble) new NTDouble("Intake/Current Speed", 0).setTemporary();
     private static final NTDouble CONE_HOLD = new NTDouble("Intake/Cone Hold", -0.1);
+    private static final NTDouble CUBE_HOLD = new NTDouble("Intake/Cube Hold", 0.1);
 
     private final PWMSparkMax motor;
 
@@ -48,7 +49,7 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     }
 
     public void stop() {
-        motor.set(expectedPiece == GamePiece.CONE ? (CONE_HOLD.get()) : 0);
+        motor.set(expectedPiece == GamePiece.CONE ? (CONE_HOLD.get()) : CUBE_HOLD.get());
         running = false;
     }
 
