@@ -9,6 +9,7 @@ import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.LimelightAutoAimCommand;
 import com.swrobotics.robot.positions.SnapPositions;
+import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.robot.subsystems.vision.Limelight;
@@ -243,6 +244,11 @@ public final class Input extends SubsystemBase {
     }
 
     private void manipulatorPeriodic() {
+        if (getGamePiece() == GamePiece.CONE)
+            robot.lights.set(Lights.Color.YELLOW);
+        else
+            robot.lights.set(Lights.Color.BLUE);
+
         IntakeMode intakeMode = getIntakeMode();
         switch (intakeMode) {
             case INTAKE:
