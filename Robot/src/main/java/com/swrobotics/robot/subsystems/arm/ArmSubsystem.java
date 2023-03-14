@@ -49,7 +49,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final int BOTTOM_CANCODER_ID = 13;
     private static final int TOP_CANCODER_ID = 14;
 
-    public static final double JOINT_TO_CANCODER_RATIO = 3;
+    public static final double JOINT_TO_CANCODER_RATIO = 2;
 
     private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 0.5);
     private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);

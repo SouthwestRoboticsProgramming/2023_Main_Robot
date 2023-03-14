@@ -7,6 +7,7 @@ import com.revrobotics.RelativeEncoder;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.MathUtil;
+import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 
 // Calibrating CANCoder:
 //   Assume arm is physically in home position
@@ -54,7 +55,7 @@ public final class PhysicalJoint implements ArmJoint {
     private double getEncoderPos() { return getRawEncoderPos() + encoderOffset; }
 
     private double getRawCanCoderPos() { return -flip * canCoder.getAbsolutePosition(); }
-    private double getCanCoderPos() { return MathUtil.wrap(getRawCanCoderPos() + canCoderOffset.get(), -180, 180); }
+    private double getCanCoderPos() { return MathUtil.wrap(getRawCanCoderPos() + canCoderOffset.get(), -180, 180) / ArmSubsystem.JOINT_TO_CANCODER_RATIO; }
 
     // Called when specified in NT
     @Override
@@ -70,10 +71,10 @@ public final class PhysicalJoint implements ArmJoint {
     // Called on startup
     @Override
     public void calibrateHome(double homeAngle) {
-        double actualAngle = homeAngle + Math.toRadians(getCanCoderPos());
+        double actualAngle = homeAngle - Math.toRadians(getCanCoderPos());
 
         double actualPos = getRawEncoderPos();
-        double expectedPos = homeAngle / (2 * Math.PI) * gearRatio;
+        double expectedPos = actualAngle / (2 * Math.PI) * gearRatio;
         encoderOffset = expectedPos - actualPos;
     }
 
@@ -81,7 +82,7 @@ public final class PhysicalJoint implements ArmJoint {
 
     @Override
     public void setMotorOutput(double out) {
-        test.set(canCoder.getAbsolutePosition());
+        test.set(getCanCoderPos());
         motor.set(out * flip);
     }
 }
