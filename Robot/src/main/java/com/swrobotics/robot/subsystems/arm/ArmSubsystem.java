@@ -266,6 +266,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         L_TARGET_X.set(position.getX());
         L_TARGET_Y.set(position.getY());
         targetPose = ArmPose.fromEndPosition(position);
+        inToleranceHysteresis = false;
     }
 
     public ArmPose getTargetPose() {
