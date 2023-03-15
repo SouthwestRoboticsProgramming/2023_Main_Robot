@@ -56,7 +56,8 @@ public class RobotContainer {
 
     private enum ScoreHeight {
         TOP,
-        MID
+        MID,
+        BOTTOM
     }
 
     // Configuration for our Raspberry Pi communication service
@@ -126,10 +127,22 @@ public class RobotContainer {
         
         SendableChooser<ScoreHeight> positionSelector = new SendableChooser<>();
         
-        positionSelector.addOption("High", ScoreHeight.TOP);
-        positionSelector.setDefaultOption("Mid", ScoreHeight.MID);
+        positionSelector.setDefaultOption("High", ScoreHeight.TOP);
+        positionSelector.addOption("Mid", ScoreHeight.MID);
+        positionSelector.addOption("Low", ScoreHeight.BOTTOM);
         
         SmartDashboard.putData("Auto Position", positionSelector);
+
+        Command cubeLow = new MoveArmToPositionCommand(this, () -> SnapPositions.DEFAULT.getTranslation())
+        .andThen(
+            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+
+        Command coneLow = new MoveArmToPositionCommand(this, () -> SnapPositions.DEFAULT.getTranslation())
+        .andThen(
+            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
 
         Command cubeMid = new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, SnapPositions.CUBE_CENTER.getTranslation().getY()))
         .andThen(
@@ -159,13 +172,15 @@ public class RobotContainer {
         Command scoreCone = new SelectCommand(
             Map.ofEntries(
                 Map.entry(ScoreHeight.TOP, coneHigh),
-                Map.entry(ScoreHeight.MID, coneMid)
+                Map.entry(ScoreHeight.MID, coneMid),
+                Map.entry(ScoreHeight.BOTTOM, coneLow)
             ), positionSelector::getSelected);
 
         Command scoreCube = new SelectCommand(
             Map.ofEntries(
                 Map.entry(ScoreHeight.TOP, cubeHigh),
-                Map.entry(ScoreHeight.MID, cubeMid)
+                Map.entry(ScoreHeight.MID, cubeMid),
+                Map.entry(ScoreHeight.BOTTOM, cubeLow)
             ), positionSelector::getSelected);
 
         // Put your events from PathPlanner here
