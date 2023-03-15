@@ -12,8 +12,6 @@ import com.swrobotics.robot.commands.LimelightAutoAimCommand;
 import com.swrobotics.robot.positions.SnapPositions;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
-import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
-import com.swrobotics.robot.subsystems.vision.Limelight;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -146,7 +144,7 @@ public final class Input extends SubsystemBase {
             boolean turnInput = Math.abs(driver.rightStickX.get()) > DEADBAND;
 
             boolean rumble = (driveInput && snap.snapPosition != null) || (turnInput && snap.snapRotation != null);
-            driver.setRumble(rumble ? 1 : 0);
+            driver.setRumble(rumble ? 0.5 : 0);
         } else {
             setCommandEnabled(snapDriveCmd, false);
             setCommandEnabled(snapTurnCmd, false);
