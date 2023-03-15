@@ -123,7 +123,6 @@ public class RobotContainer {
         drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(drivetrainSubsystem, input));
 
         HashMap<String, Command> eventMap = new HashMap<>();
-
         
         SendableChooser<ScoreHeight> positionSelector = new SendableChooser<>();
         
@@ -131,6 +130,19 @@ public class RobotContainer {
         positionSelector.setDefaultOption("Mid", ScoreHeight.MID);
         
         SmartDashboard.putData("Auto Position", positionSelector);
+
+        Command cubeMid = new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, SnapPositions.CUBE_CENTER.getTranslation().getY()))
+        .andThen(
+            new MoveArmToPositionCommand(this, () -> SnapPositions.CUBE_CENTER.getTranslation()),
+            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+
+        Command cubeHigh = new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, SnapPositions.CUBE_UPPER.getTranslation().getY()))
+        .andThen(
+            new MoveArmToPositionCommand(this, () -> SnapPositions.CUBE_UPPER.getTranslation()),
+            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
 
         Command scoreCone = new SelectCommand(
             Map.ofEntries(
@@ -140,8 +152,8 @@ public class RobotContainer {
 
         Command scoreCube = new SelectCommand(
             Map.ofEntries(
-                Map.entry(ScoreHeight.TOP, new PrintCommand("Cube High")),
-                Map.entry(ScoreHeight.MID, new PrintCommand("Cube Mid"))
+                Map.entry(ScoreHeight.TOP, cubeHigh),
+                Map.entry(ScoreHeight.MID, cubeMid)
             ), positionSelector::getSelected);
 
         // Put your events from PathPlanner here
