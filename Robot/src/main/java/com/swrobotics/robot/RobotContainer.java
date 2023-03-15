@@ -137,17 +137,29 @@ public class RobotContainer {
             Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
             Commands.run(intake::eject, intake).withTimeout(1.0));
 
-
         Command cubeHigh = new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, SnapPositions.CUBE_UPPER.getTranslation().getY()))
         .andThen(
             new MoveArmToPositionCommand(this, () -> SnapPositions.CUBE_UPPER.getTranslation()),
             Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
             Commands.run(intake::eject, intake).withTimeout(1.0));
 
+
+        Command coneMid = new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, SnapPositions.CONE_CENTER.getTranslation().getY()))
+        .andThen(
+            new MoveArmToPositionCommand(this, () -> SnapPositions.CONE_CENTER.getTranslation()),
+            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+        Command coneHigh = new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, SnapPositions.CONE_UPPER.getTranslation().getY()))
+        .andThen(
+            new MoveArmToPositionCommand(this, () -> SnapPositions.CONE_UPPER.getTranslation()),
+            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
         Command scoreCone = new SelectCommand(
             Map.ofEntries(
-                Map.entry(ScoreHeight.TOP, new PrintCommand("Cone High")),
-                Map.entry(ScoreHeight.MID, new PrintCommand("Cone Mid"))
+                Map.entry(ScoreHeight.TOP, coneHigh),
+                Map.entry(ScoreHeight.MID, coneMid)
             ), positionSelector::getSelected);
 
         Command scoreCube = new SelectCommand(
