@@ -17,7 +17,7 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "SCORE"
+          "SCORE_CUBE"
         ],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
@@ -30,15 +30,15 @@
         "y": 2.73
       },
       "prevControl": {
-        "x": 5.461141178692614,
-        "y": 2.706342848583134
+        "x": 5.223698428394481,
+        "y": 2.6847793363045165
       },
       "nextControl": {
-        "x": 5.461141178692614,
-        "y": 2.706342848583134
+        "x": 6.2486106730359365,
+        "y": 2.7680924425367235
       },
       "holonomicAngle": 180.0,
-      "isReversal": true,
+      "isReversal": false,
       "velOverride": null,
       "isLocked": false,
       "isStopPoint": false,

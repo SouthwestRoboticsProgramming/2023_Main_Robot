@@ -17,7 +17,7 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "SCORE"
+          "SCORE_CUBE"
         ],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
