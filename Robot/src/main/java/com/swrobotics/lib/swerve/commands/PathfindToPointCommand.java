@@ -1,32 +1,41 @@
 package com.swrobotics.lib.swerve.commands;
 
+import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 import java.util.List;
 
 public final class PathfindToPointCommand extends CommandBase {
-    // Speed at which the robot tries to go
+    // Maximum speed
     private static final double VELOCITY = 1.0;
 
     // Position tolerance in meters
-    private static final double TOLERANCE = 0.08;
+    private static final double TOLERANCE = 0.06;
 
     private final DrivetrainSubsystem drive;
     private final Pathfinder finder;
+    private final PIDController pid;
 
-    private final Vec2d goal;
+    private Vec2d goal;
     private boolean finished;
 
     public PathfindToPointCommand(RobotContainer robot, Vec2d goal) {
         drive = robot.drivetrainSubsystem;
         finder = robot.pathfinder;
+        this.goal = goal;
+
+        // FIXME: Tune
+        pid = new PIDController(10, 0, 0);
+    }
+
+    public void setGoal(Vec2d goal) {
         this.goal = goal;
     }
 
@@ -47,8 +56,6 @@ public final class PathfindToPointCommand extends CommandBase {
 
         Vec2d target = null;
         if (!finder.isPathTargetValid()) {
-            System.err.println("Path target is incorrect, waiting for good path");
-
             // Drive directly to goal while waiting
             target = goal;
         } else {
@@ -80,8 +87,12 @@ public final class PathfindToPointCommand extends CommandBase {
         }
 
         // We are finished if within tolerance to final target
-        if (new Vec2d(currentPosition).sub(goal).magnitudeSq() < TOLERANCE * TOLERANCE)
+        double magToGoal = currentPosition.distanceTo(goal);
+        if (magToGoal < TOLERANCE)
             finished = true;
+
+        double velocity = -pid.calculate(magToGoal, 0);
+        velocity = MathUtil.clamp(velocity, -VELOCITY, VELOCITY);
 
         // Find normal vector towards target
         double deltaX = target.x - currentPosition.x;
@@ -90,8 +101,8 @@ public final class PathfindToPointCommand extends CommandBase {
         deltaX /= len; deltaY /= len;
 
         // Scale vector by velocity
-        deltaX *= VELOCITY;
-        deltaY *= VELOCITY;
+        deltaX *= velocity;
+        deltaY *= velocity;
 
         // Move
         drive.setTargetTranslation(new Translation2d(deltaX, deltaY), true);
