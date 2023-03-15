@@ -59,9 +59,6 @@ public final class Input extends SubsystemBase {
 
     private final RobotContainer robot;
 	
-	
-	private NTTranslation2d currentSnapPosition = SnapPositions.DEFAULT;
-
     private final XboxController driver;
     private final XboxController manipulator;
 
@@ -180,17 +177,15 @@ public final class Input extends SubsystemBase {
 
     public NTTranslation2d getArmTarget() {
         if (manipulator.dpad.up.isPressed())
-			currentSnapPosition = getArmHigh();
+			return getArmHigh();
         if (manipulator.dpad.down.isPressed())
-			currentSnapPosition = getArmMid();
+			return getArmMid();
         if (manipulator.b.isPressed())
-			currentSnapPosition = getSubstationPickup();
+			return getSubstationPickup();
         if (manipulator.a.isPressed())
-            currentSnapPosition = null; // Home target - position is retrieved from arm subsystem later
-	    if (manipulator.x.isPressed())
-	        currentSnapPosition = SnapPositions.DEFAULT;
+            return null; // Home target - position is retrieved from arm subsystem later
 
-        return currentSnapPosition;
+        return SnapPositions.DEFAULT;
     }
 
     private NTTranslation2d getArmHigh() {
