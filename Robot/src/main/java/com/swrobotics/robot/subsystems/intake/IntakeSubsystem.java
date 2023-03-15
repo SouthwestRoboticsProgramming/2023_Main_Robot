@@ -3,24 +3,20 @@ package com.swrobotics.robot.subsystems.intake;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.robot.RIOPorts;
 import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
-    private static final NTDouble SPEED = new NTDouble("Intake3/Speed", 0.2);
-    private static final NTDouble CONE_HOLD = new NTDouble("Intake3/Cone Hold", 0.1);
+    private static final NTDouble L_INTAKE_SPEED = (NTDouble) new NTDouble("Intake/Current Speed", 0).setTemporary();
+    private static final NTDouble CONE_HOLD = new NTDouble("Intake/Cone Hold", -0.1);
+    private static final NTDouble CUBE_HOLD = new NTDouble("Intake/Cube Hold", 0.1);
 
     private final PWMSparkMax motor;
-    private final DigitalInput coneBeamBreak;
-    private final DigitalInput cubeBeamBreak;
 
     private GamePiece expectedPiece;
     private boolean running;
 
     public IntakeSubsystem() {
         motor = new PWMSparkMax(RIOPorts.INTAKE_PWM);
-        coneBeamBreak = new DigitalInput(RIOPorts.INTAKE_SENSOR_CONE_DIO);
-        cubeBeamBreak = new DigitalInput(RIOPorts.INTAKE_SENSOR_CUBE_DIO);
 
         expectedPiece = GamePiece.CONE;
         running = false;
@@ -38,27 +34,22 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
             stop();
     }
 
-    public boolean isExpectedPiecePresent() {
-        DigitalInput sensor = expectedPiece == GamePiece.CONE ? coneBeamBreak : cubeBeamBreak;
-        return !sensor.get();
-    }
-
     public void run() {
         if (isEnabled()) {
-            motor.set(expectedPiece.getIntakeDirection() * SPEED.get());
+            motor.set(expectedPiece.getIntakeOutput());
             running = true;
         }
     }
 
     public void eject() {
         if (isEnabled()) {
-            motor.set(-expectedPiece.getIntakeDirection() * SPEED.get());
+            motor.set(-expectedPiece.getOuttakeOutput());
             running = true;
         }
     }
 
     public void stop() {
-        motor.set(expectedPiece == GamePiece.CONE ? (expectedPiece.getIntakeDirection() * CONE_HOLD.get()) : 0);
+        motor.set(expectedPiece == GamePiece.CONE ? (CONE_HOLD.get()) : CUBE_HOLD.get());
         running = false;
     }
 
@@ -72,5 +63,10 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
             run();
         else
             stop();
+    }
+
+    @Override
+    public void periodic() {
+        L_INTAKE_SPEED.set(motor.get());
     }
 }

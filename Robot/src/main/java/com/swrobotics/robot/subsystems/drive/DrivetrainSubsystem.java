@@ -13,6 +13,7 @@ import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.mathlib.MathUtil;
+import com.swrobotics.robot.positions.SnapPositions;
 import com.swrobotics.robot.subsystems.StatusLoggable;
 import com.swrobotics.robot.subsystems.StatusLogging;
 
@@ -54,6 +55,17 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
     public static Angle getAllianceReverse() {
         return DriverStation.getAlliance() == DriverStation.Alliance.Blue ? CWAngle.deg(180) : Angle.ZERO;
+    }
+
+    public static Pose2d flipForAlliance(Pose2d asBlue) {
+        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue)
+            return asBlue;
+
+        // Flip horizontally to be on red alliance side
+        return new Pose2d(
+                new Translation2d(FIELD_WIDTH_METERS - asBlue.getX(), asBlue.getY()),
+                new Rotation2d(MathUtil.wrap(Math.PI - asBlue.getRotation().getRadians(), 0, 2 * Math.PI))
+        );
     }
 
     public StatusLogging logger;
@@ -270,11 +282,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
                 currentPose.getRotation().times(-1)
         );
 
-        // Flip horizontally to be on red alliance side (actual position)
-        return new Pose2d(
-                new Translation2d(FIELD_WIDTH_METERS - asBlue.getX(), asBlue.getY()),
-                new Rotation2d(MathUtil.wrap(Math.PI - asBlue.getRotation().getRadians(), 0, 2 * Math.PI))
-        );
+        return flipForAlliance(asBlue);
     }
 
     /**
@@ -325,12 +333,13 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
     }
 
     private static final double IS_MOVING_THRESH = 0.1;
+    private static final double IS_MOVING_TURN_THRESH = Math.toRadians(15);
 
     public boolean isMoving() {
         ChassisSpeeds currentMovement = kinematics.toChassisSpeeds(getModuleStates());
         Translation2d translation = new Translation2d(currentMovement.vxMetersPerSecond, currentMovement.vyMetersPerSecond);
         double chassisVelocity = translation.getNorm();
-        return chassisVelocity > IS_MOVING_THRESH;
+        return chassisVelocity > IS_MOVING_THRESH || currentMovement.omegaRadiansPerSecond > IS_MOVING_TURN_THRESH;
     }
 
     public void setStopPosition(StopPosition position) {
@@ -490,6 +499,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
         ppPose.setPose(getPathPlannerPose());
         field.setRobotPose(getPose());
+        SnapPositions.showPositions(field);
 
         // Check if it should calibrate the wheels
         if (CALIBRATE.get()) {
