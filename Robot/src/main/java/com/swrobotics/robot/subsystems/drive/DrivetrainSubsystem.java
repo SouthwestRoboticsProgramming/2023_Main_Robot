@@ -333,12 +333,13 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
     }
 
     private static final double IS_MOVING_THRESH = 0.1;
+    private static final double IS_MOVING_TURN_THRESH = Math.toRadians(15);
 
     public boolean isMoving() {
         ChassisSpeeds currentMovement = kinematics.toChassisSpeeds(getModuleStates());
         Translation2d translation = new Translation2d(currentMovement.vxMetersPerSecond, currentMovement.vyMetersPerSecond);
         double chassisVelocity = translation.getNorm();
-        return chassisVelocity > IS_MOVING_THRESH;
+        return chassisVelocity > IS_MOVING_THRESH || currentMovement.omegaRadiansPerSecond > IS_MOVING_TURN_THRESH;
     }
 
     public void setStopPosition(StopPosition position) {

@@ -6,6 +6,7 @@ import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
+import com.swrobotics.robot.RIOPorts;
 import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import com.swrobotics.robot.subsystems.arm.joint.ArmJoint;
 import com.swrobotics.robot.subsystems.arm.joint.PhysicalJoint;
@@ -13,6 +14,7 @@ import com.swrobotics.robot.subsystems.arm.joint.SimJoint;
 import com.swrobotics.shared.arm.ArmPose;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -24,9 +26,30 @@ import static com.swrobotics.shared.arm.ArmConstants.*;
 // All arm kinematics is treated as a 2d coordinate system, with
 // the X axis representing forward, and the Y axis representing up
 public final class ArmSubsystem extends SwitchableSubsystemBase {
-    // CAN IDs of the motors  FIXME
+    // Info relating to each physical arm, since they aren't identical
+    private static final NTBoolean OFFSET_CALIBRATE = new NTBoolean("Arm/Calibrate Offsets", false);
+    private enum PhysicalArmInfo {
+        // CANCoders should be calibrated to be at zero when arm is at home position
+        ARM_1("Arm/Arm 1/Bottom Offset", "Arm/Arm 1/Top Offset"),
+        ARM_2("Arm/Arm 2/Bottom Offset", "Arm/Arm 2/Top Offset");
+
+        public final NTDouble bottomOffset;
+        public final NTDouble topOffset;
+
+        PhysicalArmInfo(String bottomPath, String topPath) {
+            bottomOffset = new NTDouble(bottomPath, 0);
+            topOffset = new NTDouble(topPath, 0);
+        }
+    }
+
     private static final int BOTTOM_MOTOR_ID = 23;
     private static final int TOP_MOTOR_ID = 24;
+
+    // FIXME
+    private static final int BOTTOM_CANCODER_ID = 13;
+    private static final int TOP_CANCODER_ID = 14;
+
+    public static final double JOINT_TO_CANCODER_RATIO = 2;
 
     private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 0.5);
     private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);
@@ -59,15 +82,17 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private final ArmVisualizer currentVisualizer;
     private final ArmVisualizer targetVisualizer;
 
-//    private final ArmPhysicsSim sim;
-
     public ArmSubsystem(MessengerClient msg) {
         if (RobotBase.isSimulation()) {
             bottomJoint = new SimJoint(BOTTOM_LENGTH, BOTTOM_GEAR_RATIO);
             topJoint = new SimJoint(TOP_LENGTH, TOP_GEAR_RATIO);
         } else {
-            bottomJoint = new PhysicalJoint(BOTTOM_MOTOR_ID, BOTTOM_GEAR_RATIO, true);
-            topJoint = new PhysicalJoint(TOP_MOTOR_ID, TOP_GEAR_RATIO, false);
+//            DigitalInput armDetect = new DigitalInput(RIOPorts.ARM_DETECT_DIO);
+//            PhysicalArmInfo armInfo = armDetect.get() ? PhysicalArmInfo.ARM_1 : PhysicalArmInfo.ARM_2;
+            PhysicalArmInfo armInfo = PhysicalArmInfo.ARM_1;
+
+            bottomJoint = new PhysicalJoint(BOTTOM_MOTOR_ID, BOTTOM_CANCODER_ID, BOTTOM_GEAR_RATIO, armInfo.bottomOffset, true);
+            topJoint = new PhysicalJoint(TOP_MOTOR_ID, TOP_CANCODER_ID, TOP_GEAR_RATIO, armInfo.topOffset, false);
         }
 
         double extent = (BOTTOM_LENGTH + TOP_LENGTH) * 2;
@@ -87,7 +112,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 //        finder = new ArmPathfinder(msg);
 
         ArmPose home = new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get());
-        calibrate(home);
+        calibrateHome(home);
         targetPose = home;
         inToleranceHysteresis = false;
 
@@ -103,9 +128,9 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         });
     }
 
-    public void calibrate(ArmPose currentPose) {
-        bottomJoint.setCurrentAngle(currentPose.bottomAngle);
-        topJoint.setCurrentAngle(currentPose.topAngle);
+    private void calibrateHome(ArmPose homePose) {
+        bottomJoint.calibrateHome(homePose.bottomAngle);
+        topJoint.calibrateHome(homePose.topAngle);
     }
 
     public ArmPose getCurrentPose() {
@@ -130,6 +155,14 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             HOME_BOTTOM.set(currentPose.bottomAngle);
             HOME_TOP.set(currentPose.topAngle);
             HOME_CALIBRATE.set(false);
+        }
+
+        if (OFFSET_CALIBRATE.get()) {
+            OFFSET_CALIBRATE.set(false);
+
+            // Assume arm is physically in home position
+            bottomJoint.calibrateCanCoder();
+            topJoint.calibrateCanCoder();
         }
 
         currentVisualizer.setPose(currentPose);
@@ -233,6 +266,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         L_TARGET_X.set(position.getX());
         L_TARGET_Y.set(position.getY());
         targetPose = ArmPose.fromEndPosition(position);
+        inToleranceHysteresis = false;
     }
 
     public ArmPose getTargetPose() {
