@@ -122,6 +122,9 @@ public final class Input extends SubsystemBase {
      */
     private double deadband(double val) {
         double deadbanded = MathUtil.deadband(val, DEADBAND);
+
+        if (deadbanded == 0.0) { return 0.0; }
+
         double mapped = MathUtil.map(Math.abs(deadbanded), 0.0, 1.0, DEADBAND, 1.0);
         return Math.copySign(mapped, deadbanded);
     }
