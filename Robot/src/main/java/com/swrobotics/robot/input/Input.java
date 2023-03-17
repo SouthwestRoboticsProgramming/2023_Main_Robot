@@ -64,7 +64,8 @@ public final class Input extends SubsystemBase {
     private static final double DEADBAND = 0.1;
     private static final double TRIGGER_DEADBAND = 0.2; // Intentionally small to prevent the gamer lock mode from breaking anything
 
-    private static final double FAST_SPEED = 4.11;
+    private static final double DEFAULT_SPEED = 1.5; // Meters per second
+    private static final double FAST_SPEED = 4.11;   // Meters per second
     private static final Angle MAX_ROTATION = AbsoluteAngle.rad(Math.PI);
 
     private static final double NUDGE_PER_PERIODIC = 0.25 * 0.02;
@@ -121,12 +122,9 @@ public final class Input extends SubsystemBase {
     // ---- Driver controls ----
 
     public Vec2d getDriveTranslation() {
-//        boolean slowMode = driver.leftBumper.isPressed();
         boolean fastMode = driver.rightBumper.isPressed();
 
-        double speed = 1.5;
-//        if (slowMode)
-//            multiplier *= SLOW_MODE_MULTIPLIER;
+        double speed = DEFAULT_SPEED;
         if (fastMode) {
             speed = FAST_SPEED;
         }
