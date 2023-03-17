@@ -58,7 +58,6 @@ public final class AbsoluteAngle extends AbstractAngle<AbsoluteAngle> {
     public CCWAngle ccw() {
         if (cacheCCW == null) {
             cacheCCW = CCWAngle.rad(rad());
-            cacheCCW.cacheAbs = this;
         }
         return cacheCCW;
     }
@@ -67,7 +66,6 @@ public final class AbsoluteAngle extends AbstractAngle<AbsoluteAngle> {
     public CWAngle cw() {
         if (cacheCW == null) {
             cacheCW = CWAngle.rad(rad());
-            cacheCW.cacheAbs = this;
         }
         return cacheCW;
     }
