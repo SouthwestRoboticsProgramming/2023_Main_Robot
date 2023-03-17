@@ -164,9 +164,9 @@ public final class Input extends SubsystemBase {
             return;
         }
 
+        // Calculate snapping
         Pose2d currentPose = robot.drivetrainSubsystem.getPose();
         SnapPositions.SnapStatus snap = SnapPositions.getSnap(currentPose);
-        System.out.println("Snap status: " + snap);
         if (snap == null) {
             disableSnap();
             return;
