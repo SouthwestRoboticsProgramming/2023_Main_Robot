@@ -11,11 +11,50 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 
 public final class SnapPositions {
+    // Activation tolerances
+    private static final double SNAP_RADIUS = 1.5; // Meters; how close to target to enable snap
+    private static final double ANGLE_SNAP_TOL = 22.5; // Degrees; how close to correct to enable snap turn
+
+    // All field measurements are in inches to be consistent with field drawings
+    // Position parameters
+    private static final double ROBOT_SIZE_FW = 33;
+    private static final double SAFETY_SPACING = 1;
+    private static final double CENTER_DIST_FROM_WALL = SAFETY_SPACING + ROBOT_SIZE_FW / 2;
+
+    // Grid measurements
+    private static final double BOTTOM_TO_LOWEST_CONE = 20.19;
+    private static final double CONE_SPAN_ACROSS_CUBE = 44;
+    private static final double CONE_SPAN_ADJACENT = 22;
+    private static final double BOTTOM_TO_LOWEST_CUBE = 42.19;
+    private static final double CUBE_SPAN = 66;
+    private static final double BLUE_RIGHT_X = 4*12 + 6.25;
+    private static final double GRID_X = BLUE_RIGHT_X + CENTER_DIST_FROM_WALL;
+
+    // Substation measurements
+    private static final double FIELD_WIDTH = 54 * 12 + 1;
+    private static final double SUBSTATION_LOWER_Y = 216.03;
+    private static final double SUBSTATION_DEPTH = 14;
+    private static final double SUBSTATION_X = FIELD_WIDTH - SUBSTATION_DEPTH - CENTER_DIST_FROM_WALL;
+    private static final double SUBSTATION_AVAIL_AREA = 34.21;
+    private static final double SUBSTATION_LENGTH = 99.07;
+    private static final double LOW_SUBSTATION_Y = SUBSTATION_LOWER_Y + SUBSTATION_AVAIL_AREA / 2;
+    private static final double HIGH_SUBSTATION_Y = SUBSTATION_LOWER_Y + SUBSTATION_LENGTH - SUBSTATION_AVAIL_AREA / 2;
+
+    public enum TurnMode {
+        DIRECT_TURN, // Turn directly to pose angle
+        CONE_NODE_AIM, // Limelight aim to cone node pole
+        GAME_PIECE_AIM // Limelight aim to game piece
+    }
+
     public static final class SnapPosition {
         private final Pose2d bluePose;
+        private final boolean driveSnapEnabled;
+        private final TurnMode turnMode;
 
-        public SnapPosition(double x, double y, double rot) {
+        public SnapPosition(double x, double y, double rot, boolean driveSnapEnabled, TurnMode turnMode) {
             bluePose = new Pose2d(Units.inchesToMeters(x), Units.inchesToMeters(y), new Rotation2d(rot));
+            this.driveSnapEnabled = driveSnapEnabled;
+            this.turnMode = turnMode;
         }
 
         public Pose2d getPose() {
@@ -23,78 +62,63 @@ public final class SnapPositions {
         }
     }
 
-    public static final class SnapStatus {
-        public final Translation2d snapPosition;
-        public final Rotation2d snapRotation;
+    private static SnapPosition cubeNode(double y) {
+        return new SnapPosition(GRID_X, y, Math.PI, true, TurnMode.DIRECT_TURN);
+    }
 
-        public SnapStatus(Translation2d snapPosition, Rotation2d snapRotation) {
-            this.snapPosition = snapPosition;
-            this.snapRotation = snapRotation;
+    private static SnapPosition coneNode(double y) {
+        return new SnapPosition(GRID_X, y, Math.PI, true, TurnMode.CONE_NODE_AIM);
+    }
+
+    private static SnapPosition substation(double y) {
+        return new SnapPosition(SUBSTATION_X, y, 0, false, TurnMode.GAME_PIECE_AIM);
+    }
+
+    public static final SnapPosition[] POSITIONS = {
+        // Grid positions
+        coneNode(BOTTOM_TO_LOWEST_CONE),
+        cubeNode(BOTTOM_TO_LOWEST_CUBE),
+        coneNode(BOTTOM_TO_LOWEST_CONE + CONE_SPAN_ACROSS_CUBE),
+        coneNode(BOTTOM_TO_LOWEST_CONE + CONE_SPAN_ACROSS_CUBE + CONE_SPAN_ADJACENT),
+        cubeNode(BOTTOM_TO_LOWEST_CUBE + CUBE_SPAN),
+        coneNode(BOTTOM_TO_LOWEST_CONE + 2 * CONE_SPAN_ACROSS_CUBE + CONE_SPAN_ADJACENT),
+        coneNode(BOTTOM_TO_LOWEST_CONE + 2 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT),
+        cubeNode(BOTTOM_TO_LOWEST_CUBE + 2 * CUBE_SPAN),
+        coneNode(BOTTOM_TO_LOWEST_CONE + 3 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT),
+
+        // Double substation
+        substation(LOW_SUBSTATION_Y),
+        substation(HIGH_SUBSTATION_Y)
+    };
+
+    public static final class SnapStatus {
+        public final Pose2d pose;
+        public final boolean snapDrive, snapTurn;
+        public final TurnMode turnMode;
+
+        public SnapStatus(Pose2d pose, TurnMode turnMode, boolean snapDrive, boolean snapTurn) {
+            this.pose = pose;
+            this.turnMode = turnMode;
+            this.snapDrive = snapDrive;
+            this.snapTurn = snapTurn;
         }
 
         @Override
         public String toString() {
-            return "SnapStatus{" +
-                    "snapPosition=" + snapPosition +
-                    ", snapRotation=" + snapRotation +
-                    '}';
+            return "SnapStatus{"
+                + "pose=" + pose + ","
+                + "turnMode=" + turnMode + ","
+                + "snapDrive=" + snapDrive + ","
+                + "snapTurn=" + snapTurn + "}";
         }
     }
-
-    private static final double SNAP_RADIUS = 1.5; // Meters
-    private static final double ANGLE_SNAP_TOL = 22.5; // Degrees
-
-    // In inches
-    private static final double BOTTOM_TO_LOWEST_CONE = 20.19;
-    private static final double CONE_SPAN_ACROSS_CUBE = 44;
-    private static final double CONE_SPAN_ADJACENT = 22;
-    private static final double BOTTOM_TO_LOWEST_CUBE = 42.19;
-    private static final double CUBE_SPAN = 66;
-    private static final double BLUE_RIGHT_X = 4*12 + 6.25;
-
-    private static final double ROBOT_SIZE_FW = 33;
-    private static final double DIST_FROM_GRIDS = 3 + ROBOT_SIZE_FW / 2;
-    private static final double BLUE_X = BLUE_RIGHT_X + DIST_FROM_GRIDS;
-
-    private static final SnapPosition[] POSITIONS = {
-            // Grids
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CUBE, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + CONE_SPAN_ACROSS_CUBE, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + CONE_SPAN_ACROSS_CUBE + CONE_SPAN_ADJACENT, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CUBE + CUBE_SPAN, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + 2 * CONE_SPAN_ACROSS_CUBE + CONE_SPAN_ADJACENT, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + 2 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CUBE + 2 * CUBE_SPAN, Math.PI),
-            new SnapPosition(BLUE_X, BOTTOM_TO_LOWEST_CONE + 3 * CONE_SPAN_ACROSS_CUBE + 2 * CONE_SPAN_ADJACENT, Math.PI),
-
-            // Substation  FIXME
-            new SnapPosition(Units.metersToInches(15), Units.metersToInches(7), 0)
-    };
-
-    public static final NTTranslation2d CUBE_UPPER = new NTTranslation2d("Arm/Positions/Cube High", 1.336078, 0.893116);
-    public static final NTTranslation2d CUBE_CENTER = new NTTranslation2d("Arm/Positions/Cube Mid", 0.933183, 0.335277);
-    public static final NTTranslation2d CONE_UPPER = new NTTranslation2d("Arm/Positions/Cone High", 1.391533, 0.817448);
-    public static final NTTranslation2d CONE_CENTER = new NTTranslation2d("Arm/Positions/Cone Mid", 0.869909, 0.460904);
-
-    public static final NTTranslation2d CONE_PICKUP = new NTTranslation2d("Arm/Positions/Cone Pickup", 1.131009, 0.845100 - 0.1);
-    public static final NTTranslation2d CUBE_PICKUP = new NTTranslation2d("Arm/Positions/Cube Pickup", 1.120115, 0.600034);
-
-    public static final NTTranslation2d DEFAULT = new NTTranslation2d("Arm/Positions/Default", 0.689397, Units.inchesToMeters(11.5 - 13 + 2.25));
-
-    // public static final Translation2d CUBE_UPPER = new Translation2d(1.336078, 0.893116);
-    // public static final Translation2d CUBE_CENTER = new Translation2d(0.933183, 0.335277);
-    // public static final Translation2d CONE_UPPER = new Translation2d(1.391533, 0.817448);
-    // public static final Translation2d CONE_CENTER = new Translation2d(0.869909, 0.460904);
-
-    // public static final Translation2d PICKUP = new Translation2d(1.131009, 0.845100 - 0.1);
-    // public static final Translation2d CONE_PICKUP = new Translation2d(1.131009, 0.845100 - 0.1);
-    // public static final Translation2d CUBE_PICKUP = new Translation2d(1.120115, 0.600034);
-    // public static final Translation2d PICKUP_PRE = new Translation2d(
-    //         (CONE_PICKUP.getX() + CUBE_PICKUP.getX()) / 2,
-    //         Math.max(CONE_PICKUP.getY(), CUBE_PICKUP.getY()) + 0.15
-    // );
-
+    
+    /**
+     * Get current snap behavior based on robot pose
+     * 
+     * @param currentPose current robot pose
+     * @return current snap behavior, or null if not in a snap zone
+     */
     public static SnapStatus getSnap(Pose2d currentPose) {
         double minDist = Double.POSITIVE_INFINITY;
         SnapPosition closest = null;
@@ -108,18 +132,15 @@ public final class SnapPositions {
             }
         }
 
-        System.out.println(minDist);
         if (closest == null || minDist > SNAP_RADIUS)
-            return new SnapStatus(null, null);
+            return null;
 
         Pose2d pose = closest.getPose();
         double absDiff = CCWAngle.rad(currentPose.getRotation().getRadians())
                 .getAbsDiff(CCWAngle.rad(pose.getRotation().getRadians()))
                 .deg();
 
-        Rotation2d snapAngle = absDiff < ANGLE_SNAP_TOL ? pose.getRotation() : null;
-
-        return new SnapStatus(pose.getTranslation(), snapAngle);
+        return new SnapStatus(pose, closest.turnMode, closest.driveSnapEnabled, absDiff < ANGLE_SNAP_TOL);
     }
 
     public static void showPositions(Field2d field) {

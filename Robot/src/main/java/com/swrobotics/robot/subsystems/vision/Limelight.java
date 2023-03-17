@@ -4,7 +4,6 @@ import com.swrobotics.lib.net.NTBoolean;
 
 
 import com.swrobotics.lib.net.NTDoubleArray;
-import com.swrobotics.lib.net.NTInteger;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -12,10 +11,13 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Limelight extends SubsystemBase {
+    public static final int CONE_NODE_PIPELINE = 0;
+    public static final int CONE_PIPELINE = 1;
+    public static final int CUBE_PIPELINE = 2;
+
     private static final NTBoolean LIGHTS_ON = new NTBoolean("Limelight/Lights_On", true);
     private static final NTBoolean TARGET_FOUND = new NTBoolean("Limelight/Target found", false);
 
-    private static final NTInteger PIPELINE = new NTInteger("Limelight/Pipeline", 0);
     private static final NTBoolean DRIVER_MODE = new NTBoolean("Limelight/Driver_Mode", false);
 
     private final NetworkTableEntry xAngle;
@@ -58,8 +60,6 @@ public class Limelight extends SubsystemBase {
 
         // Driver Mode is Off By Default
         DRIVER_MODE.onChange(() -> setDriverMode(DRIVER_MODE.get()));
-
-        PIPELINE.onChange(() -> setPipeline(PIPELINE.get()));
     }
 
     public Rotation2d getXAngle() {

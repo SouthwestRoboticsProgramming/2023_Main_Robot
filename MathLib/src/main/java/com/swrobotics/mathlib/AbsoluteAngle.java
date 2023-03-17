@@ -37,8 +37,8 @@ public final class AbsoluteAngle extends AbstractAngle<AbsoluteAngle> {
     }
 
     // Store results from ccw() and cw() to reduce object creation
-    private CCWAngle cacheCCW;
-    private CWAngle cacheCW;
+    CCWAngle cacheCCW;
+    CWAngle cacheCW;
 
     private AbsoluteAngle(double rad) {
         super(rad);
@@ -56,15 +56,19 @@ public final class AbsoluteAngle extends AbstractAngle<AbsoluteAngle> {
 
     @Override
     public CCWAngle ccw() {
-        if (cacheCCW == null)
+        if (cacheCCW == null) {
             cacheCCW = CCWAngle.rad(rad());
+            cacheCCW.cacheAbs = this;
+        }
         return cacheCCW;
     }
 
     @Override
     public CWAngle cw() {
-        if (cacheCW == null)
+        if (cacheCW == null) {
             cacheCW = CWAngle.rad(rad());
+            cacheCW.cacheAbs = this;
+        }
         return cacheCW;
     }
 

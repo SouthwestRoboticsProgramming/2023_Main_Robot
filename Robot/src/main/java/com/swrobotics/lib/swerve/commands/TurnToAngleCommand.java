@@ -17,7 +17,7 @@ public class TurnToAngleCommand extends CommandBase {
 
     private final DrivetrainSubsystem drive;
     private final PIDController pid;
-    private final Supplier<Angle> angle;
+    private Supplier<Angle> angle;
     private final boolean robotRelative;
 
     public TurnToAngleCommand(RobotContainer robot, Supplier<Angle> angle, boolean robotRelative) {
@@ -25,10 +25,14 @@ public class TurnToAngleCommand extends CommandBase {
         this.angle = angle;
         this.robotRelative = robotRelative;
 
-        pid = new PIDController(10, 2, 0);
+        pid = new PIDController(5, 2, 0);
         pid.enableContinuousInput(-Math.PI, Math.PI);
 
         pid.setTolerance(0.1);
+    }
+
+    public void setAngleSupplier(Supplier<Angle> supplier) {
+        this.angle = supplier;
     }
 
     protected Angle getTargetAngle() {
