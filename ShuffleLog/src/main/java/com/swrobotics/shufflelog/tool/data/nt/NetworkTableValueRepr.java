@@ -5,12 +5,12 @@ import edu.wpi.first.networktables.*;
 public final class NetworkTableValueRepr implements AutoCloseable {
     private final Topic topic;
     public final GenericSubscriber sub;
-    public final GenericPublisher pub;
+    private GenericPublisher pub;
 
     public NetworkTableValueRepr(Topic topic) {
         this.topic = topic;
         sub = topic.genericSubscribe();
-        pub = topic.genericPublish(topic.getTypeString());
+        pub = null;
     }
 
     public String getName() {
@@ -25,9 +25,16 @@ public final class NetworkTableValueRepr implements AutoCloseable {
         return sub.get().getType();
     }
 
+    public GenericPublisher getPub() {
+        if (pub == null)
+            pub = topic.genericPublish(topic.getTypeString());
+        return pub;
+    }
+
     @Override
     public void close() {
         sub.close();
-        pub.close();
+        if (pub != null)
+            pub.close();
     }
 }
