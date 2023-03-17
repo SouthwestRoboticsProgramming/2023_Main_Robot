@@ -115,8 +115,15 @@ public final class Input extends SubsystemBase {
         });
     }
 
+    /**
+     * Pre-process inputs from joysticks
+     * @param val Joystick inputs
+     * @return Processed outputs
+     */
     private double deadband(double val) {
-        return MathUtil.deadband(val, DEADBAND);
+        double deadbanded = MathUtil.deadband(val, DEADBAND);
+        double mapped = MathUtil.map(Math.abs(deadbanded), 0.0, 1.0, DEADBAND, 1.0);
+        return Math.copySign(mapped, deadbanded);
     }
 
     // ---- Driver controls ----
