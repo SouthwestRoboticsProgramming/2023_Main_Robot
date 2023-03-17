@@ -52,7 +52,7 @@ public final class Input extends SubsystemBase {
      *     limelight aim towards game piece when close to 0 degrees
      */
 
-    private static final NTDouble SPEED_RATE_LIMIT = new NTDouble("Input/Speed Slew Limit", 2);
+    private static final NTDouble SPEED_RATE_LIMIT = new NTDouble("Input/Speed Slew Limit", 20);
 
     public enum IntakeMode {
         INTAKE, EJECT, OFF
