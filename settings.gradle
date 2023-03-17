@@ -9,6 +9,6 @@ include 'MathLib'
 include 'Pathfinding'
 include 'Profiler'
 include 'ShuffleLog'
-include 'TaskManager'
+include 'TaskManager:TaskManager-Core'
+include 'TaskManager:TaskManager-FileSystem'
 include 'Shared-Arm'
-

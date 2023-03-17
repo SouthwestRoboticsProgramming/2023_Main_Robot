@@ -29,6 +29,7 @@ import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.robot.subsystems.vision.Limelight;
 import com.swrobotics.robot.subsystems.vision.Photon;
 
+import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.*;
@@ -97,10 +98,8 @@ public class RobotContainer {
                 MESSENGER_NAME
         );
 
-//        buttonPanel = new ButtonPanel(messenger);
+        new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
         arm = new ArmSubsystem(messenger);
-
-//        scoreSelector = new ScoreSelectorSubsystem(this);
 
         // Initialize block auto
         AutoBlocks.init(messenger, this);

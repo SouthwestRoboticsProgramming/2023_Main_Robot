@@ -1,19 +1,13 @@
-package com.swrobotics.taskmanager;
+package com.swrobotics.taskmanager.filesystem;
 
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
-import java.util.Map;
 
-public final class TaskManagerAPI {
-    // Filesystem API
+public final class FileSystemAPI {
     private static final String MSG_LIST_FILES     = ":ListFiles";
     private static final String MSG_READ_FILE      = ":ReadFile";
     private static final String MSG_WRITE_FILE     = ":WriteFile";
@@ -27,19 +21,8 @@ public final class TaskManagerAPI {
     private static final String MSG_MOVE_CONFIRM   = ":MoveConfirm";
     private static final String MSG_MKDIR_CONFIRM  = ":MkdirConfirm";
 
-    // Tasks API
-    private static final String MSG_LIST_TASKS  = ":ListTasks";
-    private static final String MSG_CREATE_TASK = ":CreateTask";
-    private static final String MSG_DELETE_TASK = ":DeleteTask";
-    private static final String MSG_TASKS       = ":Tasks";
-
-    // Logging
-    private static final String MSG_STDOUT = ":StdOut:";
-    private static final String MSG_STDERR = ":StdErr:";
-
-    private final TaskManager mgr;
-    private final TaskManagerConfiguration config;
     private final MessengerClient msg;
+    private final File rootDir;
 
     private final String msgFiles;
     private final String msgFileContent;
@@ -47,33 +30,17 @@ public final class TaskManagerAPI {
     private final String msgDeleteConfirm;
     private final String msgMoveConfirm;
     private final String msgMkdirConfirm;
-    private final String msgTasks;
-    private final String msgStdOut;
-    private final String msgStdErr;
 
-    private final File tasksRoot;
+    public FileSystemAPI(MessengerClient msg, String prefix, File rootDir) {
+        this.msg = msg;
+        this.rootDir = rootDir;
 
-    public TaskManagerAPI(TaskManager mgr, TaskManagerConfiguration config) {
-        this.mgr = mgr;
-        this.config = config;
-
-        System.out.println("Connecting to Messenger at " + config.getMessengerHost() + ":" + config.getMessengerPort() + " as " + config.getMessengerName());
-        msg = new MessengerClient(
-                config.getMessengerHost(),
-                config.getMessengerPort(),
-                config.getMessengerName()
-        );
-
-        String prefix = config.getMessengerName();
         String msgListFiles  = prefix + MSG_LIST_FILES;
         String msgReadFile   = prefix + MSG_READ_FILE;
         String msgWriteFile  = prefix + MSG_WRITE_FILE;
         String msgDeleteFile = prefix + MSG_DELETE_FILE;
         String msgMoveFile   = prefix + MSG_MOVE_FILE;
         String msgMkdir      = prefix + MSG_MKDIR;
-        String msgListTasks  = prefix + MSG_LIST_TASKS;
-        String msgCreateTask = prefix + MSG_CREATE_TASK;
-        String msgDeleteTask = prefix + MSG_DELETE_TASK;
 
         msgFiles         = prefix + MSG_FILES;
         msgFileContent   = prefix + MSG_FILE_CONTENT;
@@ -81,13 +48,6 @@ public final class TaskManagerAPI {
         msgDeleteConfirm = prefix + MSG_DELETE_CONFIRM;
         msgMoveConfirm   = prefix + MSG_MOVE_CONFIRM;
         msgMkdirConfirm  = prefix + MSG_MKDIR_CONFIRM;
-        msgTasks         = prefix + MSG_TASKS;
-        msgStdOut        = prefix + MSG_STDOUT;
-        msgStdErr        = prefix + MSG_STDERR;
-
-        tasksRoot = config.getTasksRoot();
-        if (!tasksRoot.exists())
-            tasksRoot.mkdirs();
 
         msg.addHandler(msgListFiles,  this::onListFiles);
         msg.addHandler(msgReadFile,   this::onReadFile);
@@ -95,9 +55,6 @@ public final class TaskManagerAPI {
         msg.addHandler(msgMoveFile,   this::onMoveFile);
         msg.addHandler(msgDeleteFile, this::onDeleteFile);
         msg.addHandler(msgMkdir,      this::onMkdir);
-        msg.addHandler(msgListTasks,  this::onListTasks);
-        msg.addHandler(msgCreateTask, this::onCreateTask);
-        msg.addHandler(msgDeleteTask, this::onDeleteTask);
     }
 
     private String localizePath(String path) {
@@ -134,27 +91,11 @@ public final class TaskManagerAPI {
         return src.renameTo(dst);
     }
 
-    private String removeTrailingSeparator(String path) {
-        if (path.endsWith(File.separator))
-            return path.substring(0, path.length() - 1);
-        return path;
-    }
-
-    private String getTaskPath(File file) {
-        String rootAbsolute = removeTrailingSeparator(tasksRoot.getAbsolutePath());
-        String fileAbsolute = removeTrailingSeparator(file.getAbsolutePath());
-
-        if (!fileAbsolute.startsWith(rootAbsolute))
-            throw new AssertionError("File is not a task tile: " + file);
-
-        return fileAbsolute.substring(rootAbsolute.length());
-    }
-
     private void onListFiles(String type, MessageReader reader) {
         MessageBuilder out = msg.prepare(msgFiles);
 
         String dirPath = reader.readString();
-        File dir = new File(tasksRoot, localizePath(dirPath));
+        File dir = new File(rootDir, localizePath(dirPath));
         out.addString(dirPath);
         if (!dir.exists() || !dir.isDirectory()) {
             out.addBoolean(false);
@@ -181,7 +122,7 @@ public final class TaskManagerAPI {
         MessageBuilder out = msg.prepare(msgFileContent);
 
         String path = reader.readString();
-        File file = new File(tasksRoot, localizePath(path));
+        File file = new File(rootDir, localizePath(path));
         out.addString(path);
         if (!file.exists() || !file.isFile()) {
             out.addBoolean(false);
@@ -206,7 +147,7 @@ public final class TaskManagerAPI {
 
     private void onWriteFile(String type, MessageReader reader) {
         String path = reader.readString();
-        File file = new File(tasksRoot, localizePath(path));
+        File file = new File(rootDir, localizePath(path));
         if (file.exists() && !file.isFile()) {
             msg.prepare(msgWriteConfirm)
                     .addString(path)
@@ -240,7 +181,7 @@ public final class TaskManagerAPI {
 
     private void onDeleteFile(String type, MessageReader reader) {
         String path = reader.readString();
-        File file = new File(tasksRoot, localizePath(path));
+        File file = new File(rootDir, localizePath(path));
         if (!file.exists()) {
             msg.prepare(msgDeleteConfirm)
                     .addString(path)
@@ -263,8 +204,8 @@ public final class TaskManagerAPI {
     private void onMoveFile(String type, MessageReader reader) {
         String srcPath = reader.readString();
         String dstPath = reader.readString();
-        File srcFile = new File(tasksRoot, localizePath(srcPath));
-        File dstFile = new File(tasksRoot, localizePath(dstPath));
+        File srcFile = new File(rootDir, localizePath(srcPath));
+        File dstFile = new File(rootDir, localizePath(dstPath));
 
         if (!srcFile.exists() || dstFile.exists()) {
             msg.prepare(msgMoveConfirm)
@@ -289,7 +230,7 @@ public final class TaskManagerAPI {
 
     private void onMkdir(String type, MessageReader reader) {
         String path = reader.readString();
-        File file = new File(tasksRoot, localizePath(path));
+        File file = new File(rootDir, localizePath(path));
         if (file.exists() && !file.isDirectory()) {
             msg.prepare(msgMkdirConfirm)
                     .addString(path)
@@ -307,59 +248,5 @@ public final class TaskManagerAPI {
                 .addString(path)
                 .addBoolean(result)
                 .send();
-    }
-
-    private void onListTasks(String type, MessageReader reader) {
-        MessageBuilder out = msg.prepare(msgTasks);
-        Map<String, Task> tasks = mgr.getTasks();
-
-        out.addInt(tasks.size());
-        for (Map.Entry<String, Task> entry : tasks.entrySet()) {
-            out.addString(entry.getKey());
-
-            Task task = entry.getValue();
-            out.addString(getTaskPath(task.getWorkingDirectory()));
-            String[] command = task.getCommand();
-            out.addInt(command.length);
-            for (String token : command)
-                out.addString(token);
-            out.addBoolean(task.isEnabled());
-        }
-
-        out.send();
-    }
-
-    // Can also be used to modify a task by overwriting an existing one
-    private void onCreateTask(String type, MessageReader reader) {
-        String name = reader.readString();
-        String workingDirPath = reader.readString();
-        File workingDir = new File(tasksRoot, workingDirPath);
-        int commandSize = reader.readInt();
-        String[] command = new String[commandSize];
-        for (int i = 0; i < commandSize; i++) {
-            command[i] = reader.readString();
-        }
-        boolean enabled = reader.readBoolean();
-        Task task = new Task(workingDir, command, enabled, this, config.getMaxFailCount(), name);
-
-        // Remove old task
-        if (mgr.getTask(name) != null)
-            mgr.removeTask(name);
-
-        mgr.addTask(task);
-    }
-
-    private void onDeleteTask(String type, MessageReader reader) {
-        mgr.removeTask(reader.readString());
-    }
-
-    public void broadcastTaskOutput(Task task, LogOutputType type, String line) {
-        msg.prepare((type == LogOutputType.STDOUT ? msgStdOut : msgStdErr) + task.getName())
-                .addString(line)
-                .send();
-    }
-
-    public void read() {
-        msg.readMessages();
     }
 }
