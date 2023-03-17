@@ -62,6 +62,7 @@ public final class Input extends SubsystemBase {
     private static final int MANIPULATOR_PORT = 1;
 
     private static final double DEADBAND = 0.1;
+    private static final double TRIGGER_DEADBAND = 0.2; // Intentionally small to prevent the gamer lock mode from breaking anything
 
     private static final double FAST_SPEED = 4.11;
     private static final Angle MAX_ROTATION = AbsoluteAngle.rad(Math.PI);
@@ -143,7 +144,7 @@ public final class Input extends SubsystemBase {
     }
 
     public boolean isRobotRelative() {
-        return driver.rightTrigger.get() > 0.8;
+        return driver.rightTrigger.get() >= TRIGGER_DEADBAND;
     }
 
     private void disableSnap() {
