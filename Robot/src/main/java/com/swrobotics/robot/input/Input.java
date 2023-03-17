@@ -63,7 +63,6 @@ public final class Input extends SubsystemBase {
 
     private static final double DEADBAND = 0.1;
 
-    private static final double SLOW_MODE_MULTIPLIER = 0.5;
     private static final double FAST_SPEED = 4.11;
     private static final Angle MAX_ROTATION = AbsoluteAngle.rad(Math.PI);
 
@@ -90,8 +89,7 @@ public final class Input extends SubsystemBase {
         driver = new XboxController(DRIVER_PORT);
         manipulator = new XboxController(MANIPULATOR_PORT);
 
-        driver.back.onRising(robot.drivetrainSubsystem::zeroGyroscope);
-        driver.start.onRising(new BalanceSequenceCommand(robot, false));
+        driver.start.onRising(robot.drivetrainSubsystem::zeroGyroscope);
 
         manipulator.leftBumper.onRising(() -> gamePiece = GamePiece.CUBE);
         manipulator.rightBumper.onRising(() -> gamePiece = GamePiece.CONE);
