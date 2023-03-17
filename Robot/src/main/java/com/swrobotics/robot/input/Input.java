@@ -25,14 +25,22 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public final class Input extends SubsystemBase {
     /* 
-     * left bumper:   set to cube
-     * right bumper:  set to cone
-     * left trigger:  eject
-     * a:             floor pickup
-     * b:             shelf pickup
-     * dpad up:       top score
-     * dpad down:     mid score
-     * analog sticks: arm nudge
+     * Manipulator:
+     *  left bumper:   set to cube
+     *  right bumper:  set to cone
+     *  left trigger:  eject
+     *  a:             floor pickup
+     *  b:             shelf pickup
+     *  dpad up:       top score
+     *  dpad down:     mid score
+     *  analog sticks: arm nudge
+     * 
+     * Driver:
+     *  left stick:    drive translation
+     *  right stick:   drive rotation
+     *  right bumper:  fast mode
+     *  left bumper:   snap
+     *  start:         reset gyro
      * 
      * snap:
      *   when at grid:
