@@ -58,6 +58,7 @@ test {
 // Also defines JUnit 4.
 dependencies {
     implementation project(':Messenger:MessengerClient')
+    implementation project(':TaskManager:TaskManager-FileSystem')
     implementation project(':Profiler')
     implementation project(':MathLib')
     implementation project(':Shared-Arm')
@@ -94,6 +95,7 @@ wpi.sim.addDriverstation()
 // knows where to look for our Robot Class.
 jar {
     dependsOn ':Messenger:MessengerClient:jar'
+    dependsOn ':TaskManager:TaskManager-FileSystem:jar'
     dependsOn ':Profiler:jar'
     dependsOn ':MathLib:jar'
     dependsOn ':Shared-Arm:jar'

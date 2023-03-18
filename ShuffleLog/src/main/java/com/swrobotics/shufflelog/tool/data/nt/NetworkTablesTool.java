@@ -369,19 +369,19 @@ public final class NetworkTablesTool implements Tool {
 
             switch (valueRepr.getType()) {
                 case kBooleanArray:
-                    editBooleanArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kBooleanArray, () -> valueRepr.sub.getBooleanArray(new boolean[0]), valueRepr.pub::setBooleanArray));
+                    editBooleanArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kBooleanArray, () -> valueRepr.sub.getBooleanArray(new boolean[0]), (arr) -> valueRepr.getPub().setBooleanArray(arr)));
                     break;
                 case kIntegerArray:
-                    editIntArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kIntegerArray, () -> downcast(valueRepr.sub.getIntegerArray(new long[0])), (longs) -> valueRepr.pub.setIntegerArray(upcast(longs))));
+                    editIntArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kIntegerArray, () -> downcast(valueRepr.sub.getIntegerArray(new long[0])), (longs) -> valueRepr.getPub().setIntegerArray(upcast(longs))));
                     break;
                 case kFloatArray:
-                    editFloatArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kFloatArray, () -> valueRepr.sub.getFloatArray(new float[0]), valueRepr.pub::setFloatArray));
+                    editFloatArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kFloatArray, () -> valueRepr.sub.getFloatArray(new float[0]), (arr) -> valueRepr.getPub().setFloatArray(arr)));
                     break;
                 case kDoubleArray:
-                    editDoubleArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kDoubleArray, () -> valueRepr.sub.getDoubleArray(new double[0]), valueRepr.pub::setDoubleArray));
+                    editDoubleArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kDoubleArray, () -> valueRepr.sub.getDoubleArray(new double[0]), (arr) -> valueRepr.getPub().setDoubleArray(arr)));
                     break;
                 case kStringArray:
-                    editStringArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kStringArray, () -> valueRepr.sub.getStringArray(new String[0]), valueRepr.pub::setStringArray));
+                    editStringArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kStringArray, () -> valueRepr.sub.getStringArray(new String[0]), (arr) -> valueRepr.getPub().setStringArray(arr)));
                     break;
             }
 
@@ -391,27 +391,27 @@ public final class NetworkTablesTool implements Tool {
             Runnable fn;
             switch (valueRepr.getType()) {
                 case kBoolean:
-                    ValueAccessor<Boolean> boolAcc = new ValueAccessor<>(NetworkTableType.kBoolean, () -> valueRepr.sub.getBoolean(false), valueRepr.pub::setBoolean);
+                    ValueAccessor<Boolean> boolAcc = new ValueAccessor<>(NetworkTableType.kBoolean, () -> valueRepr.sub.getBoolean(false), (b) -> valueRepr.getPub().setBoolean(b));
                     valAcc = boolAcc;
                     fn = () -> editBoolean(boolAcc, metadata == null ? BOOL_MODE_TOGGLE : (int) metadata.sub.getInteger(BOOL_MODE_TOGGLE));
                     break;
                 case kInteger:
-                    ValueAccessor<Integer> intAcc = new ValueAccessor<>(NetworkTableType.kInteger, () -> (int) valueRepr.sub.getInteger(0), valueRepr.pub::setInteger);
+                    ValueAccessor<Integer> intAcc = new ValueAccessor<>(NetworkTableType.kInteger, () -> (int) valueRepr.sub.getInteger(0), (i) -> valueRepr.getPub().setInteger(i));
                     valAcc = intAcc;
                     fn = () -> editInt(intAcc);
                     break;
                 case kFloat:
-                    ValueAccessor<Float> fltAcc = new ValueAccessor<>(NetworkTableType.kFloat, () -> valueRepr.sub.getFloat(0), valueRepr.pub::setFloat);
+                    ValueAccessor<Float> fltAcc = new ValueAccessor<>(NetworkTableType.kFloat, () -> valueRepr.sub.getFloat(0), (f) -> valueRepr.getPub().setFloat(f));
                     valAcc = fltAcc;
                     fn = () -> editFloat(fltAcc);
                     break;
                 case kDouble:
-                    ValueAccessor<Double> dblAcc = new ValueAccessor<>(NetworkTableType.kDouble, () -> valueRepr.sub.getDouble(0), valueRepr.pub::setDouble);
+                    ValueAccessor<Double> dblAcc = new ValueAccessor<>(NetworkTableType.kDouble, () -> valueRepr.sub.getDouble(0), (d) -> valueRepr.getPub().setDouble(d));
                     valAcc = dblAcc;
                     fn = () -> editDouble(dblAcc);
                     break;
                 case kString:
-                    ValueAccessor<String> strAcc = new ValueAccessor<>(NetworkTableType.kString, () -> valueRepr.sub.getString(""), valueRepr.pub::setString);
+                    ValueAccessor<String> strAcc = new ValueAccessor<>(NetworkTableType.kString, () -> valueRepr.sub.getString(""), (s) -> valueRepr.getPub().setString(s));
                     valAcc = strAcc;
                     if (metadata != null) {
                         String[] options = metadata.sub.getStringArray(new String[0]);
