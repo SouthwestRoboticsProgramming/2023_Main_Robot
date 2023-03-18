@@ -133,40 +133,40 @@ public class RobotContainer {
         
         SmartDashboard.putData("Auto Position", positionSelector);
 
-        Command cubeLow = new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation())
+        Command cubeLow = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
         .andThen(
-            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+            new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation()),
             Commands.run(intake::eject, intake).withTimeout(1.0));
 
 
-        Command coneLow = new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation())
+        Command coneLow = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
         .andThen(
-            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
+            new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation()),
             Commands.run(intake::eject, intake).withTimeout(1.0));
 
-        Command cubeMid = new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CUBE_CENTER.getTranslation().getY()))
+        Command cubeMid = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
         .andThen(
+            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CUBE_CENTER.getTranslation().getY())),
             new MoveArmToPositionCommand(this, () -> ArmPositions.CUBE_CENTER.getTranslation()),
-            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
             Commands.run(intake::eject, intake).withTimeout(1.0));
 
-        Command cubeHigh = new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CUBE_UPPER.getTranslation().getY()))
+        Command cubeHigh = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
         .andThen(
+            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CUBE_UPPER.getTranslation().getY())),
             new MoveArmToPositionCommand(this, () -> ArmPositions.CUBE_UPPER.getTranslation()),
-            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
             Commands.run(intake::eject, intake).withTimeout(1.0));
 
 
-        Command coneMid = new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CONE_CENTER.getTranslation().getY()))
+        Command coneMid = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
         .andThen(
+            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CONE_CENTER.getTranslation().getY())),
             new MoveArmToPositionCommand(this, () -> ArmPositions.CONE_CENTER.getTranslation()),
-            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
             Commands.run(intake::eject, intake).withTimeout(1.0));
 
-        Command coneHigh = new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CONE_UPPER.getTranslation().getY()))
+        Command coneHigh = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
         .andThen(
+            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CONE_UPPER.getTranslation().getY())),
             new MoveArmToPositionCommand(this, () -> ArmPositions.CONE_UPPER.getTranslation()),
-            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
             Commands.run(intake::eject, intake).withTimeout(1.0));
 
         Command scoreCone = new SelectCommand(
