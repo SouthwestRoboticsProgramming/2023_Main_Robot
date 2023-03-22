@@ -25,14 +25,22 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public final class Input extends SubsystemBase {
     /* 
-     * left bumper:   set to cube
-     * right bumper:  set to cone
-     * left trigger:  eject
-     * a:             floor pickup
-     * b:             shelf pickup
-     * dpad up:       top score
-     * dpad down:     mid score
-     * analog sticks: arm nudge
+     * Manipulator:
+     *  left bumper:   set to cube
+     *  right bumper:  set to cone
+     *  left trigger:  eject
+     *  a:             floor pickup
+     *  b:             shelf pickup
+     *  dpad up:       top score
+     *  dpad down:     mid score
+     *  analog sticks: arm nudge
+     * 
+     * Driver:
+     *  left stick:    drive translation
+     *  right stick:   drive rotation
+     *  right bumper:  fast mode
+     *  left bumper:   snap
+     *  start:         reset gyro
      * 
      * snap:
      *   when at grid:
@@ -44,7 +52,7 @@ public final class Input extends SubsystemBase {
      *     limelight aim towards game piece when close to 0 degrees
      */
 
-    private static final NTDouble SPEED_RATE_LIMIT = new NTDouble("Input/Speed Slew Limit", 2);
+    private static final NTDouble SPEED_RATE_LIMIT = new NTDouble("Input/Speed Slew Limit", 20);
 
     public enum IntakeMode {
         INTAKE, EJECT, OFF
@@ -54,9 +62,10 @@ public final class Input extends SubsystemBase {
     private static final int MANIPULATOR_PORT = 1;
 
     private static final double DEADBAND = 0.1;
+    private static final double TRIGGER_DEADBAND = 0.2; // Intentionally small to prevent the gamer lock mode from breaking anything
 
-    private static final double SLOW_MODE_MULTIPLIER = 0.5;
-    private static final double FAST_SPEED = 4.11;
+    private static final double DEFAULT_SPEED = 1.5; // Meters per second
+    private static final double FAST_SPEED = 4.11;   // Meters per second
     private static final Angle MAX_ROTATION = AbsoluteAngle.rad(Math.PI);
 
     private static final double NUDGE_PER_PERIODIC = 0.25 * 0.02;
@@ -76,6 +85,7 @@ public final class Input extends SubsystemBase {
     private boolean prevWasGrid;
 
     private GamePiece gamePiece;
+    private boolean shouldBeRobotRelative;
 
     public Input(RobotContainer robot) {
         this.robot = robot;
@@ -83,8 +93,7 @@ public final class Input extends SubsystemBase {
         driver = new XboxController(DRIVER_PORT);
         manipulator = new XboxController(MANIPULATOR_PORT);
 
-        driver.back.onRising(robot.drivetrainSubsystem::zeroGyroscope);
-        driver.start.onRising(new BalanceSequenceCommand(robot, false));
+        driver.start.onRising(robot.drivetrainSubsystem::zeroGyroscope);
 
         manipulator.leftBumper.onRising(() -> {
             gamePiece = GamePiece.CUBE;
@@ -115,6 +124,11 @@ public final class Input extends SubsystemBase {
         });
     }
 
+    /**
+     * Pre-process inputs from joysticks
+     * @param val Joystick inputs
+     * @return Processed outputs
+     */
     private double deadband(double val) {
         return MathUtil.deadband(val, DEADBAND);
     }
@@ -122,12 +136,9 @@ public final class Input extends SubsystemBase {
     // ---- Driver controls ----
 
     public Vec2d getDriveTranslation() {
-//        boolean slowMode = driver.leftBumper.isPressed();
         boolean fastMode = driver.rightBumper.isPressed();
 
-        double speed = 1.5;
-//        if (slowMode)
-//            multiplier *= SLOW_MODE_MULTIPLIER;
+        double speed = DEFAULT_SPEED;
         if (fastMode) {
             speed = FAST_SPEED;
         }
@@ -145,13 +156,16 @@ public final class Input extends SubsystemBase {
     }
 
     public boolean isRobotRelative() {
-        return driver.rightTrigger.get() > 0.8;
+        return driver.rightTrigger.get() >= TRIGGER_DEADBAND || shouldBeRobotRelative;
     }
+
+
 
     private void disableSnap() {
         setCommandEnabled(snapDriveCmd, false);
         setCommandEnabled(snapTurnCmd, false);
         driver.setRumble(0);
+        shouldBeRobotRelative = false;
     }
 
     private void driverPeriodic() {
@@ -160,9 +174,9 @@ public final class Input extends SubsystemBase {
             return;
         }
 
+        // Calculate snapping
         Pose2d currentPose = robot.drivetrainSubsystem.getPose();
         SnapPositions.SnapStatus snap = SnapPositions.getSnap(currentPose);
-        System.out.println("Snap status: " + snap);
         if (snap == null) {
             disableSnap();
             return;
@@ -192,8 +206,11 @@ public final class Input extends SubsystemBase {
             }
 
             snapToAngle(poseAngle);
+            if (snap.turnMode == SnapPositions.TurnMode.GAME_PIECE_AIM)
+                shouldBeRobotRelative = true;
         } else {
             setCommandEnabled(snapTurnCmd, false);
+            shouldBeRobotRelative = false;
         }
 
         boolean driveInput = Math.abs(driver.leftStickX.get()) > DEADBAND || Math.abs(driver.leftStickY.get()) > DEADBAND;
