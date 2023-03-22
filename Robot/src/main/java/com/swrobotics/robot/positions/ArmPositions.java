@@ -5,15 +5,15 @@ import com.swrobotics.lib.net.NTTranslation2d;
 import edu.wpi.first.math.util.Units;
 
 public final class ArmPositions {
-    public static final NTTranslation2d CUBE_UPPER = new NTTranslation2d("Arm/Positions/Cube High", 1.336078, 0.893116);
-    public static final NTTranslation2d CUBE_CENTER = new NTTranslation2d("Arm/Positions/Cube Mid", 0.933183, 0.335277);
-    public static final NTTranslation2d CONE_UPPER = new NTTranslation2d("Arm/Positions/Cone High", 1.391533, 0.817448);
-    public static final NTTranslation2d CONE_CENTER = new NTTranslation2d("Arm/Positions/Cone Mid", 0.869909, 0.460904);
+    public static final NTTranslation2d CUBE_UPPER = new NTTranslation2d("Arm/Positions/Cube High", 1.4318269885638122, 0.8806285764310378);
+    public static final NTTranslation2d CUBE_CENTER = new NTTranslation2d("Arm/Positions/Cube Mid", 1.097013517546996, 0.48231282959042676);
+    public static final NTTranslation2d CONE_UPPER = new NTTranslation2d("Arm/Positions/Cone High", 1.3644986059129367, 0.9724653611111114);
+    public static final NTTranslation2d CONE_CENTER = new NTTranslation2d("Arm/Positions/Cone Mid", 0.9729467159847158, 0.7475451032941605);
 
-    public static final NTTranslation2d CONE_PICKUP = new NTTranslation2d("Arm/Positions/Cone Pickup", 1.131009, 0.845100 - 0.1);
-    public static final NTTranslation2d CUBE_PICKUP = new NTTranslation2d("Arm/Positions/Cube Pickup", 1.120115, 0.600034);
+    public static final NTTranslation2d CONE_PICKUP = new NTTranslation2d("Arm/Positions/Cone Pickup", 1.389016915417349, 0.8877022517101628);
+    public static final NTTranslation2d CUBE_PICKUP = new NTTranslation2d("Arm/Positions/Cube Pickup", 1.1902065890352667, 0.846324874042444);
 
-    public static final NTTranslation2d DEFAULT = new NTTranslation2d("Arm/Positions/Default", 0.689397, Units.inchesToMeters(11.5 - 13 + 2.25));
+    public static final NTTranslation2d DEFAULT = new NTTranslation2d("Arm/Positions/Default", 0.789397, 0.18905);
 
     private ArmPositions() {
         throw new AssertionError();
