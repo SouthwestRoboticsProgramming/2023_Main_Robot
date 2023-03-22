@@ -80,7 +80,7 @@ public class RobotContainer {
 //    public final ButtonPanel buttonPanel;
 //    private final ScoreSelectorSubsystem scoreSelector;
 
-    private final MessengerClient messenger;
+    public final MessengerClient messenger;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.

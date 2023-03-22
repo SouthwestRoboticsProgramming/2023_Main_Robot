@@ -86,8 +86,14 @@ public final class Input extends SubsystemBase {
         driver.back.onRising(robot.drivetrainSubsystem::zeroGyroscope);
         driver.start.onRising(new BalanceSequenceCommand(robot, false));
 
-        manipulator.leftBumper.onRising(() -> gamePiece = GamePiece.CUBE);
-        manipulator.rightBumper.onRising(() -> gamePiece = GamePiece.CONE);
+        manipulator.leftBumper.onRising(() -> {
+            gamePiece = GamePiece.CUBE;
+            robot.messenger.prepare("Robot:GamePiece").addBoolean(false).send();
+        });
+        manipulator.rightBumper.onRising(() -> {
+            gamePiece = GamePiece.CONE;
+            robot.messenger.prepare("Robot:GamePiece").addBoolean(true).send();
+        });
 
         snapDriveCmd = new PathfindToPointCommand(robot, null);
         snapTurnCmd = new TurnToAngleCommand(robot, () -> snapAngle, false);
