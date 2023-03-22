@@ -84,6 +84,7 @@ public final class Input extends SubsystemBase {
     private Translation2d prevArmTarget;
 
     private GamePiece gamePiece;
+    private boolean shouldBeRobotRelative;
 
     public Input(RobotContainer robot) {
         this.robot = robot;
@@ -121,12 +122,7 @@ public final class Input extends SubsystemBase {
      * @return Processed outputs
      */
     private double deadband(double val) {
-        double deadbanded = MathUtil.deadband(val, DEADBAND);
-
-        if (deadbanded == 0.0) { return 0.0; }
-
-        double mapped = MathUtil.map(Math.abs(deadbanded), 0.0, 1.0, DEADBAND, 1.0);
-        return Math.copySign(mapped, deadbanded);
+        return MathUtil.deadband(val, DEADBAND);
     }
 
     // ---- Driver controls ----
@@ -152,13 +148,16 @@ public final class Input extends SubsystemBase {
     }
 
     public boolean isRobotRelative() {
-        return driver.rightTrigger.get() >= TRIGGER_DEADBAND;
+        return driver.rightTrigger.get() >= TRIGGER_DEADBAND || shouldBeRobotRelative;
     }
+
+
 
     private void disableSnap() {
         setCommandEnabled(snapDriveCmd, false);
         setCommandEnabled(snapTurnCmd, false);
         driver.setRumble(0);
+        shouldBeRobotRelative = false;
     }
 
     private void driverPeriodic() {
@@ -199,8 +198,11 @@ public final class Input extends SubsystemBase {
             }
 
             snapToAngle(poseAngle);
+            if (snap.turnMode == SnapPositions.TurnMode.GAME_PIECE_AIM)
+                shouldBeRobotRelative = true;
         } else {
             setCommandEnabled(snapTurnCmd, false);
+            shouldBeRobotRelative = false;
         }
 
         boolean driveInput = Math.abs(driver.leftStickX.get()) > DEADBAND || Math.abs(driver.leftStickY.get()) > DEADBAND;
