@@ -20,8 +20,6 @@ import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.positions.ArmPositions;
-import com.swrobotics.robot.positions.ScoringPositions;
-import com.swrobotics.robot.positions.SnapPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.arnold.Arnold;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
@@ -190,7 +188,7 @@ public class RobotContainer {
         eventMap.put("SCORE_CUBE", scoreCube);
         eventMap.put("SCORE_CONE", scoreCone);
         
-        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ScoringPositions.HOLD_TARGET));
+        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getTranslation));
         // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
 
         // Allow for easy creation of autos using PathPlanner

@@ -1,7 +1,6 @@
 package com.swrobotics.robot;
 
 import com.swrobotics.lib.ThreadUtils;
-import com.swrobotics.robot.positions.ScoringPositions;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -60,9 +59,6 @@ public class Robot extends TimedRobot {
 
         // Handle messages being sent by the raspberry pi
         robotContainer.getMessenger().readMessages();
-
-        // Update the scoring positions since our alliance could change while running
-        ScoringPositions.update();
     }
 
     /**
