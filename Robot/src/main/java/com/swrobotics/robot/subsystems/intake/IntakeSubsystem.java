@@ -18,7 +18,7 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     public IntakeSubsystem() {
         motor = new PWMSparkMax(RIOPorts.INTAKE_PWM);
 
-        expectedPiece = GamePiece.CONE;
+        expectedPiece = GamePiece.CUBE;
         running = false;
     }
 

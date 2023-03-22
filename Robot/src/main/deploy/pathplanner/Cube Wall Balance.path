@@ -2,13 +2,13 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 1.8526840472484365,
-        "y": 3.8596788304687726
+        "x": 1.841264879110955,
+        "y": 1.073401804923269
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.867344435543572,
-        "y": 6.337638316302273
+        "x": 6.44318963851603,
+        "y": 0.22838336274963117
       },
       "holonomicAngle": 180.0,
       "isReversal": false,
@@ -17,7 +17,7 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "CONE_MID"
+          "SCORE_CUBE"
         ],
         "executionBehavior": "parallel",
         "waitBehavior": "deadline",
@@ -30,8 +30,8 @@
         "y": 2.6666
       },
       "prevControl": {
-        "x": 6.37467462969114,
-        "y": 5.755260741290715
+        "x": 6.191967939491435,
+        "y": 1.0391443005108238
       },
       "nextControl": null,
       "holonomicAngle": 0.0,
@@ -51,7 +51,7 @@
   ],
   "markers": [
     {
-      "position": 0.030303030303017262,
+      "position": 0.03,
       "names": [
         "ARM_DEFAULT"
       ]
