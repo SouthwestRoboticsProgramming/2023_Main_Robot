@@ -1,0 +1,354 @@
+[
+  {
+    "name": "/Swerve/Calibrate",
+    "type": "boolean",
+    "value": false,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Subsystems/DrivetrainSubsystem",
+    "type": "boolean",
+    "value": true,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Swerve/Modules/Turn kP",
+    "type": "double",
+    "value": 0.2,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Swerve/Modules/Turn kI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Swerve/Modules/Turn kD",
+    "type": "double",
+    "value": 0.1,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Swerve/Modules/Module 0/Offset Degrees",
+    "type": "double",
+    "value": 38.41,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Swerve/Modules/Module 1/Offset Degrees",
+    "type": "double",
+    "value": 185.45,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Swerve/Modules/Module 2/Offset Degrees",
+    "type": "double",
+    "value": 132.63,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Swerve/Modules/Module 3/Offset Degrees",
+    "type": "double",
+    "value": 78.93,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Limelight/Lights_On",
+    "type": "boolean",
+    "value": true,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Limelight/Driver_Mode",
+    "type": "boolean",
+    "value": false,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/LIMELIGHT_AUTO_AIM",
+    "type": "double[]",
+    "value": [-1.0, 1.0, -1.0, 1.0],
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Intake/Cone Hold",
+    "type": "double",
+    "value": 0.1,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Intake/Cube Hold",
+    "type": "double",
+    "value": -0.1,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Subsystems/IntakeSubsystem",
+    "type": "boolean",
+    "value": true,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Intake/Cone Intake Speed",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Intake/Cone Outtake Speed",
+    "type": "double",
+    "value": 0.4,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Intake/Cube Intake Speed",
+    "type": "double",
+    "value": -0.6,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Intake/Cube Outtake Speed",
+    "type": "double",
+    "value": -0.4,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/ARNOLD/SPEED",
+    "type": "double",
+    "value": 0.25,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Calibrate Offsets",
+    "type": "boolean",
+    "value": false,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Max Speed",
+    "type": "double",
+    "value": 0.75,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Stop Tolerance",
+    "type": "double",
+    "value": 0.01,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Start Tolerance",
+    "type": "double",
+    "value": 0.04,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Home/Calibrate",
+    "type": "boolean",
+    "value": false,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Home/Bottom",
+    "type": "double",
+    "value": 1.5707963267948966,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Home/Top",
+    "type": "double",
+    "value": -1.5707963267948966,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/PID/kP",
+    "type": "double",
+    "value": 8.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/PID/kI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/PID/kD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Subsystems/ArmSubsystem",
+    "type": "boolean",
+    "value": true,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Arm 1/Bottom Offset",
+    "type": "double",
+    "value": 10.283203125,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Arm 1/Top Offset",
+    "type": "double",
+    "value": -51.943359375,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Arm 2/Bottom Offset",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Arm 2/Top Offset",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Auto/Sequence",
+    "type": "string",
+    "value": "[NULL]",
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Input/Speed Slew Limit",
+    "type": "double",
+    "value": 2.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Positions/Cube High",
+    "type": "double[]",
+    "value": [1.4318269885638122, 0.8806285764310378],
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Positions/Cube Mid",
+    "type": "double[]",
+    "value": [1.097013517546996, 0.48231282959042676],
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Positions/Cone High",
+    "type": "double[]",
+    "value": [1.3644986059129367, 0.9724653611111114],
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Positions/Cone Mid",
+    "type": "double[]",
+    "value": [0.9729467159847158, 0.7475451032941605],
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Positions/Cone Pickup",
+    "type": "double[]",
+    "value": [1.389016915417349, 0.8877022517101628],
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Positions/Cube Pickup",
+    "type": "double[]",
+    "value": [1.1902065890352667, 0.846324874042444],
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm/Positions/Default",
+    "type": "double[]",
+    "value": [0.789397, 0.18905],
+    "properties": {
+      "persistent": true
+    }
+  }
+]

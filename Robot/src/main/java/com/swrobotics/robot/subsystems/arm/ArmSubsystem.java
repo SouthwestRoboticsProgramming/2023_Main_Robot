@@ -37,8 +37,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         public final NTDouble topOffset;
 
         PhysicalArmInfo(String bottomPath, String topPath) {
-            bottomOffset = new NTDouble(bottomPath, 0);
-            topOffset = new NTDouble(topPath, 0);
+            bottomOffset = new NTDouble(bottomPath, 10.283203125);
+            topOffset = new NTDouble(topPath, -51.943359375);
         }
     }
 
@@ -51,7 +51,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
     public static final double JOINT_TO_CANCODER_RATIO = 2;
 
-    private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 0.5);
+    private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 0.75);
     private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);
     private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.04); // Must be larger than stop tolerance
 

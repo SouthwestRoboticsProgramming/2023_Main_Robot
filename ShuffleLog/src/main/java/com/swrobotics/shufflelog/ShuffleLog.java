@@ -2,6 +2,7 @@ package com.swrobotics.shufflelog;
 
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.profiler.Profiler;
+import com.swrobotics.shufflelog.tool.ConeOrCubeTool;
 import com.swrobotics.shufflelog.tool.MenuBarTool;
 import com.swrobotics.shufflelog.tool.PreMatchChecklistTool;
 import com.swrobotics.shufflelog.tool.Tool;
@@ -157,6 +158,7 @@ public final class ShuffleLog extends PApplet {
 //        tools.add(btn);
         tools.add(new ArmDebugTool(this, messenger));
         tools.add(new PreMatchChecklistTool(msg));
+        tools.add(new ConeOrCubeTool(messenger));
 
         startTime = System.currentTimeMillis();
     }

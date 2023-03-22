@@ -3,6 +3,7 @@ package com.swrobotics.robot;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import com.pathplanner.lib.PathConstraints;
@@ -18,7 +19,7 @@ import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.Input;
-import com.swrobotics.robot.positions.ScoringPositions;
+import com.swrobotics.robot.positions.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.arnold.Arnold;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
@@ -29,6 +30,7 @@ import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.robot.subsystems.vision.Limelight;
 import com.swrobotics.robot.subsystems.vision.Photon;
 
+import edu.wpi.first.math.Pair;
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -39,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.SelectCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -50,6 +53,13 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+
+    private enum ScoreHeight {
+        TOP,
+        MID,
+        BOTTOM
+    }
+
     // Configuration for our Raspberry Pi communication service
     private static final String MESSENGER_HOST_ROBOT = "10.21.29.3";
     private static final String MESSENGER_HOST_SIM = "localhost";
@@ -80,7 +90,7 @@ public class RobotContainer {
 //    public final ButtonPanel buttonPanel;
 //    private final ScoreSelectorSubsystem scoreSelector;
 
-    private final MessengerClient messenger;
+    public final MessengerClient messenger;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -112,27 +122,73 @@ public class RobotContainer {
         drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(drivetrainSubsystem, input));
 
         HashMap<String, Command> eventMap = new HashMap<>();
+        
+        SendableChooser<ScoreHeight> positionSelector = new SendableChooser<>();
+        
+        positionSelector.setDefaultOption("High", ScoreHeight.TOP);
+        positionSelector.addOption("Mid", ScoreHeight.MID);
+        positionSelector.addOption("Low", ScoreHeight.BOTTOM);
+        
+        SmartDashboard.putData("Auto Position", positionSelector);
 
-        Command cubeMid = new MoveArmToPositionCommand(this, new Translation2d(0.6, ScoringPositions.getArmPosition(1, 7).getY()))
+        Command cubeLow = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
         .andThen(
-            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 7)),
-            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake),
+            new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation()),
             Commands.run(intake::eject, intake).withTimeout(1.0));
 
-        Command coneMid =new MoveArmToPositionCommand(this, new Translation2d(0.6, ScoringPositions.getArmPosition(1, 6).getY()))
+
+        Command coneLow = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
         .andThen(
-            new MoveArmToPositionCommand(this, ScoringPositions.getArmPosition(1, 6)),
-            Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake),
-            Commands.run(intake::eject, intake).withTimeout(2));
+            new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation()),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+        Command cubeMid = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
+        .andThen(
+            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CUBE_CENTER.getTranslation().getY())),
+            new MoveArmToPositionCommand(this, () -> ArmPositions.CUBE_CENTER.getTranslation()),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+        Command cubeHigh = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
+        .andThen(
+            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CUBE_UPPER.getTranslation().getY())),
+            new MoveArmToPositionCommand(this, () -> ArmPositions.CUBE_UPPER.getTranslation()),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+
+        Command coneMid = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
+        .andThen(
+            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CONE_CENTER.getTranslation().getY())),
+            new MoveArmToPositionCommand(this, () -> ArmPositions.CONE_CENTER.getTranslation()),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+        Command coneHigh = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
+        .andThen(
+            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CONE_UPPER.getTranslation().getY())),
+            new MoveArmToPositionCommand(this, () -> ArmPositions.CONE_UPPER.getTranslation()),
+            Commands.run(intake::eject, intake).withTimeout(1.0));
+
+        Command scoreCone = new SelectCommand(
+            Map.ofEntries(
+                Map.entry(ScoreHeight.TOP, coneHigh),
+                Map.entry(ScoreHeight.MID, coneMid),
+                Map.entry(ScoreHeight.BOTTOM, coneLow)
+            ), positionSelector::getSelected);
+
+        Command scoreCube = new SelectCommand(
+            Map.ofEntries(
+                Map.entry(ScoreHeight.TOP, cubeHigh),
+                Map.entry(ScoreHeight.MID, cubeMid),
+                Map.entry(ScoreHeight.BOTTOM, cubeLow)
+            ), positionSelector::getSelected);
 
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
-        eventMap.put("CUBE_MID", cubeMid);
-
-        eventMap.put("CONE_MID", coneMid);
-        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ScoringPositions.HOLD_TARGET));
+        eventMap.put("SCORE_CUBE", scoreCube);
+        eventMap.put("SCORE_CONE", scoreCone);
+        
+        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getTranslation));
         // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
 
         // Allow for easy creation of autos using PathPlanner
@@ -152,12 +208,12 @@ public class RobotContainer {
         Command balanceClose = new BalanceSequenceCommand(this, false);
 
         // Autos that score and then balance
-        Command cubeMidBalance = builder.fullAuto(getPath("Cube Mid Balance"));
-        Command coneMidBalance = builder.fullAuto(getPath("Cone Mid Balance"));
-        Command cubeMidWallBalance = builder.fullAuto(getPath("Cube Mid Wall Balance"));
-        Command coneMidWallBalance = builder.fullAuto(getPath("Cone Mid Wall Balance"));
-        Command coneMidBalanceShort = builder.fullAuto(getPath("Cone Mid Short Balance"));
-        Command cubeMidBalanceShort = builder.fullAuto(getPath("Cube Mid Short Balance"));
+        Command cubeMidBalance = builder.fullAuto(getPath("Cube Balance"));
+        Command coneMidBalance = builder.fullAuto(getPath("Cone Balance"));
+        Command cubeMidWallBalance = builder.fullAuto(getPath("Cube Wall Balance"));
+        Command coneMidWallBalance = builder.fullAuto(getPath("Cone Wall Balance"));
+        Command coneMidBalanceShort = builder.fullAuto(getPath("Cone Short Balance"));
+        Command cubeMidBalanceShort = builder.fullAuto(getPath("Cube Short Balance"));
 
         // Advanced taxi autos that prepare us for next cycle
         Command getOfOfTheWayWall = builder.fullAuto(getPath("Get Out Of The Way Wall"));
@@ -181,20 +237,20 @@ public class RobotContainer {
         autoSelector.addOption("Balance No Taxi", () -> balanceClose);
         
         // Score and balance barrier side (19 pts)
-        autoSelector.addOption("Cube Mid Balance", () -> cubeMidBalance);
-        autoSelector.addOption("Cone Mid Balance", () -> coneMidBalance);
+        autoSelector.addOption("Cube Balance", () -> cubeMidBalance);
+        autoSelector.addOption("Cone Balance", () -> coneMidBalance);
         
         // Score and balance wall side
-        autoSelector.addOption("Cube Mid Wall Balance", () -> cubeMidWallBalance);
-        autoSelector.addOption("Cone Mid Wall Balance", () -> coneMidWallBalance);
+        autoSelector.addOption("Cube Wall Balance", () -> cubeMidWallBalance);
+        autoSelector.addOption("Cone Wall Balance", () -> coneMidWallBalance);
 
         // Score and balance without taxi (16 pts)
-        autoSelector.addOption("Cube Mid Balance Short", () -> cubeMidBalanceShort);
-        autoSelector.addOption("Cone Mid Balance Short", () -> coneMidBalanceShort);
+        autoSelector.addOption("Cube Balance Short", () -> cubeMidBalanceShort);
+        autoSelector.addOption("Cone Balance Short", () -> coneMidBalanceShort);
 
         // Just score and don't move (4 pts)
-        autoSelector.addOption("Just Cube Mid", () -> cubeMid);
-        autoSelector.addOption("Just Cone Mid", () -> coneMid);
+        autoSelector.addOption("Just Cube", () -> scoreCube);
+        autoSelector.addOption("Just Cone", () -> scoreCone);
 
         // Prepare for next cycle without scoring (3 pts)
         autoSelector.addOption("Run Away Wall", () -> getOfOfTheWayWall);
@@ -202,7 +258,7 @@ public class RobotContainer {
 
         // Score cube then prepare for next cycle (7 pts)
         autoSelector.addOption("Cube and Run Barrier", () -> cubeAndRunBarrier);
-        autoSelector.addOption("Cube and Run Mid", () -> cubeAndRunMid);
+        autoSelector.addOption("Cube and Run Center", () -> cubeAndRunMid);
         autoSelector.addOption("Cube and Run Wall", () -> cubeAndRunWall);
 
 
@@ -306,7 +362,7 @@ public class RobotContainer {
 
         System.out.println("Could not find that path, using default path instead");
 
-        // // Generate a blank path
+        // Generate a blank path
         path = new ArrayList<>();
         path.add(PathPlanner.generatePath(new PathConstraints(1.0, 1.0), new ArrayList<PathPoint>() {{
             add(new PathPoint(new Translation2d(), new Rotation2d()));

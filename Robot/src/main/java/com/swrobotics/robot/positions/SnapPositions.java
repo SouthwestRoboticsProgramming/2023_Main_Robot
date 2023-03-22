@@ -140,7 +140,7 @@ public final class SnapPositions {
                 .getAbsDiff(CCWAngle.rad(pose.getRotation().getRadians()))
                 .deg();
 
-        return new SnapStatus(pose, closest.turnMode, closest.driveSnapEnabled, absDiff < ANGLE_SNAP_TOL);
+        return new SnapStatus(pose, closest.turnMode, false, absDiff < ANGLE_SNAP_TOL);
     }
 
     public static void showPositions(Field2d field) {

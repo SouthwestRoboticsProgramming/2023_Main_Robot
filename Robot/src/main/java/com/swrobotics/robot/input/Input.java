@@ -82,6 +82,7 @@ public final class Input extends SubsystemBase {
     private Angle snapAngle;
 
     private Translation2d prevArmTarget;
+    private boolean prevWasGrid;
 
     private GamePiece gamePiece;
     private boolean shouldBeRobotRelative;
@@ -94,12 +95,19 @@ public final class Input extends SubsystemBase {
 
         driver.start.onRising(robot.drivetrainSubsystem::zeroGyroscope);
 
-        manipulator.leftBumper.onRising(() -> gamePiece = GamePiece.CUBE);
-        manipulator.rightBumper.onRising(() -> gamePiece = GamePiece.CONE);
+        manipulator.leftBumper.onRising(() -> {
+            gamePiece = GamePiece.CUBE;
+            robot.messenger.prepare("Robot:GamePiece").addBoolean(false).send();
+        });
+        manipulator.rightBumper.onRising(() -> {
+            gamePiece = GamePiece.CONE;
+            robot.messenger.prepare("Robot:GamePiece").addBoolean(true).send();
+        });
 
         snapDriveCmd = new PathfindToPointCommand(robot, null);
         snapTurnCmd = new TurnToAngleCommand(robot, () -> snapAngle, false);
 
+        prevWasGrid = false;
         prevArmTarget = ArmPositions.DEFAULT.getTranslation();
         gamePiece = GamePiece.CUBE;
 
@@ -272,7 +280,7 @@ public final class Input extends SubsystemBase {
     }
 
     private static final double SNAP_DRIVE_TOL = 0.05;
-    private static final double SNAP_TURN_TOL = Math.toRadians(2);
+    private static final double SNAP_TURN_TOL = Math.toRadians(1);
 
     private void snapToPosition(Translation2d position) {
         snapDriveCmd.setGoal(new Vec2d(position.getX(), position.getY()));
@@ -323,10 +331,14 @@ public final class Input extends SubsystemBase {
         ));
 
         NTTranslation2d ntArmTarget = getArmTarget();
+        boolean isGrid = ntArmTarget != null
+            && ntArmTarget != ArmPositions.CUBE_PICKUP
+            && ntArmTarget != ArmPositions.CONE_PICKUP
+            && ntArmTarget != ArmPositions.DEFAULT;
         Translation2d armTarget = ntArmTarget == null ? robot.arm.getHomeTarget() : ntArmTarget.getTranslation();
 
         // If it is moving to a new target
-        if (!armTarget.equals(prevArmTarget)) {
+        if (!armTarget.equals(prevArmTarget) && (isGrid || prevWasGrid)) {
             armNudge = new Translation2d(0, 0);
 
             // Move to an intermediate position first
@@ -336,6 +348,7 @@ public final class Input extends SubsystemBase {
             }
         }
         prevArmTarget = armTarget;
+        prevWasGrid = isGrid;
 
         armTarget = armTarget.plus(armNudge);
         if (ntArmTarget != null && ntArmTarget != ArmPositions.DEFAULT) {
