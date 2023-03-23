@@ -181,6 +181,12 @@ public class RobotContainer {
                 Map.entry(ScoreHeight.BOTTOM, cubeLow)
             ), positionSelector::getSelected);
 
+        Command intakeCube = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
+        .andThen(
+            new MoveArmToPositionCommand(this, () -> arm.getHomeTarget()).raceWith(Commands.run(() -> intake.run(), intake)),
+            new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation())
+        );
+
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
@@ -189,8 +195,7 @@ public class RobotContainer {
         eventMap.put("SCORE_CONE", scoreCone);
         
         eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getTranslation));
-        // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
-
+        eventMap.put("INTAKE_CUBE", intakeCube);
         // Allow for easy creation of autos using PathPlanner
         SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
 
