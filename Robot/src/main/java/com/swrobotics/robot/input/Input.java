@@ -227,7 +227,7 @@ public final class Input extends SubsystemBase {
     }
 
     private boolean isEject() {
-        return manipulator.leftTrigger.get() > 0.8;
+        return manipulator.leftTrigger.get() > TRIGGER_DEADBAND;
     }
 	
 
@@ -266,7 +266,7 @@ public final class Input extends SubsystemBase {
         if (isEject())
             return IntakeMode.EJECT;
 
-        if (manipulator.a.isPressed() || manipulator.b.isPressed() || manipulator.rightTrigger.get() > 0.8)
+        if (manipulator.a.isPressed() || manipulator.b.isPressed() || manipulator.rightTrigger.get() > TRIGGER_DEADBAND)
             return IntakeMode.INTAKE;
 
         return IntakeMode.OFF;
