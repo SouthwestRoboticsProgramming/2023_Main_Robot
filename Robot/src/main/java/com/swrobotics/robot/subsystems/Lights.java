@@ -2,6 +2,7 @@ package com.swrobotics.robot.subsystems;
 
 import com.swrobotics.robot.RIOPorts;
 
+import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
@@ -130,9 +131,16 @@ public class Lights {
 
     private final Spark lights = new Spark(RIOPorts.LIGHTS_PWM); // The REV Blinkin is treated like a spark
 
-    private final Servo servo = new Servo(4);
+    private final Servo servo = new Servo(RIOPorts.LIGHT_SERVO_PWM);
 
     private IndicatorMode currentMode = IndicatorMode.OFF;
+
+    private final DigitalOutput blueDIO, yellowDIO;
+
+    public Lights() {
+        blueDIO = new DigitalOutput(RIOPorts.BLUE_LIGHT_DIO);
+        yellowDIO = new DigitalOutput(RIOPorts.YELLOW_LIGHT_DIO);
+    }
 
     public void set(double output) {
         lights.set(output);
@@ -143,9 +151,13 @@ public class Lights {
     /**
      * Set the color of the lights without respect for the color already set
      * Use this when trying to make the robot look cool. If you are indicating something, use IndicatorMode instead.
-     * @param color
+     * @param color the color
      */
     public void set(Color color) {
+        // Lights are on when output is low
+        blueDIO.set(color != Color.BLUE);
+        yellowDIO.set(color != Color.YELLOW);
+
         if (color == Color.YELLOW) {
             servo.set(0);
         }
