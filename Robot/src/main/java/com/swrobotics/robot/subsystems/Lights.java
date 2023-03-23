@@ -1,6 +1,8 @@
 package com.swrobotics.robot.subsystems;
 
 import com.swrobotics.robot.RIOPorts;
+
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class Lights {
@@ -128,6 +130,8 @@ public class Lights {
 
     private final Spark lights = new Spark(RIOPorts.LIGHTS_PWM); // The REV Blinkin is treated like a spark
 
+    private final Servo servo = new Servo(4);
+
     private IndicatorMode currentMode = IndicatorMode.OFF;
 
     public void set(double output) {
@@ -142,6 +146,14 @@ public class Lights {
      * @param color
      */
     public void set(Color color) {
+        if (color == Color.YELLOW) {
+            servo.set(0);
+        }
+
+        if (color == Color.BLUE) {
+            servo.set(180);
+        }
+
         lights.set(color.getValue());
 
         currentMode = IndicatorMode.OFF;
