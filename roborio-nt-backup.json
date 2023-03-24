@@ -266,7 +266,7 @@
   {
     "name": "/Arm/Arm 2/Bottom Offset",
     "type": "double",
-    "value": 0.0,
+    "value": 10.283203125,
     "properties": {
       "persistent": true
     }
@@ -274,7 +274,7 @@
   {
     "name": "/Arm/Arm 2/Top Offset",
     "type": "double",
-    "value": 0.0,
+    "value": -51.943359375,
     "properties": {
       "persistent": true
     }
@@ -290,7 +290,7 @@
   {
     "name": "/Input/Speed Slew Limit",
     "type": "double",
-    "value": 2.0,
+    "value": 20.0,
     "properties": {
       "persistent": true
     }

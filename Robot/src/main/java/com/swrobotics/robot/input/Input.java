@@ -2,6 +2,7 @@ package com.swrobotics.robot.input;
 
 import com.swrobotics.lib.input.XboxController;
 import com.swrobotics.lib.net.NTTranslation2d;
+import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
@@ -70,6 +71,8 @@ public final class Input extends SubsystemBase {
 
     private static final double NUDGE_PER_PERIODIC = 0.25 * 0.02;
 
+    private static final NTBoolean L_IS_CONE = new NTBoolean("Is Cone", false);
+
     private final RobotContainer robot;
 	
     private final XboxController driver;
@@ -90,6 +93,8 @@ public final class Input extends SubsystemBase {
     public Input(RobotContainer robot) {
         this.robot = robot;
 
+        L_IS_CONE.setTemporary();
+
         driver = new XboxController(DRIVER_PORT);
         manipulator = new XboxController(MANIPULATOR_PORT);
 
@@ -98,10 +103,12 @@ public final class Input extends SubsystemBase {
         manipulator.leftBumper.onRising(() -> {
             gamePiece = GamePiece.CUBE;
             robot.messenger.prepare("Robot:GamePiece").addBoolean(false).send();
+            L_IS_CONE.set(false);
         });
         manipulator.rightBumper.onRising(() -> {
             gamePiece = GamePiece.CONE;
             robot.messenger.prepare("Robot:GamePiece").addBoolean(true).send();
+            L_IS_CONE.set(true);
         });
 
         snapDriveCmd = new PathfindToPointCommand(robot, null);
@@ -238,8 +245,9 @@ public final class Input extends SubsystemBase {
 			return getArmMid();
         if (manipulator.b.isPressed())
 			return getSubstationPickup();
-        if (manipulator.a.isPressed())
+        if (manipulator.a.isPressed()) {
             return null; // Home target - position is retrieved from arm subsystem later
+        }
 
         return ArmPositions.DEFAULT;
     }
@@ -309,7 +317,11 @@ public final class Input extends SubsystemBase {
         IntakeMode intakeMode = getIntakeMode();
         switch (intakeMode) {
             case INTAKE:
-                robot.intake.setExpectedPiece(getGamePiece());
+                if (manipulator.a.isPressed()) {
+                    robot.intake.setExpectedPiece(GamePiece.CUBE);
+                } else {
+                    robot.intake.setExpectedPiece(getGamePiece());
+                }
                 robot.intake.run();
                 break;
             case EJECT:
