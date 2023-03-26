@@ -2,6 +2,7 @@ package com.swrobotics.robot.subsystems.vision;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTEntry;
@@ -72,6 +73,8 @@ public class Photon extends SubsystemBase {
     private final PhotonPoseEstimator frontPoseEstimator;
     private final PhotonPoseEstimator backPoseEstimator;
 
+    private final AtomicReference<Pose2d> latestPose;
+
     public Photon(RobotContainer robot) {
         L_TARGETS_FOUND.setTemporary();
 
@@ -106,18 +109,42 @@ public class Photon extends SubsystemBase {
             drive.showApriltags(layout);
             drive.showCameraPoses(frontCamTransform);
         }
+
+        latestPose = new AtomicReference<>(null);
+
+        // Run it on seperate thread
+        new Thread(() -> {
+            while (!Thread.interrupted()) {
+                update();
+
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }).start();
     }
 
     @Override
     public void periodic() {
+        Pose2d poseOut = latestPose.getAndSet(null);
+        if (poseOut == null)
+            return;
+
+        if (!drive.isMoving() && !drive.isPathPlannerRunning())
+            drive.resetPose(poseOut);
+    }
+
+    public void update() {
         if (RobotBase.isSimulation()) {
             frontSim.processFrame(drive.getPose());
 //            backSim.processFrame(drive.getPose());
         }
 
-        L_TARGETS_FOUND.set(
-            frontCam.getLatestResult().targets.size() +
-            backCam.getLatestResult().targets.size());
+        // L_TARGETS_FOUND.set(
+        //     frontCam.getLatestResult().targets.size() +
+        //     backCam.getLatestResult().targets.size());
 
         // Update estimator with odometry readings
         frontPoseEstimator.setReferencePose(drive.getPose());
@@ -127,8 +154,10 @@ public class Photon extends SubsystemBase {
         var estimatedPoseFront = frontPoseEstimator.update();
         var estimatedPoseBack = backPoseEstimator.update();
 
-        if (estimatedPoseFront.isEmpty() && estimatedPoseBack.isEmpty())
+        if (estimatedPoseFront.isEmpty() && estimatedPoseBack.isEmpty()) {
+            latestPose.set(null);
             return;
+        }
 
         Pose2d poseOut;
         if (estimatedPoseBack.isEmpty()) {
@@ -156,9 +185,8 @@ public class Photon extends SubsystemBase {
         // System.out.println(estimatedPose.get().getFirst());
 
         // // Update drive with estimated pose
-        L_MOVING.set(drive.isMoving());
-        if (!drive.isMoving() && !drive.isPathPlannerRunning())
-            drive.resetPose(poseOut);
+        // L_MOVING.set(drive.isMoving());
+        latestPose.set(poseOut);
     }
 
     private final NTEntry<Boolean> L_MOVING = new NTBoolean("Log/Moving", false).setTemporary();

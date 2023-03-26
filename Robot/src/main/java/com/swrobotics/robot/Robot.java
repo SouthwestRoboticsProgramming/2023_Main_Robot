@@ -55,10 +55,11 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().run();
 
         // Run all operations queued to run on main thread
-        ThreadUtils.runMainThreadOperations();
+        // ThreadUtils.runMainThreadOperations();
 
         // Handle messages being sent by the raspberry pi
-        robotContainer.getMessenger().readMessages();
+        // FIXME: Re-enable once loop overrun is fixed
+        // robotContainer.getMessenger().readMessages();
     }
 
     /**

@@ -195,7 +195,7 @@ public final class Input extends SubsystemBase {
             setCommandEnabled(snapDriveCmd, false);
         }
 
-        if (snap.snapTurn) {
+        if (false) {// FIXME
             Rotation2d poseAngle = snap.pose.getRotation();
 
             switch (snap.turnMode) {

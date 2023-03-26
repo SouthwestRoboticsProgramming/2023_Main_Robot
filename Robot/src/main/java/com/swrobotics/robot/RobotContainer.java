@@ -77,7 +77,7 @@ public class RobotContainer {
     public final Pathfinder pathfinder;
 
     public final Photon photon = new Photon(this);
-    public final Limelight limelight = new Limelight();
+    public final Limelight limelight =null;//new Limelight();
 
     public final ArmSubsystem arm;
     public final IntakeSubsystem intake = new IntakeSubsystem();

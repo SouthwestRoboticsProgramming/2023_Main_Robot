@@ -497,9 +497,9 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
             odometry.update(getGyroscopeRotation(), getModulePositions());
         }
 
-        ppPose.setPose(getPathPlannerPose());
-        field.setRobotPose(getPose());
-        SnapPositions.showPositions(field);
+        // ppPose.setPose(getPathPlannerPose());
+        // field.setRobotPose(getPose());
+        // SnapPositions.showPositions(field);
 
         // Check if it should calibrate the wheels
         if (CALIBRATE.get()) {
