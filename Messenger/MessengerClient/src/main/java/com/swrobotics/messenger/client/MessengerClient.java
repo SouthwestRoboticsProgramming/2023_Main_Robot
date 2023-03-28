@@ -24,7 +24,6 @@ public final class MessengerClient {
 
     private static final String HEARTBEAT = "_Heartbeat";
     private static final String LISTEN = "_Listen";
-    private static final String UNLISTEN = "_Unlisten";
     private static final String DISCONNECT = "_Disconnect";
 
     private static final long TIMEOUT = 4000L;
