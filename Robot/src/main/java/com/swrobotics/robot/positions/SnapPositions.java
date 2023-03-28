@@ -1,11 +1,9 @@
 package com.swrobotics.robot.positions;
 
-import com.swrobotics.lib.net.NTTranslation2d;
 import com.swrobotics.mathlib.CCWAngle;
-import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
+import com.swrobotics.lib.swerve.DrivetrainSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;

@@ -1,10 +1,9 @@
-package com.swrobotics.robot.subsystems.drive;
+package com.swrobotics.lib.swerve;
 
 /**
  * Describes the IDs of a swerve module. This is used to allow swerve modules to be hot-swapped
  */
 public class SwerveModuleInfo {
-
     public final String name;
     public final int driveMotorID;
     public final int turnMotorID;

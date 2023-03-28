@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems.drive;
+package com.swrobotics.lib.swerve;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +41,7 @@ import edu.wpi.first.wpilibj2.command.*;
  * Calibration instructions:
  * Align all wheel to face forward with bevel gears to the right
  * Use straight edge such as a meter stick to further align the wheels to each other
- * Deploy code
- * Look at RioLog and type those numbers into the module declarations
+ * Set the Calibrate NetworkTables value to true
  */
 
 public class DrivetrainSubsystem extends SwitchableSubsystemBase {
