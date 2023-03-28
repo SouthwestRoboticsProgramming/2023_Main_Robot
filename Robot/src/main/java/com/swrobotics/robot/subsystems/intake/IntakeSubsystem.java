@@ -22,10 +22,6 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
         running = false;
     }
 
-    public GamePiece getExpectedPiece() {
-        return expectedPiece;
-    }
-
     public void setExpectedPiece(GamePiece expectedPiece) {
         this.expectedPiece = expectedPiece;
 
@@ -56,13 +52,6 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     @Override
     public void onDisable() {
         motor.set(0);
-    }
-
-    public void debugSetRunning(boolean running) {
-        if (running)
-            run();
-        else
-            stop();
     }
 
     @Override

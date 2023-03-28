@@ -13,8 +13,6 @@ import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.mathlib.MathUtil;
-import com.swrobotics.robot.subsystems.StatusLoggable;
-import com.swrobotics.robot.subsystems.StatusLogging;
 
 import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -47,7 +45,7 @@ import edu.wpi.first.wpilibj2.command.*;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-public class DrivetrainSubsystem extends SwitchableSubsystemBase implements StatusLoggable {
+public class DrivetrainSubsystem extends SwitchableSubsystemBase {
     public static Angle getAllianceForward() {
         return DriverStation.getAlliance() == DriverStation.Alliance.Blue ? Angle.ZERO : CCWAngle.deg(180);
     }
@@ -65,12 +63,6 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
                 new Translation2d(FIELD_WIDTH_METERS - asBlue.getX(), asBlue.getY()),
                 new Rotation2d(MathUtil.wrap(Math.PI - asBlue.getRotation().getRadians(), 0, 2 * Math.PI))
         );
-    }
-
-    public StatusLogging logger;
-
-    public void initLogging(StatusLogging logger) {
-        this.logger = logger;
     }
 
     // The Stop Position Enum
