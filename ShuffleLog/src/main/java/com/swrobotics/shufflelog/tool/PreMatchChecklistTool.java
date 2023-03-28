@@ -1,6 +1,5 @@
 package com.swrobotics.shufflelog.tool;
 
-import com.swrobotics.shufflelog.tool.buttons.ButtonPanelTool;
 import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
