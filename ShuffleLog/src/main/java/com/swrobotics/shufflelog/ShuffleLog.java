@@ -116,11 +116,6 @@ public final class ShuffleLog extends PApplet {
         surface.setResizable(true);
         long windowHandle = (long) surface.getNative();
 
-        // Move window to previous position
-        int x = Integer.parseInt(persistence.getProperty("window.x", "0"));
-        int y = Integer.parseInt(persistence.getProperty("window.y", "0"));
-//        GLFW.glfwSetWindowPos(windowHandle, x, y);
-
         ImGui.createContext();
         imPlotCtx = ImPlot.createContext();
 
@@ -150,8 +145,6 @@ public final class ShuffleLog extends PApplet {
         tools.add(new RoboRIOFilesTool(this));
         tools.add(new FieldViewTool(this));
         tools.add(new BlockAutoTool(this));
-//        ButtonPanelTool btn = new ButtonPanelTool(messenger);
-//        tools.add(btn);
         tools.add(new ArmDebugTool(this, messenger));
         tools.add(new PreMatchChecklistTool(msg));
         tools.add(new ConeOrCubeTool(messenger));
@@ -216,20 +209,6 @@ public final class ShuffleLog extends PApplet {
 
         ImPlot.destroyContext(imPlotCtx);
         ImGui.destroyContext();
-
-//        long windowHandle = (long) surface.getNative();
-//        try (MemoryStack stack = MemoryStack.stackPush()) {
-//            IntBuffer x = stack.mallocInt(1);
-//            IntBuffer y = stack.mallocInt(1);
-//0
-//            GLFW.glfwGetWindowPos(windowHandle, x, y);
-//            persistence.setProperty("window.x", String.valueOf(x.get(0)));
-//            persistence.setProperty("window.y", String.valueOf(y.get(0)));
-//
-//            GLFW.glfwGetWindowSize(windowHandle, x, y);
-//            persistence.setProperty("window.width", String.valueOf(x.get(0)));
-//            persistence.setProperty("window.height", String.valueOf(y.get(0)));
-//        }
 
         try {
             persistence.store(new FileWriter(PERSISTENCE_FILE), "ShuffleLog persistent data");
