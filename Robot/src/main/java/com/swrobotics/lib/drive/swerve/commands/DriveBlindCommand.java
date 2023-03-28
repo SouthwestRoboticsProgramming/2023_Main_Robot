@@ -1,9 +1,9 @@
-package com.swrobotics.lib.swerve.commands;
+package com.swrobotics.lib.drive.swerve.commands;
 
 import com.swrobotics.mathlib.Angle;
 
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.lib.swerve.DrivetrainSubsystem;
+import com.swrobotics.lib.drive.swerve.SwerveDrive;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import java.util.function.Supplier;
 
 public class DriveBlindCommand extends CommandBase {
-    private final DrivetrainSubsystem drive;
+    private final SwerveDrive drive;
 
     private final Supplier<Angle> direction;
     private final double velocityMetersPerSecond;
@@ -20,7 +20,7 @@ public class DriveBlindCommand extends CommandBase {
     private final boolean robotRelative;
 
     public DriveBlindCommand(RobotContainer robot, Supplier<Angle> direction, double velocityMetersPerSecond, boolean robotRelative) {
-        drive = robot.drivetrainSubsystem;
+        drive = robot.swerveDrive;
 
         this.direction = direction;
         this.velocityMetersPerSecond = velocityMetersPerSecond;
@@ -43,6 +43,6 @@ public class DriveBlindCommand extends CommandBase {
 
     @Override
     public void execute() {
-        drive.setTargetTranslation(currentTranslation, true);
+        drive.addTranslation(currentTranslation, true);
     }
 }

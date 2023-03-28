@@ -8,6 +8,7 @@ import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.Vec2d;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.photonvision.PhotonCamera;
@@ -17,7 +18,7 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import com.swrobotics.lib.net.NTInteger;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.lib.swerve.DrivetrainSubsystem;
+import com.swrobotics.lib.drive.swerve.SwerveDrive;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -78,7 +79,7 @@ public class Photon extends SubsystemBase {
     public Photon(RobotContainer robot) {
         L_TARGETS_FOUND.setTemporary();
 
-        drive = robot.drivetrainSubsystem;
+        drive = robot.swerveDrive;
 
         AprilTagFieldLayout layout;
 
@@ -106,8 +107,8 @@ public class Photon extends SubsystemBase {
             frontSim.addVisionTargets(layout);
             backSim.addVisionTargets(layout);
 
-            drive.showApriltags(layout);
-            drive.showCameraPoses(frontCamTransform);
+//            drive.showApriltags(layout);
+//            drive.showCameraPoses(frontCamTransform);
         }
 
         latestPose = new AtomicReference<>(null);

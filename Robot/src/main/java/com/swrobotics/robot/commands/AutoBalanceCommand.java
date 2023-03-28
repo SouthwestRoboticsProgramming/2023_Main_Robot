@@ -1,13 +1,13 @@
 package com.swrobotics.robot.commands;
 
+import com.swrobotics.lib.drive.swerve.StopPosition;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.lib.swerve.DrivetrainSubsystem;
 
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import com.swrobotics.lib.swerve.DrivetrainSubsystem.StopPosition;
 
 public class AutoBalanceCommand extends CommandBase {
 
@@ -16,7 +16,7 @@ public class AutoBalanceCommand extends CommandBase {
     private final StopPosition firstStopPosition;
 
     public AutoBalanceCommand(RobotContainer robot) {
-        drive = robot.drivetrainSubsystem;
+        drive = robot.swerveDrive;
         // pid = new PIDController(KP.get(), 1000.0, 0.0);
 
         // KP.onChange(() -> pid.setP(KP.get()));
@@ -35,7 +35,6 @@ public class AutoBalanceCommand extends CommandBase {
         double magnitude = tilt.getNorm();
         System.out.println("M: " + magnitude);
         if (Math.abs(magnitude) < 1.5) {
-            drive.setChassisSpeeds(new ChassisSpeeds());
             return;
         }
 
@@ -44,7 +43,7 @@ public class AutoBalanceCommand extends CommandBase {
         // double adjustmentAmount = pid.calculate(magnitude, 0.0);
         double adjustmentAmount = -0.385;//ADJUST_AMOUNT.get();
         Translation2d output = new Translation2d(adjustmentAmount, rotation);
-        drive.setChassisSpeeds(new ChassisSpeeds(output.getX(), output.getY(), 0.0));
+        drive.addChassisSpeeds(new ChassisSpeeds(output.getX(), output.getY(), 0.0));
     }
 
     @Override

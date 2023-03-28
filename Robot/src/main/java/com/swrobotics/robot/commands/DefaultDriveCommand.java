@@ -8,14 +8,14 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-import com.swrobotics.lib.swerve.DrivetrainSubsystem;
+import com.swrobotics.lib.drive.swerve.SwerveDrive;
 
 
 public class DefaultDriveCommand extends CommandBase {
-    private final DrivetrainSubsystem drive;
+    private final SwerveDrive drive;
     private final Input input;
 
-    public DefaultDriveCommand(DrivetrainSubsystem drive, Input input) {
+    public DefaultDriveCommand(SwerveDrive drive, Input input) {
         this.drive = drive;
         this.input = input;
         addRequirements(drive);
@@ -40,11 +40,11 @@ public class DefaultDriveCommand extends CommandBase {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-x, -y, rotationCCW, gyro);
         }
 
-        drive.setChassisSpeeds(speeds);
+        drive.addChassisSpeeds(speeds);
     }
 
     @Override
     public void end(boolean interrupted) {
-        drive.setChassisSpeeds(new ChassisSpeeds(0.0, 0.0, 0.0));
+        drive.addChassisSpeeds(new ChassisSpeeds(0.0, 0.0, 0.0));
     }
 }

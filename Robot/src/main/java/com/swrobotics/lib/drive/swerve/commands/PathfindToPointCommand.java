@@ -1,10 +1,11 @@
-package com.swrobotics.lib.swerve.commands;
+package com.swrobotics.lib.drive.swerve.commands;
 
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.lib.swerve.DrivetrainSubsystem;
-import com.swrobotics.lib.swerve.Pathfinder;
+import com.swrobotics.lib.drive.swerve.SwerveDrive;
+import com.swrobotics.lib.drive.swerve.Pathfinder;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -27,7 +28,7 @@ public final class PathfindToPointCommand extends CommandBase {
     private boolean finished;
 
     public PathfindToPointCommand(RobotContainer robot, Vec2d goal) {
-        drive = robot.drivetrainSubsystem;
+        drive = robot.swerveDrive;
         finder = robot.pathfinder;
         this.goal = goal;
 
@@ -81,7 +82,7 @@ public final class PathfindToPointCommand extends CommandBase {
             // If we aren't near the path at all, we need to wait for the pathfinder to make a valid path
             if (target == null) {
                 System.err.println("Waiting for pathfinder to catch up");
-                drive.setTargetTranslation(new Translation2d(0, 0), true);
+                drive.addTranslation(new Translation2d(0, 0), true);
                 return;
             }
         }
@@ -105,7 +106,7 @@ public final class PathfindToPointCommand extends CommandBase {
         deltaY *= velocity;
 
         // Move
-        drive.setTargetTranslation(new Translation2d(deltaX, deltaY), true);
+        drive.addTranslation(new Translation2d(deltaX, deltaY), true);
     }
 
     @Override

@@ -1,12 +1,13 @@
-package com.swrobotics.lib.swerve.commands;
+package com.swrobotics.lib.drive.swerve.commands;
 
 import java.util.function.Supplier;
 
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.lib.swerve.DrivetrainSubsystem;
+import com.swrobotics.lib.drive.swerve.SwerveDrive;
 
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -21,7 +22,7 @@ public class TurnToAngleCommand extends CommandBase {
     private final boolean robotRelative;
 
     public TurnToAngleCommand(RobotContainer robot, Supplier<Angle> angle, boolean robotRelative) {
-        drive = robot.drivetrainSubsystem;
+        drive = robot.swerveDrive;
         this.angle = angle;
         this.robotRelative = robotRelative;
 
@@ -61,7 +62,7 @@ public class TurnToAngleCommand extends CommandBase {
             target = target.plus(drive.getPose().getRotation());
         }
 
-        drive.setTargetRotation(new Rotation2d(
+        drive.addRotation(new Rotation2d(
                 MathUtil.clamp(pid.calculate(
                         drive.getPose().getRotation().getRadians(),
                         target.getRadians()

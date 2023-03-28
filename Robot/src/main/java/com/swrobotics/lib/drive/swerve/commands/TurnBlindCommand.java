@@ -1,24 +1,24 @@
-package com.swrobotics.lib.swerve.commands;
+package com.swrobotics.lib.drive.swerve.commands;
 
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.lib.swerve.DrivetrainSubsystem;
+import com.swrobotics.lib.drive.swerve.SwerveDrive;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class TurnBlindCommand extends CommandBase {
-    private final DrivetrainSubsystem drive;
+    private final SwerveDrive drive;
 
     private final Rotation2d rotation;
 
     public TurnBlindCommand(RobotContainer robot, double omegaRadiansPerSecond) {
-        drive = robot.drivetrainSubsystem;
+        drive = robot.swerveDrive;
 
         rotation = new Rotation2d(omegaRadiansPerSecond);
     }
 
     @Override
     public void execute() {
-        drive.setTargetRotation(rotation);
+        drive.addRotation(rotation);
     }
 }

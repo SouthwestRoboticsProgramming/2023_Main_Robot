@@ -11,7 +11,7 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
-import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
+import com.swrobotics.lib.drive.swerve.commands.DriveBlindCommand;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
@@ -19,9 +19,10 @@ import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.positions.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
-import com.swrobotics.lib.swerve.DrivetrainSubsystem;
+import com.swrobotics.lib.drive.swerve.SwerveDrive;
 import com.swrobotics.robot.subsystems.Lights;
-import com.swrobotics.lib.swerve.Pathfinder;
+import com.swrobotics.lib.drive.swerve.Pathfinder;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.robot.subsystems.vision.Limelight;
@@ -66,7 +67,7 @@ public class RobotContainer {
 
     // The robot's subsystems are defined here...
     public final Input input;
-    public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
+    public final DrivetrainSubsystem swerveDrive = new DrivetrainSubsystem();
     public final Pathfinder pathfinder;
 
     public final Photon photon = new Photon(this);
@@ -97,10 +98,10 @@ public class RobotContainer {
         arm = new ArmSubsystem(messenger);
 
         // Initialize pathfinder to be able to drive to any point on the field
-        pathfinder = new Pathfinder(messenger, drivetrainSubsystem);
+        pathfinder = new Pathfinder(messenger, swerveDrive);
 
         input = new Input(this);
-        drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(drivetrainSubsystem, input));
+        swerveDrive.setDefaultCommand(new DefaultDriveCommand(swerveDrive, input));
 
         HashMap<String, Command> eventMap = new HashMap<>();
 
@@ -173,37 +174,37 @@ public class RobotContainer {
         // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
 
         // Allow for easy creation of autos using PathPlanner
-        SwerveAutoBuilder builder = drivetrainSubsystem.getAutoBuilder(eventMap);
+        swerveDrive.setAutoEvents(eventMap);
 
         // Autos that don't do anything
         Command blankAuto = new InstantCommand();
         Command printAuto = new PrintCommand("Auto chooser is working!");
 
         // Autos to just drive off the line
-        Command taxiSmart = builder.fullAuto(getPath("Taxi Auto"));     // Drive forward and reset position
-        Command taxiDumb = new DriveBlindCommand(this, DrivetrainSubsystem::getAllianceForward, 0.5, false).withTimeout(2.0); // Just drive forward
+        Command taxiSmart = swerveDrive.buildPathPlannerAuto("Taxi Auto");     // Drive forward and reset position
+        Command taxiDumb = new DriveBlindCommand(this, DrivetrainSubsystem.FIELD::getAllianceForwardAngle, 0.5, false).withTimeout(2.0); // Just drive forward
 
         // Autos that just balance
-        Command balanceWall = builder.fullAuto(getPath("Balance Wall"));
-        Command balanceBarrier = builder.fullAuto(getPath("Balance Barrier"));
+        Command balanceWall = swerveDrive.buildPathPlannerAuto("Balance Wall");
+        Command balanceBarrier = swerveDrive.buildPathPlannerAuto("Balance Barrier");
         Command balanceClose = new BalanceSequenceCommand(this, false);
 
         // Autos that score and then balance
-        Command cubeMidBalance = builder.fullAuto(getPath("Cube Balance"));
-        Command coneMidBalance = builder.fullAuto(getPath("Cone Balance"));
-        Command cubeMidWallBalance = builder.fullAuto(getPath("Cube Wall Balance"));
-        Command coneMidWallBalance = builder.fullAuto(getPath("Cone Wall Balance"));
-        Command coneMidBalanceShort = builder.fullAuto(getPath("Cone Short Balance"));
-        Command cubeMidBalanceShort = builder.fullAuto(getPath("Cube Short Balance"));
+        Command cubeMidBalance = swerveDrive.buildPathPlannerAuto("Cube Balance");
+        Command coneMidBalance = swerveDrive.buildPathPlannerAuto("Cone Balance");
+        Command cubeMidWallBalance = swerveDrive.buildPathPlannerAuto("Cube Wall Balance");
+        Command coneMidWallBalance = swerveDrive.buildPathPlannerAuto("Cone Wall Balance");
+        Command coneMidBalanceShort = swerveDrive.buildPathPlannerAuto("Cone Short Balance");
+        Command cubeMidBalanceShort = swerveDrive.buildPathPlannerAuto("Cube Short Balance");
 
         // Advanced taxi autos that prepare us for next cycle
-        Command getOfOfTheWayWall = builder.fullAuto(getPath("Get Out Of The Way Wall"));
-        Command getOfOfTheWayBarrier = builder.fullAuto(getPath("Get Out Of The Way Barrier"));
+        Command getOfOfTheWayWall = swerveDrive.buildPathPlannerAuto("Get Out Of The Way Wall");
+        Command getOfOfTheWayBarrier = swerveDrive.buildPathPlannerAuto("Get Out Of The Way Barrier");
 
         // Autos that do no balance but score
-        Command cubeAndRunBarrier = builder.fullAuto(getPath("Cube and Run Barrier"));
-        Command cubeAndRunMid = builder.fullAuto(getPath("Cube and Run Mid"));
-        Command cubeAndRunWall = builder.fullAuto(getPath("Cube and Run Wall"));
+        Command cubeAndRunBarrier = swerveDrive.buildPathPlannerAuto("Cube and Run Barrier");
+        Command cubeAndRunMid = swerveDrive.buildPathPlannerAuto("Cube and Run Mid");
+        Command cubeAndRunWall = swerveDrive.buildPathPlannerAuto("Cube and Run Wall");
 
         // Autos that just do cube or cone mid
 

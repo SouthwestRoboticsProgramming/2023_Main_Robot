@@ -1,7 +1,8 @@
 package com.swrobotics.robot.positions;
 
 import com.swrobotics.mathlib.CCWAngle;
-import com.swrobotics.lib.swerve.DrivetrainSubsystem;
+import com.swrobotics.lib.drive.swerve.SwerveDrive;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -56,7 +57,7 @@ public final class SnapPositions {
         }
 
         public Pose2d getPose() {
-            return DrivetrainSubsystem.flipForAlliance(bluePose);
+            return DrivetrainSubsystem.FIELD.flipPoseForAlliance(bluePose);
         }
     }
 

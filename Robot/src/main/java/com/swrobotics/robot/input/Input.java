@@ -4,14 +4,12 @@ import com.swrobotics.lib.input.XboxController;
 import com.swrobotics.lib.net.NTTranslation2d;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
-import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
-import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
+import com.swrobotics.lib.drive.swerve.commands.PathfindToPointCommand;
+import com.swrobotics.lib.drive.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.positions.ArmPositions;
 import com.swrobotics.robot.positions.SnapPositions;
-import com.swrobotics.robot.positions.SnapPositions.SnapPosition;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.vision.Limelight;
@@ -98,7 +96,7 @@ public final class Input extends SubsystemBase {
         driver = new XboxController(DRIVER_PORT);
         manipulator = new XboxController(MANIPULATOR_PORT);
 
-        driver.start.onRising(robot.drivetrainSubsystem::zeroGyroscope);
+        driver.start.onRising(robot.swerveDrive::zeroGyroscope);
 
         manipulator.leftBumper.onRising(() -> {
             gamePiece = GamePiece.CUBE;
@@ -182,7 +180,7 @@ public final class Input extends SubsystemBase {
         }
 
         // Calculate snapping
-        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
+        Pose2d currentPose = robot.swerveDrive.getPose();
         SnapPositions.SnapStatus snap = SnapPositions.getSnap(currentPose);
         if (snap == null) {
             disableSnap();
@@ -293,14 +291,14 @@ public final class Input extends SubsystemBase {
     private void snapToPosition(Translation2d position) {
         snapDriveCmd.setGoal(new Vec2d(position.getX(), position.getY()));
 
-        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
+        Pose2d currentPose = robot.swerveDrive.getPose();
         double dist = currentPose.getTranslation().minus(position).getNorm();
 
         setCommandEnabled(snapDriveCmd, dist > SNAP_DRIVE_TOL);
     }
 
     private void snapToAngle(Rotation2d angle) {
-        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
+        Pose2d currentPose = robot.swerveDrive.getPose();
 
         double angleDiff = CCWAngle.rad(angle.getRadians())
             .getAbsDiff(CCWAngle.rad(currentPose.getRotation().getRadians())).rad();

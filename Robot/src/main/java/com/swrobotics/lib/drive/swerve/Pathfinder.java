@@ -1,4 +1,4 @@
-package com.swrobotics.lib.swerve;
+package com.swrobotics.lib.drive.swerve;
 
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageReader;
@@ -17,13 +17,13 @@ public final class Pathfinder extends SubsystemBase {
     private static final double CORRECT_TARGET_TOL = 0.1524 + 0.1;
 
     private final MessengerClient msg;
-    private final DrivetrainSubsystem drive;
+    private final SwerveDrive drive;
 
     private final List<Vec2d> path;
 
     private double goalX, goalY;
 
-    public Pathfinder(MessengerClient msg, DrivetrainSubsystem drive) {
+    public Pathfinder(MessengerClient msg, SwerveDrive drive) {
         this.msg = msg;
         this.drive = drive;
         path = new ArrayList<>();

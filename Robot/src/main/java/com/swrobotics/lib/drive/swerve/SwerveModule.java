@@ -1,4 +1,4 @@
-package com.swrobotics.lib.swerve;
+package com.swrobotics.lib.drive.swerve;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;

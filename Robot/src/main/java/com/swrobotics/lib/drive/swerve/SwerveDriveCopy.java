@@ -1,31 +1,18 @@
-package com.swrobotics.lib.swerve;
-
-import java.util.HashMap;
-import java.util.List;
+package com.swrobotics.lib.drive.swerve;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
-
+import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.mathlib.MathUtil;
-
-import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -34,7 +21,13 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+
+import java.util.HashMap;
+import java.util.List;
 
 
 /*
@@ -44,7 +37,7 @@ import edu.wpi.first.wpilibj2.command.*;
  * Set the Calibrate NetworkTables value to true
  */
 
-public class DrivetrainSubsystem extends SwitchableSubsystemBase {
+public class SwerveDriveCopy extends SwitchableSubsystemBase {
     public static Angle getAllianceForward() {
         return DriverStation.getAlliance() == DriverStation.Alliance.Blue ? Angle.ZERO : CCWAngle.deg(180);
     }
@@ -103,7 +96,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
     private StopPosition stopPosition = StopPosition.NONE;
 
     public static final double MAX_VELOCITY_METERS_PER_SECOND = 4.0;
-    
+
     /**
      * The maximum angular velocity of the robot in radians per second.
      * <p>
@@ -133,7 +126,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
     private final FieldObject2d ppPose = field.getObject("PathPlanner pose");
 
     private final SwerveModule[] modules;
-    
+
     private final SwerveDriveOdometry odometry;
 
     private Translation2d centerOfRotation = new Translation2d();
@@ -143,8 +136,8 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
     private ChassisSpeeds speeds = new ChassisSpeeds();
 
     private int activePathPlannerCommands;
-    
-    public DrivetrainSubsystem() {
+
+    public SwerveDriveCopy() {
 
         FRONT_LEFT_SELECT = new SendableChooser<SwerveModuleInfo>();
         FRONT_RIGHT_SELECT = new SendableChooser<SwerveModuleInfo>();
@@ -379,7 +372,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
                 ).finallyDo((cancelled) -> {
                     // If no longer running PathPlanner, fix pose
                     if (activePathPlannerCommands == 1)
-                        DrivetrainSubsystem.this.resetPose(getPose());
+                        SwerveDriveCopy.this.resetPose(getPose());
                     activePathPlannerCommands--; // Decrement after so getPose() returns good pose above
                 });
             }
