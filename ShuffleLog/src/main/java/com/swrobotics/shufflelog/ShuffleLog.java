@@ -7,7 +7,6 @@ import com.swrobotics.shufflelog.tool.MenuBarTool;
 import com.swrobotics.shufflelog.tool.PreMatchChecklistTool;
 import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.arm.ArmDebugTool;
-import com.swrobotics.shufflelog.tool.blockauto.BlockAutoTool;
 import com.swrobotics.shufflelog.tool.data.DataLogTool;
 import com.swrobotics.shufflelog.tool.data.nt.NetworkTablesTool;
 import com.swrobotics.shufflelog.tool.field.FieldViewTool;
@@ -144,7 +143,6 @@ public final class ShuffleLog extends PApplet {
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new RoboRIOFilesTool(this));
         tools.add(new FieldViewTool(this));
-        tools.add(new BlockAutoTool(this));
         tools.add(new ArmDebugTool(this, messenger));
         tools.add(new PreMatchChecklistTool(msg));
         tools.add(new ConeOrCubeTool(messenger));
@@ -236,10 +234,6 @@ public final class ShuffleLog extends PApplet {
 
     public double getTimestamp() {
         return (System.currentTimeMillis() - startTime) / 1000.0;
-    }
-
-    public ExecutorService getThreadPool() {
-        return threadPool;
     }
 
     public MessengerClient getMessenger() {
