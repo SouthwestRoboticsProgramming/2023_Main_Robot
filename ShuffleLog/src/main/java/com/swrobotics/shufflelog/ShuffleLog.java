@@ -7,8 +7,6 @@ import com.swrobotics.shufflelog.tool.MenuBarTool;
 import com.swrobotics.shufflelog.tool.PreMatchChecklistTool;
 import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.arm.ArmDebugTool;
-import com.swrobotics.shufflelog.tool.blockauto.BlockAutoTool;
-import com.swrobotics.shufflelog.tool.buttons.ButtonPanelTool;
 import com.swrobotics.shufflelog.tool.data.DataLogTool;
 import com.swrobotics.shufflelog.tool.data.nt.NetworkTablesTool;
 import com.swrobotics.shufflelog.tool.field.FieldViewTool;
@@ -27,13 +25,10 @@ import imgui.extension.implot.ImPlot;
 import imgui.extension.implot.ImPlotContext;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.system.MemoryStack;
 import processing.core.PApplet;
 import processing.core.PFont;
 
 import java.io.*;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -120,11 +115,6 @@ public final class ShuffleLog extends PApplet {
         surface.setResizable(true);
         long windowHandle = (long) surface.getNative();
 
-        // Move window to previous position
-        int x = Integer.parseInt(persistence.getProperty("window.x", "0"));
-        int y = Integer.parseInt(persistence.getProperty("window.y", "0"));
-//        GLFW.glfwSetWindowPos(windowHandle, x, y);
-
         ImGui.createContext();
         imPlotCtx = ImPlot.createContext();
 
@@ -153,9 +143,6 @@ public final class ShuffleLog extends PApplet {
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new RoboRIOFilesTool(this));
         tools.add(new FieldViewTool(this));
-        tools.add(new BlockAutoTool(this));
-//        ButtonPanelTool btn = new ButtonPanelTool(messenger);
-//        tools.add(btn);
         tools.add(new ArmDebugTool(this, messenger));
         tools.add(new PreMatchChecklistTool(msg));
         tools.add(new ConeOrCubeTool(messenger));
@@ -221,20 +208,6 @@ public final class ShuffleLog extends PApplet {
         ImPlot.destroyContext(imPlotCtx);
         ImGui.destroyContext();
 
-//        long windowHandle = (long) surface.getNative();
-//        try (MemoryStack stack = MemoryStack.stackPush()) {
-//            IntBuffer x = stack.mallocInt(1);
-//            IntBuffer y = stack.mallocInt(1);
-//0
-//            GLFW.glfwGetWindowPos(windowHandle, x, y);
-//            persistence.setProperty("window.x", String.valueOf(x.get(0)));
-//            persistence.setProperty("window.y", String.valueOf(y.get(0)));
-//
-//            GLFW.glfwGetWindowSize(windowHandle, x, y);
-//            persistence.setProperty("window.width", String.valueOf(x.get(0)));
-//            persistence.setProperty("window.height", String.valueOf(y.get(0)));
-//        }
-
         try {
             persistence.store(new FileWriter(PERSISTENCE_FILE), "ShuffleLog persistent data");
         } catch (IOException e) {
@@ -261,10 +234,6 @@ public final class ShuffleLog extends PApplet {
 
     public double getTimestamp() {
         return (System.currentTimeMillis() - startTime) / 1000.0;
-    }
-
-    public ExecutorService getThreadPool() {
-        return threadPool;
     }
 
     public MessengerClient getMessenger() {

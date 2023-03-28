@@ -13,15 +13,12 @@ import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
 import com.swrobotics.messenger.client.MessengerClient;
-import com.swrobotics.robot.blockauto.AutoBlocks;
-import com.swrobotics.robot.blockauto.WaypointStorage;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.positions.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
-import com.swrobotics.robot.subsystems.arnold.Arnold;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
@@ -30,7 +27,6 @@ import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.robot.subsystems.vision.Limelight;
 import com.swrobotics.robot.subsystems.vision.Photon;
 
-import edu.wpi.first.math.Pair;
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -53,7 +49,6 @@ import edu.wpi.first.wpilibj2.command.SelectCommand;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-
     private enum ScoreHeight {
         TOP,
         MID,
@@ -65,8 +60,6 @@ public class RobotContainer {
     private static final String MESSENGER_HOST_SIM = "localhost";
     private static final int MESSENGER_PORT = 5805;
     private static final String MESSENGER_NAME = "Robot";
-
-    private final Robot robot;
 
     // Create a way to choose between autonomous sequences
     private final SendableChooser<Supplier<Command>> autoSelector;
@@ -83,21 +76,13 @@ public class RobotContainer {
     public final IntakeSubsystem intake = new IntakeSubsystem();
 
     public final Lights lights = new Lights();
-    // public final StatusLogging statuslogger = new StatusLogging(lights);
-
-    public final Arnold arnold = new Arnold(RIOPorts.ARNOLD_LEFT_PWM, RIOPorts.ARNOLD_RIGHT_PWM);
-//    private final XboxController controller = new XboxController(0);
-//    public final ButtonPanel buttonPanel;
-//    private final ScoreSelectorSubsystem scoreSelector;
 
     public final MessengerClient messenger;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
-    public RobotContainer(Robot robot) {
-        this.robot = robot;
-
+    public RobotContainer() {
         // Turn off joystick warnings
         DriverStation.silenceJoystickConnectionWarning(true);
 
@@ -111,10 +96,6 @@ public class RobotContainer {
         new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
         arm = new ArmSubsystem(messenger);
 
-        // Initialize block auto
-        AutoBlocks.init(messenger, this);
-        WaypointStorage.init(messenger);
-
         // Initialize pathfinder to be able to drive to any point on the field
         pathfinder = new Pathfinder(messenger, drivetrainSubsystem);
 
@@ -122,64 +103,64 @@ public class RobotContainer {
         drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(drivetrainSubsystem, input));
 
         HashMap<String, Command> eventMap = new HashMap<>();
-        
+
         SendableChooser<ScoreHeight> positionSelector = new SendableChooser<>();
-        
+
         positionSelector.setDefaultOption("High", ScoreHeight.TOP);
         positionSelector.addOption("Mid", ScoreHeight.MID);
         positionSelector.addOption("Low", ScoreHeight.BOTTOM);
-        
+
         SmartDashboard.putData("Auto Position", positionSelector);
 
         Command cubeLow = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
-        .andThen(
-            new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation()),
-            Commands.run(intake::eject, intake).withTimeout(1.0));
+                .andThen(
+                        new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation()),
+                        Commands.run(intake::eject, intake).withTimeout(1.0));
 
 
         Command coneLow = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
-        .andThen(
-            new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation()),
-            Commands.run(intake::eject, intake).withTimeout(1.0));
+                .andThen(
+                        new MoveArmToPositionCommand(this, () -> ArmPositions.DEFAULT.getTranslation()),
+                        Commands.run(intake::eject, intake).withTimeout(1.0));
 
         Command cubeMid = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
-        .andThen(
-            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CUBE_CENTER.getTranslation().getY())),
-            new MoveArmToPositionCommand(this, () -> ArmPositions.CUBE_CENTER.getTranslation()),
-            Commands.run(intake::eject, intake).withTimeout(1.0));
+                .andThen(
+                        new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CUBE_CENTER.getTranslation().getY())),
+                        new MoveArmToPositionCommand(this, () -> ArmPositions.CUBE_CENTER.getTranslation()),
+                        Commands.run(intake::eject, intake).withTimeout(1.0));
 
         Command cubeHigh = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
-        .andThen(
-            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CUBE_UPPER.getTranslation().getY())),
-            new MoveArmToPositionCommand(this, () -> ArmPositions.CUBE_UPPER.getTranslation()),
-            Commands.run(intake::eject, intake).withTimeout(1.0));
+                .andThen(
+                        new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CUBE_UPPER.getTranslation().getY())),
+                        new MoveArmToPositionCommand(this, () -> ArmPositions.CUBE_UPPER.getTranslation()),
+                        Commands.run(intake::eject, intake).withTimeout(1.0));
 
 
         Command coneMid = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
-        .andThen(
-            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CONE_CENTER.getTranslation().getY())),
-            new MoveArmToPositionCommand(this, () -> ArmPositions.CONE_CENTER.getTranslation()),
-            Commands.run(intake::eject, intake).withTimeout(1.0));
+                .andThen(
+                        new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CONE_CENTER.getTranslation().getY())),
+                        new MoveArmToPositionCommand(this, () -> ArmPositions.CONE_CENTER.getTranslation()),
+                        Commands.run(intake::eject, intake).withTimeout(1.0));
 
         Command coneHigh = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
-        .andThen(
-            new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CONE_UPPER.getTranslation().getY())),
-            new MoveArmToPositionCommand(this, () -> ArmPositions.CONE_UPPER.getTranslation()),
-            Commands.run(intake::eject, intake).withTimeout(1.0));
+                .andThen(
+                        new MoveArmToPositionCommand(this, () -> new Translation2d(0.6, ArmPositions.CONE_UPPER.getTranslation().getY())),
+                        new MoveArmToPositionCommand(this, () -> ArmPositions.CONE_UPPER.getTranslation()),
+                        Commands.run(intake::eject, intake).withTimeout(1.0));
 
         Command scoreCone = new SelectCommand(
-            Map.ofEntries(
-                Map.entry(ScoreHeight.TOP, coneHigh),
-                Map.entry(ScoreHeight.MID, coneMid),
-                Map.entry(ScoreHeight.BOTTOM, coneLow)
-            ), positionSelector::getSelected);
+                Map.ofEntries(
+                        Map.entry(ScoreHeight.TOP, coneHigh),
+                        Map.entry(ScoreHeight.MID, coneMid),
+                        Map.entry(ScoreHeight.BOTTOM, coneLow)
+                ), positionSelector::getSelected);
 
         Command scoreCube = new SelectCommand(
-            Map.ofEntries(
-                Map.entry(ScoreHeight.TOP, cubeHigh),
-                Map.entry(ScoreHeight.MID, cubeMid),
-                Map.entry(ScoreHeight.BOTTOM, cubeLow)
-            ), positionSelector::getSelected);
+                Map.ofEntries(
+                        Map.entry(ScoreHeight.TOP, cubeHigh),
+                        Map.entry(ScoreHeight.MID, cubeMid),
+                        Map.entry(ScoreHeight.BOTTOM, cubeLow)
+                ), positionSelector::getSelected);
 
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
@@ -187,7 +168,7 @@ public class RobotContainer {
 
         eventMap.put("SCORE_CUBE", scoreCube);
         eventMap.put("SCORE_CONE", scoreCone);
-        
+
         eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getTranslation));
         // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
 
@@ -230,16 +211,16 @@ public class RobotContainer {
         autoSelector = new SendableChooser<>();
         autoSelector.addOption("Taxi Dumb", () -> taxiDumb);
         // autoSelector.addOption("Print Auto", () -> printAuto); Just for debugging
-        
+
         // Balance Autos (15 / 12 pts)
         autoSelector.addOption("Balance Wall", () -> balanceWall);
         autoSelector.addOption("Balance Barrier", () -> balanceBarrier);
         autoSelector.addOption("Balance No Taxi", () -> balanceClose);
-        
+
         // Score and balance barrier side (19 pts)
         autoSelector.addOption("Cube Balance", () -> cubeMidBalance);
         autoSelector.addOption("Cone Balance", () -> coneMidBalance);
-        
+
         // Score and balance wall side
         autoSelector.addOption("Cube Wall Balance", () -> cubeMidWallBalance);
         autoSelector.addOption("Cone Wall Balance", () -> coneMidWallBalance);
@@ -266,84 +247,8 @@ public class RobotContainer {
         autoSelector.addOption("No Auto", () -> blankAuto);
         autoSelector.setDefaultOption("Taxi Smart", () -> taxiSmart);
 
-        // Block Auto
-        autoSelector.addOption("Block Auto", AutoBlocks::getSelectedAutoCommand);
-
         SmartDashboard.putData("Auto", autoSelector);
-
-        // Configure the rest of the button bindings
-//        configureButtonBindings();
     }
-
-    /**
-     * Use this method to define your button->command mappings. Buttons can be
-     * created by
-     * instantiating a {@link GenericHID} or one of its subclasses ({@link
-     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing
-     * it to a {@link
-     * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-     */
-//    private void configureButtonBindings() {
-//        // Back button zeros the gyroscope
-//        new Trigger(controller::getBackButton)
-//                // No requirements because we don't need to interrupt anything
-//                .onTrue(Commands.runOnce(drivetrainSubsystem::zeroGyroscope));
-//
-//        // Start button does leveling sequence on charger
-//        new Trigger(controller::getStartButton)
-//                .onTrue(new BalanceSequenceCommand(this, false));
-//
-//        new Trigger(() -> buttonPanel.isButtonDown(2, 3))
-//                .onTrue(Commands.runOnce(() -> {
-//                    System.out.println("SET TO CUBE");
-//                    intake.setExpectedPiece(GamePiece.CUBE);
-//                    lights.set(Lights.Color.BLUE);
-//                    buttonPanel.setLightOn(2, 3, true);
-//                    buttonPanel.setLightOn(3, 3, false);
-//                }).ignoringDisable(true));
-//
-//        new Trigger(() -> buttonPanel.isButtonDown(3, 3))
-//                .onTrue(Commands.runOnce(() -> {
-//                    System.out.println("SET TO CONE");
-//                    intake.setExpectedPiece(GamePiece.CONE);
-//                    lights.set(Lights.Color.YELLOW);
-//                    buttonPanel.setLightOn(2, 3, false);
-//                    buttonPanel.setLightOn(3, 3, true);
-//                }).ignoringDisable(true));
-//
-//        new Trigger(() -> buttonPanel.isButtonDown(1, 3))
-//                .onTrue(Commands.runOnce(intake::run))
-//                .onFalse(Commands.runOnce(intake::stop));
-//
-//        new Trigger(() -> buttonPanel.isButtonDown(0, 3))
-//                .onTrue(Commands.runOnce(intake::eject))
-//                .onFalse(Commands.runOnce(intake::stop));
-//
-//        new Trigger(() -> buttonPanel.isButtonDown(4, 3))
-//                .onTrue(new MoveArmToPositionCommand(
-//                        this,
-//                        () -> ScoringPositions.getPickupArmTargetPre(intake.getExpectedPiece())
-//                ))
-//                .onFalse(new MoveArmToPositionCommand(
-//                        this,
-//                        () -> ScoringPositions.getPickupArmTarget(intake.getExpectedPiece())
-//                ));
-//
-//        new Trigger(() -> buttonPanel.isButtonDown(5, 3))
-//                .onTrue(new MoveArmToPositionCommand(this, ScoringPositions.HOLD_TARGET));
-//
-//        new Trigger(() -> buttonPanel.isButtonDown(8, 3))
-//                .onTrue(Commands.runOnce(() -> {
-//                    scoreSelector.cancelActiveScoreCommand();
-//                    robot.autonomousExit();
-//                }));
-//
-//        new Trigger(() -> buttonPanel.isButtonDown(6, 3))
-//                .onTrue(new MoveArmToPositionCommand(this, arm.getHomeTarget()));
-//
-//        new Trigger(() -> buttonPanel.isButtonDown(7, 3))
-//                .onTrue(new ArnoldRunCommand(arnold, buttonPanel));
-//    }
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -369,9 +274,5 @@ public class RobotContainer {
             add(new PathPoint(new Translation2d(1.0, 0), new Rotation2d()));
         }}));
         return path;
-    }
-
-    public MessengerClient getMessenger() {
-        return messenger;
     }
 }
