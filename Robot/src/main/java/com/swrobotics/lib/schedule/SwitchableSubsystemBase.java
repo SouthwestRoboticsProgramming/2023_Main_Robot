@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems;
+package com.swrobotics.lib.schedule;
 
 import com.swrobotics.lib.net.NTBoolean;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;

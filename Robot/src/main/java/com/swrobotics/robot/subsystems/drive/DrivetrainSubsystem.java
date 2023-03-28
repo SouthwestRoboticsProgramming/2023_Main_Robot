@@ -13,11 +13,10 @@ import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.mathlib.MathUtil;
-import com.swrobotics.robot.positions.SnapPositions;
 import com.swrobotics.robot.subsystems.StatusLoggable;
 import com.swrobotics.robot.subsystems.StatusLogging;
 
-import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
+import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;

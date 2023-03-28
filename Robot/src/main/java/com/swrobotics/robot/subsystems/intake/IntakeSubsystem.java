@@ -2,7 +2,7 @@ package com.swrobotics.robot.subsystems.intake;
 
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.robot.RIOPorts;
-import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
+import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
