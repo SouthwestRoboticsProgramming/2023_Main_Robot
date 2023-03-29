@@ -114,21 +114,26 @@ public class Photon extends SubsystemBase {
         latestPose = new AtomicReference<>(null);
 
         // Run it on seperate thread
-        new Thread(() -> {
-            while (!Thread.interrupted()) {
-                update();
+        if (!RobotBase.isSimulation()) {
+            new Thread(() -> {
+                while (!Thread.interrupted()) {
+                    update();
 
-                try {
-                    Thread.sleep(5);
-                } catch (InterruptedException e) {
-                    break;
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
                 }
-            }
-        }).start();
+            }).start();
+        }
     }
 
     @Override
     public void periodic() {
+        if (RobotBase.isSimulation())
+            update();
+
         Pose2d poseOut = latestPose.getAndSet(null);
         if (poseOut == null)
             return;
