@@ -4,7 +4,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.BaseAutoBuilder;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
-import com.swrobotics.lib.drive.HolonomicDrivetrain;
+import com.swrobotics.lib.drive.Drivetrain;
 import com.swrobotics.lib.field.FieldInfo;
 import com.swrobotics.lib.gyro.Gyroscope;
 import com.swrobotics.mathlib.CCWAngle;
@@ -12,11 +12,6 @@ import com.swrobotics.mathlib.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -25,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import java.util.List;
 import java.util.Map;
 
-public class SwerveDrive extends HolonomicDrivetrain {
+public class SwerveDrive extends Drivetrain {
     private static final double IS_MOVING_THRESH = 0.1;
     private static final double IS_MOVING_TURN_THRESH = Math.toRadians(15);
 
