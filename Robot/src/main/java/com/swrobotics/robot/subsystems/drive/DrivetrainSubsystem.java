@@ -124,7 +124,7 @@ public final class DrivetrainSubsystem extends SwerveDrive {
                 MechanismLigament2d ligament = ligaments[i];
                 SwerveModuleState state = states[i];
                 ligament.setAngle(state.angle.getDegrees());
-                ligament.setLength(state.speedMetersPerSecond / 4.11);
+                ligament.setLength(state.speedMetersPerSecond / 4.11 + Math.copySign(0.05, state.speedMetersPerSecond));
             }
         }
     }
