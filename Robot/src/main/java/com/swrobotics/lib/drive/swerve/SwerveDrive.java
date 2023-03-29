@@ -136,7 +136,7 @@ public class SwerveDrive extends Drivetrain {
         // put this is in RobotContainer along with your subsystems.
         return new SwerveAutoBuilder(
                 SwerveDrive.this::getOdometryPose, // Pose2d supplier
-                SwerveDrive.this::resetPose, // Pose2d consumer, used to reset odometry at the beginning of auto
+                SwerveDrive.this::resetPoseInternal, // Pose2d consumer, used to reset odometry at the beginning of auto
                 kinematics, // SwerveDriveKinematics
                 new PIDConstants(0.0, 0.0, 0.0), // PID constants to correct for translation error (used to create the X
                 // and Y PID controllers)

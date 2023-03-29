@@ -138,6 +138,17 @@ public abstract class Drivetrain extends SwitchableSubsystemBase {
             return;
         }
 
+        resetPoseInternal(currentPose);
+    }
+
+    /**
+     * Resets the current odometry pose regardless of whether PathPlanner is
+     * running. If calling this function during PathPlanner, make sure the pose
+     * is in PathPlanner coordinates.
+     *
+     * @param currentPose current pose to set
+     */
+    protected void resetPoseInternal(Pose2d currentPose) {
         gyro.setAngle(Angle.fromRotation2d(currentPose.getRotation()));
         setOdometryPose(currentPose);
     }
@@ -253,7 +264,7 @@ public abstract class Drivetrain extends SwitchableSubsystemBase {
      */
     protected void onPathPlannerEnd() {
         if (activePathPlannerCommands == 1)
-            resetPose(getPose());
+            resetPoseInternal(getPose());
 
         activePathPlannerCommands--;
     }
