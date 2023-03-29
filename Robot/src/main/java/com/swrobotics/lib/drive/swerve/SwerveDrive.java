@@ -10,10 +10,13 @@ import com.swrobotics.lib.gyro.Gyroscope;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -79,10 +82,9 @@ public class SwerveDrive extends HolonomicDrivetrain {
 
         setModuleStates(states);
 
-        if (RobotBase.isSimulation()) {
-            ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
-            gyro.setAngle(gyro.getAngle().ccw().add(CCWAngle.rad(estimatedChassis.omegaRadiansPerSecond * 0.02)));
-        }
+        ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
+        gyro.setSimAngle(gyro.getSimAngle().ccw().add(CCWAngle.rad(estimatedChassis.omegaRadiansPerSecond * 0.02)));
+
         odometry.update(gyro.getAngle().ccw().rotation2d(), getModulePositions());
     }
 
@@ -185,5 +187,9 @@ public class SwerveDrive extends HolonomicDrivetrain {
 
     public void setStopPosition(StopPosition stopPosition) {
         this.stopPosition = stopPosition;
+    }
+
+    public SwerveModule[] getModules() {
+        return modules;
     }
 }

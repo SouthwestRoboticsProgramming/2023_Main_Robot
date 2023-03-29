@@ -36,7 +36,9 @@ public class SwerveModule {
     private static final NTDouble TURN_KD = new NTDouble(NT_PATH + "Turn kD", 0.1);
 
     // Currently, drive is open-loop so no constants are required
-    
+
+    private final String name;
+
     private final TalonFX turn;
     private final TalonFX drive;
     private final CANCoder encoder;
@@ -56,6 +58,7 @@ public class SwerveModule {
     private double simulatedDistance = 0.0;
 
     public SwerveModule(SwerveModuleInfo moduleInfo, Translation2d position, double positionalOffset) {
+        name = moduleInfo.name;
         this.position = position;
         this.positionalOffset = positionalOffset;
 
@@ -262,11 +265,14 @@ public class SwerveModule {
     }
 
     private double fromNativeDriveVelocityUnits(double units) {
-        return units / ((2048 / 10) * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
+        return units / ((2048 / 10.0) * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
     }
 
     private double fromNativeDrivePositionUnits(double units) {
         return units / (2048 * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
     }
 
+    public String getName() {
+        return name;
+    }
 }

@@ -1,17 +1,16 @@
 package com.swrobotics.robot.subsystems.drive;
 
 import com.swrobotics.lib.drive.swerve.SwerveDrive;
+import com.swrobotics.lib.drive.swerve.SwerveModule;
 import com.swrobotics.lib.drive.swerve.SwerveModuleInfo;
 import com.swrobotics.lib.field.FieldInfo;
 import com.swrobotics.lib.gyro.NavXGyroscope;
 import com.swrobotics.lib.net.NTBoolean;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 
 public final class DrivetrainSubsystem extends SwerveDrive {
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
@@ -64,6 +63,8 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     public final Field2d field = new Field2d();
     private final FieldObject2d ppPose = field.getObject("PathPlanner pose");
 
+    private final StateVisualizer stateVisualizer;
+
     public DrivetrainSubsystem() {
         super(FIELD, new NavXGyroscope(SPI.Port.kMXP), new SwerveModuleInfo[] {
                 FRONT_LEFT_SELECT.getSelected(),
@@ -73,6 +74,8 @@ public final class DrivetrainSubsystem extends SwerveDrive {
         }, MODULE_POSITIONS);
 
         SmartDashboard.putData("Field", field);
+
+        stateVisualizer = new StateVisualizer("Swerve", DRIVETRAIN_TRACKWIDTH_METERS * 2, this);
     }
 
     public Translation2d getTiltAsTranslation() {
@@ -84,13 +87,45 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     public void periodic() {
         super.periodic();
 
-        System.out.println("Setting robot pose: " + getPose());
         ppPose.setPose(getOdometryPose());
         field.setRobotPose(getPose());
+        stateVisualizer.update();
 
         if (CALIBRATE.get()) {
             CALIBRATE.set(false); // Instantly set back so that it doesn't calibrate more than needed
             calibrateOffsets();
+        }
+    }
+
+    public static final class StateVisualizer {
+        private final SwerveDrive drive;
+        private final MechanismLigament2d[] ligaments;
+
+        public StateVisualizer(String name, double size, SwerveDrive drive) {
+            this.drive = drive;
+
+            Mechanism2d m = new Mechanism2d(size, size);
+            SmartDashboard.putData(name, m);
+
+            SwerveModule[] modules = drive.getModules();
+
+            ligaments = new MechanismLigament2d[modules.length];
+            for (int i = 0; i < modules.length; i++) {
+                SwerveModule module = modules[i];
+                MechanismRoot2d root = m.getRoot(module.getName(), module.position.getX() + size/2, module.position.getY() + size/2);
+                ligaments[i] = new MechanismLigament2d(module.getName() + " Vector",0.2,0);
+                root.append(ligaments[i]);
+            }
+        }
+
+        public void update() {
+            SwerveModuleState[] states = drive.getModuleStates();
+            for (int i = 0; i < ligaments.length; i++) {
+                MechanismLigament2d ligament = ligaments[i];
+                SwerveModuleState state = states[i];
+                ligament.setAngle(state.angle.getDegrees());
+                ligament.setLength(state.speedMetersPerSecond / 4.11);
+            }
         }
     }
 }
