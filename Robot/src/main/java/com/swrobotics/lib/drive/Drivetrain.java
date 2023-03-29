@@ -293,8 +293,10 @@ public abstract class Drivetrain extends SwitchableSubsystemBase {
 
     @Override
     public void periodic() {
-        if (!isEnabled())
+        if (!isEnabled()) {
             stop();
+            return;
+        }
 
         drive(chassisSpeeds);
         chassisSpeeds = new ChassisSpeeds(0, 0, 0);
