@@ -72,7 +72,9 @@ public class SwerveDrive extends HolonomicDrivetrain {
         double omega = speeds.omegaRadiansPerSecond;
 
         if (vx == 0 && vy == 0 && omega == 0) {
-            // TODO: Stop position
+            for (int i = 0; i < states.length; i++) {
+                states[i] = new SwerveModuleState(0, stopPosition.getForModule(modules[i].position));
+            }
         }
 
         setModuleStates(states);
