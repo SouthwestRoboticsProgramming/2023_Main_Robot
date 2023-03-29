@@ -31,20 +31,13 @@ public class SwerveDrive extends Drivetrain {
 
     private StopPosition stopPosition;
 
-    public SwerveDrive(FieldInfo fieldInfo, Gyroscope gyro, SwerveModuleInfo[] moduleInfos, Translation2d[] modulePositions) {
+    public SwerveDrive(FieldInfo fieldInfo, Gyroscope gyro, SwerveModule... modules) {
         super(fieldInfo, gyro);
+        this.modules = modules;
 
-        int moduleCount = moduleInfos.length;
-        if (modulePositions.length != moduleCount)
-            throw new IllegalArgumentException("Position count does not match info count");
-
-        modules = new SwerveModule[moduleCount];
-        for (int i = 0; i < modulePositions.length; i++) {
-            Translation2d position = modulePositions[i];
-
-            double positionalOffset = MathUtil.wrap(position.getAngle().getDegrees(), -180, 180);
-
-            modules[i] = new SwerveModule(moduleInfos[i], position, positionalOffset);
+        Translation2d[] modulePositions = new Translation2d[modules.length];
+        for (int i = 0; i < modules.length; i++) {
+            modulePositions[i] = modules[i].position;
         }
 
         kinematics = new SwerveDriveKinematics(modulePositions);
