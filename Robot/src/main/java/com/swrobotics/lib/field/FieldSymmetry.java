@@ -1,6 +1,10 @@
 package com.swrobotics.lib.field;
 
+import com.swrobotics.mathlib.MathUtil;
+import com.swrobotics.mathlib.Vec2d;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 
 /**
@@ -16,8 +20,11 @@ public enum FieldSymmetry {
      */
     LATERAL {
         @Override
-        protected Pose2d flipRed(Pose2d bluePose) {
-            return null;
+        protected Pose2d flipRed(Pose2d bluePose, FieldInfo field) {
+            return new Pose2d(
+                    new Translation2d(field.getWidth() - bluePose.getX(), bluePose.getY()),
+                    new Rotation2d(MathUtil.wrap(Math.PI - bluePose.getRotation().getRadians(), 0, 2 * Math.PI))
+            );
         }
     },
 
@@ -30,12 +37,15 @@ public enum FieldSymmetry {
      */
     ROTATIONAL {
         @Override
-        protected Pose2d flipRed(Pose2d bluePose) {
-            return null;
+        protected Pose2d flipRed(Pose2d bluePose, FieldInfo field) {
+            return new Pose2d(
+                    field.getSize().translation2d().minus(bluePose.getTranslation()),
+                    new Rotation2d(MathUtil.wrap(bluePose.getRotation().getRadians() + Math.PI, 0, 2 * Math.PI))
+            );
         }
     };
 
-    protected abstract Pose2d flipRed(Pose2d bluePose);
+    protected abstract Pose2d flipRed(Pose2d bluePose, FieldInfo field);
 
     /**
      * Flips a pose to be relative to the current alliance.
@@ -43,11 +53,11 @@ public enum FieldSymmetry {
      * @param bluePose pose as if the robot was on blue alliance
      * @return pose relative to the current alliance
      */
-    public Pose2d flipForAlliance(Pose2d bluePose) {
+    public Pose2d flipForAlliance(Pose2d bluePose, FieldInfo field) {
         if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) {
             return bluePose;
         }
 
-        return flipRed(bluePose);
+        return flipRed(bluePose, field);
     }
 }

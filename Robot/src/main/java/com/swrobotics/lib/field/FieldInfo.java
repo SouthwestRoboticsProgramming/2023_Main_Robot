@@ -71,13 +71,13 @@ public final class FieldInfo {
 
     /**
      * Flips a pose to be relative to the current alliance. This is equivalent
-     * to {@code getSymmetry().flipForAlliance(bluePose)}.
+     * to {@code getSymmetry().flipForAlliance(bluePose, this)}.
      *
      * @param bluePose pose as if the robot was on blue alliance
      * @return pose relative to the current alliance
      */
     public Pose2d flipPoseForAlliance(Pose2d bluePose) {
-        return symmetry.flipForAlliance(bluePose);
+        return symmetry.flipForAlliance(bluePose, this);
     }
 
     /**

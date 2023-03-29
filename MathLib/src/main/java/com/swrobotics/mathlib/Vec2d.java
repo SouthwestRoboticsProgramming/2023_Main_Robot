@@ -1,5 +1,7 @@
 package com.swrobotics.mathlib;
 
+import edu.wpi.first.math.geometry.Translation2d;
+
 import java.util.Objects;
 
 /**
@@ -48,6 +50,13 @@ public final class Vec2d {
     public Vec2d(Angle angle, double mag) {
         x = angle.ccw().cos() * mag;
         y = angle.ccw().sin() * mag;
+    }
+
+    /**
+     * Gets this vector as a Translation2d.
+     */
+    public Translation2d translation2d() {
+        return new Translation2d(x, y);
     }
 
     /**
