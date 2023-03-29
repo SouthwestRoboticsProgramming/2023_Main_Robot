@@ -8,7 +8,9 @@ import com.swrobotics.lib.drive.HolonomicDrivetrain;
 import com.swrobotics.lib.field.FieldInfo;
 import com.swrobotics.lib.gyro.Gyroscope;
 import com.swrobotics.mathlib.CCWAngle;
+import com.swrobotics.mathlib.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -42,8 +44,9 @@ public class SwerveDrive extends HolonomicDrivetrain {
         for (int i = 0; i < modulePositions.length; i++) {
             Translation2d position = modulePositions[i];
 
-            // FIXME: Calculate positional offset
-            modules[i] = new SwerveModule(moduleInfos[i], position, 0);
+            double positionalOffset = MathUtil.wrap(position.getAngle().getDegrees() - 90, -180, 180);
+
+            modules[i] = new SwerveModule(moduleInfos[i], position, positionalOffset);
         }
 
         kinematics = new SwerveDriveKinematics(modulePositions);
