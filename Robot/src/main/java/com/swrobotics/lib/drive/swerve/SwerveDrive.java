@@ -140,15 +140,7 @@ public class SwerveDrive extends Drivetrain {
                 true,
                 SwerveDrive.this // The drive subsystem. Used to properly set the requirements of path following
                 // commands
-        ) {
-            @Override
-            public CommandBase fullAuto(List<PathPlannerTrajectory> trajectorySet) {
-                return new SequentialCommandGroup(
-                        new InstantCommand(() -> onPathPlannerStart()),
-                        super.fullAuto(trajectorySet) // Run the path
-                ).finallyDo((cancelled) -> onPathPlannerEnd());
-            }
-        };
+        );
     }
 
     public SwerveModulePosition[] getModulePositions() {

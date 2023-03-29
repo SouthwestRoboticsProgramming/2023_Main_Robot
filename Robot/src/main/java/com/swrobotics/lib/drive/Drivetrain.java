@@ -16,6 +16,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -239,7 +241,10 @@ public abstract class Drivetrain extends SwitchableSubsystemBase {
             autoBuilder = createAutoBuilder(autoEventMap);
         }
 
-        return autoBuilder.fullAuto(getPath(name));
+        return new SequentialCommandGroup(
+                new InstantCommand(this::onPathPlannerStart),
+                autoBuilder.fullAuto(getPath(name)) // Run the path
+        ).finallyDo((cancelled) -> onPathPlannerEnd());
     }
 
     /**
@@ -255,14 +260,14 @@ public abstract class Drivetrain extends SwitchableSubsystemBase {
     /**
      * Should be called when a PathPlanner command starts
      */
-    protected void onPathPlannerStart() {
+    private void onPathPlannerStart() {
         activePathPlannerCommands++;
     }
 
     /**
      * Should be called when a PathPlanner command ends
      */
-    protected void onPathPlannerEnd() {
+    private void onPathPlannerEnd() {
         if (activePathPlannerCommands == 1)
             resetPoseInternal(getPose());
 
