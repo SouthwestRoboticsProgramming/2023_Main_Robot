@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public enum StopPosition {
-    // TODO: Test these, they are probably wrong
     NONE {
         @Override
         public Rotation2d getForModule(Translation2d pos) {
