@@ -2,6 +2,7 @@ package com.swrobotics.lib.motor;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
@@ -14,6 +15,7 @@ public final class TalonFXMotor implements FeedbackMotor {
 
     private final TalonFX fx;
     private final Encoder integratedEncoder;
+    private boolean inverted, following;
 
     public TalonFXMotor(int canID) {
         this(canID, "");
@@ -33,6 +35,8 @@ public final class TalonFXMotor implements FeedbackMotor {
 
         fx = new TalonFX(canID, canBus);
         fx.configAllSettings(config);
+        inverted = false;
+        following = false;
 
         integratedEncoder = new Encoder() {
             @Override
@@ -52,6 +56,28 @@ public final class TalonFXMotor implements FeedbackMotor {
         };
     }
 
+    private void updateInvertState() {
+        if (following) {
+            fx.setInverted(inverted ? InvertType.OpposeMaster : InvertType.FollowMaster);
+        } else {
+            fx.setInverted(inverted ? InvertType.InvertMotorOutput : InvertType.None);
+        }
+    }
+
+    @Override
+    public void follow(Motor leader) {
+        if (!(leader instanceof TalonFXMotor))
+            throw new UnsupportedOperationException("Talon FX motors can only follow other Talon FX motors");
+        if (following)
+            throw new IllegalStateException("Already following a motor");
+
+        TalonFX leaderFX = ((TalonFXMotor) leader).fx;
+        fx.follow(leaderFX);
+        following = true;
+
+        updateInvertState();
+    }
+
     @Override
     public void setPercentOut(double percent) {
         fx.set(ControlMode.PercentOutput, percent);
@@ -69,7 +95,8 @@ public final class TalonFXMotor implements FeedbackMotor {
 
     @Override
     public void setInverted(boolean inverted) {
-        fx.setInverted(inverted);
+        this.inverted = inverted;
+        updateInvertState();
     }
 
     @Override

@@ -19,8 +19,6 @@ public interface FeedbackMotor extends Motor {
      */
     void setVelocity(Angle velocity);
 
-    void setInverted(boolean inverted);
-
     Encoder getIntegratedEncoder();
 
     void resetIntegrator();

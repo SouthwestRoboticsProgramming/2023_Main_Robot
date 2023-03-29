@@ -14,6 +14,9 @@ public final class NEOMotor implements FeedbackMotor {
     private final SparkMaxPIDController pid;
     private final Encoder integratedEncoder;
 
+    private boolean inverted;
+    private CANSparkMax leader;
+
     public NEOMotor(int canID) {
         spark = new CANSparkMax(canID, CANSparkMaxLowLevel.MotorType.kBrushless);
         pid = spark.getPIDController();
@@ -22,6 +25,9 @@ public final class NEOMotor implements FeedbackMotor {
         encoder.setPositionConversionFactor(1); // Rotations
         encoder.setVelocityConversionFactor(1); // RPM
         pid.setFeedbackDevice(encoder);
+
+        inverted = false;
+        leader = null;
 
         integratedEncoder = new Encoder() {
             @Override
@@ -61,7 +67,25 @@ public final class NEOMotor implements FeedbackMotor {
 
     @Override
     public void setInverted(boolean inverted) {
-        spark.setInverted(inverted);
+        this.inverted = inverted;
+        if (leader != null) {
+            spark.follow(leader, inverted);
+        } else {
+            spark.setInverted(inverted);
+        }
+    }
+
+    @Override
+    public void follow(Motor leader) {
+        if (!(leader instanceof NEOMotor))
+            throw new UnsupportedOperationException("NEO motors can only follow other NEO motors");
+        if (this.leader != null)
+            throw new IllegalStateException("Already following a motor");
+
+        CANSparkMax leaderSpark = ((NEOMotor) leader).spark;
+        spark.follow(leaderSpark, inverted);
+
+        this.leader = leaderSpark;
     }
 
     @Override
