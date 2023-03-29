@@ -6,6 +6,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.BaseAutoBuilder;
 import com.swrobotics.lib.field.FieldInfo;
+import com.swrobotics.lib.field.FieldSymmetry;
 import com.swrobotics.lib.gyro.Gyroscope;
 import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import com.swrobotics.mathlib.Angle;
@@ -116,14 +117,15 @@ public abstract class Drivetrain extends SwitchableSubsystemBase {
             return getOdometryPose();
 
         // Otherwise, we need to flip the pose to be correct
-        Pose2d currentPose = getOdometryPose();
+        Pose2d asBlue = getOdometryPose();
 
-        // FIXME: Builder might not flip it (i.e. rotational symmetry)
-        // Undo PathPlanner pose flipping vertically
-        Pose2d asBlue = new Pose2d(
-                new Translation2d(currentPose.getX(), fieldInfo.getHeight() - currentPose.getY()),
-                currentPose.getRotation().times(-1)
-        );
+        if (fieldInfo.getSymmetry() == FieldSymmetry.LATERAL) {
+            // Undo PathPlanner pose flipping vertically
+            asBlue = new Pose2d(
+                    new Translation2d(asBlue.getX(), fieldInfo.getHeight() - asBlue.getY()),
+                    asBlue.getRotation().times(-1)
+            );
+        }
 
         return fieldInfo.flipPoseForAlliance(asBlue);
     }
@@ -202,10 +204,8 @@ public abstract class Drivetrain extends SwitchableSubsystemBase {
     }
 
     /**
-     * Creates the auto builder using the specified event map. The auto builder
-     * should return commands from {@link BaseAutoBuilder#fullAuto(List)} which
-     * call {@link #onPathPlannerStart()} and {@link #onPathPlannerEnd()} when
-     * it starts and finishes.
+     * Creates the auto builder using the specified event map. It should have
+     * alliance flipping enabled if and only if the field symmetry is lateral.
      *
      * @param eventMap event map
      * @return the auto builder

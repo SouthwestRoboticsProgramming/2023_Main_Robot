@@ -6,6 +6,7 @@ import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.drive.Drivetrain;
 import com.swrobotics.lib.field.FieldInfo;
+import com.swrobotics.lib.field.FieldSymmetry;
 import com.swrobotics.lib.gyro.Gyroscope;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
@@ -137,7 +138,7 @@ public class SwerveDrive extends Drivetrain {
                 // rotation controller)
                 SwerveDrive.this::cheatChassisSpeeds, // Module states consumer used to output to the drive subsystem
                 eventMap,
-                true,
+                fieldInfo.getSymmetry() == FieldSymmetry.LATERAL,
                 SwerveDrive.this // The drive subsystem. Used to properly set the requirements of path following
                 // commands
         );
