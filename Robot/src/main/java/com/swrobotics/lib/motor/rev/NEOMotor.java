@@ -1,10 +1,12 @@
-package com.swrobotics.lib.motor;
+package com.swrobotics.lib.motor.rev;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.swrobotics.lib.encoder.Encoder;
+import com.swrobotics.lib.motor.FeedbackMotor;
+import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CWAngle;
 import edu.wpi.first.math.util.Units;

@@ -1,4 +1,4 @@
-package com.swrobotics.lib.motor;
+package com.swrobotics.lib.motor.ctre;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -7,6 +7,8 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 import com.swrobotics.lib.encoder.Encoder;
+import com.swrobotics.lib.motor.FeedbackMotor;
+import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CWAngle;
 

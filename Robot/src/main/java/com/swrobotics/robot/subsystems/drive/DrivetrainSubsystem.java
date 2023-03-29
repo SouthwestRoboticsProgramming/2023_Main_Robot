@@ -8,7 +8,7 @@ import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.field.FieldInfo;
 import com.swrobotics.lib.gyro.NavXGyroscope;
 import com.swrobotics.lib.motor.FeedbackMotor;
-import com.swrobotics.lib.motor.TalonFXMotor;
+import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import edu.wpi.first.math.geometry.Translation2d;
