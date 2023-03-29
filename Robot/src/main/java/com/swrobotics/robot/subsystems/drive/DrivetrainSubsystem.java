@@ -3,14 +3,13 @@ package com.swrobotics.robot.subsystems.drive;
 import com.swrobotics.lib.drive.swerve.SwerveDrive;
 import com.swrobotics.lib.drive.swerve.SwerveModule;
 import com.swrobotics.lib.drive.swerve.SwerveModuleAttributes;
-import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.field.FieldInfo;
 import com.swrobotics.lib.gyro.NavXGyroscope;
 import com.swrobotics.lib.motor.FeedbackMotor;
-import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.robot.io.RobotIO;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
@@ -20,11 +19,24 @@ import edu.wpi.first.wpilibj.smartdashboard.*;
 public final class DrivetrainSubsystem extends SwerveDrive {
     public static final FieldInfo FIELD = FieldInfo.CHARGED_UP_2023;
 
+    // TODO: Can we remove this somehow?
+    public static class SwerveModuleInfo {
+        public final int index;
+        public final String name;
+        public final NTDouble offset;
+
+        public SwerveModuleInfo(int index, double offset) {
+            this.index = index;
+            this.name = "Module " + index;
+            this.offset = new NTDouble("Swerve/Modules/" + name + "/Offset Degrees", offset);
+        }
+    }
+
     private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
-            new SwerveModuleInfo("Module 0", 9, 5, 1, 38.41),  // Default front left
-            new SwerveModuleInfo("Module 1", 10, 6, 2, 185.45), // Default front right
-            new SwerveModuleInfo("Module 2", 11, 7, 3, 132.63), // Default back left
-            new SwerveModuleInfo("Module 3", 12, 8, 4, 78.93)  // Default back right
+            new SwerveModuleInfo(0, 38.41),  // Default front left
+            new SwerveModuleInfo(1, 185.45), // Default front right
+            new SwerveModuleInfo(2, 132.63), // Default back left
+            new SwerveModuleInfo(3, 78.93)  // Default back right
     };
 
     private static final SendableChooser<SwerveModuleInfo> FRONT_LEFT_SELECT = new SendableChooser<>();
@@ -63,10 +75,11 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     private final FieldObject2d ppPose = field.getObject("PathPlanner pose");
     private final StateVisualizer stateVisualizer;
 
-    private static SwerveModule makeModule(SwerveModuleInfo info, double x, double y) {
-        FeedbackMotor driveMotor = new TalonFXMotor(info.driveMotorID);
-        FeedbackMotor turnMotor = new TalonFXMotor(info.turnMotorID);
-        Encoder encoder = new CanCoder(info.encoderID).getAbsolute();
+    private static SwerveModule makeModule(RobotIO io, SwerveModuleInfo info, double x, double y) {
+        int index = info.index;
+        FeedbackMotor driveMotor = io.getSwerveDriveMotor(index);
+        FeedbackMotor turnMotor = io.getSwerveTurnMotor(index);
+        Encoder encoder = io.getSwerveEncoder(index);
 
         turnMotor.setPID(TURN_KP, TURN_KI, TURN_KD);
 
@@ -80,14 +93,14 @@ public final class DrivetrainSubsystem extends SwerveDrive {
         );
     }
 
-    public DrivetrainSubsystem() {
+    public DrivetrainSubsystem(RobotIO io) {
         super(
                 FIELD,
                 new NavXGyroscope(SPI.Port.kMXP),
-                makeModule(FRONT_LEFT_SELECT.getSelected(), 1, 1),
-                makeModule(FRONT_RIGHT_SELECT.getSelected(), 1, -1),
-                makeModule(BACK_LEFT_SELECT.getSelected(), -1, 1),
-                makeModule(BACK_RIGHT_SELECT.getSelected(), -1, -1)
+                makeModule(io, FRONT_LEFT_SELECT.getSelected(), 1, 1),
+                makeModule(io, FRONT_RIGHT_SELECT.getSelected(), 1, -1),
+                makeModule(io, BACK_LEFT_SELECT.getSelected(), -1, 1),
+                makeModule(io, BACK_RIGHT_SELECT.getSelected(), -1, -1)
         );
 
         SmartDashboard.putData("Field", field);

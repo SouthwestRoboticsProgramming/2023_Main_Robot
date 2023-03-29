@@ -16,6 +16,7 @@ import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.Input;
+import com.swrobotics.robot.io.RobotIO;
 import com.swrobotics.robot.positions.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.Lights;
@@ -65,14 +66,14 @@ public class RobotContainer {
 
     // The robot's subsystems are defined here...
     public final Input input;
-    public final DrivetrainSubsystem swerveDrive = new DrivetrainSubsystem();
+    public final DrivetrainSubsystem swerveDrive;
     public final Pathfinder pathfinder;
 
-    public final Photon photon = new Photon(this);
+    public final Photon photon;
     public final Limelight limelight =null;//new Limelight();
 
     public final ArmSubsystem arm;
-    public final IntakeSubsystem intake = new IntakeSubsystem();
+    public final IntakeSubsystem intake;
 
     public final Lights lights = new Lights();
 
@@ -81,7 +82,7 @@ public class RobotContainer {
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
-    public RobotContainer() {
+    public RobotContainer(RobotIO io) {
         // Turn off joystick warnings
         DriverStation.silenceJoystickConnectionWarning(true);
 
@@ -93,7 +94,11 @@ public class RobotContainer {
         );
 
         new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
-        arm = new ArmSubsystem(messenger);
+
+        swerveDrive = new DrivetrainSubsystem(io);
+        arm = new ArmSubsystem(io, messenger);
+        intake = new IntakeSubsystem(io);
+        photon = new Photon(this);
 
         // Initialize pathfinder to be able to drive to any point on the field
         pathfinder = new Pathfinder(messenger, swerveDrive);

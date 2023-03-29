@@ -1,6 +1,6 @@
 package com.swrobotics.robot.subsystems;
 
-import com.swrobotics.robot.RIOPorts;
+import com.swrobotics.robot.io.RIOPorts;
 
 import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.Servo;

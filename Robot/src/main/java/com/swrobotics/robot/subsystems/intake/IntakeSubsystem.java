@@ -1,10 +1,9 @@
 package com.swrobotics.robot.subsystems.intake;
 
 import com.swrobotics.lib.motor.Motor;
-import com.swrobotics.lib.motor.rev.PWMSparkMaxMotor;
 import com.swrobotics.lib.net.NTDouble;
-import com.swrobotics.robot.RIOPorts;
 import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
+import com.swrobotics.robot.io.RobotIO;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble CONE_HOLD = new NTDouble("Intake/Cone Hold", 0.1);
@@ -15,8 +14,8 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     private GamePiece expectedPiece;
     private boolean running;
 
-    public IntakeSubsystem() {
-        motor = new PWMSparkMaxMotor(RIOPorts.INTAKE_PWM);
+    public IntakeSubsystem(RobotIO io) {
+        motor = io.getIntakeMotor();
 
         expectedPiece = GamePiece.CUBE;
         running = false;
