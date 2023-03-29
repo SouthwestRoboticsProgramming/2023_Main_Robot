@@ -44,7 +44,7 @@ public class SwerveDrive extends HolonomicDrivetrain {
         for (int i = 0; i < modulePositions.length; i++) {
             Translation2d position = modulePositions[i];
 
-            double positionalOffset = MathUtil.wrap(position.getAngle().getDegrees() - 90, -180, 180);
+            double positionalOffset = MathUtil.wrap(position.getAngle().getDegrees(), -180, 180);
 
             modules[i] = new SwerveModule(moduleInfos[i], position, positionalOffset);
         }
