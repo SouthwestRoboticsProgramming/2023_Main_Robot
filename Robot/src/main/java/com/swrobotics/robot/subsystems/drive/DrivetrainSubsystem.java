@@ -19,47 +19,29 @@ import edu.wpi.first.wpilibj.smartdashboard.*;
 public final class DrivetrainSubsystem extends SwerveDrive {
     public static final FieldInfo FIELD = FieldInfo.CHARGED_UP_2023;
 
-    // TODO: Can we remove this somehow?
-    public static class SwerveModuleInfo {
-        public final int index;
-        public final String name;
-        public final NTDouble offset;
+    private static final double[] DEFAULT_OFFSETS = {38.41, 185.45, 132.63, 78.93};
 
-        public SwerveModuleInfo(int index, double offset) {
-            this.index = index;
-            this.name = "Module " + index;
-            this.offset = new NTDouble("Swerve/Modules/" + name + "/Offset Degrees", offset);
-        }
-    }
-
-    private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
-            new SwerveModuleInfo(0, 38.41),  // Default front left
-            new SwerveModuleInfo(1, 185.45), // Default front right
-            new SwerveModuleInfo(2, 132.63), // Default back left
-            new SwerveModuleInfo(3, 78.93)  // Default back right
-    };
-
-    private static final SendableChooser<SwerveModuleInfo> FRONT_LEFT_SELECT = new SendableChooser<>();
-    private static final SendableChooser<SwerveModuleInfo> FRONT_RIGHT_SELECT = new SendableChooser<>();
-    private static final SendableChooser<SwerveModuleInfo> BACK_LEFT_SELECT = new SendableChooser<>();
-    private static final SendableChooser<SwerveModuleInfo> BACK_RIGHT_SELECT = new SendableChooser<>();
+    private static final SendableChooser<Integer> FRONT_LEFT_SELECT = new SendableChooser<>();
+    private static final SendableChooser<Integer> FRONT_RIGHT_SELECT = new SendableChooser<>();
+    private static final SendableChooser<Integer> BACK_LEFT_SELECT = new SendableChooser<>();
+    private static final SendableChooser<Integer> BACK_RIGHT_SELECT = new SendableChooser<>();
     static {
         SmartDashboard.putData("Front Left Module", FRONT_LEFT_SELECT);
         SmartDashboard.putData("Front Right Module", FRONT_RIGHT_SELECT);
         SmartDashboard.putData("Back Left Module", BACK_LEFT_SELECT);
         SmartDashboard.putData("Back Right Module", BACK_RIGHT_SELECT);
 
-        for (SwerveModuleInfo info : SELECTABLE_MODULES) {
-            FRONT_LEFT_SELECT.addOption(info.name, info);
-            FRONT_RIGHT_SELECT.addOption(info.name, info);
-            BACK_LEFT_SELECT.addOption(info.name, info);
-            BACK_RIGHT_SELECT.addOption(info.name, info);
+        for (int i = 0; i < 4; i++) {
+            FRONT_LEFT_SELECT.addOption("Module " + i, i);
+            FRONT_RIGHT_SELECT.addOption("Module " + i, i);
+            BACK_LEFT_SELECT.addOption("Module " + i, i);
+            BACK_RIGHT_SELECT.addOption("Module " + i, i);
         }
 
-        FRONT_LEFT_SELECT.setDefaultOption(SELECTABLE_MODULES[0].name, SELECTABLE_MODULES[0]);
-        FRONT_RIGHT_SELECT.setDefaultOption(SELECTABLE_MODULES[1].name, SELECTABLE_MODULES[1]);
-        BACK_LEFT_SELECT.setDefaultOption(SELECTABLE_MODULES[2].name, SELECTABLE_MODULES[2]);
-        BACK_RIGHT_SELECT.setDefaultOption(SELECTABLE_MODULES[3].name, SELECTABLE_MODULES[3]);
+        FRONT_LEFT_SELECT.setDefaultOption("Module 0", 0);
+        FRONT_RIGHT_SELECT.setDefaultOption("Module 1", 1);
+        BACK_LEFT_SELECT.setDefaultOption("Module 2", 2);
+        BACK_RIGHT_SELECT.setDefaultOption("Module 3", 3);
     }
 
     private static final double DRIVETRAIN_TRACKWIDTH_METERS = Units.inchesToMeters(18.5);
@@ -75,8 +57,7 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     private final FieldObject2d ppPose = field.getObject("PathPlanner pose");
     private final StateVisualizer stateVisualizer;
 
-    private static SwerveModule makeModule(RobotIO io, SwerveModuleInfo info, double x, double y) {
-        int index = info.index;
+    private static SwerveModule makeModule(RobotIO io, int index, double x, double y) {
         FeedbackMotor driveMotor = io.getSwerveDriveMotor(index);
         FeedbackMotor turnMotor = io.getSwerveTurnMotor(index);
         Encoder encoder = io.getSwerveEncoder(index);
@@ -89,7 +70,7 @@ public final class DrivetrainSubsystem extends SwerveDrive {
                 turnMotor,
                 encoder,
                 new Translation2d(x * DRIVETRAIN_TRACKWIDTH_METERS / 2, y * DRIVETRAIN_WHEELBASE_METERS / 2),
-                info.offset
+                new NTDouble("Swerve/Modules/Module " + index, DEFAULT_OFFSETS[index])
         );
     }
 
