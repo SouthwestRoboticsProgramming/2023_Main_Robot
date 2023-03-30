@@ -11,7 +11,9 @@ import com.swrobotics.lib.gyro.Gyroscope;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -54,8 +56,23 @@ public class SwerveDrive extends Drivetrain {
         }
     }
 
+    private static final Pose2d IDENTITY_POSE = new Pose2d();
+
     @Override
     protected void drive(ChassisSpeeds speeds) {
+        final double periodicTime = 0.02;
+
+        // "Borrowed" from team 254
+        Pose2d robot_pose_vel = new Pose2d(
+                speeds.vxMetersPerSecond * periodicTime,
+                speeds.vyMetersPerSecond * periodicTime,
+                Rotation2d.fromRadians(speeds.omegaRadiansPerSecond * periodicTime));
+        Twist2d twist_vel = IDENTITY_POSE.log(robot_pose_vel);
+        speeds = new ChassisSpeeds(
+            twist_vel.dx / periodicTime,
+                twist_vel.dy / periodicTime,
+                twist_vel.dtheta / periodicTime);
+        
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
 
