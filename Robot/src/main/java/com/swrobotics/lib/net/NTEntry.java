@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 public abstract class NTEntry<T> implements Supplier<T> {
     private final ArrayList<Runnable> changeListeners;
     protected final NetworkTableEntry entry;
+    private boolean hasSetChangeListener;
 
     /**
      * Creates a new entry with a specified path.
@@ -30,7 +31,7 @@ public abstract class NTEntry<T> implements Supplier<T> {
      * @param path path
      */
     public NTEntry(String path, T defaultVal) {
-        changeListeners = new ArrayList<Runnable>();
+        changeListeners = new ArrayList<>();
 
         NetworkTableInstance inst = NetworkTableInstance.getDefault();
         NetworkTable table = inst.getTable("");
@@ -45,9 +46,8 @@ public abstract class NTEntry<T> implements Supplier<T> {
             set(defaultVal);
 
         entry.setPersistent();
-        inst.addListener(entry, EnumSet.of(NetworkTableEvent.Kind.kValueAll), (event) -> {
-            fireOnChanged();
-        });
+
+        hasSetChangeListener = false;
     }
 
     public abstract void set(T value);
@@ -58,6 +58,13 @@ public abstract class NTEntry<T> implements Supplier<T> {
     }
 
     public void onChange(Runnable listener) {
+        if (!hasSetChangeListener) {
+            NetworkTableInstance.getDefault().addListener(entry, EnumSet.of(NetworkTableEvent.Kind.kValueAll), (event) -> {
+                fireOnChanged();
+            });
+            hasSetChangeListener = true;
+        }
+
         changeListeners.add(listener);
     }
 
