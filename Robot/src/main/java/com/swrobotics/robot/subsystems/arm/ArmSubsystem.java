@@ -7,7 +7,6 @@ import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
-import com.swrobotics.robot.io.RobotIO;
 import com.swrobotics.robot.subsystems.arm.joint.ArmJoint;
 import com.swrobotics.robot.subsystems.arm.joint.PhysicalJoint;
 import com.swrobotics.robot.subsystems.arm.joint.SimJoint;
@@ -81,7 +80,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private final ArmVisualizer currentVisualizer;
     private final ArmVisualizer targetVisualizer;
 
-    public ArmSubsystem(RobotIO io, MessengerClient msg) {
+    public ArmSubsystem(MessengerClient msg) {
         if (RobotBase.isSimulation()) {
             bottomJoint = new SimJoint(BOTTOM_LENGTH, BOTTOM_GEAR_RATIO);
             topJoint = new SimJoint(TOP_LENGTH, TOP_GEAR_RATIO);
@@ -90,8 +89,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 //            PhysicalArmInfo armInfo = armDetect.get() ? PhysicalArmInfo.ARM_1 : PhysicalArmInfo.ARM_2;
             PhysicalArmInfo armInfo = PhysicalArmInfo.ARM_1;
 
-            bottomJoint = new PhysicalJoint(io.getArmBottomMotor(), io.getArmBottomEncoder(), BOTTOM_GEAR_RATIO, armInfo.bottomOffset, true);
-            topJoint = new PhysicalJoint(io.getArmTopMotor(), io.getArmTopEncoder(), TOP_GEAR_RATIO, armInfo.topOffset, false);
+            bottomJoint = new PhysicalJoint(BOTTOM_MOTOR_ID, BOTTOM_CANCODER_ID, BOTTOM_GEAR_RATIO, armInfo.bottomOffset, true);
+            topJoint = new PhysicalJoint(TOP_MOTOR_ID, TOP_CANCODER_ID, TOP_GEAR_RATIO, armInfo.topOffset, false);
         }
 
         double extent = (BOTTOM_LENGTH + TOP_LENGTH) * 2;

@@ -3,13 +3,14 @@ package com.swrobotics.robot.subsystems.drive;
 import com.swrobotics.lib.drive.swerve.SwerveDrive;
 import com.swrobotics.lib.drive.swerve.SwerveModule;
 import com.swrobotics.lib.drive.swerve.SwerveModuleAttributes;
+import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.field.FieldInfo;
 import com.swrobotics.lib.gyro.NavXGyroscope;
 import com.swrobotics.lib.motor.FeedbackMotor;
+import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
-import com.swrobotics.robot.io.RobotIO;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
@@ -19,29 +20,35 @@ import edu.wpi.first.wpilibj.smartdashboard.*;
 public final class DrivetrainSubsystem extends SwerveDrive {
     public static final FieldInfo FIELD = FieldInfo.CHARGED_UP_2023;
 
-    private static final double[] DEFAULT_OFFSETS = {38.41, 185.45, 132.63, 78.93};
+    private static final SwerveModuleInfo[] SELECTABLE_MODULES = new SwerveModuleInfo[] {
+            new SwerveModuleInfo("Module 0", 9, 5, 1, 38.41),  // Default front left
+            new SwerveModuleInfo("Module 1", 10, 6, 2, 185.45), // Default front right
+            new SwerveModuleInfo("Module 2", 11, 7, 3, 132.63), // Default back left
+            new SwerveModuleInfo("Module 3", 12, 8, 4, 78.93)  // Default back right
+    };
 
-    private static final SendableChooser<Integer> FRONT_LEFT_SELECT = new SendableChooser<>();
-    private static final SendableChooser<Integer> FRONT_RIGHT_SELECT = new SendableChooser<>();
-    private static final SendableChooser<Integer> BACK_LEFT_SELECT = new SendableChooser<>();
-    private static final SendableChooser<Integer> BACK_RIGHT_SELECT = new SendableChooser<>();
+    private static final SendableChooser<SwerveModuleInfo> FRONT_LEFT_SELECT = new SendableChooser<>();
+    private static final SendableChooser<SwerveModuleInfo> FRONT_RIGHT_SELECT = new SendableChooser<>();
+    private static final SendableChooser<SwerveModuleInfo> BACK_LEFT_SELECT = new SendableChooser<>();
+    private static final SendableChooser<SwerveModuleInfo> BACK_RIGHT_SELECT = new SendableChooser<>();
+
     static {
         SmartDashboard.putData("Front Left Module", FRONT_LEFT_SELECT);
         SmartDashboard.putData("Front Right Module", FRONT_RIGHT_SELECT);
         SmartDashboard.putData("Back Left Module", BACK_LEFT_SELECT);
         SmartDashboard.putData("Back Right Module", BACK_RIGHT_SELECT);
 
-        for (int i = 0; i < 4; i++) {
-            FRONT_LEFT_SELECT.addOption("Module " + i, i);
-            FRONT_RIGHT_SELECT.addOption("Module " + i, i);
-            BACK_LEFT_SELECT.addOption("Module " + i, i);
-            BACK_RIGHT_SELECT.addOption("Module " + i, i);
+        for (SwerveModuleInfo info : SELECTABLE_MODULES) {
+            FRONT_LEFT_SELECT.addOption(info.name, info);
+            FRONT_RIGHT_SELECT.addOption(info.name, info);
+            BACK_LEFT_SELECT.addOption(info.name, info);
+            BACK_RIGHT_SELECT.addOption(info.name, info);
         }
 
-        FRONT_LEFT_SELECT.setDefaultOption("Module 0", 0);
-        FRONT_RIGHT_SELECT.setDefaultOption("Module 1", 1);
-        BACK_LEFT_SELECT.setDefaultOption("Module 2", 2);
-        BACK_RIGHT_SELECT.setDefaultOption("Module 3", 3);
+        FRONT_LEFT_SELECT.setDefaultOption("Module 0", SELECTABLE_MODULES[0]);
+        FRONT_RIGHT_SELECT.setDefaultOption("Module 1", SELECTABLE_MODULES[1]);
+        BACK_LEFT_SELECT.setDefaultOption("Module 2", SELECTABLE_MODULES[2]);
+        BACK_RIGHT_SELECT.setDefaultOption("Module 3", SELECTABLE_MODULES[3]);
     }
 
     private static final double DRIVETRAIN_TRACKWIDTH_METERS = Units.inchesToMeters(18.5);
@@ -57,10 +64,10 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     private final FieldObject2d ppPose = field.getObject("PathPlanner pose");
     private final StateVisualizer stateVisualizer;
 
-    private static SwerveModule makeModule(RobotIO io, int index, double x, double y) {
-        FeedbackMotor driveMotor = io.getSwerveDriveMotor(index);
-        FeedbackMotor turnMotor = io.getSwerveTurnMotor(index);
-        Encoder encoder = io.getSwerveEncoder(index);
+    private static SwerveModule makeModule(SwerveModuleInfo info, double x, double y) {
+        FeedbackMotor driveMotor = new TalonFXMotor(info.driveMotorID);
+        FeedbackMotor turnMotor = new TalonFXMotor(info.turnMotorID);
+        Encoder encoder = new CanCoder(info.encoderID).getAbsolute();
 
         turnMotor.setPID(TURN_KP, TURN_KI, TURN_KD);
 
@@ -70,18 +77,18 @@ public final class DrivetrainSubsystem extends SwerveDrive {
                 turnMotor,
                 encoder,
                 new Translation2d(x * DRIVETRAIN_TRACKWIDTH_METERS / 2, y * DRIVETRAIN_WHEELBASE_METERS / 2),
-                new NTDouble("Swerve/Modules/Module " + index, DEFAULT_OFFSETS[index])
+                info.offset
         );
     }
 
-    public DrivetrainSubsystem(RobotIO io) {
+    public DrivetrainSubsystem() {
         super(
                 FIELD,
                 new NavXGyroscope(SPI.Port.kMXP),
-                makeModule(io, FRONT_LEFT_SELECT.getSelected(), 1, 1),
-                makeModule(io, FRONT_RIGHT_SELECT.getSelected(), 1, -1),
-                makeModule(io, BACK_LEFT_SELECT.getSelected(), -1, 1),
-                makeModule(io, BACK_RIGHT_SELECT.getSelected(), -1, -1)
+                makeModule(FRONT_LEFT_SELECT.getSelected(), 1, 1),
+                makeModule(FRONT_RIGHT_SELECT.getSelected(), 1, -1),
+                makeModule(BACK_LEFT_SELECT.getSelected(), -1, 1),
+                makeModule(BACK_RIGHT_SELECT.getSelected(), -1, -1)
         );
 
         SmartDashboard.putData("Field", field);

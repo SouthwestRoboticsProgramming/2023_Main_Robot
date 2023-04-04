@@ -1,8 +1,6 @@
 package com.swrobotics.robot;
 
 import com.swrobotics.lib.ThreadUtils;
-import com.swrobotics.robot.io.PhysicalRobotIO;
-import com.swrobotics.robot.io.RobotIO;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,11 +28,8 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotInit() {
-        // Get which version of the IO we are using (always physical currently)
-        RobotIO io = new PhysicalRobotIO();
-
         // Create a RobotContainer to manage our subsystems and our buttons
-        robotContainer = new RobotContainer(io);
+        robotContainer = new RobotContainer();
     }
 
     /**

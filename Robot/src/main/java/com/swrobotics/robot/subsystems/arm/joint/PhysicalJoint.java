@@ -1,7 +1,8 @@
 package com.swrobotics.robot.subsystems.arm.joint;
 
+import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
-import com.swrobotics.lib.motor.FeedbackMotor;
+import com.swrobotics.lib.motor.rev.NEOMotor;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
@@ -16,7 +17,7 @@ import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 
 // TODO: Check if encoder directions are correct
 public final class PhysicalJoint implements ArmJoint {
-    private final FeedbackMotor motor;
+    private final NEOMotor motor;
     private final Encoder encoder;
     private final Encoder canCoder;
 
@@ -26,15 +27,15 @@ public final class PhysicalJoint implements ArmJoint {
     private double encoderOffset;
     private final NTDouble canCoderOffset;
 
-    public PhysicalJoint(FeedbackMotor motor, Encoder canCoder, double gearRatio, NTDouble canCoderOffset, boolean inverted) {
-        this.motor = motor;
+    public PhysicalJoint(int motorId, int canCoderId, double gearRatio, NTDouble canCoderOffset, boolean inverted) {
+        motor = new NEOMotor(motorId);
         motor.setBrakeMode(true);
         encoder = motor.getIntegratedEncoder();
 
         this.gearRatio = gearRatio;
         this.flip = inverted ? -1 : 1;
 
-        this.canCoder = canCoder;
+        canCoder = new CanCoder(canCoderId).getAbsolute();
         this.canCoderOffset = canCoderOffset;
     }
 
