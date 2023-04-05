@@ -2,6 +2,7 @@ package com.swrobotics.shufflelog.tool.taskmanager;
 
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.Tool;
+
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
@@ -58,16 +59,13 @@ public final class TaskLogTool implements Tool {
         ImGui.setNextWindowSize(350, 350, ImGuiCond.Appearing);
         if (ImGui.begin("Task Log [" + taskName + "]", open)) {
             for (Entry entry : log) {
-                if (entry.isErr)
-                    ImGui.pushStyleColor(ImGuiCol.Text, 1, 0, 0, 1);
+                if (entry.isErr) ImGui.pushStyleColor(ImGuiCol.Text, 1, 0, 0, 1);
                 ImGui.text(entry.line);
-                if (entry.isErr)
-                    ImGui.popStyleColor();
+                if (entry.isErr) ImGui.popStyleColor();
             }
 
             // Autoscroll
-            if (ImGui.getScrollY() >= ImGui.getScrollMaxY())
-                ImGui.setScrollHereY(1.0f);
+            if (ImGui.getScrollY() >= ImGui.getScrollMaxY()) ImGui.setScrollHereY(1.0f);
         }
         ImGui.end();
 

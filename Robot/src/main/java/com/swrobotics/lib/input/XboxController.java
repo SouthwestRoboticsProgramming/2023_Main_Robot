@@ -5,9 +5,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Represents an Xbox controller attached to the driver station.
- */
+/** Represents an Xbox controller attached to the driver station. */
 public final class XboxController extends InputSource {
     private final edu.wpi.first.wpilibj.XboxController xbox;
     private final List<InputElement> elements;
@@ -16,7 +14,6 @@ public final class XboxController extends InputSource {
     public final InputButton back, start;
     public final InputButton leftStickButton, rightStickButton;
     public final InputButton leftBumper, rightBumper;
-
     public final InputAxis leftStickX, leftStickY;
     public final InputAxis rightStickX, rightStickY;
     public final InputAxis leftTrigger, rightTrigger;
@@ -51,18 +48,25 @@ public final class XboxController extends InputSource {
 
         dpad = new InputDpad(xbox::getPOV);
 
-        elements = Arrays.asList(
-                a, b, x, y,
-                back, start,
-                leftStickButton, rightStickButton,
-                leftBumper, rightBumper,
-
-                leftStickX, leftStickY,
-                rightStickX, rightStickY,
-                leftTrigger, rightTrigger,
-
-                dpad
-        );
+        elements =
+                Arrays.asList(
+                        a,
+                        b,
+                        x,
+                        y,
+                        back,
+                        start,
+                        leftStickButton,
+                        rightStickButton,
+                        leftBumper,
+                        rightBumper,
+                        leftStickX,
+                        leftStickY,
+                        rightStickX,
+                        rightStickY,
+                        leftTrigger,
+                        rightTrigger,
+                        dpad);
     }
 
     /**

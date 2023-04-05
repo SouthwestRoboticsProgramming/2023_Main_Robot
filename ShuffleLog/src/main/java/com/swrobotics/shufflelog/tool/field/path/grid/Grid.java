@@ -33,6 +33,7 @@ public abstract class Grid implements FieldNode {
     }
 
     public abstract void readContent(MessageReader reader);
+
     public void register(PathfindingLayer layer) {
         layer.registerGrid(this);
     }

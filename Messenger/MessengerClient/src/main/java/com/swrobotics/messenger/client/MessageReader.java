@@ -169,9 +169,7 @@ public final class MessageReader {
         }
     }
 
-    /**
-     * Closes the reader when done reading.
-     */
+    /** Closes the reader when done reading. */
     public void close() {
         if (!closed) {
             try {

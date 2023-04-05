@@ -2,12 +2,12 @@ package com.swrobotics.robot.commands;
 
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem.StopPosition;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem.StopPosition;
 
 public class AutoBalanceCommand extends CommandBase {
 
@@ -42,7 +42,7 @@ public class AutoBalanceCommand extends CommandBase {
         Rotation2d rotation = new Rotation2d(tilt.getX(), tilt.getY());
 
         // double adjustmentAmount = pid.calculate(magnitude, 0.0);
-        double adjustmentAmount = -0.385;//ADJUST_AMOUNT.get();
+        double adjustmentAmount = -0.385; // ADJUST_AMOUNT.get();
         Translation2d output = new Translation2d(adjustmentAmount, rotation);
         drive.setChassisSpeeds(new ChassisSpeeds(output.getX(), output.getY(), 0.0));
     }
@@ -56,5 +56,4 @@ public class AutoBalanceCommand extends CommandBase {
     public void end(boolean interrupted) {
         drive.setStopPosition(firstStopPosition); // Set it back to how it was
     }
-
 }

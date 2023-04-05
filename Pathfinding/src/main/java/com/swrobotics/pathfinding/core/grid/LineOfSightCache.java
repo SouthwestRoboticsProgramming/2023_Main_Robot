@@ -31,8 +31,7 @@ public final class LineOfSightCache {
 
     public boolean lineOfSight(Point a, Point b) {
         int idx = index(a.x, a.y, b.x, b.y);
-        if (present.get(idx))
-            return storage.get(idx);
+        if (present.get(idx)) return storage.get(idx);
 
         boolean out = grid.calcLineOfSight(a, b);
         present.set(idx);

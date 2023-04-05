@@ -15,7 +15,7 @@ public final class NTTranslation2d extends NTDoubleArray {
     public void set(Translation2d tx) {
         set(tx.getX(), tx.getY());
     }
-    
+
     public void set(double x, double y) {
         set(new double[] {x, y});
     }

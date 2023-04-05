@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 public class Lights {
 
     public enum Color {
-
         RAINBOW(-0.99),
         RAINBOW_PARTY(-0.97),
         RAINBOW_OCEAN(-0.95),
@@ -88,8 +87,6 @@ public class Lights {
         /** Do not set the lights to this value, they won't do anything */
         UNKNOWN(0.0);
 
-
-
         private final double value;
 
         private Color(double value) {
@@ -101,9 +98,7 @@ public class Lights {
         }
     }
 
-    /**
-     * Allows constants to be set up for consistent colors across subsystems
-     */
+    /** Allows constants to be set up for consistent colors across subsystems */
     public enum IndicatorMode {
         OFF(Color.BLACK, 0),
         IN_PROGRESS(Color.GOLD, 1),
@@ -129,7 +124,8 @@ public class Lights {
         }
     }
 
-    private final Spark lights = new Spark(RIOPorts.LIGHTS_PWM); // The REV Blinkin is treated like a spark
+    private final Spark lights =
+            new Spark(RIOPorts.LIGHTS_PWM); // The REV Blinkin is treated like a spark
 
     private final Servo servo = new Servo(RIOPorts.LIGHT_SERVO_PWM);
 
@@ -149,8 +145,9 @@ public class Lights {
     }
 
     /**
-     * Set the color of the lights without respect for the color already set
-     * Use this when trying to make the robot look cool. If you are indicating something, use IndicatorMode instead.
+     * Set the color of the lights without respect for the color already set Use this when trying to
+     * make the robot look cool. If you are indicating something, use IndicatorMode instead.
+     *
      * @param color the color
      */
     public void set(Color color) {
@@ -176,27 +173,24 @@ public class Lights {
         if (mode.getSeverity() >= getMode().getSeverity()) {
             set(mode.getColor());
         }
-        
+
         currentMode = mode;
     }
+
     public void setbyseverity(int severity) {
         if (severity >= 5) {
             lights.set(Color.GREEN.value);
 
-        }
-        else if (severity == 4) {
+        } else if (severity == 4) {
             lights.set(Color.DARK_GREEN.value);
 
-        }
-        else if (severity == 3) {
+        } else if (severity == 3) {
             lights.set(Color.YELLOW.value);
-        }
-        else if (severity == 2) {
+        } else if (severity == 2) {
             lights.set(Color.ORANGE.value);
-        } else if(severity == 0){
+        } else if (severity == 0) {
             lights.set(Color.RED.value);
-        }
-        else {
+        } else {
             lights.set(Color.STROBE_RED.value);
         }
     }

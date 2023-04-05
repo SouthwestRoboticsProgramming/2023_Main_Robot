@@ -9,6 +9,7 @@ import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.tool.taskmanager.file.RemoteDirectory;
 import com.swrobotics.shufflelog.tool.taskmanager.file.RemoteFileView;
 import com.swrobotics.shufflelog.util.Cooldown;
+
 import imgui.ImGui;
 import imgui.flag.ImGuiTableFlags;
 
@@ -19,10 +20,10 @@ import java.util.Map;
 
 public final class TaskManagerTool implements Tool {
     // Tasks API
-    public static final String MSG_LIST_TASKS  = ":ListTasks";
+    public static final String MSG_LIST_TASKS = ":ListTasks";
     public static final String MSG_CREATE_TASK = ":CreateTask";
     public static final String MSG_DELETE_TASK = ":DeleteTask";
-    public static final String MSG_TASKS       = ":Tasks";
+    public static final String MSG_TASKS = ":Tasks";
 
     // Logging
     public static final String MSG_STDOUT_PREFIX = ":StdOut:";
@@ -56,10 +57,11 @@ public final class TaskManagerTool implements Tool {
         logTools = new HashMap<>();
         receivedTasks = false;
 
-        msg.addDisconnectHandler(() -> {
-            receivedTasks = false;
-            tasks.clear();
-        });
+        msg.addDisconnectHandler(
+                () -> {
+                    receivedTasks = false;
+                    tasks.clear();
+                });
     }
 
     private TaskLogTool getLog(String task) {
@@ -67,11 +69,13 @@ public final class TaskManagerTool implements Tool {
     }
 
     private void onStdOut(String type, MessageReader reader) {
-        getLog(type.substring(name.length() + MSG_STDOUT_PREFIX.length())).addEntry(false, reader.readString());
+        getLog(type.substring(name.length() + MSG_STDOUT_PREFIX.length()))
+                .addEntry(false, reader.readString());
     }
 
     private void onStdErr(String type, MessageReader reader) {
-        getLog(type.substring(name.length() + MSG_STDERR_PREFIX.length())).addEntry(true, reader.readString());
+        getLog(type.substring(name.length() + MSG_STDERR_PREFIX.length()))
+                .addEntry(true, reader.readString());
     }
 
     private void showTasks() {
@@ -90,9 +94,7 @@ public final class TaskManagerTool implements Tool {
                     }
                 }
                 if (ImGui.selectable("Delete")) {
-                    msg.prepare(this.name + MSG_DELETE_TASK)
-                            .addString(name)
-                            .send();
+                    msg.prepare(this.name + MSG_DELETE_TASK).addString(name).send();
                     deletion = task;
                     ImGui.closeCurrentPopup();
                 }
@@ -119,7 +121,8 @@ public final class TaskManagerTool implements Tool {
                     ImGui.setNextItemWidth(-1);
                     task.edited |= ImGui.inputText("##task_workingDir", task.workingDirectory);
                     if (ImGui.beginDragDropTarget()) {
-                        RemoteDirectory payload = ImGui.acceptDragDropPayload("TM_" + this.name + "_DRAG_DIR");
+                        RemoteDirectory payload =
+                                ImGui.acceptDragDropPayload("TM_" + this.name + "_DRAG_DIR");
                         if (payload != null) {
                             task.workingDirectory.set(payload.getFullPath());
                             task.edited = true;
@@ -144,9 +147,7 @@ public final class TaskManagerTool implements Tool {
                 ImGui.beginDisabled(!task.edited);
                 if (ImGui.button("Save")) {
                     if (task.nameEdited) {
-                        msg.prepare(this.name + MSG_DELETE_TASK)
-                                .addString(task.syncedName)
-                                .send();
+                        msg.prepare(this.name + MSG_DELETE_TASK).addString(task.syncedName).send();
                     }
 
                     MessageBuilder builder = msg.prepare(this.name + MSG_CREATE_TASK);
@@ -154,8 +155,7 @@ public final class TaskManagerTool implements Tool {
                     builder.addString(task.workingDirectory.get());
                     String[] cmdSplit = task.command.get().split(" ");
                     builder.addInt(cmdSplit.length);
-                    for (String str : cmdSplit)
-                        builder.addString(str);
+                    for (String str : cmdSplit) builder.addString(str);
                     builder.addBoolean(task.enabled.get());
                     builder.send();
 
@@ -169,8 +169,7 @@ public final class TaskManagerTool implements Tool {
 
             ImGui.popID();
         }
-        if (deletion != null)
-            tasks.remove(deletion);
+        if (deletion != null) tasks.remove(deletion);
 
         ImGui.spacing();
 
@@ -190,8 +189,7 @@ public final class TaskManagerTool implements Tool {
 
     private boolean taskExists(String name) {
         for (Task task : tasks) {
-            if (task.name.get().equals(name))
-                return true;
+            if (task.name.get().equals(name)) return true;
         }
         return false;
     }

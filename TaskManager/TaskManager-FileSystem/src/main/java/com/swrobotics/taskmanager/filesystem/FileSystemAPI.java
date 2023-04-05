@@ -8,18 +8,18 @@ import java.io.*;
 import java.nio.file.Files;
 
 public final class FileSystemAPI {
-    private static final String MSG_LIST_FILES     = ":ListFiles";
-    private static final String MSG_READ_FILE      = ":ReadFile";
-    private static final String MSG_WRITE_FILE     = ":WriteFile";
-    private static final String MSG_DELETE_FILE    = ":DeleteFile";
-    private static final String MSG_MOVE_FILE      = ":MoveFile";
-    private static final String MSG_MKDIR          = ":Mkdir";
-    private static final String MSG_FILES          = ":Files";
-    private static final String MSG_FILE_CONTENT   = ":FileContent";
-    private static final String MSG_WRITE_CONFIRM  = ":WriteConfirm";
+    private static final String MSG_LIST_FILES = ":ListFiles";
+    private static final String MSG_READ_FILE = ":ReadFile";
+    private static final String MSG_WRITE_FILE = ":WriteFile";
+    private static final String MSG_DELETE_FILE = ":DeleteFile";
+    private static final String MSG_MOVE_FILE = ":MoveFile";
+    private static final String MSG_MKDIR = ":Mkdir";
+    private static final String MSG_FILES = ":Files";
+    private static final String MSG_FILE_CONTENT = ":FileContent";
+    private static final String MSG_WRITE_CONFIRM = ":WriteConfirm";
     private static final String MSG_DELETE_CONFIRM = ":DeleteConfirm";
-    private static final String MSG_MOVE_CONFIRM   = ":MoveConfirm";
-    private static final String MSG_MKDIR_CONFIRM  = ":MkdirConfirm";
+    private static final String MSG_MOVE_CONFIRM = ":MoveConfirm";
+    private static final String MSG_MKDIR_CONFIRM = ":MkdirConfirm";
 
     private final MessengerClient msg;
     private final File rootDir;
@@ -35,26 +35,26 @@ public final class FileSystemAPI {
         this.msg = msg;
         this.rootDir = rootDir;
 
-        String msgListFiles  = prefix + MSG_LIST_FILES;
-        String msgReadFile   = prefix + MSG_READ_FILE;
-        String msgWriteFile  = prefix + MSG_WRITE_FILE;
+        String msgListFiles = prefix + MSG_LIST_FILES;
+        String msgReadFile = prefix + MSG_READ_FILE;
+        String msgWriteFile = prefix + MSG_WRITE_FILE;
         String msgDeleteFile = prefix + MSG_DELETE_FILE;
-        String msgMoveFile   = prefix + MSG_MOVE_FILE;
-        String msgMkdir      = prefix + MSG_MKDIR;
+        String msgMoveFile = prefix + MSG_MOVE_FILE;
+        String msgMkdir = prefix + MSG_MKDIR;
 
-        msgFiles         = prefix + MSG_FILES;
-        msgFileContent   = prefix + MSG_FILE_CONTENT;
-        msgWriteConfirm  = prefix + MSG_WRITE_CONFIRM;
+        msgFiles = prefix + MSG_FILES;
+        msgFileContent = prefix + MSG_FILE_CONTENT;
+        msgWriteConfirm = prefix + MSG_WRITE_CONFIRM;
         msgDeleteConfirm = prefix + MSG_DELETE_CONFIRM;
-        msgMoveConfirm   = prefix + MSG_MOVE_CONFIRM;
-        msgMkdirConfirm  = prefix + MSG_MKDIR_CONFIRM;
+        msgMoveConfirm = prefix + MSG_MOVE_CONFIRM;
+        msgMkdirConfirm = prefix + MSG_MKDIR_CONFIRM;
 
-        msg.addHandler(msgListFiles,  this::onListFiles);
-        msg.addHandler(msgReadFile,   this::onReadFile);
-        msg.addHandler(msgWriteFile,  this::onWriteFile);
-        msg.addHandler(msgMoveFile,   this::onMoveFile);
+        msg.addHandler(msgListFiles, this::onListFiles);
+        msg.addHandler(msgReadFile, this::onReadFile);
+        msg.addHandler(msgWriteFile, this::onWriteFile);
+        msg.addHandler(msgMoveFile, this::onMoveFile);
         msg.addHandler(msgDeleteFile, this::onDeleteFile);
-        msg.addHandler(msgMkdir,      this::onMkdir);
+        msg.addHandler(msgMkdir, this::onMkdir);
     }
 
     private String localizePath(String path) {
@@ -79,8 +79,7 @@ public final class FileSystemAPI {
         if (contents != null) {
             for (File f : contents) {
                 if (!Files.isSymbolicLink(f.toPath())) {
-                    if (!deleteFile(f))
-                        return false;
+                    if (!deleteFile(f)) return false;
                 }
             }
         }
@@ -149,10 +148,7 @@ public final class FileSystemAPI {
         String path = reader.readString();
         File file = new File(rootDir, localizePath(path));
         if (file.exists() && !file.isFile()) {
-            msg.prepare(msgWriteConfirm)
-                    .addString(path)
-                    .addBoolean(false)
-                    .send();
+            msg.prepare(msgWriteConfirm).addString(path).addBoolean(false).send();
             return;
         }
 
@@ -164,18 +160,12 @@ public final class FileSystemAPI {
             fos.write(data);
             fos.flush();
 
-            msg.prepare(msgWriteConfirm)
-                    .addString(path)
-                    .addBoolean(true)
-                    .send();
+            msg.prepare(msgWriteConfirm).addString(path).addBoolean(true).send();
         } catch (IOException e) {
             System.err.println("File write failed for " + path);
             e.printStackTrace();
 
-            msg.prepare(msgWriteConfirm)
-                    .addString(path)
-                    .addBoolean(false)
-                    .send();
+            msg.prepare(msgWriteConfirm).addString(path).addBoolean(false).send();
         }
     }
 
@@ -183,22 +173,15 @@ public final class FileSystemAPI {
         String path = reader.readString();
         File file = new File(rootDir, localizePath(path));
         if (!file.exists()) {
-            msg.prepare(msgDeleteConfirm)
-                    .addString(path)
-                    .addBoolean(false)
-                    .send();
+            msg.prepare(msgDeleteConfirm).addString(path).addBoolean(false).send();
             return;
         }
 
         System.out.println("Deleting " + path);
         boolean result = deleteFile(file);
-        if (!result)
-            System.err.println("File delete failed for " + path);
+        if (!result) System.err.println("File delete failed for " + path);
 
-        msg.prepare(msgDeleteConfirm)
-                .addString(path)
-                .addBoolean(result)
-                .send();
+        msg.prepare(msgDeleteConfirm).addString(path).addBoolean(result).send();
     }
 
     private void onMoveFile(String type, MessageReader reader) {
@@ -218,35 +201,23 @@ public final class FileSystemAPI {
 
         System.out.println("Moving " + srcPath + " to " + dstPath);
         boolean result = moveFile(srcFile, dstFile);
-        if (!result)
-            System.err.println("Failed to move " + srcPath + " to " + dstPath);
+        if (!result) System.err.println("Failed to move " + srcPath + " to " + dstPath);
 
-        msg.prepare(msgMoveConfirm)
-                .addString(srcPath)
-                .addString(dstPath)
-                .addBoolean(result)
-                .send();
+        msg.prepare(msgMoveConfirm).addString(srcPath).addString(dstPath).addBoolean(result).send();
     }
 
     private void onMkdir(String type, MessageReader reader) {
         String path = reader.readString();
         File file = new File(rootDir, localizePath(path));
         if (file.exists() && !file.isDirectory()) {
-            msg.prepare(msgMkdirConfirm)
-                    .addString(path)
-                    .addBoolean(false)
-                    .send();
+            msg.prepare(msgMkdirConfirm).addString(path).addBoolean(false).send();
             return;
         }
 
         System.out.println("Creating directory " + path);
         boolean result = file.mkdirs();
-        if (!result)
-            System.err.println("Mkdir failed for " + path);
+        if (!result) System.err.println("Mkdir failed for " + path);
 
-        msg.prepare(msgMkdirConfirm)
-                .addString(path)
-                .addBoolean(result)
-                .send();
+        msg.prepare(msgMkdirConfirm).addString(path).addBoolean(result).send();
     }
 }

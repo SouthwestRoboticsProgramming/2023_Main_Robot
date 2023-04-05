@@ -4,12 +4,11 @@ import com.swrobotics.lib.net.NTDouble;
 
 public enum GamePiece {
     CONE(
-        new NTDouble("Intake/Cone Intake Speed", 1),
-        new NTDouble("Intake/Cone Outtake Speed", 0.4)),
+            new NTDouble("Intake/Cone Intake Speed", 1),
+            new NTDouble("Intake/Cone Outtake Speed", 0.4)),
     CUBE(
-        new NTDouble("Intake/Cube Intake Speed", -0.6),
-        new NTDouble("Intake/Cube Outtake Speed", -0.4)
-    );
+            new NTDouble("Intake/Cube Intake Speed", -0.6),
+            new NTDouble("Intake/Cube Outtake Speed", -0.4));
 
     private final NTDouble intakeSpeed;
     private final NTDouble outtakeSpeed;

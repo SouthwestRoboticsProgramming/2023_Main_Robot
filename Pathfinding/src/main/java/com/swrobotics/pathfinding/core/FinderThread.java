@@ -45,8 +45,7 @@ public abstract class FinderThread<P> extends Thread {
                 break;
             }
 
-            if (endpoints == null)
-                continue;
+            if (endpoints == null) continue;
 
             Endpoints<P> endpoints;
             do {

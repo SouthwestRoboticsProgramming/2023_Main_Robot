@@ -20,7 +20,12 @@ public final class Task {
     private transient int failedStartCount;
     private transient Process process;
 
-    public Task(File workingDirectory, String[] command, boolean enabled, TaskManagerAPI api, int maxFailCount) {
+    public Task(
+            File workingDirectory,
+            String[] command,
+            boolean enabled,
+            TaskManagerAPI api,
+            int maxFailCount) {
         this.api = api;
         this.maxFailCount = maxFailCount;
         this.workingDirectory = workingDirectory;
@@ -31,7 +36,13 @@ public final class Task {
         failedStartCount = 0;
     }
 
-    public Task(File workingDirectory, String[] command, boolean enabled, TaskManagerAPI api, int maxFailCount, String name) {
+    public Task(
+            File workingDirectory,
+            String[] command,
+            boolean enabled,
+            TaskManagerAPI api,
+            int maxFailCount,
+            String name) {
         this(workingDirectory, command, enabled, api, maxFailCount);
         this.name = name;
     }
@@ -45,8 +56,7 @@ public final class Task {
     }
 
     public void start() {
-        if (!enabled)
-            return;
+        if (!enabled) return;
 
         startProcess();
     }
@@ -54,12 +64,13 @@ public final class Task {
     private void startProcess() {
         try {
             System.out.println("Starting task '" + name + "'");
-            StartedProcess p = new ProcessExecutor()
-                    .command(command)
-                    .directory(workingDirectory)
-                    .redirectOutput(new TaskOutputLogger(this, LogOutputType.STDOUT, api))
-                    .redirectError(new TaskOutputLogger(this, LogOutputType.STDERR, api))
-                    .start();
+            StartedProcess p =
+                    new ProcessExecutor()
+                            .command(command)
+                            .directory(workingDirectory)
+                            .redirectOutput(new TaskOutputLogger(this, LogOutputType.STDOUT, api))
+                            .redirectError(new TaskOutputLogger(this, LogOutputType.STDERR, api))
+                            .start();
             process = p.getProcess();
         } catch (IOException e) {
             System.err.println("Exception whilst starting task '" + name + "'");
@@ -73,27 +84,37 @@ public final class Task {
         if (process != null && process.isAlive()) return;
 
         if (process != null)
-            System.err.println("Process terminated unexpectedly for task '" + name + "' (exit code " + process.exitValue() + ")");
-        else
-            System.err.println("Process not present for task '" + name + "'");
+            System.err.println(
+                    "Process terminated unexpectedly for task '"
+                            + name
+                            + "' (exit code "
+                            + process.exitValue()
+                            + ")");
+        else System.err.println("Process not present for task '" + name + "'");
 
         startProcess();
         failedStartCount++;
         if (failedStartCount == maxFailCount) {
-            System.err.println("Task '" + name + "' has exceeded maximum fail count of " + maxFailCount + ", it will not be restarted");
+            System.err.println(
+                    "Task '"
+                            + name
+                            + "' has exceeded maximum fail count of "
+                            + maxFailCount
+                            + ", it will not be restarted");
         }
     }
 
     public void forceStop() {
-        if (!enabled || process == null || !process.isAlive())
-            return;
+        if (!enabled || process == null || !process.isAlive()) return;
 
         System.out.println("Stopping task '" + name + "'");
 
         // Kill the process and its children
-        process.descendants().forEach((child) -> {
-            child.destroyForcibly();
-        });
+        process.descendants()
+                .forEach(
+                        (child) -> {
+                            child.destroyForcibly();
+                        });
         process.destroyForcibly();
     }
 

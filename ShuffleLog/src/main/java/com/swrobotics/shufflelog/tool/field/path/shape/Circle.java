@@ -2,6 +2,7 @@ package com.swrobotics.shufflelog.tool.field.path.shape;
 
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
+
 import imgui.type.ImDouble;
 
 import java.util.UUID;

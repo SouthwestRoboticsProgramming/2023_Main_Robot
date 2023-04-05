@@ -12,8 +12,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Represents a connection to the Messenger server.
- * This can be used to send messages between processes.
+ * Represents a connection to the Messenger server. This can be used to send messages between
+ * processes.
  *
  * @author rmheuer
  */
@@ -52,12 +52,11 @@ public final class MessengerClient {
     private long prevServerHeartbeatTimestamp;
 
     /**
-     * Creates a new instance and attempts to connect to a
-     * Messenger server at the given address.
+     * Creates a new instance and attempts to connect to a Messenger server at the given address.
      *
      * @param host server host
      * @param port server port
-     * @param name unique string used in logging 
+     * @param name unique string used in logging
      */
     public MessengerClient(String host, int port, String name) {
         this.host = host;
@@ -68,9 +67,14 @@ public final class MessengerClient {
         connected = new AtomicBoolean(false);
 
         executor = Executors.newSingleThreadScheduledExecutor();
-        heartbeatFuture = executor.scheduleAtFixedRate(() -> {
-            sendMessage(HEARTBEAT, new byte[0]);
-        }, 0, 1, TimeUnit.SECONDS);
+        heartbeatFuture =
+                executor.scheduleAtFixedRate(
+                        () -> {
+                            sendMessage(HEARTBEAT, new byte[0]);
+                        },
+                        0,
+                        1,
+                        TimeUnit.SECONDS);
 
         listening = Collections.synchronizedSet(new HashSet<>());
         handlers = new HashSet<>();
@@ -83,8 +87,7 @@ public final class MessengerClient {
     }
 
     /**
-     * Attempts to reconnect to a different Messenger server at
-     * a given address.
+     * Attempts to reconnect to a different Messenger server at a given address.
      *
      * @param host server host
      * @param port server port
@@ -105,8 +108,8 @@ public final class MessengerClient {
     }
 
     /**
-     * Gets the last exception thrown when attempting to connect.
-     * If no attempts have failed, this will return {@code null}.
+     * Gets the last exception thrown when attempting to connect. If no attempts have failed, this
+     * will return {@code null}.
      *
      * @return last connection exception
      */
@@ -115,70 +118,83 @@ public final class MessengerClient {
     }
 
     private void startConnectThread() {
-        connectThread = new Thread(() -> {
-            while (!connected.get() && !Thread.interrupted()) {
-                try {
-                    socket = new Socket();
-                    socket.setSoTimeout(1000);
-                    socket.connect(new InetSocketAddress(host, port), 1000);
-                    in = new DataInputStream(socket.getInputStream());
-                    out = new DataOutputStream(socket.getOutputStream());
-                    out.writeUTF(name);
+        connectThread =
+                new Thread(
+                        () -> {
+                            while (!connected.get() && !Thread.interrupted()) {
+                                try {
+                                    socket = new Socket();
+                                    socket.setSoTimeout(1000);
+                                    socket.connect(new InetSocketAddress(host, port), 1000);
+                                    in = new DataInputStream(socket.getInputStream());
+                                    out = new DataOutputStream(socket.getOutputStream());
+                                    out.writeUTF(name);
 
-                    connected.set(true);
-                    System.out.println("Messenger connection established");
+                                    connected.set(true);
+                                    System.out.println("Messenger connection established");
 
-                    // Prioritize listening to EVENT_TYPE so that we receive our own events
-                    // when listening to the rest of them
-                    Set<String> listeningCopy = new HashSet<>(listening);
-                    if (listeningCopy.contains(EVENT_TYPE))
-                        listen(EVENT_TYPE);
+                                    // Prioritize listening to EVENT_TYPE so that we receive our own
+                                    // events
+                                    // when listening to the rest of them
+                                    Set<String> listeningCopy = new HashSet<>(listening);
+                                    if (listeningCopy.contains(EVENT_TYPE)) listen(EVENT_TYPE);
 
-                    for (String listen : listeningCopy) {
-                        if (listen.equals(EVENT_TYPE))
-                            continue;
-                        listen(listen);
-                    }
-                } catch (Exception e) {
-                    lastConnectFailException = e;
-                    System.err.println("Messenger connection failed (" + e.getClass().getSimpleName() + ": " + e.getMessage() + ")");
-                    connected.set(false);
-                }
+                                    for (String listen : listeningCopy) {
+                                        if (listen.equals(EVENT_TYPE)) continue;
+                                        listen(listen);
+                                    }
+                                } catch (Exception e) {
+                                    lastConnectFailException = e;
+                                    System.err.println(
+                                            "Messenger connection failed ("
+                                                    + e.getClass().getSimpleName()
+                                                    + ": "
+                                                    + e.getMessage()
+                                                    + ")");
+                                    connected.set(false);
+                                }
 
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    break;
+                                }
+                            }
 
-            connectThread = null;
-        }, "Messenger Reconnect Thread");
+                            connectThread = null;
+                        },
+                        "Messenger Reconnect Thread");
 
         connectThread.start();
     }
 
     private Thread startWatchdog() {
         prevServerHeartbeatTimestamp = -1;
-        Thread thr = new Thread(() -> {
-            while (!Thread.interrupted()) {
-                if (prevServerHeartbeatTimestamp != -1 && connected.get()) {
-                    if (System.currentTimeMillis() - prevServerHeartbeatTimestamp > TIMEOUT) {
-                        System.err.println("Messenger watchdog: Force-closing socket due to server timeout");
-                        if (!socket.isClosed()) {
-                            disconnectSocket();
-                            lastConnectFailException = new TimeoutException("Server timed out");
-                        }
-                    }
-                }
+        Thread thr =
+                new Thread(
+                        () -> {
+                            while (!Thread.interrupted()) {
+                                if (prevServerHeartbeatTimestamp != -1 && connected.get()) {
+                                    if (System.currentTimeMillis() - prevServerHeartbeatTimestamp
+                                            > TIMEOUT) {
+                                        System.err.println(
+                                                "Messenger watchdog: Force-closing socket due to"
+                                                    + " server timeout");
+                                        if (!socket.isClosed()) {
+                                            disconnectSocket();
+                                            lastConnectFailException =
+                                                    new TimeoutException("Server timed out");
+                                        }
+                                    }
+                                }
 
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        });
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    break;
+                                }
+                            }
+                        });
         thr.start();
         return thr;
     }
@@ -194,8 +210,7 @@ public final class MessengerClient {
     }
 
     private void disconnectSocket() {
-        if (connectThread != null)
-            connectThread.interrupt();
+        if (connectThread != null) connectThread.interrupt();
         connectThread = null;
 
         try {
@@ -213,13 +228,12 @@ public final class MessengerClient {
     }
 
     /**
-     * Reads all incoming messages. If not connected, this will do
-     * nothing. Message handlers will be invoked from this method.
+     * Reads all incoming messages. If not connected, this will do nothing. Message handlers will be
+     * invoked from this method.
      */
     public void readMessages() {
         if (!isConnected()) {
-            if (connectThread == null)
-                startConnectThread();
+            if (connectThread == null) startConnectThread();
 
             return;
         }
@@ -259,9 +273,8 @@ public final class MessengerClient {
     }
 
     /**
-     * Disconnects from the current server. After this method is called,
-     * this object should no longer be used. If you want to change servers,
-     * use {@link #reconnect}.
+     * Disconnects from the current server. After this method is called, this object should no
+     * longer be used. If you want to change servers, use {@link #reconnect}.
      */
     public void disconnect() {
         send(DISCONNECT);
@@ -276,8 +289,8 @@ public final class MessengerClient {
     }
 
     /**
-     * Prepares to send a message. This returns a {@link MessageBuilder},
-     * which allows you to add data to the message.
+     * Prepares to send a message. This returns a {@link MessageBuilder}, which allows you to add
+     * data to the message.
      *
      * @param type type of the message to send
      * @return builder to add data
@@ -296,11 +309,9 @@ public final class MessengerClient {
     }
 
     /**
-     * Registers a {@link MessageHandler} to handle incoming messages.
-     * If the type ends in '*', the handler will be invoked for all messages
-     * that match the content before. For example, "Foo*" would match a
-     * message of type "Foo2", while "Foo" would only match messages of
-     * type "Foo".
+     * Registers a {@link MessageHandler} to handle incoming messages. If the type ends in '*', the
+     * handler will be invoked for all messages that match the content before. For example, "Foo*"
+     * would match a message of type "Foo2", while "Foo" would only match messages of type "Foo".
      *
      * @param type type of message to listen to
      * @param handler handler to invoke
@@ -333,14 +344,11 @@ public final class MessengerClient {
     }
 
     private void listen(String type) {
-        prepare(LISTEN)
-                .addString(type)
-                .send();
+        prepare(LISTEN).addString(type).send();
     }
 
     void sendMessage(String type, byte[] data) {
-        if (!connected.get())
-            return;
+        if (!connected.get()) return;
 
         synchronized (out) {
             try {

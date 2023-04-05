@@ -34,14 +34,12 @@ public class BitfieldGrid extends Grid {
 
     public void copyFrom(BitfieldGrid other) {
         for (int x = 0; x < width && x < other.width; x++)
-            for (int y = 0; y < height && y < other.height; y++)
-                set(x, y, other.canCellPass(x, y));
+            for (int y = 0; y < height && y < other.height; y++) set(x, y, other.canCellPass(x, y));
     }
 
     @Override
     public boolean canCellPass(int x, int y) {
-        if (x < 0 || y < 0 || x >= width || y >= height)
-            return false;
+        if (x < 0 || y < 0 || x >= width || y >= height) return false;
         return data.get(x + y * width);
     }
 
@@ -65,16 +63,21 @@ public class BitfieldGrid extends Grid {
         data.set(0, data.size());
     }
 
-    public static final class Serializer implements JsonSerializer<BitfieldGrid>, JsonDeserializer<BitfieldGrid> {
+    public static final class Serializer
+            implements JsonSerializer<BitfieldGrid>, JsonDeserializer<BitfieldGrid> {
         @Override
-        public BitfieldGrid deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public BitfieldGrid deserialize(
+                JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
             Grid.DeserializationContext ctx = Grid.DESERIALIZATION_CTX.get();
-            byte[] data = Base64.getUrlDecoder().decode(json.getAsJsonObject().get("data").getAsString());
+            byte[] data =
+                    Base64.getUrlDecoder().decode(json.getAsJsonObject().get("data").getAsString());
             return new BitfieldGrid(ctx.getWidth(), ctx.getHeight(), data);
         }
 
         @Override
-        public JsonElement serialize(BitfieldGrid src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(
+                BitfieldGrid src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
             obj.addProperty("type", GridType.BITFIELD.toString());
             obj.addProperty("data", Base64.getUrlEncoder().encodeToString(src.data.toByteArray()));

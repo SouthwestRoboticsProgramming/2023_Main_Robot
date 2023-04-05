@@ -12,13 +12,13 @@ jobs:
       with:
         distribution: temurin
         java-version: 11
-   
+
     - name: Gradle Build
       uses: gradle/gradle-build-action@v2
       with:
         arguments: build
 
-    - name: Gradle Test 
+    - name: Gradle Test
       uses: gradle/gradle-build-action@v2
       with:
         arguments: test

@@ -3,6 +3,7 @@ package com.swrobotics.shufflelog.tool.taskmanager.file;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.Tool;
+
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiCond;
@@ -23,7 +24,8 @@ public final class FileEditorTool implements Tool {
     private boolean changed;
     private final ImBoolean open;
 
-    public FileEditorTool(String path, String content, MessengerClient msg, String msgWrite, ShuffleLog log) {
+    public FileEditorTool(
+            String path, String content, MessengerClient msg, String msgWrite, ShuffleLog log) {
         this.path = path;
         this.msg = msg;
         this.msgWrite = msgWrite;
@@ -50,11 +52,7 @@ public final class FileEditorTool implements Tool {
             ImGui.beginDisabled(!changed);
             if (ImGui.button("Save")) {
                 byte[] data = content.get().getBytes(StandardCharsets.UTF_8);
-                msg.prepare(msgWrite)
-                        .addString(path)
-                        .addInt(data.length)
-                        .addRaw(data)
-                        .send();
+                msg.prepare(msgWrite).addString(path).addInt(data.length).addRaw(data).send();
                 changed = false;
             }
             ImGui.endDisabled();
@@ -65,7 +63,6 @@ public final class FileEditorTool implements Tool {
         }
         ImGui.end();
 
-        if (!open.get())
-            log.removeTool(this);
+        if (!open.get()) log.removeTool(this);
     }
 }

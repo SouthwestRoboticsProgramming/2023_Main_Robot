@@ -1,8 +1,6 @@
 package com.swrobotics.lib.net;
 
-/**
- * Represents a {@code int[]} value stored in NetworkTables.
- */
+/** Represents a {@code int[]} value stored in NetworkTables. */
 public final class NTIntegerArray extends NTEntry<int[]> {
     private final double[] defaultVals;
 

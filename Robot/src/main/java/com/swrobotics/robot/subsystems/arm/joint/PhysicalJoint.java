@@ -28,7 +28,12 @@ public final class PhysicalJoint implements ArmJoint {
     private double encoderOffset;
     private final NTDouble canCoderOffset;
 
-    public PhysicalJoint(int motorId, int canCoderId, double gearRatio, NTDouble canCoderOffset, boolean inverted) {
+    public PhysicalJoint(
+            int motorId,
+            int canCoderId,
+            double gearRatio,
+            NTDouble canCoderOffset,
+            boolean inverted) {
         motor = new CANSparkMax(motorId, CANSparkMaxLowLevel.MotorType.kBrushless);
         motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
         encoder = motor.getEncoder();
@@ -51,11 +56,22 @@ public final class PhysicalJoint implements ArmJoint {
         test = new NTDouble("Log/Arm/CanCoder " + canCoderId, -123).setTemporary();
     }
 
-    private double getRawEncoderPos() { return flip * encoder.getPosition(); }
-    private double getEncoderPos() { return getRawEncoderPos() + encoderOffset; }
+    private double getRawEncoderPos() {
+        return flip * encoder.getPosition();
+    }
 
-    private double getRawCanCoderPos() { return -flip * canCoder.getAbsolutePosition(); }
-    private double getCanCoderPos() { return MathUtil.wrap(getRawCanCoderPos() + canCoderOffset.get(), -180, 180) / ArmSubsystem.JOINT_TO_CANCODER_RATIO; }
+    private double getEncoderPos() {
+        return getRawEncoderPos() + encoderOffset;
+    }
+
+    private double getRawCanCoderPos() {
+        return -flip * canCoder.getAbsolutePosition();
+    }
+
+    private double getCanCoderPos() {
+        return MathUtil.wrap(getRawCanCoderPos() + canCoderOffset.get(), -180, 180)
+                / ArmSubsystem.JOINT_TO_CANCODER_RATIO;
+    }
 
     // Called when specified in NT
     @Override

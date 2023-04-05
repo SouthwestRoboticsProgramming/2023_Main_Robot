@@ -20,6 +20,11 @@ public final class ValueAccessor<T> {
         return type;
     }
 
-    public T get() { return getter.get(); }
-    public void set(T t) { setter.accept(t); }
+    public T get() {
+        return getter.get();
+    }
+
+    public void set(T t) {
+        setter.accept(t);
+    }
 }

@@ -19,6 +19,7 @@ public abstract class DataPlot<T> {
     public abstract void plot(boolean showName);
 
     public abstract double getMinValue();
+
     public abstract double getMaxValue();
 
     public double getMinTime() {
@@ -40,13 +41,11 @@ public abstract class DataPlot<T> {
      */
     public final boolean sample(double time) {
         T value = read();
-        if (value == null)
-            return false;
+        if (value == null) return false;
 
         history.add(new DataPoint<>(time, value));
 
-        while (time - history.get(0).getTime() > retentionTime)
-            history.remove(0);
+        while (time - history.get(0).getTime() > retentionTime) history.remove(0);
 
         return true;
     }

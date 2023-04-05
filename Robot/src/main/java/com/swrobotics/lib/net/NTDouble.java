@@ -1,15 +1,12 @@
 package com.swrobotics.lib.net;
 
-/**
- * Represents a {@code double} value stored in NetworkTables.
- */
+/** Represents a {@code double} value stored in NetworkTables. */
 public final class NTDouble extends NTEntry<Double> {
     private final double defaultVal;
 
     /**
-     * Creates a new {@code double} entry with a specified path.
-     * The path can be split using the '/' character to organize
-     * entries into groups.
+     * Creates a new {@code double} entry with a specified path. The path can be split using the '/'
+     * character to organize entries into groups.
      *
      * @param path path
      */

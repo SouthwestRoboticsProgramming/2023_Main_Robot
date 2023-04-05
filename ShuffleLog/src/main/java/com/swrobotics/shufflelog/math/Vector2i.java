@@ -46,8 +46,7 @@ public final class Vector2i {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Vector2i vector2i = (Vector2i) o;
-        return x == vector2i.x &&
-                y == vector2i.y;
+        return x == vector2i.x && y == vector2i.y;
     }
 
     @Override

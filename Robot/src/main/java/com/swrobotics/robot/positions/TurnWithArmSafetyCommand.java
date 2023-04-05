@@ -6,6 +6,7 @@ import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.RobotContainer;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -26,7 +27,8 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
     private final Translation2d driveTarget;
     private State prevState;
 
-    public TurnWithArmSafetyCommand(RobotContainer robot, Supplier<Angle> angle, Vec2d driveTarget) {
+    public TurnWithArmSafetyCommand(
+            RobotContainer robot, Supplier<Angle> angle, Vec2d driveTarget) {
         super(robot, angle, false);
         this.robot = robot;
         this.driveTarget = new Translation2d(driveTarget.x, driveTarget.y);
@@ -43,22 +45,25 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
         Pose2d currentPose = robot.drivetrainSubsystem.getPose();
 
         // Determine whether the walls are relevant and which one
-        double armExtension = Math.max(
-                robot.arm.getCurrentPose().getEndPosition().getX(),
-                robot.arm.getTargetPose().getEndPosition().getX()
-        );
+        double armExtension =
+                Math.max(
+                        robot.arm.getCurrentPose().getEndPosition().getX(),
+                        robot.arm.getTargetPose().getEndPosition().getX());
         double distToWall = distanceToWall(currentPose.getTranslation());
-        if (driveTarget != null)
-            distToWall = Math.min(distToWall, distanceToWall(driveTarget));
+        if (driveTarget != null) distToWall = Math.min(distToWall, distanceToWall(driveTarget));
 
         // Get the current constraint state
         State state = State.UNCONSTRAINED;
         if (distToWall < armExtension) {
-            state = currentPose.getY() < FIELD_HEIGHT / 2 ? State.LOWER_LIMITED : State.UPPER_LIMITED;
+            state =
+                    currentPose.getY() < FIELD_HEIGHT / 2
+                            ? State.LOWER_LIMITED
+                            : State.UPPER_LIMITED;
         }
 
         // Get current and target angles
-        Angle current = CCWAngle.rad(robot.drivetrainSubsystem.getPose().getRotation().getRadians());
+        Angle current =
+                CCWAngle.rad(robot.drivetrainSubsystem.getPose().getRotation().getRadians());
         Angle target = getTargetAngle();
 
         // Angle wrapping magic - we set the wrap point towards the
@@ -87,8 +92,7 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
         }
 
         // Reset PID if state has changed
-        if (state != prevState)
-            pid.reset();
+        if (state != prevState) pid.reset();
         prevState = state;
 
         // Turn

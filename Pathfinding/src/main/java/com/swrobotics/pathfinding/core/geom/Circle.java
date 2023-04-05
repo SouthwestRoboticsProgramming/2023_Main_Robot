@@ -49,9 +49,12 @@ public final class Circle extends RobotShape {
         builder.addDouble(radius);
     }
 
-    public static final class Serializer implements JsonSerializer<Circle>, JsonDeserializer<Circle> {
+    public static final class Serializer
+            implements JsonSerializer<Circle>, JsonDeserializer<Circle> {
         @Override
-        public Circle deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public Circle deserialize(
+                JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
             boolean inverted = obj.has("inverted") && obj.get("inverted").getAsBoolean();
             double x = obj.get("x").getAsDouble();

@@ -4,8 +4,10 @@ import com.swrobotics.profiler.MemoryStats;
 import com.swrobotics.profiler.ProfileNode;
 import com.swrobotics.profiler.Profiler;
 import com.swrobotics.shufflelog.ShuffleLog;
+
 import imgui.ImGui;
 import imgui.flag.ImGuiTableFlags;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 

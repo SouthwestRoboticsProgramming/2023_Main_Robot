@@ -16,7 +16,10 @@ public final class MessengerServer {
     private static final String MSG_CLIENTS = "Messenger:Clients";
 
     private static final MessengerServer INSTANCE = new MessengerServer();
-    public static MessengerServer get() { return INSTANCE; }
+
+    public static MessengerServer get() {
+        return INSTANCE;
+    }
 
     private final MessengerConfiguration config;
     private final Set<Client> clients;
@@ -54,8 +57,7 @@ public final class MessengerServer {
     }
 
     public void onMessage(Message msg) {
-        if (log != null)
-            log.logMessage(msg);
+        if (log != null) log.logMessage(msg);
 
         if (msg.getType().equals(MSG_GET_CLIENTS)) {
             try {

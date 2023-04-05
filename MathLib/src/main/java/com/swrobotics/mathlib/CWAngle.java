@@ -1,8 +1,6 @@
 package com.swrobotics.mathlib;
 
-/**
- * Represents a clockwise angle.
- */
+/** Represents a clockwise angle. */
 public final class CWAngle extends AbstractAngle<CWAngle> {
     /**
      * Creates a new clockwise angle from a radian measurement.

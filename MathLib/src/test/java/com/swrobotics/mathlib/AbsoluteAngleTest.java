@@ -1,8 +1,8 @@
 package com.swrobotics.mathlib;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 public final class AbsoluteAngleTest extends AbstractAngleTest<AbsoluteAngle> {
     @Override

@@ -26,15 +26,13 @@ public final class NetworkTableValueRepr implements AutoCloseable {
     }
 
     public GenericPublisher getPub() {
-        if (pub == null)
-            pub = topic.genericPublish(topic.getTypeString());
+        if (pub == null) pub = topic.genericPublish(topic.getTypeString());
         return pub;
     }
 
     @Override
     public void close() {
         sub.close();
-        if (pub != null)
-            pub.close();
+        if (pub != null) pub.close();
     }
 }

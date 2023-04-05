@@ -8,6 +8,7 @@ import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.util.Cooldown;
 import com.swrobotics.shufflelog.util.RollingBuffer;
+
 import imgui.ImGui;
 import imgui.flag.*;
 import imgui.type.ImInt;
@@ -30,8 +31,8 @@ public final class MessengerTool implements Tool {
     }
 
     private static final QuickConnect[] QUICK_CONNECTS = {
-            new QuickConnect("Robot", "10.21.29.3", 5805),
-            new QuickConnect("Simulation", "localhost", 5805)
+        new QuickConnect("Robot", "10.21.29.3", 5805),
+        new QuickConnect("Simulation", "localhost", 5805)
     };
 
     private static final int LOG_HISTORY_SIZE = 128;
@@ -80,8 +81,7 @@ public final class MessengerTool implements Tool {
     private void onClients(String type, MessageReader reader) {
         int count = reader.readInt();
         clientNames.clear();
-        for (int i = 0; i < count; i++)
-            clientNames.add(reader.readString());
+        for (int i = 0; i < count; i++) clientNames.add(reader.readString());
         clientNames.sort(String.CASE_INSENSITIVE_ORDER);
     }
 
@@ -127,16 +127,15 @@ public final class MessengerTool implements Tool {
             ImGui.endTable();
         }
 
-        if (changed)
-            msg.reconnect(host.get(), port.get(), name.get());
+        if (changed) msg.reconnect(host.get(), port.get(), name.get());
     }
 
     private void showClients() {
-        if (!ImGui.treeNodeEx("Connected clients (" + clientNames.size() + "):##clients", ImGuiTreeNodeFlags.DefaultOpen))
-            return;
+        if (!ImGui.treeNodeEx(
+                "Connected clients (" + clientNames.size() + "):##clients",
+                ImGuiTreeNodeFlags.DefaultOpen)) return;
 
-        if (clientsCooldown.request())
-            msg.send(MessengerClient.GET_CLIENTS_TYPE);
+        if (clientsCooldown.request()) msg.send(MessengerClient.GET_CLIENTS_TYPE);
 
         for (String client : clientNames) {
             ImGui.text(client);
@@ -152,10 +151,11 @@ public final class MessengerTool implements Tool {
         }
         prevConnected = connected;
 
-        int tableFlags = ImGuiTableFlags.BordersOuter
-                | ImGuiTableFlags.BordersInnerV
-                | ImGuiTableFlags.RowBg
-                | ImGuiTableFlags.Resizable;
+        int tableFlags =
+                ImGuiTableFlags.BordersOuter
+                        | ImGuiTableFlags.BordersInnerV
+                        | ImGuiTableFlags.RowBg
+                        | ImGuiTableFlags.Resizable;
 
         ImGui.text("Event Log:");
         if (ImGui.beginChild("scroll_table")) {
@@ -166,16 +166,17 @@ public final class MessengerTool implements Tool {
                 ImGui.tableSetupColumn("Descriptor", ImGuiTableColumnFlags.WidthStretch, 3);
                 ImGui.tableHeadersRow();
 
-                eventLog.forEach((event) -> {
-                    ImGui.tableNextColumn();
-                    ImGui.text(String.format("%.3f", event.getTimestamp()));
-                    ImGui.tableNextColumn();
-                    ImGui.text(event.getType());
-                    ImGui.tableNextColumn();
-                    ImGui.text(event.getName());
-                    ImGui.tableNextColumn();
-                    ImGui.text(event.getDescriptor());
-                });
+                eventLog.forEach(
+                        (event) -> {
+                            ImGui.tableNextColumn();
+                            ImGui.text(String.format("%.3f", event.getTimestamp()));
+                            ImGui.tableNextColumn();
+                            ImGui.text(event.getType());
+                            ImGui.tableNextColumn();
+                            ImGui.text(event.getName());
+                            ImGui.tableNextColumn();
+                            ImGui.text(event.getDescriptor());
+                        });
 
                 ImGui.endTable();
             }

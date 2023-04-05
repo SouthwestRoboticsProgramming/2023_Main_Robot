@@ -1,7 +1,8 @@
 package com.swrobotics.pathfinding.core.geom;
 
 public final class CollisionChecks {
-    public static boolean checkCircleVsCircleRobot(Circle obj, Circle robot, double robotX, double robotY) {
+    public static boolean checkCircleVsCircleRobot(
+            Circle obj, Circle robot, double robotX, double robotY) {
         double dx = obj.getX() - (robot.getX() + robotX);
         double dy = obj.getY() - (robot.getY() + robotY);
 
@@ -13,7 +14,8 @@ public final class CollisionChecks {
         return (distanceSqr <= radiusTotalSqr) ^ obj.isInverted();
     }
 
-    public static boolean checkRectangleVsCircleRobot(Rectangle obj, Circle robot, double robotX, double robotY) {
+    public static boolean checkRectangleVsCircleRobot(
+            Rectangle obj, Circle robot, double robotX, double robotY) {
         double lx = (robot.getX() + robotX) - obj.getX();
         double ly = (robot.getY() + robotY) - obj.getY();
 
@@ -29,8 +31,7 @@ public final class CollisionChecks {
             // Inverted rectangles are a special case
 
             // If point is outside rectangle, it collides
-            if (Math.abs(relativeX) > halfWidth || Math.abs(relativeY) > halfHeight)
-                return true;
+            if (Math.abs(relativeX) > halfWidth || Math.abs(relativeY) > halfHeight) return true;
 
             // Find the closest distance to an edge
             double nx = halfWidth + relativeX;
