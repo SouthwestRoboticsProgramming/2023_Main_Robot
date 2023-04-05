@@ -9,6 +9,6 @@ This repository stores all of the code for 2129's 2023 robot.
 - Test mode
 - Pit checklist [Done]
 - AprilTag vision [Done]
-- Code style checker
+- Code style checker [Done]
 - Automated checks [Done]
 - Pull requests and constantly working `main` branch [Done]
