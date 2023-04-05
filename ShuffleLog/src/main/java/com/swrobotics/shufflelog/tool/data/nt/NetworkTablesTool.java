@@ -4,9 +4,11 @@ import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.data.DataLogTool;
 import com.swrobotics.shufflelog.tool.data.PlotDef;
 import com.swrobotics.shufflelog.tool.data.ValueAccessor;
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
+
 import imgui.ImGui;
 import imgui.flag.*;
 import imgui.type.*;
@@ -37,8 +39,7 @@ public final class NetworkTablesTool implements Tool {
     private static final int DEFAULT_CONN_MODE = CONN_MODE_TEAM_NUMBER;
     private static final String DEFAULT_HOST = "localhost";
     private static final int[] DEFAULT_PORT_PER_VERSION = {
-            NetworkTableInstance.kDefaultPort3,
-            NetworkTableInstance.kDefaultPort4
+        NetworkTableInstance.kDefaultPort3, NetworkTableInstance.kDefaultPort4
     };
     private static final int DEFAULT_TEAM_NUMBER = 2129;
 
@@ -74,8 +75,7 @@ public final class NetworkTablesTool implements Tool {
     // --- Server connection ---
 
     private int getDefaultPortOrTeamNumber() {
-        if (connectionMode.get() == CONN_MODE_TEAM_NUMBER)
-            return DEFAULT_TEAM_NUMBER;
+        if (connectionMode.get() == CONN_MODE_TEAM_NUMBER) return DEFAULT_TEAM_NUMBER;
 
         return DEFAULT_PORT_PER_VERSION[version.get()];
     }
@@ -84,8 +84,7 @@ public final class NetworkTablesTool implements Tool {
         NetworkTablesConnection.Params params;
         if (connectionMode.get() == CONN_MODE_TEAM_NUMBER)
             params = new NetworkTablesConnection.Params(portOrTeamNumber.get());
-        else
-            params = new NetworkTablesConnection.Params(host.get(), portOrTeamNumber.get());
+        else params = new NetworkTablesConnection.Params(host.get(), portOrTeamNumber.get());
 
         connection.setServerParams(version.get() == VERSION_NT4, params);
     }
@@ -105,14 +104,16 @@ public final class NetworkTablesTool implements Tool {
 
             label("Connection Mode:");
             boolean connModeChanged = ImGui.combo("##conn_mode", connectionMode, CONN_MODE_NAMES);
-            if (connModeChanged)
-                portOrTeamNumber.set(getDefaultPortOrTeamNumber());
+            if (connModeChanged) portOrTeamNumber.set(getDefaultPortOrTeamNumber());
 
             if (connectionMode.get() == CONN_MODE_TEAM_NUMBER) {
-                label("Team Number:"); ImGui.inputInt("##team_num", portOrTeamNumber);
+                label("Team Number:");
+                ImGui.inputInt("##team_num", portOrTeamNumber);
             } else {
-                label("Host:"); ImGui.inputText("##host", host);
-                label("Port:"); ImGui.inputInt("##port", portOrTeamNumber);
+                label("Host:");
+                ImGui.inputText("##host", host);
+                label("Port:");
+                ImGui.inputInt("##port", portOrTeamNumber);
             }
 
             ImGui.tableNextColumn();
@@ -135,13 +136,13 @@ public final class NetworkTablesTool implements Tool {
         switch (mode) {
             case BOOL_MODE_TOGGLE:
                 tempBool.set(val.get());
-                if (ImGui.checkbox("##bool", tempBool))
-                    val.set(tempBool.get());
+                if (ImGui.checkbox("##bool", tempBool)) val.set(tempBool.get());
                 break;
             case BOOL_MODE_MOMENTARY:
             case BOOL_MODE_INV_MOMENTARY:
-                val.set(ImGui.button((val.get() ? "True" : "False") + "##bool")
-                        ^ (mode == BOOL_MODE_INV_MOMENTARY));
+                val.set(
+                        ImGui.button((val.get() ? "True" : "False") + "##bool")
+                                ^ (mode == BOOL_MODE_INV_MOMENTARY));
                 break;
             case BOOL_MODE_INDICATOR:
                 float textSz = ImGui.getTextLineHeight();
@@ -149,22 +150,20 @@ public final class NetworkTablesTool implements Tool {
                         "##bool",
                         val.get() ? BOOL_INDICATOR_COL_TRUE : BOOL_INDICATOR_COL_FALSE,
                         ImGuiColorEditFlags.NoTooltip,
-                        textSz, textSz
-                );
+                        textSz,
+                        textSz);
                 break;
         }
     }
 
     private void editInt(ValueAccessor<Integer> val) {
-        int[] tempVal = { val.get() };
-        if (ImGui.dragInt("##int", tempVal))
-            val.set(tempVal[0]);
+        int[] tempVal = {val.get()};
+        if (ImGui.dragInt("##int", tempVal)) val.set(tempVal[0]);
     }
 
     private void editFloat(ValueAccessor<Float> val) {
-        float[] tempVal = { val.get() };
-        if (ImGui.dragFloat("##float", tempVal))
-            val.set(tempVal[0]);
+        float[] tempVal = {val.get()};
+        if (ImGui.dragFloat("##float", tempVal)) val.set(tempVal[0]);
     }
 
     private void editDouble(ValueAccessor<Double> val) {
@@ -175,8 +174,7 @@ public final class NetworkTablesTool implements Tool {
 
     private void editString(ValueAccessor<String> val) {
         tempString.set(val.get());
-        if (ImGui.inputText("##string", tempString))
-            val.set(tempString.get());
+        if (ImGui.inputText("##string", tempString)) val.set(tempString.get());
     }
 
     private void editStringEnum(ValueAccessor<String> val, String[] options) {
@@ -197,8 +195,7 @@ public final class NetworkTablesTool implements Tool {
             }
         }
 
-        if (ImGui.combo("##enum", tempInt, options))
-            val.set(options[tempInt.get()]);
+        if (ImGui.combo("##enum", tempInt, options)) val.set(options[tempInt.get()]);
     }
 
     // --- Array editors ---
@@ -208,37 +205,43 @@ public final class NetworkTablesTool implements Tool {
     private void editBooleanArray(String path, ValueAccessor<boolean[]> val) {
         for (int i = 0; i < val.get().length; i++) {
             int idx = i;
-            ValueAccessor<Boolean> acc = new ValueAccessor<>(
-                    NetworkTableType.kBoolean,
-                    () -> {
-                        boolean[] data = val.get();
-                        return idx < data.length ? data[idx] : false;
-                    },
-                    (v) -> {
-                        boolean[] data = val.get();
-                        data[idx] = v;
-                        val.set(data);
-                    });
+            ValueAccessor<Boolean> acc =
+                    new ValueAccessor<>(
+                            NetworkTableType.kBoolean,
+                            () -> {
+                                boolean[] data = val.get();
+                                return idx < data.length ? data[idx] : false;
+                            },
+                            (v) -> {
+                                boolean[] data = val.get();
+                                data[idx] = v;
+                                val.set(data);
+                            });
 
             String iStr = String.valueOf(i);
-            editRow(iStr, path + NetworkTable.PATH_SEPARATOR + iStr, acc, () -> editBoolean(acc, BOOL_MODE_TOGGLE));
+            editRow(
+                    iStr,
+                    path + NetworkTable.PATH_SEPARATOR + iStr,
+                    acc,
+                    () -> editBoolean(acc, BOOL_MODE_TOGGLE));
         }
     }
 
     private void editIntArray(String path, ValueAccessor<int[]> val) {
         for (int i = 0; i < val.get().length; i++) {
             int idx = i;
-            ValueAccessor<Integer> acc = new ValueAccessor<>(
-                    NetworkTableType.kInteger,
-                    () -> {
-                        int[] data = val.get();
-                        return idx < data.length ? data[idx] : 0;
-                    },
-                    (v) -> {
-                        int[] data = val.get();
-                        data[idx] = v;
-                        val.set(data);
-                    });
+            ValueAccessor<Integer> acc =
+                    new ValueAccessor<>(
+                            NetworkTableType.kInteger,
+                            () -> {
+                                int[] data = val.get();
+                                return idx < data.length ? data[idx] : 0;
+                            },
+                            (v) -> {
+                                int[] data = val.get();
+                                data[idx] = v;
+                                val.set(data);
+                            });
 
             String iStr = String.valueOf(i);
             editRow(iStr, path + NetworkTable.PATH_SEPARATOR + iStr, acc, () -> editInt(acc));
@@ -248,17 +251,18 @@ public final class NetworkTablesTool implements Tool {
     private void editFloatArray(String path, ValueAccessor<float[]> val) {
         for (int i = 0; i < val.get().length; i++) {
             int idx = i;
-            ValueAccessor<Float> acc = new ValueAccessor<>(
-                    NetworkTableType.kFloat,
-                    () -> {
-                        float[] data = val.get();
-                        return idx < data.length ? data[idx] : 0;
-                    },
-                    (v) -> {
-                        float[] data = val.get();
-                        data[idx] = v;
-                        val.set(data);
-                    });
+            ValueAccessor<Float> acc =
+                    new ValueAccessor<>(
+                            NetworkTableType.kFloat,
+                            () -> {
+                                float[] data = val.get();
+                                return idx < data.length ? data[idx] : 0;
+                            },
+                            (v) -> {
+                                float[] data = val.get();
+                                data[idx] = v;
+                                val.set(data);
+                            });
 
             String iStr = String.valueOf(i);
             editRow(iStr, path + NetworkTable.PATH_SEPARATOR + iStr, acc, () -> editFloat(acc));
@@ -268,17 +272,18 @@ public final class NetworkTablesTool implements Tool {
     private void editDoubleArray(String path, ValueAccessor<double[]> val) {
         for (int i = 0; i < val.get().length; i++) {
             int idx = i;
-            ValueAccessor<Double> acc = new ValueAccessor<>(
-                    NetworkTableType.kDouble,
-                    () -> {
-                        double[] data = val.get();
-                        return idx < data.length ? data[idx] : 0;
-                    },
-                    (v) -> {
-                        double[] data = val.get();
-                        data[idx] = v;
-                        val.set(data);
-                    });
+            ValueAccessor<Double> acc =
+                    new ValueAccessor<>(
+                            NetworkTableType.kDouble,
+                            () -> {
+                                double[] data = val.get();
+                                return idx < data.length ? data[idx] : 0;
+                            },
+                            (v) -> {
+                                double[] data = val.get();
+                                data[idx] = v;
+                                val.set(data);
+                            });
 
             String iStr = String.valueOf(i);
             editRow(iStr, path + NetworkTable.PATH_SEPARATOR + iStr, acc, () -> editDouble(acc));
@@ -288,17 +293,18 @@ public final class NetworkTablesTool implements Tool {
     private void editStringArray(String path, ValueAccessor<String[]> val) {
         for (int i = 0; i < val.get().length; i++) {
             int idx = i;
-            ValueAccessor<String> acc = new ValueAccessor<>(
-                    NetworkTableType.kString,
-                    () -> {
-                        String[] data = val.get();
-                        return idx < data.length ? data[idx] : "";
-                    },
-                    (v) -> {
-                        String[] data = val.get();
-                        data[idx] = v;
-                        val.set(data);
-                    });
+            ValueAccessor<String> acc =
+                    new ValueAccessor<>(
+                            NetworkTableType.kString,
+                            () -> {
+                                String[] data = val.get();
+                                return idx < data.length ? data[idx] : "";
+                            },
+                            (v) -> {
+                                String[] data = val.get();
+                                data[idx] = v;
+                                val.set(data);
+                            });
 
             String iStr = String.valueOf(i);
             editRow(iStr, path + NetworkTable.PATH_SEPARATOR + iStr, acc, () -> editString(acc));
@@ -313,7 +319,8 @@ public final class NetworkTablesTool implements Tool {
         ImGui.treeNodeEx(name, ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
         if (DataLogTool.canPlot(valAcc.getType()) && ImGui.beginDragDropSource()) {
             ImGui.text("NT: " + path);
-            ImGui.setDragDropPayload(DataLogTool.DRAG_DROP_IN_PAYLOAD, new PlotDef(name, path, valAcc));
+            ImGui.setDragDropPayload(
+                    DataLogTool.DRAG_DROP_IN_PAYLOAD, new PlotDef(name, path, valAcc));
             ImGui.endDragDropSource();
         }
         ImGui.tableNextColumn();
@@ -337,15 +344,13 @@ public final class NetworkTablesTool implements Tool {
 
     private int[] downcast(long[] longs) {
         int[] ints = new int[longs.length];
-        for (int i = 0; i < ints.length; i++)
-            ints[i] = (int) longs[i];
+        for (int i = 0; i < ints.length; i++) ints[i] = (int) longs[i];
         return ints;
     }
 
     private long[] upcast(int[] ints) {
         long[] longs = new long[ints.length];
-        for (int i = 0; i < ints.length; i++)
-            longs[i] = ints[i];
+        for (int i = 0; i < ints.length; i++) longs[i] = ints[i];
         return longs;
     }
 
@@ -364,24 +369,48 @@ public final class NetworkTablesTool implements Tool {
 
     private void showValue(NetworkTableValueRepr valueRepr, NetworkTableValueRepr metadata) {
         if (isArray(valueRepr.getType())) {
-            if (!editArrayRow(valueRepr.getName(), valueRepr.getType()))
-                return;
+            if (!editArrayRow(valueRepr.getName(), valueRepr.getType())) return;
 
             switch (valueRepr.getType()) {
                 case kBooleanArray:
-                    editBooleanArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kBooleanArray, () -> valueRepr.sub.getBooleanArray(new boolean[0]), (arr) -> valueRepr.getPub().setBooleanArray(arr)));
+                    editBooleanArray(
+                            valueRepr.getPath(),
+                            new ValueAccessor<>(
+                                    NetworkTableType.kBooleanArray,
+                                    () -> valueRepr.sub.getBooleanArray(new boolean[0]),
+                                    (arr) -> valueRepr.getPub().setBooleanArray(arr)));
                     break;
                 case kIntegerArray:
-                    editIntArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kIntegerArray, () -> downcast(valueRepr.sub.getIntegerArray(new long[0])), (longs) -> valueRepr.getPub().setIntegerArray(upcast(longs))));
+                    editIntArray(
+                            valueRepr.getPath(),
+                            new ValueAccessor<>(
+                                    NetworkTableType.kIntegerArray,
+                                    () -> downcast(valueRepr.sub.getIntegerArray(new long[0])),
+                                    (longs) -> valueRepr.getPub().setIntegerArray(upcast(longs))));
                     break;
                 case kFloatArray:
-                    editFloatArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kFloatArray, () -> valueRepr.sub.getFloatArray(new float[0]), (arr) -> valueRepr.getPub().setFloatArray(arr)));
+                    editFloatArray(
+                            valueRepr.getPath(),
+                            new ValueAccessor<>(
+                                    NetworkTableType.kFloatArray,
+                                    () -> valueRepr.sub.getFloatArray(new float[0]),
+                                    (arr) -> valueRepr.getPub().setFloatArray(arr)));
                     break;
                 case kDoubleArray:
-                    editDoubleArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kDoubleArray, () -> valueRepr.sub.getDoubleArray(new double[0]), (arr) -> valueRepr.getPub().setDoubleArray(arr)));
+                    editDoubleArray(
+                            valueRepr.getPath(),
+                            new ValueAccessor<>(
+                                    NetworkTableType.kDoubleArray,
+                                    () -> valueRepr.sub.getDoubleArray(new double[0]),
+                                    (arr) -> valueRepr.getPub().setDoubleArray(arr)));
                     break;
                 case kStringArray:
-                    editStringArray(valueRepr.getPath(), new ValueAccessor<>(NetworkTableType.kStringArray, () -> valueRepr.sub.getStringArray(new String[0]), (arr) -> valueRepr.getPub().setStringArray(arr)));
+                    editStringArray(
+                            valueRepr.getPath(),
+                            new ValueAccessor<>(
+                                    NetworkTableType.kStringArray,
+                                    () -> valueRepr.sub.getStringArray(new String[0]),
+                                    (arr) -> valueRepr.getPub().setStringArray(arr)));
                     break;
             }
 
@@ -391,27 +420,55 @@ public final class NetworkTablesTool implements Tool {
             Runnable fn;
             switch (valueRepr.getType()) {
                 case kBoolean:
-                    ValueAccessor<Boolean> boolAcc = new ValueAccessor<>(NetworkTableType.kBoolean, () -> valueRepr.sub.getBoolean(false), (b) -> valueRepr.getPub().setBoolean(b));
+                    ValueAccessor<Boolean> boolAcc =
+                            new ValueAccessor<>(
+                                    NetworkTableType.kBoolean,
+                                    () -> valueRepr.sub.getBoolean(false),
+                                    (b) -> valueRepr.getPub().setBoolean(b));
                     valAcc = boolAcc;
-                    fn = () -> editBoolean(boolAcc, metadata == null ? BOOL_MODE_TOGGLE : (int) metadata.sub.getInteger(BOOL_MODE_TOGGLE));
+                    fn =
+                            () ->
+                                    editBoolean(
+                                            boolAcc,
+                                            metadata == null
+                                                    ? BOOL_MODE_TOGGLE
+                                                    : (int)
+                                                            metadata.sub.getInteger(
+                                                                    BOOL_MODE_TOGGLE));
                     break;
                 case kInteger:
-                    ValueAccessor<Integer> intAcc = new ValueAccessor<>(NetworkTableType.kInteger, () -> (int) valueRepr.sub.getInteger(0), (i) -> valueRepr.getPub().setInteger(i));
+                    ValueAccessor<Integer> intAcc =
+                            new ValueAccessor<>(
+                                    NetworkTableType.kInteger,
+                                    () -> (int) valueRepr.sub.getInteger(0),
+                                    (i) -> valueRepr.getPub().setInteger(i));
                     valAcc = intAcc;
                     fn = () -> editInt(intAcc);
                     break;
                 case kFloat:
-                    ValueAccessor<Float> fltAcc = new ValueAccessor<>(NetworkTableType.kFloat, () -> valueRepr.sub.getFloat(0), (f) -> valueRepr.getPub().setFloat(f));
+                    ValueAccessor<Float> fltAcc =
+                            new ValueAccessor<>(
+                                    NetworkTableType.kFloat,
+                                    () -> valueRepr.sub.getFloat(0),
+                                    (f) -> valueRepr.getPub().setFloat(f));
                     valAcc = fltAcc;
                     fn = () -> editFloat(fltAcc);
                     break;
                 case kDouble:
-                    ValueAccessor<Double> dblAcc = new ValueAccessor<>(NetworkTableType.kDouble, () -> valueRepr.sub.getDouble(0), (d) -> valueRepr.getPub().setDouble(d));
+                    ValueAccessor<Double> dblAcc =
+                            new ValueAccessor<>(
+                                    NetworkTableType.kDouble,
+                                    () -> valueRepr.sub.getDouble(0),
+                                    (d) -> valueRepr.getPub().setDouble(d));
                     valAcc = dblAcc;
                     fn = () -> editDouble(dblAcc);
                     break;
                 case kString:
-                    ValueAccessor<String> strAcc = new ValueAccessor<>(NetworkTableType.kString, () -> valueRepr.sub.getString(""), (s) -> valueRepr.getPub().setString(s));
+                    ValueAccessor<String> strAcc =
+                            new ValueAccessor<>(
+                                    NetworkTableType.kString,
+                                    () -> valueRepr.sub.getString(""),
+                                    (s) -> valueRepr.getPub().setString(s));
                     valAcc = strAcc;
                     if (metadata != null) {
                         String[] options = metadata.sub.getStringArray(new String[0]);
@@ -435,8 +492,7 @@ public final class NetworkTablesTool implements Tool {
     }
 
     private void showTable(NetworkTableRepr table, NetworkTableRepr metadataTable, boolean root) {
-        if (table.getPath().equals(NetworkTable.PATH_SEPARATOR + METADATA_TABLE_NAME))
-            return;
+        if (table.getPath().equals(NetworkTable.PATH_SEPARATOR + METADATA_TABLE_NAME)) return;
 
         boolean open = root;
         if (!root) {
@@ -449,7 +505,8 @@ public final class NetworkTablesTool implements Tool {
         }
 
         if (open) {
-            for (NetworkTableRepr subtable : sortAlphabetically(table.getSubtables(), NetworkTableRepr::getName)) {
+            for (NetworkTableRepr subtable :
+                    sortAlphabetically(table.getSubtables(), NetworkTableRepr::getName)) {
                 NetworkTableRepr subMeta = null;
                 if (metadataTable != null) {
                     subMeta = metadataTable.getSubtable(subtable.getName());
@@ -457,7 +514,8 @@ public final class NetworkTablesTool implements Tool {
 
                 showTable(subtable, subMeta, false);
             }
-            for (NetworkTableValueRepr value : sortAlphabetically(table.getValues(), NetworkTableValueRepr::getName)) {
+            for (NetworkTableValueRepr value :
+                    sortAlphabetically(table.getValues(), NetworkTableValueRepr::getName)) {
                 NetworkTableValueRepr subValue = null;
                 if (metadataTable != null) {
                     subValue = metadataTable.getValue(value.getName());
@@ -466,15 +524,15 @@ public final class NetworkTablesTool implements Tool {
                 showValue(value, subValue);
             }
 
-            if (!root)
-                ImGui.treePop();
+            if (!root) ImGui.treePop();
         }
     }
 
     private void showData() {
-        int tableFlags = ImGuiTableFlags.BordersOuter
-                | ImGuiTableFlags.BordersInnerV
-                | ImGuiTableFlags.Resizable;
+        int tableFlags =
+                ImGuiTableFlags.BordersOuter
+                        | ImGuiTableFlags.BordersInnerV
+                        | ImGuiTableFlags.Resizable;
 
         NetworkTableRepr rootTable = connection.getRootTable();
         if (rootTable == null) {

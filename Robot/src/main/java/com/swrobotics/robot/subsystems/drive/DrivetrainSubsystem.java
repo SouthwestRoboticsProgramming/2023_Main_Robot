@@ -45,10 +45,10 @@ public final class DrivetrainSubsystem extends SwerveDrive {
             BACK_RIGHT_SELECT.addOption(info.name, info);
         }
 
-        FRONT_LEFT_SELECT.setDefaultOption("Module 0", SELECTABLE_MODULES[0]);
-        FRONT_RIGHT_SELECT.setDefaultOption("Module 1", SELECTABLE_MODULES[1]);
-        BACK_LEFT_SELECT.setDefaultOption("Module 2", SELECTABLE_MODULES[2]);
-        BACK_RIGHT_SELECT.setDefaultOption("Module 3", SELECTABLE_MODULES[3]);
+        FRONT_LEFT_SELECT.setDefaultOption(SELECTABLE_MODULES[0].name, SELECTABLE_MODULES[0]);
+        FRONT_RIGHT_SELECT.setDefaultOption(SELECTABLE_MODULES[1].name, SELECTABLE_MODULES[1]);
+        BACK_LEFT_SELECT.setDefaultOption(SELECTABLE_MODULES[2].name, SELECTABLE_MODULES[2]);
+        BACK_RIGHT_SELECT.setDefaultOption(SELECTABLE_MODULES[3].name, SELECTABLE_MODULES[3]);
     }
 
     private static final double DRIVETRAIN_TRACKWIDTH_METERS = Units.inchesToMeters(18.5);

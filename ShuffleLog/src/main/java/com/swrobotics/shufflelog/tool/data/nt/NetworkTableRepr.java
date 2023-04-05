@@ -24,30 +24,26 @@ public final class NetworkTableRepr implements AutoCloseable {
     }
 
     /**
-     * Gets the name of this specific table within its parent,
-     * without a leading or trailing path separator.
+     * Gets the name of this specific table within its parent, without a leading or trailing path
+     * separator.
      *
      * @return name
      */
     public String getName() {
         String path = getPath();
         int lastSeparatorIdx = path.lastIndexOf(NetworkTable.PATH_SEPARATOR);
-        if (lastSeparatorIdx < 0)
-            return path;
-        else
-            return path.substring(lastSeparatorIdx + 1);
+        if (lastSeparatorIdx < 0) return path;
+        else return path.substring(lastSeparatorIdx + 1);
     }
 
     public NetworkTableRepr getSubtable(String name) {
-        if (!table.containsSubTable(name))
-            return null;
+        if (!table.containsSubTable(name)) return null;
 
         return getOrCreateSubtable(name);
     }
 
     public NetworkTableValueRepr getValue(String name) {
-        if (!table.containsKey(name))
-            return null;
+        if (!table.containsKey(name)) return null;
 
         return getOrCreateValue(name);
     }
@@ -84,8 +80,7 @@ public final class NetworkTableRepr implements AutoCloseable {
             toRemove.remove(key);
         }
 
-        for (NetworkTableRepr repr : toRemove.values())
-            repr.close();
+        for (NetworkTableRepr repr : toRemove.values()) repr.close();
 
         return out;
     }
@@ -106,8 +101,7 @@ public final class NetworkTableRepr implements AutoCloseable {
             toRemove.remove(topic.getName());
         }
 
-        for (NetworkTableValueRepr repr : toRemove.values())
-            repr.close();
+        for (NetworkTableValueRepr repr : toRemove.values()) repr.close();
 
         return out;
     }

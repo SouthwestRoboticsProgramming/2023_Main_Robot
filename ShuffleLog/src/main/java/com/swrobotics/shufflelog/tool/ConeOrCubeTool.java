@@ -2,7 +2,6 @@ package com.swrobotics.shufflelog.tool;
 
 import com.swrobotics.messenger.client.MessengerClient;
 
-import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiColorEditFlags;
@@ -19,9 +18,11 @@ public final class ConeOrCubeTool implements Tool {
     public ConeOrCubeTool(MessengerClient msg) {
         isCone = null;
 
-        msg.addHandler(MESSAGE, (type, data) -> {
-            isCone = data.readBoolean();
-        });
+        msg.addHandler(
+                MESSAGE,
+                (type, data) -> {
+                    isCone = data.readBoolean();
+                });
 
         msg.addDisconnectHandler(() -> isCone = null);
     }
@@ -36,13 +37,16 @@ public final class ConeOrCubeTool implements Tool {
             }
 
             float[] color;
-            if (isCone)
-                color = new float[] {1, 1, 0, 1};
-            else
-                color = new float[] {0.25f, 0.25f, 1, 1};
+            if (isCone) color = new float[] {1, 1, 0, 1};
+            else color = new float[] {0.25f, 0.25f, 1, 1};
 
             ImVec2 size = ImGui.getContentRegionAvail();
-            ImGui.colorButton("##button", color, ImGuiColorEditFlags.NoTooltip | ImGuiColorEditFlags.NoDragDrop, size.x, size.y);
+            ImGui.colorButton(
+                    "##button",
+                    color,
+                    ImGuiColorEditFlags.NoTooltip | ImGuiColorEditFlags.NoDragDrop,
+                    size.x,
+                    size.y);
         }
         ImGui.end();
     }

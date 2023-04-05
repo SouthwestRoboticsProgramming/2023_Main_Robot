@@ -2,9 +2,10 @@ package com.swrobotics.shufflelog.util;
 
 import org.lwjgl.system.Platform;
 
-import javax.swing.*;
 import java.io.File;
 import java.util.function.Consumer;
+
+import javax.swing.*;
 
 public final class FileChooser {
     public static void chooseFileOrFolder(Consumer<File> callback) {
@@ -17,14 +18,15 @@ public final class FileChooser {
         JFrame frame = new JFrame("Choose a File or Folder");
         frame.setSize(480, 360);
 
-        chooser.addActionListener((event) -> {
-            if (event.getActionCommand().equals(JFileChooser.APPROVE_SELECTION)) {
-                callback.accept(chooser.getSelectedFile());
-                frame.dispose();
-            } else if (event.getActionCommand().equals(JFileChooser.CANCEL_SELECTION)) {
-                frame.dispose();
-            }
-        });
+        chooser.addActionListener(
+                (event) -> {
+                    if (event.getActionCommand().equals(JFileChooser.APPROVE_SELECTION)) {
+                        callback.accept(chooser.getSelectedFile());
+                        frame.dispose();
+                    } else if (event.getActionCommand().equals(JFileChooser.CANCEL_SELECTION)) {
+                        frame.dispose();
+                    }
+                });
 
         frame.getContentPane().add(chooser);
         frame.setVisible(true);

@@ -68,8 +68,7 @@ public final class ShapeGrid extends BitfieldGrid {
 
     @Override
     public boolean canCellPass(int x, int y) {
-        if (needsRegenerateBitfield)
-            regenerateBitfield();
+        if (needsRegenerateBitfield) regenerateBitfield();
 
         return super.canCellPass(x, y);
     }
@@ -91,14 +90,18 @@ public final class ShapeGrid extends BitfieldGrid {
         }
     }
 
-    public static final class Serializer implements JsonSerializer<ShapeGrid>, JsonDeserializer<ShapeGrid> {
+    public static final class Serializer
+            implements JsonSerializer<ShapeGrid>, JsonDeserializer<ShapeGrid> {
         @Override
-        public ShapeGrid deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public ShapeGrid deserialize(
+                JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
             JsonArray shapes = obj.getAsJsonArray("shapes");
 
             Grid.DeserializationContext ctx = Grid.DESERIALIZATION_CTX.get();
-            ShapeGrid grid = new ShapeGrid(ctx.getWidth(), ctx.getHeight(), ctx.getField(), ctx.getRobot());
+            ShapeGrid grid =
+                    new ShapeGrid(ctx.getWidth(), ctx.getHeight(), ctx.getField(), ctx.getRobot());
             for (JsonElement elem : shapes) {
                 grid.addShape(context.deserialize(elem, Shape.class));
             }
@@ -107,7 +110,8 @@ public final class ShapeGrid extends BitfieldGrid {
         }
 
         @Override
-        public JsonElement serialize(ShapeGrid src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(
+                ShapeGrid src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
             obj.addProperty("type", GridType.SHAPE.toString());
             JsonArray shapes = new JsonArray();

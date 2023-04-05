@@ -29,10 +29,6 @@ public final class MemoryStats {
 
     public static MemoryStats current() {
         Runtime rt = Runtime.getRuntime();
-        return new MemoryStats(
-                rt.freeMemory(),
-                rt.maxMemory(),
-                rt.totalMemory()
-        );
+        return new MemoryStats(rt.freeMemory(), rt.maxMemory(), rt.totalMemory());
     }
 }

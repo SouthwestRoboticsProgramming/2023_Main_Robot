@@ -2,16 +2,14 @@ package com.swrobotics.lib.time;
 
 import java.util.Objects;
 
-/**
- * Represents a span of time.
- */
+/** Represents a span of time. */
 public final class Duration {
     private final double count;
     private final TimeUnit unit;
 
     /**
      * Creates a new duration with a specified amount of time
-     * 
+     *
      * @param count amount of time
      * @param unit unit the amount is in
      */
@@ -22,7 +20,7 @@ public final class Duration {
 
     /**
      * Gets the amount of time in the unit given by {@link #getUnit()}.
-     * 
+     *
      * @return amount of time
      */
     public double getCount() {
@@ -31,7 +29,7 @@ public final class Duration {
 
     /**
      * Gets the unit the amount is specified in.
-     * 
+     *
      * @return unit
      */
     public TimeUnit getUnit() {
@@ -60,7 +58,7 @@ public final class Duration {
 
     /**
      * Gets the amount of time this duration represents in nanoseconds.
-     * 
+     *
      * @return time in nanoseconds
      */
     public double getDurationNanos() {

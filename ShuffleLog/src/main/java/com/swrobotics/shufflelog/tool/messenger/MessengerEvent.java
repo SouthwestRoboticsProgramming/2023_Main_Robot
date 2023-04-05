@@ -31,11 +31,18 @@ public final class MessengerEvent {
 
     @Override
     public String toString() {
-        return "MessengerEvent{" +
-                "timestamp=" + timestamp +
-                ", type='" + type + '\'' +
-                ", name='" + name + '\'' +
-                ", descriptor='" + descriptor + '\'' +
-                '}';
+        return "MessengerEvent{"
+                + "timestamp="
+                + timestamp
+                + ", type='"
+                + type
+                + '\''
+                + ", name='"
+                + name
+                + '\''
+                + ", descriptor='"
+                + descriptor
+                + '\''
+                + '}';
     }
 }

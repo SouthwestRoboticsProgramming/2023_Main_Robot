@@ -3,9 +3,7 @@ package com.swrobotics.profiler;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Represents one section of code that was profiled.
- */
+/** Represents one section of code that was profiled. */
 public final class ProfileNode {
     private final String name;
     private final ProfileNode parent;
@@ -54,7 +52,7 @@ public final class ProfileNode {
 
     /**
      * Gets the name of this node.
-     * 
+     *
      * @return name
      */
     public String getName() {
@@ -63,7 +61,7 @@ public final class ProfileNode {
 
     /**
      * Gets the parent of this node.
-     * 
+     *
      * @return parent
      */
     public ProfileNode getParent() {
@@ -71,9 +69,8 @@ public final class ProfileNode {
     }
 
     /**
-     * Gets the children of this node.
-     * Important: Do not modify the returned list from this method.
-     * 
+     * Gets the children of this node. Important: Do not modify the returned list from this method.
+     *
      * @return children
      */
     public List<ProfileNode> getChildren() {
@@ -82,9 +79,9 @@ public final class ProfileNode {
     }
 
     /**
-     * Gets the elapsed execution time of this node, not including
-     * the time spent running child nodes.
-     * 
+     * Gets the elapsed execution time of this node, not including the time spent running child
+     * nodes.
+     *
      * @return self time in nanoseconds
      */
     public long getSelfTimeNanoseconds() {
@@ -92,10 +89,11 @@ public final class ProfileNode {
     }
 
     /**
-     * Gets the total execution of this node, including the time spent
-     * running child nodes.
-     * 
+     * Gets the total execution of this node, including the time spent running child nodes.
+     *
      * @return total time in nanoseconds
      */
-    public long getTotalTimeNanoseconds() { return total; }
+    public long getTotalTimeNanoseconds() {
+        return total;
+    }
 }

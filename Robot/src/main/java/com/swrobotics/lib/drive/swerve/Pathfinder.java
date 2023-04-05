@@ -3,6 +3,7 @@ package com.swrobotics.lib.drive.swerve;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
+
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -34,15 +35,11 @@ public final class Pathfinder extends SubsystemBase {
     public void setGoal(double x, double y) {
         goalX = x;
         goalY = y;
-        msg.prepare(MSG_SET_GOAL)
-                .addDouble(x)
-                .addDouble(y)
-                .send();
+        msg.prepare(MSG_SET_GOAL).addDouble(x).addDouble(y).send();
     }
 
     private boolean pathTargetCorrect() {
-        if (path.isEmpty())
-            return false;
+        if (path.isEmpty()) return false;
 
         Vec2d last = path.get(path.size() - 1);
         double dx = last.x - goalX;
@@ -55,8 +52,7 @@ public final class Pathfinder extends SubsystemBase {
     }
 
     public List<Vec2d> getPath() {
-        if (path == null || path.isEmpty())
-            return path;
+        if (path == null || path.isEmpty()) return path;
 
         // Replace last point with actual target for more accuracy
         List<Vec2d> pathCopy = new ArrayList<>(path);
@@ -68,10 +64,7 @@ public final class Pathfinder extends SubsystemBase {
     }
 
     private void setPosition(double x, double y) {
-        msg.prepare(MSG_SET_POS)
-                .addDouble(x)
-                .addDouble(y)
-                .send();
+        msg.prepare(MSG_SET_POS).addDouble(x).addDouble(y).send();
     }
 
     private void onPath(String type, MessageReader reader) {

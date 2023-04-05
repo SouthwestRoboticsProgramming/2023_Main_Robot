@@ -5,20 +5,15 @@ import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Map;
 
 public final class TaskManagerAPI {
     // Tasks API
-    private static final String MSG_LIST_TASKS  = ":ListTasks";
+    private static final String MSG_LIST_TASKS = ":ListTasks";
     private static final String MSG_CREATE_TASK = ":CreateTask";
     private static final String MSG_DELETE_TASK = ":DeleteTask";
-    private static final String MSG_TASKS       = ":Tasks";
+    private static final String MSG_TASKS = ":Tasks";
 
     // Logging
     private static final String MSG_STDOUT = ":StdOut:";
@@ -38,36 +33,40 @@ public final class TaskManagerAPI {
         this.mgr = mgr;
         this.config = config;
 
-        System.out.println("Connecting to Messenger at " + config.getMessengerHost() + ":" + config.getMessengerPort() + " as " + config.getMessengerName());
-        msg = new MessengerClient(
-                config.getMessengerHost(),
-                config.getMessengerPort(),
-                config.getMessengerName()
-        );
+        System.out.println(
+                "Connecting to Messenger at "
+                        + config.getMessengerHost()
+                        + ":"
+                        + config.getMessengerPort()
+                        + " as "
+                        + config.getMessengerName());
+        msg =
+                new MessengerClient(
+                        config.getMessengerHost(),
+                        config.getMessengerPort(),
+                        config.getMessengerName());
 
         String prefix = config.getMessengerName();
         new FileSystemAPI(msg, prefix, config.getTasksRoot());
 
-        String msgListTasks  = prefix + MSG_LIST_TASKS;
+        String msgListTasks = prefix + MSG_LIST_TASKS;
         String msgCreateTask = prefix + MSG_CREATE_TASK;
         String msgDeleteTask = prefix + MSG_DELETE_TASK;
 
-        msgTasks  = prefix + MSG_TASKS;
+        msgTasks = prefix + MSG_TASKS;
         msgStdOut = prefix + MSG_STDOUT;
         msgStdErr = prefix + MSG_STDERR;
 
         tasksRoot = config.getTasksRoot();
-        if (!tasksRoot.exists())
-            tasksRoot.mkdirs();
+        if (!tasksRoot.exists()) tasksRoot.mkdirs();
 
-        msg.addHandler(msgListTasks,  this::onListTasks);
+        msg.addHandler(msgListTasks, this::onListTasks);
         msg.addHandler(msgCreateTask, this::onCreateTask);
         msg.addHandler(msgDeleteTask, this::onDeleteTask);
     }
 
     private String removeTrailingSeparator(String path) {
-        if (path.endsWith(File.separator))
-            return path.substring(0, path.length() - 1);
+        if (path.endsWith(File.separator)) return path.substring(0, path.length() - 1);
         return path;
     }
 
@@ -93,8 +92,7 @@ public final class TaskManagerAPI {
             out.addString(getTaskPath(task.getWorkingDirectory()));
             String[] command = task.getCommand();
             out.addInt(command.length);
-            for (String token : command)
-                out.addString(token);
+            for (String token : command) out.addString(token);
             out.addBoolean(task.isEnabled());
         }
 
@@ -115,8 +113,7 @@ public final class TaskManagerAPI {
         Task task = new Task(workingDir, command, enabled, this, config.getMaxFailCount(), name);
 
         // Remove old task
-        if (mgr.getTask(name) != null)
-            mgr.removeTask(name);
+        if (mgr.getTask(name) != null) mgr.removeTask(name);
 
         mgr.addTask(task);
     }

@@ -43,53 +43,59 @@ public final class RemoteClient implements Client, Runnable {
     }
 
     private void readMessage() throws IOException {
-//        System.out.println("Reading message type");
+        //        System.out.println("Reading message type");
         String type = in.readUTF();
 
         int dataSz = in.readInt();
-//        System.out.println("Type " + type + ", reading " + dataSz + " data bytes");
+        //        System.out.println("Type " + type + ", reading " + dataSz + " data bytes");
         byte[] data = new byte[dataSz];
         in.readFully(data);
 
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
         switch (type) {
-            case HEARTBEAT: {
-                lastHeartbeatTime = System.currentTimeMillis();
+            case HEARTBEAT:
+                {
+                    lastHeartbeatTime = System.currentTimeMillis();
 
-                // Fix for issue #4: Send heartbeat back to the client so it can
-                // detect if the server goes down
-                sendMessage(new Message(HEARTBEAT, new byte[0]));
-                break;
-            }
-            case LISTEN: {
-                String listenType = in.readUTF();
-                System.out.println("Client " + name + " listening to " + listenType);
-                MessengerServer.get().broadcastEvent("Listen", name, listenType);
-                if (listenType.charAt(listenType.length() - 1) == '*') {
-                    wildcards.add(listenType.substring(0, listenType.length() - 1));
-                } else {
-                    listening.add(listenType);
+                    // Fix for issue #4: Send heartbeat back to the client so it can
+                    // detect if the server goes down
+                    sendMessage(new Message(HEARTBEAT, new byte[0]));
+                    break;
                 }
-                break;
-            }
-            case UNLISTEN: {
-                String unlistenType = in.readUTF();
-                System.out.println("Client " + name + " no longer listening to " + unlistenType);
-                MessengerServer.get().broadcastEvent("Unlisten", name, unlistenType);
-                listening.remove(unlistenType);
-                wildcards.remove(unlistenType.substring(0, unlistenType.length() - 1));
-                break;
-            }
-            case DISCONNECT: {
-                connected = false;
-                System.out.println("Client " + name + " disconnected");
-                MessengerServer.get().broadcastEvent("Disconnect", name, "");
-                break;
-            }
-            default: {
-                MessengerServer.get().onMessage(new Message(type, data));
-                break;
-            }
+            case LISTEN:
+                {
+                    String listenType = in.readUTF();
+                    System.out.println("Client " + name + " listening to " + listenType);
+                    MessengerServer.get().broadcastEvent("Listen", name, listenType);
+                    if (listenType.charAt(listenType.length() - 1) == '*') {
+                        wildcards.add(listenType.substring(0, listenType.length() - 1));
+                    } else {
+                        listening.add(listenType);
+                    }
+                    break;
+                }
+            case UNLISTEN:
+                {
+                    String unlistenType = in.readUTF();
+                    System.out.println(
+                            "Client " + name + " no longer listening to " + unlistenType);
+                    MessengerServer.get().broadcastEvent("Unlisten", name, unlistenType);
+                    listening.remove(unlistenType);
+                    wildcards.remove(unlistenType.substring(0, unlistenType.length() - 1));
+                    break;
+                }
+            case DISCONNECT:
+                {
+                    connected = false;
+                    System.out.println("Client " + name + " disconnected");
+                    MessengerServer.get().broadcastEvent("Disconnect", name, "");
+                    break;
+                }
+            default:
+                {
+                    MessengerServer.get().onMessage(new Message(type, data));
+                    break;
+                }
         }
     }
 
@@ -106,7 +112,8 @@ public final class RemoteClient implements Client, Runnable {
         MessengerServer.get().addClient(this);
 
         try {
-            main: while (connected) {
+            main:
+            while (connected) {
                 // Check timeout
                 if (System.currentTimeMillis() - lastHeartbeatTime > TIMEOUT) {
                     System.out.println("Client " + name + " disconnected due to heartbeat timeout");
@@ -146,8 +153,7 @@ public final class RemoteClient implements Client, Runnable {
             }
 
             // Disconnect socket if not already
-            if (!socket.isClosed())
-                socket.close();
+            if (!socket.isClosed()) socket.close();
         } catch (IOException e) {
             System.err.println("Exception in remote client connection " + name + ":");
             e.printStackTrace();
@@ -170,8 +176,7 @@ public final class RemoteClient implements Client, Runnable {
 
     @Override
     public boolean listensTo(String type) {
-        if (listening.contains(type))
-            return true;
+        if (listening.contains(type)) return true;
 
         for (String wildcard : wildcards) {
             if (type.startsWith(wildcard)) {

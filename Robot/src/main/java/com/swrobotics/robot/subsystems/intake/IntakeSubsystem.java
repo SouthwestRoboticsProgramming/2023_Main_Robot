@@ -26,8 +26,7 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
         this.expectedPiece = expectedPiece;
 
         // Become more stopped
-        if (!running)
-            stop();
+        if (!running) stop();
     }
 
     public void run() {
@@ -51,6 +50,6 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
 
     @Override
     public void onDisable() {
-        motor.setPercentOut(0);
+        motor.stop();
     }
 }

@@ -1,12 +1,13 @@
 package com.swrobotics.shufflelog.tool;
 
+import static processing.core.PConstants.P2D;
+
 import imgui.ImGui;
 import imgui.ImVec2;
+
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.opengl.PGraphicsOpenGL;
-
-import static processing.core.PConstants.P2D;
 
 public abstract class ViewportTool implements Tool {
     private final PApplet app;
@@ -63,16 +64,12 @@ public abstract class ViewportTool implements Tool {
             // PGraphicsOpenGL seems to require one frame to get started, so
             // use the previous frame if we just created a new graphics object
             int texId;
-            if (shouldShowThisFrame)
-                texId = g.getTexture().glName;
-            else
-                texId = pTexture;
+            if (shouldShowThisFrame) texId = g.getTexture().glName;
+            else texId = pTexture;
 
             if (texId != -1) {
-                if (blockEvents)
-                    ImGui.imageButton(texId, w, h, 0, 1, 1, 0, 0);
-                else
-                    ImGui.image(texId, w, h, 0, 1, 1, 0);
+                if (blockEvents) ImGui.imageButton(texId, w, h, 0, 1, 1, 0, 0);
+                else ImGui.image(texId, w, h, 0, 1, 1, 0);
             }
 
             pTexture = texId;

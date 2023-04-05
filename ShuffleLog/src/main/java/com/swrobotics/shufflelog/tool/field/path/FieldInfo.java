@@ -48,14 +48,21 @@ public final class FieldInfo {
 
     @Override
     public String toString() {
-        return "FieldInfo{" +
-                "cellSize=" + cellSize +
-                ", fieldWidth=" + fieldWidth +
-                ", fieldHeight=" + fieldHeight +
-                ", originX=" + originX +
-                ", originY=" + originY +
-                ", cellsX=" + cellsX +
-                ", cellsY=" + cellsY +
-                '}';
+        return "FieldInfo{"
+                + "cellSize="
+                + cellSize
+                + ", fieldWidth="
+                + fieldWidth
+                + ", fieldHeight="
+                + fieldHeight
+                + ", originX="
+                + originX
+                + ", originY="
+                + originY
+                + ", cellsX="
+                + cellsX
+                + ", cellsY="
+                + cellsY
+                + '}';
     }
 }

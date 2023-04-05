@@ -27,7 +27,12 @@ public final class PhysicalJoint implements ArmJoint {
     private double encoderOffset;
     private final NTDouble canCoderOffset;
 
-    public PhysicalJoint(int motorId, int canCoderId, double gearRatio, NTDouble canCoderOffset, boolean inverted) {
+    public PhysicalJoint(
+            int motorId,
+            int canCoderId,
+            double gearRatio,
+            NTDouble canCoderOffset,
+            boolean inverted) {
         motor = new NEOMotor(motorId);
         motor.setBrakeMode(true);
         encoder = motor.getIntegratedEncoder();
@@ -39,11 +44,21 @@ public final class PhysicalJoint implements ArmJoint {
         this.canCoderOffset = canCoderOffset;
     }
 
-    private double getRawEncoderPos() { return flip * encoder.getAngle().cw().rad(); }
-    private double getEncoderPos() { return getRawEncoderPos() + encoderOffset; }
+    private double getRawEncoderPos() {
+        return flip * encoder.getAngle().cw().rad();
+    }
 
-    private double getRawCanCoderPos() { return flip * canCoder.getAngle().ccw().rad(); }
-    private double getCanCoderPos() { return MathUtil.wrap(getRawCanCoderPos() + canCoderOffset.get(), -180, 180) / ArmSubsystem.JOINT_TO_CANCODER_RATIO; }
+    private double getEncoderPos() {
+        return getRawEncoderPos() + encoderOffset;
+    }
+
+    private double getRawCanCoderPos() {
+        return flip * canCoder.getAngle().ccw().rad();
+    }
+
+    private double getCanCoderPos() {
+        return MathUtil.wrap(getRawCanCoderPos() + canCoderOffset.get(), -180, 180) / ArmSubsystem.JOINT_TO_CANCODER_RATIO;
+    }
 
     // Called when specified in NT
     @Override

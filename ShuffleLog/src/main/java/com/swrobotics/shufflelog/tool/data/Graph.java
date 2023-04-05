@@ -47,7 +47,14 @@ public final class Graph {
         if (pad < 10 * Double.MIN_VALUE) pad = 0.1;
 
         ImPlot.setNextPlotLimits(minX, maxX, minY - pad, maxY + pad, ImGuiCond.Always);
-        if (ImPlot.beginPlot(getName(), "Time (s)", "Value", GRAPH_SIZE, ImPlotFlags.NoMenus | ImPlotFlags.NoChild, 0, 0)) {
+        if (ImPlot.beginPlot(
+                getName(),
+                "Time (s)",
+                "Value",
+                GRAPH_SIZE,
+                ImPlotFlags.NoMenus | ImPlotFlags.NoChild,
+                0,
+                0)) {
             ImPlot.setLegendLocation(ImPlotLocation.East, ImPlotOrientation.Vertical, true);
             for (DataPlot<?> plot : plots) {
                 plot.plot(plots.size() > 1);
@@ -60,8 +67,7 @@ public final class Graph {
         Set<DataPlot<?>> invalidPlots = new HashSet<>();
         for (DataPlot<?> plot : plots) {
             boolean valid = plot.sample(time);
-            if (!valid)
-                invalidPlots.add(plot);
+            if (!valid) invalidPlots.add(plot);
         }
         plots.removeAll(invalidPlots);
     }
@@ -87,16 +93,13 @@ public final class Graph {
     }
 
     public String getName() {
-        if (titleOverride != null)
-            return titleOverride;
+        if (titleOverride != null) return titleOverride;
 
         StringBuilder builder = new StringBuilder();
         boolean comma = false;
         for (DataPlot<?> plot : plots) {
-            if (comma)
-                builder.append(", ");
-            else
-                comma = true;
+            if (comma) builder.append(", ");
+            else comma = true;
 
             builder.append(plot.getPath());
         }

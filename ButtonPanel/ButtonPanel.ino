@@ -32,7 +32,7 @@ inline uint8_t shift_down_buttons(uint8_t buttons_group) {
 
 void setup() {
   uint8_t size_mask = (1 << MATRIX_GROUP_SIZE) - 1;
-  
+
   // Set as outputs
   SELECT_DDR = size_mask;
   LIGHT_DDR = size_mask;
@@ -70,7 +70,7 @@ void loop() {
   for (uint8_t group = 0; group < MATRIX_GROUP_COUNT; group++) {
     SELECT_PORT = 1 << group;
     delayMicroseconds(20); // Give the select pins some time to switch
-    
+
     uint8_t buttons_group = shift_down_buttons(BUTTON_PIN);
     LIGHT_PORT = light_data[group];
 

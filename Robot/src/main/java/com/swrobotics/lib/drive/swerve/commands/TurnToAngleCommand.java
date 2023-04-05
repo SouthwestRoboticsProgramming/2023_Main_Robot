@@ -1,16 +1,15 @@
 package com.swrobotics.lib.drive.swerve.commands;
 
-import java.util.function.Supplier;
-
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.lib.drive.swerve.SwerveDrive;
 
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+
+import java.util.function.Supplier;
 
 public class TurnToAngleCommand extends CommandBase {
     private static final double ANGLE_TOLERANCE_RAD = 0.05;
@@ -62,16 +61,19 @@ public class TurnToAngleCommand extends CommandBase {
             target = target.plus(drive.getPose().getRotation());
         }
 
-        drive.addRotation(new Rotation2d(
-                MathUtil.clamp(pid.calculate(
-                        drive.getPose().getRotation().getRadians(),
-                        target.getRadians()
-                ), -MAX_ROTATIONAL_VEL, MAX_ROTATIONAL_VEL)
-        ));
+        drive.addRotation(
+                new Rotation2d(
+                        MathUtil.clamp(
+                                pid.calculate(
+                                        drive.getPose().getRotation().getRadians(),
+                                        target.getRadians()),
+                                -MAX_ROTATIONAL_VEL,
+                                MAX_ROTATIONAL_VEL)));
     }
 
     @Override
     public boolean isFinished() {
-        return Math.abs(getTarget().minus(drive.getPose().getRotation()).getRadians()) < ANGLE_TOLERANCE_RAD;
+        return Math.abs(getTarget().minus(drive.getPose().getRotation()).getRadians())
+                < ANGLE_TOLERANCE_RAD;
     }
 }

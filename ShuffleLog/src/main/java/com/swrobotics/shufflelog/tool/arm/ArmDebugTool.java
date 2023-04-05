@@ -8,9 +8,11 @@ import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.tool.ViewportTool;
 import com.swrobotics.shufflelog.tool.field.path.grid.BitfieldGrid;
 import com.swrobotics.shufflelog.util.Cooldown;
+
 import imgui.ImGui;
 import imgui.flag.ImGuiDataType;
 import imgui.type.ImDouble;
+
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -60,10 +62,11 @@ public final class ArmDebugTool extends ViewportTool {
         msg.addHandler(MSG_ARM_PATH, this::onPath);
         msg.addHandler(MSG_ARM_GRID, this::onGrid);
 
-        msg.addDisconnectHandler(() -> {
-            hasGrid = false;
-            hasPath = false;
-        });
+        msg.addDisconnectHandler(
+                () -> {
+                    hasGrid = false;
+                    hasPath = false;
+                });
 
         targetX = new ImDouble(1);
         targetY = new ImDouble(1);
@@ -80,8 +83,7 @@ public final class ArmDebugTool extends ViewportTool {
 
     private void onPath(String type, MessageReader reader) {
         hasPath = reader.readBoolean();
-        if (!hasPath)
-            return;
+        if (!hasPath) return;
 
         int count = reader.readInt();
         path.clear();
@@ -100,15 +102,20 @@ public final class ArmDebugTool extends ViewportTool {
 
     private Vec2d toSSPos(Vec2d pose, int res) {
         double bot = MathUtil.map(pose.x, MIN_BOTTOM_ANGLE, MAX_BOTTOM_ANGLE, 0, res - 1);
-        double top = MathUtil.map(MathUtil.wrap(pose.y + Math.PI, 0, Math.PI * 2), MIN_TOP_ANGLE, MAX_TOP_ANGLE, 0, res - 1);
+        double top =
+                MathUtil.map(
+                        MathUtil.wrap(pose.y + Math.PI, 0, Math.PI * 2),
+                        MIN_TOP_ANGLE,
+                        MAX_TOP_ANGLE,
+                        0,
+                        res - 1);
         return new Vec2d(bot, top);
     }
 
     @Override
     protected void drawViewportContent(PGraphics g) {
         g.background(0);
-        if (!msg.isConnected())
-            return;
+        if (!msg.isConnected()) return;
 
         int res = grid.getWidth();
         g.scale(SCALE);
@@ -169,8 +176,7 @@ public final class ArmDebugTool extends ViewportTool {
             return;
         }
 
-        if (!hasGrid)
-            return;
+        if (!hasGrid) return;
 
         int res = grid.getWidth();
         drawViewport(res * SCALE, res * SCALE);

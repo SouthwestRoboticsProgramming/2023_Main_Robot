@@ -28,9 +28,7 @@ public final class MenuBarTool implements Tool {
             ImGui.endMainMenuBar();
         }
 
-        if (showDemo.get())
-            ImGui.showDemoWindow();
-        if (showPlotDemo.get())
-            ImPlot.showDemoWindow(plotDemoOpen);
+        if (showDemo.get()) ImGui.showDemoWindow();
+        if (showPlotDemo.get()) ImPlot.showDemoWindow(plotDemoOpen);
     }
 }

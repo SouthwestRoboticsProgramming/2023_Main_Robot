@@ -2,7 +2,9 @@ package com.swrobotics.shufflelog.tool.data;
 
 import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.Tool;
+
 import edu.wpi.first.networktables.NetworkTableType;
+
 import imgui.ImGui;
 
 import java.util.ArrayList;
@@ -113,8 +115,7 @@ public final class DataLogTool implements Tool {
                                 }
                             }
 
-                            if (removed != null)
-                                graph.removePlot(removed);
+                            if (removed != null) graph.removePlot(removed);
                         }
 
                         ImGui.endPopup();
@@ -144,22 +145,26 @@ public final class DataLogTool implements Tool {
                 if (def != null) {
                     switch (def.getAcc().getType()) {
                         case kBoolean:
-                            addPlot(new BooleanDataPlot(def.getName(), def.getPath(), HISTORY_RETENTION_TIME) {
-                                @Override
-                                protected Boolean read() {
-                                    return (Boolean) def.getAcc().get();
-                                }
-                            });
+                            addPlot(
+                                    new BooleanDataPlot(
+                                            def.getName(), def.getPath(), HISTORY_RETENTION_TIME) {
+                                        @Override
+                                        protected Boolean read() {
+                                            return (Boolean) def.getAcc().get();
+                                        }
+                                    });
                             break;
                         case kInteger:
                         case kFloat:
                         case kDouble:
-                            addPlot(new DoubleDataPlot(def.getName(), def.getPath(), HISTORY_RETENTION_TIME) {
-                                @Override
-                                protected Double read() {
-                                    return (Double) def.getAcc().get();
-                                }
-                            });
+                            addPlot(
+                                    new DoubleDataPlot(
+                                            def.getName(), def.getPath(), HISTORY_RETENTION_TIME) {
+                                        @Override
+                                        protected Double read() {
+                                            return (Double) def.getAcc().get();
+                                        }
+                                    });
                             break;
                     }
                 }

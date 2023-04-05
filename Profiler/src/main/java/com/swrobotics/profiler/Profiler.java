@@ -1,8 +1,6 @@
 package com.swrobotics.profiler;
 
-/**
- * A tool to measure how long each part of the code takes to run.
- */
+/** A tool to measure how long each part of the code takes to run. */
 public final class Profiler {
     private static ProfileNode root, current, last;
 
@@ -11,9 +9,9 @@ public final class Profiler {
     }
 
     /**
-     * Begins a new round of profiling. This is done automatically
-     * every periodic by {@code AbstractRobot}.
-     * 
+     * Begins a new round of profiling. This is done automatically every periodic by {@code
+     * AbstractRobot}.
+     *
      * @param rootName name of the root node
      */
     public static void beginMeasurements(String rootName) {
@@ -24,7 +22,7 @@ public final class Profiler {
 
     /**
      * Begins a new child node with a specified name.
-     * 
+     *
      * @param name name of the child node
      */
     public static void push(String name) {
@@ -35,10 +33,7 @@ public final class Profiler {
         current.begin();
     }
 
-    /**
-     * Ends the current node and returns to profiling the
-     * parent node.
-     */
+    /** Ends the current node and returns to profiling the parent node. */
     public static void pop() {
         current.end();
         current = current.getParent();
@@ -46,8 +41,8 @@ public final class Profiler {
     }
 
     /**
-     * Ends the round of profiling. This is done automatically after every
-     * periodic by {@code AbstractRobot}.
+     * Ends the round of profiling. This is done automatically after every periodic by {@code
+     * AbstractRobot}.
      */
     public static void endMeasurements() {
         current.end();
@@ -56,7 +51,7 @@ public final class Profiler {
 
     /**
      * Gets the root node from the last round of profiling.
-     * 
+     *
      * @return last round data
      */
     public static ProfileNode getLastData() {

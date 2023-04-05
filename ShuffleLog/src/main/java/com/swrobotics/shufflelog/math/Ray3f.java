@@ -27,9 +27,6 @@ public final class Ray3f {
 
     @Override
     public String toString() {
-        return "Ray3f{" +
-                "origin=" + origin +
-                ", direction=" + direction +
-                '}';
+        return "Ray3f{" + "origin=" + origin + ", direction=" + direction + '}';
     }
 }

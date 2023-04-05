@@ -24,14 +24,18 @@ public final class MessengerTest {
             Thread.onSpinWait();
         }
 
-        msg.addHandler("Test", (type, reader) -> {
-            System.out.println("Direct: " + reader.readInt());
-        });
-        msg.addHandler("Test2*", (type, reader) -> {
-            System.out.println("Wildcard: " + reader.readInt());
-        });
+        msg.addHandler(
+                "Test",
+                (type, reader) -> {
+                    System.out.println("Direct: " + reader.readInt());
+                });
+        msg.addHandler(
+                "Test2*",
+                (type, reader) -> {
+                    System.out.println("Wildcard: " + reader.readInt());
+                });
 
-        byte[] randomGarbage = new byte[1<<19]; // Giant message
+        byte[] randomGarbage = new byte[1 << 19]; // Giant message
         for (int i = 0; i < randomGarbage.length; i++) {
             randomGarbage[i] = (byte) (Math.random() * 256);
         }
@@ -41,36 +45,36 @@ public final class MessengerTest {
             System.out.println("Writing");
             msg.prepare("Test")
                     .addInt(i++)
-                    //.addRaw(randomGarbage)
+                    // .addRaw(randomGarbage)
                     .send();
 
             sleepWithRead(msg, 1);
         }
 
-//        for (int i = 0; i < 5; i++) {
-//            msg.prepare("Test")
-//                    .addInt(i)
-//                    .send();
-//
-//            sleepWithRead(msg, 10);
-//        }
-//
-//        for (int i = 0; i < 5; i++) {
-//            msg.prepare("Test2" + Math.random())
-//                    .addInt(i)
-//                    .send();
-//
-//            sleepWithRead(msg, 10);
-//        }
-//
-//        for (int i = 0; i < 100; i++) {
-//            msg.prepare("FastTest")
-//                    .addInt(i)
-//                    .send();
-//
-//            sleepWithRead(msg, 1);
-//        }
+        //        for (int i = 0; i < 5; i++) {
+        //            msg.prepare("Test")
+        //                    .addInt(i)
+        //                    .send();
+        //
+        //            sleepWithRead(msg, 10);
+        //        }
+        //
+        //        for (int i = 0; i < 5; i++) {
+        //            msg.prepare("Test2" + Math.random())
+        //                    .addInt(i)
+        //                    .send();
+        //
+        //            sleepWithRead(msg, 10);
+        //        }
+        //
+        //        for (int i = 0; i < 100; i++) {
+        //            msg.prepare("FastTest")
+        //                    .addInt(i)
+        //                    .send();
+        //
+        //            sleepWithRead(msg, 1);
+        //        }
 
-       // msg.disconnect();
+        // msg.disconnect();
     }
 }

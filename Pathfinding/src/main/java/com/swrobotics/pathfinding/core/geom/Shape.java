@@ -56,7 +56,8 @@ public abstract class Shape {
 
     public static final class Serializer implements JsonDeserializer<Shape> {
         @Override
-        public Shape deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public Shape deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
             ShapeType type = ShapeType.valueOf(obj.get("type").getAsString());
             return context.deserialize(obj, type.getType());

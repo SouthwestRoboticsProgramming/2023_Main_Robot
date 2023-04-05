@@ -6,6 +6,7 @@ import com.swrobotics.shufflelog.ShuffleLog;
 import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.util.Cooldown;
 import com.swrobotics.shufflelog.util.FileChooser;
+
 import imgui.ImGui;
 import imgui.ImGuiViewport;
 import imgui.flag.ImGuiInputTextFlags;
@@ -21,18 +22,18 @@ import java.nio.charset.StandardCharsets;
 
 public final class RemoteFileView {
     // Filesystem API
-    public static final String MSG_LIST_FILES     = ":ListFiles";
-    public static final String MSG_READ_FILE      = ":ReadFile";
-    public static final String MSG_WRITE_FILE     = ":WriteFile";
-    public static final String MSG_DELETE_FILE    = ":DeleteFile";
-    public static final String MSG_MOVE_FILE      = ":MoveFile";
-    public static final String MSG_MKDIR          = ":Mkdir";
-    public static final String MSG_FILES          = ":Files";
-    public static final String MSG_FILE_CONTENT   = ":FileContent";
-    public static final String MSG_WRITE_CONFIRM  = ":WriteConfirm";
+    public static final String MSG_LIST_FILES = ":ListFiles";
+    public static final String MSG_READ_FILE = ":ReadFile";
+    public static final String MSG_WRITE_FILE = ":WriteFile";
+    public static final String MSG_DELETE_FILE = ":DeleteFile";
+    public static final String MSG_MOVE_FILE = ":MoveFile";
+    public static final String MSG_MKDIR = ":Mkdir";
+    public static final String MSG_FILES = ":Files";
+    public static final String MSG_FILE_CONTENT = ":FileContent";
+    public static final String MSG_WRITE_CONFIRM = ":WriteConfirm";
     public static final String MSG_DELETE_CONFIRM = ":DeleteConfirm";
-    public static final String MSG_MOVE_CONFIRM   = ":MoveConfirm";
-    public static final String MSG_MKDIR_CONFIRM  = ":MkdirConfirm";
+    public static final String MSG_MOVE_CONFIRM = ":MoveConfirm";
+    public static final String MSG_MKDIR_CONFIRM = ":MkdirConfirm";
 
     private final ShuffleLog log;
     private final MessengerClient msg;
@@ -60,8 +61,7 @@ public final class RemoteFileView {
     }
 
     private RemoteNode evalPath(String path) {
-        if (path.equals(""))
-            return remoteRoot;
+        if (path.equals("")) return remoteRoot;
 
         String[] parts = path.split("/");
         RemoteNode node = remoteRoot;
@@ -88,10 +88,8 @@ public final class RemoteFileView {
             boolean isDir = reader.readBoolean();
 
             RemoteNode node;
-            if (isDir)
-                node = new RemoteDirectory(name);
-            else
-                node = new RemoteFile(name);
+            if (isDir) node = new RemoteDirectory(name);
+            else node = new RemoteFile(name);
 
             dir.addChild(node);
         }
@@ -188,14 +186,14 @@ public final class RemoteFileView {
     private void onFileContent(String type, MessageReader reader) {
         String filePath = reader.readString();
         boolean success = reader.readBoolean();
-        if (!success)
-            return;
+        if (!success) return;
 
         int dataLen = reader.readInt();
         byte[] data = reader.readRaw(dataLen);
         String dataStr = new String(data, StandardCharsets.UTF_8);
 
-        FileEditorTool editor = new FileEditorTool(filePath, dataStr, msg, name + MSG_WRITE_FILE, log);
+        FileEditorTool editor =
+                new FileEditorTool(filePath, dataStr, msg, name + MSG_WRITE_FILE, log);
         log.addTool(editor);
     }
 
@@ -212,9 +210,9 @@ public final class RemoteFileView {
         return b.toByteArray();
     }
 
-
     private void uploadFile(File file, String targetDirPath) {
-        String path = targetDirPath.equals("") ? file.getName() : targetDirPath + "/" + file.getName();
+        String path =
+                targetDirPath.equals("") ? file.getName() : targetDirPath + "/" + file.getName();
         if (file.isFile()) {
             try {
                 byte[] data = readFile(file);
@@ -228,9 +226,7 @@ public final class RemoteFileView {
                 e.printStackTrace();
             }
         } else if (file.isDirectory()) {
-            msg.prepare(name + MSG_MKDIR)
-                    .addString(path)
-                    .send();
+            msg.prepare(name + MSG_MKDIR).addString(path).send();
 
             File[] files = file.listFiles();
             if (files != null) {
@@ -248,7 +244,11 @@ public final class RemoteFileView {
     private void showDirectory(RemoteDirectory dir, boolean isRoot) {
         String dirName = isRoot ? "Root" : dir.getName();
 
-        boolean open = ImGui.treeNodeEx(dirName, ImGuiTreeNodeFlags.SpanFullWidth | (isRoot ? ImGuiTreeNodeFlags.DefaultOpen : 0));
+        boolean open =
+                ImGui.treeNodeEx(
+                        dirName,
+                        ImGuiTreeNodeFlags.SpanFullWidth
+                                | (isRoot ? ImGuiTreeNodeFlags.DefaultOpen : 0));
         if (ImGui.beginDragDropSource()) {
             ImGui.text(dirName);
             ImGui.setDragDropPayload("TM_" + name + "_DRAG_DIR", dir);
@@ -256,13 +256,11 @@ public final class RemoteFileView {
         }
         if (ImGui.beginDragDropTarget()) {
             RemoteNode node = ImGui.acceptDragDropPayload("TM_" + name + "_DRAG_FILE");
-            if (node == null)
-                node = ImGui.acceptDragDropPayload("TM_" + name + "_DRAG_DIR");
+            if (node == null) node = ImGui.acceptDragDropPayload("TM_" + name + "_DRAG_DIR");
 
             if (node != null && !isChild(node, dir)) {
                 String dstPath = dir.getFullPath();
-                if (!dstPath.equals(""))
-                    dstPath += "/";
+                if (!dstPath.equals("")) dstPath += "/";
 
                 msg.prepare(name + MSG_MOVE_FILE)
                         .addString(node.getFullPath())
@@ -278,9 +276,7 @@ public final class RemoteFileView {
         boolean openNewDirPopup = false;
         if (ImGui.beginPopupContextItem("context_menu")) {
             if (!isRoot && ImGui.selectable("Delete")) {
-                msg.prepare(name + MSG_DELETE_FILE)
-                        .addString(dir.getFullPath())
-                        .send();
+                msg.prepare(name + MSG_DELETE_FILE).addString(dir.getFullPath()).send();
                 ImGui.closeCurrentPopup();
             }
             if (ImGui.selectable("New directory")) {
@@ -306,21 +302,23 @@ public final class RemoteFileView {
         if (ImGui.beginPopupModal("New Directory", ImGuiWindowFlags.NoMove)) {
             // Center the popup
             ImGuiViewport vp = ImGui.getWindowViewport();
-            ImGui.setWindowPos(vp.getCenterX() - ImGui.getWindowWidth() / 2, vp.getCenterY() - ImGui.getWindowHeight() / 2);
+            ImGui.setWindowPos(
+                    vp.getCenterX() - ImGui.getWindowWidth() / 2,
+                    vp.getCenterY() - ImGui.getWindowHeight() / 2);
 
             ImGui.text("New directory name:");
             ImGui.setNextItemWidth(300);
-            boolean submit = ImGui.inputText("##name", mkdirName, ImGuiInputTextFlags.EnterReturnsTrue);
+            boolean submit =
+                    ImGui.inputText("##name", mkdirName, ImGuiInputTextFlags.EnterReturnsTrue);
             ImGui.setItemDefaultFocus();
 
             ImGui.setNextItemWidth(300);
             submit |= ImGui.button("Create");
 
             if (submit) {
-                String path = isRoot ? mkdirName.get() : (dir.getFullPath() + "/" + mkdirName.get());
-                msg.prepare(name + MSG_MKDIR)
-                        .addString(path)
-                        .send();
+                String path =
+                        isRoot ? mkdirName.get() : (dir.getFullPath() + "/" + mkdirName.get());
+                msg.prepare(name + MSG_MKDIR).addString(path).send();
                 ImGui.closeCurrentPopup();
             }
 
@@ -336,9 +334,7 @@ public final class RemoteFileView {
                 ImGui.unindent(ImGui.getTreeNodeToLabelSpacing());
 
                 if (reqContentCooldown.request()) {
-                    msg.prepare(name + MSG_LIST_FILES)
-                            .addString(dir.getFullPath())
-                            .send();
+                    msg.prepare(name + MSG_LIST_FILES).addString(dir.getFullPath()).send();
                 }
             } else {
                 for (RemoteNode node : dir.getChildren()) {
@@ -350,19 +346,16 @@ public final class RemoteFileView {
     }
 
     private void showFile(RemoteFile file) {
-        ImGui.treeNodeEx(file.getName(), ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Leaf);
+        ImGui.treeNodeEx(
+                file.getName(), ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Leaf);
         ImGui.pushID(file.getName());
         if (ImGui.beginPopupContextItem()) {
             if (ImGui.selectable("Delete")) {
-                msg.prepare(name + MSG_DELETE_FILE)
-                        .addString(file.getFullPath())
-                        .send();
+                msg.prepare(name + MSG_DELETE_FILE).addString(file.getFullPath()).send();
                 ImGui.closeCurrentPopup();
             }
             if (ImGui.selectable("Edit")) {
-                msg.prepare(name + MSG_READ_FILE)
-                        .addString(file.getFullPath())
-                        .send();
+                msg.prepare(name + MSG_READ_FILE).addString(file.getFullPath()).send();
             }
             ImGui.endPopup();
         }

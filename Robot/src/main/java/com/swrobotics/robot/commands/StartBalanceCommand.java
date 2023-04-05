@@ -12,7 +12,11 @@ public class StartBalanceCommand extends DriveBlindCommand {
 
     private final DrivetrainSubsystem drive;
 
-    public StartBalanceCommand(RobotContainer robot, Supplier<Angle> direction, double velocityMetersPerSecond, boolean robotRelative) {
+    public StartBalanceCommand(
+            RobotContainer robot,
+            Supplier<Angle> direction,
+            double velocityMetersPerSecond,
+            boolean robotRelative) {
         super(robot, direction, velocityMetersPerSecond, robotRelative);
         drive = robot.swerveDrive;
     }
@@ -24,5 +28,4 @@ public class StartBalanceCommand extends DriveBlindCommand {
         double magnitude = tilt.getNorm();
         return Math.abs(magnitude) > 4.0;
     }
-    
 }

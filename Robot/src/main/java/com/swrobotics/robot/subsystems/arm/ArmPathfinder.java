@@ -16,10 +16,7 @@ public final class ArmPathfinder {
     private static final double CORRECT_TARGET_TOL = 0.2;
 
     public static Vec2d toStateSpaceVec(ArmPose pose) {
-        return new Vec2d(
-                pose.bottomAngle,
-                MathUtil.wrap(pose.topAngle + Math.PI, 0, Math.PI * 2)
-        );
+        return new Vec2d(pose.bottomAngle, MathUtil.wrap(pose.topAngle + Math.PI, 0, Math.PI * 2));
     }
 
     private final MessengerClient msg;
@@ -44,8 +41,7 @@ public final class ArmPathfinder {
     }
 
     public boolean isPathValid() {
-        if (path.isEmpty())
-            return false;
+        if (path.isEmpty()) return false;
 
         ArmPose last = path.get(path.size() - 1);
 

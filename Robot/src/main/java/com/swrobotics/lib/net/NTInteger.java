@@ -1,15 +1,12 @@
 package com.swrobotics.lib.net;
 
-/**
- * Represents a {@code int} value stored in NetworkTables.
- */
+/** Represents a {@code int} value stored in NetworkTables. */
 public final class NTInteger extends NTEntry<Integer> {
     private final int defaultVal;
 
     /**
-     * Creates a new {@code int} entry with a specified path.
-     * The path can be split using the '/' character to organize
-     * entries into groups.
+     * Creates a new {@code int} entry with a specified path. The path can be split using the '/'
+     * character to organize entries into groups.
      *
      * @param path path
      */

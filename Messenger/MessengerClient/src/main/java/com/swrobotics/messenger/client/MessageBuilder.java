@@ -14,7 +14,7 @@ public final class MessageBuilder {
     private final String type;
     private final ByteArrayOutputStream b;
     private final DataOutputStream out;
-    
+
     public MessageBuilder(MessengerClient client, String type) {
         this.client = client;
         this.type = type;
@@ -22,9 +22,7 @@ public final class MessageBuilder {
         out = new DataOutputStream(b);
     }
 
-    /**
-     * Sends the message with the type and data.
-     */
+    /** Sends the message with the type and data. */
     public void send() {
         client.sendMessage(type, b.toByteArray());
     }

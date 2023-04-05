@@ -3,9 +3,9 @@ package com.swrobotics.lib.drive.swerve.commands;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.lib.drive.swerve.SwerveDrive;
 import com.swrobotics.lib.drive.swerve.Pathfinder;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -50,10 +50,7 @@ public final class PathfindToPointCommand extends CommandBase {
         finder.setGoal(goal.x, goal.y);
 
         Pose2d currentPose = drive.getPose();
-        Vec2d currentPosition = new Vec2d(
-                currentPose.getX(),
-                currentPose.getY()
-        );
+        Vec2d currentPosition = new Vec2d(currentPose.getX(), currentPose.getY());
 
         Vec2d target = null;
         if (!finder.isPathTargetValid()) {
@@ -64,7 +61,8 @@ public final class PathfindToPointCommand extends CommandBase {
 
             // Because of latency, the starting point of the path can be significantly
             // behind the actual location
-            // With the predefined path there is effectively infinite latency so this is very important
+            // With the predefined path there is effectively infinite latency so this is very
+            // important
             double minDist = Double.POSITIVE_INFINITY;
             for (int i = currentPath.size() - 1; i > 0; i--) {
                 Vec2d point = currentPath.get(i);
@@ -79,7 +77,8 @@ public final class PathfindToPointCommand extends CommandBase {
                 }
             }
 
-            // If we aren't near the path at all, we need to wait for the pathfinder to make a valid path
+            // If we aren't near the path at all, we need to wait for the pathfinder to make a valid
+            // path
             if (target == null) {
                 System.err.println("Waiting for pathfinder to catch up");
                 drive.addTranslation(new Translation2d(0, 0), true);
@@ -89,8 +88,7 @@ public final class PathfindToPointCommand extends CommandBase {
 
         // We are finished if within tolerance to final target
         double magToGoal = currentPosition.distanceTo(goal);
-        if (magToGoal < TOLERANCE)
-            finished = true;
+        if (magToGoal < TOLERANCE) finished = true;
 
         double velocity = -pid.calculate(magToGoal, 0);
         velocity = MathUtil.clamp(velocity, -VELOCITY, VELOCITY);
@@ -99,7 +97,8 @@ public final class PathfindToPointCommand extends CommandBase {
         double deltaX = target.x - currentPosition.x;
         double deltaY = target.y - currentPosition.y;
         double len = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        deltaX /= len; deltaY /= len;
+        deltaX /= len;
+        deltaY /= len;
 
         // Scale vector by velocity
         deltaX *= velocity;

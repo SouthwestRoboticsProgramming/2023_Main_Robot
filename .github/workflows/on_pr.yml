@@ -4,6 +4,12 @@ on:
 
   push:
 jobs:
+  pre_commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - uses: pre-commit/action@v3.0.0
   gradle:
     runs-on: ubuntu-latest
     steps:
@@ -12,13 +18,13 @@ jobs:
       with:
         distribution: temurin
         java-version: 11
-   
+
     - name: Gradle Build
       uses: gradle/gradle-build-action@v2
       with:
         arguments: build
 
-    - name: Gradle Test 
+    - name: Gradle Test
       uses: gradle/gradle-build-action@v2
       with:
         arguments: test

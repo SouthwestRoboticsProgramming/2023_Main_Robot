@@ -9,35 +9,36 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.pathfinding.core.finder.SpatialGraph;
-import com.swrobotics.pathfinding.field.Field;
 import com.swrobotics.pathfinding.core.geom.Circle;
 import com.swrobotics.pathfinding.core.geom.Rectangle;
 import com.swrobotics.pathfinding.core.geom.RobotShape;
 import com.swrobotics.pathfinding.core.geom.Shape;
+import com.swrobotics.pathfinding.field.Field;
 import com.swrobotics.pathfinding.task.PathfinderTask;
 
 import java.lang.reflect.Type;
 import java.util.UUID;
 
 public abstract class Grid {
-    public static final ThreadLocal<DeserializationContext> DESERIALIZATION_CTX = new ThreadLocal<>();
-    public static final Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(Grid.class, new Serializer())
-            .registerTypeAdapter(BitfieldGrid.class, new BitfieldGrid.Serializer())
-            .registerTypeAdapter(GridUnion.class, new GridUnion.Serializer())
-            .registerTypeAdapter(ShapeGrid.class, new ShapeGrid.Serializer())
-            .registerTypeAdapter(Shape.class, new Shape.Serializer())
-            .registerTypeAdapter(RobotShape.class, new Shape.Serializer())
-            .registerTypeAdapter(Circle.class, new Circle.Serializer())
-            .registerTypeAdapter(Rectangle.class, new Rectangle.Serializer())
-            .disableHtmlEscaping()
-            .setPrettyPrinting()
-            .create();
+    public static final ThreadLocal<DeserializationContext> DESERIALIZATION_CTX =
+            new ThreadLocal<>();
+    public static final Gson GSON =
+            new GsonBuilder()
+                    .registerTypeAdapter(Grid.class, new Serializer())
+                    .registerTypeAdapter(BitfieldGrid.class, new BitfieldGrid.Serializer())
+                    .registerTypeAdapter(GridUnion.class, new GridUnion.Serializer())
+                    .registerTypeAdapter(ShapeGrid.class, new ShapeGrid.Serializer())
+                    .registerTypeAdapter(Shape.class, new Shape.Serializer())
+                    .registerTypeAdapter(RobotShape.class, new Shape.Serializer())
+                    .registerTypeAdapter(Circle.class, new Circle.Serializer())
+                    .registerTypeAdapter(Rectangle.class, new Rectangle.Serializer())
+                    .disableHtmlEscaping()
+                    .setPrettyPrinting()
+                    .create();
 
-    public static Grid deserialize(JsonElement elem, int width, int height, Field field, RobotShape robot) {
-        DESERIALIZATION_CTX.set(new DeserializationContext(
-                width, height, field, robot
-        ));
+    public static Grid deserialize(
+            JsonElement elem, int width, int height, Field field, RobotShape robot) {
+        DESERIALIZATION_CTX.set(new DeserializationContext(width, height, field, robot));
         return GSON.fromJson(elem, Grid.class);
     }
 
@@ -57,7 +58,10 @@ public abstract class Grid {
 
     private static final double SQRT_2_MINUS_2 = Math.sqrt(2) - 2;
 
-    public SpatialGraph<Point> asGraph() { return asGraph(1, 1); }
+    public SpatialGraph<Point> asGraph() {
+        return asGraph(1, 1);
+    }
+
     public SpatialGraph<Point> asGraph(double biasX, double biasY) {
         // Pre-initialize point objects
         int ptHeight = getPointHeight();
@@ -99,12 +103,15 @@ public abstract class Grid {
                 int h = getPointHeight();
                 for (int x = -1; x <= 1; x++) {
                     for (int y = -1; y <= 1; y++) {
-                        if (x == 0 && y == 0)
-                            continue;
+                        if (x == 0 && y == 0) continue;
 
                         int px = current.x + x;
                         int py = current.y + y;
-                        if (px >= 0 && px < w && py >= 0 && py < h && lineOfSight(current, points[px][py])) {
+                        if (px >= 0
+                                && px < w
+                                && py >= 0
+                                && py < h
+                                && lineOfSight(current, points[px][py])) {
                             neighbors[i++] = points[px][py];
                         }
                     }
@@ -141,7 +148,9 @@ public abstract class Grid {
     }
 
     public abstract boolean canCellPass(int x, int y);
+
     public abstract void writeToMessenger(MessageBuilder builder);
+
     public void register(PathfinderTask task) {
         task.registerGrid(this);
     }
@@ -165,28 +174,22 @@ public abstract class Grid {
         if (dx != 0 && dy != 0) {
             return canCellPass(p1.x + ox, p1.y + oy);
         } else {
-            if (dx > 0)
-                return canCellPass(p1) && canCellPass(p1.x, p1.y - 1);
-            if (dx < 0)
-                return canCellPass(p1.x - 1, p1.y) && canCellPass(p1.x - 1, p1.y - 1);
-            if (dy > 0)
-                return canCellPass(p1) && canCellPass(p1.x - 1, p1.y);
-            if (dy < 0)
-                return canCellPass(p1.x, p1.y - 1) && canCellPass(p1.x - 1, p1.y - 1);
+            if (dx > 0) return canCellPass(p1) && canCellPass(p1.x, p1.y - 1);
+            if (dx < 0) return canCellPass(p1.x - 1, p1.y) && canCellPass(p1.x - 1, p1.y - 1);
+            if (dy > 0) return canCellPass(p1) && canCellPass(p1.x - 1, p1.y);
+            if (dy < 0) return canCellPass(p1.x, p1.y - 1) && canCellPass(p1.x - 1, p1.y - 1);
 
             throw new IllegalStateException();
         }
     }
 
     protected void invalidateLineOfSightCache() {
-        if (sightCache != null)
-            sightCache.invalidate();
+        if (sightCache != null) sightCache.invalidate();
     }
 
     public boolean lineOfSight(Point a, Point b) {
         // Avoid allocating cache if this grid is never checked
-        if (sightCache == null)
-            sightCache = new LineOfSightCache(this);
+        if (sightCache == null) sightCache = new LineOfSightCache(this);
 
         return sightCache.lineOfSight(a, b);
     }
@@ -221,16 +224,18 @@ public abstract class Grid {
             while (x0 != x1) {
                 f = f + dy;
                 if (f >= dx) {
-                    if (!canCellPass(x0 + ((sx - 1)/2), y0 + ((sy - 1)/2))) {
+                    if (!canCellPass(x0 + ((sx - 1) / 2), y0 + ((sy - 1) / 2))) {
                         return false;
                     }
                     y0 = y0 + sy;
                     f = f - dx;
                 }
-                if (f != 0 && !canCellPass(x0 + ((sx - 1)/2), y0 + ((sy - 1)/2))) {
+                if (f != 0 && !canCellPass(x0 + ((sx - 1) / 2), y0 + ((sy - 1) / 2))) {
                     return false;
                 }
-                if (dy == 0 && !canCellPass(x0 + ((sx - 1)/2), y0) && !canCellPass(x0 + ((sx - 1)/2), y0 - 1)) {
+                if (dy == 0
+                        && !canCellPass(x0 + ((sx - 1) / 2), y0)
+                        && !canCellPass(x0 + ((sx - 1) / 2), y0 - 1)) {
                     return false;
                 }
                 x0 = x0 + sx;
@@ -239,16 +244,18 @@ public abstract class Grid {
             while (y0 != y1) {
                 f = f + dx;
                 if (f >= dy) {
-                    if (!canCellPass(x0 + ((sx - 1)/2), y0 + ((sy - 1)/2))) {
+                    if (!canCellPass(x0 + ((sx - 1) / 2), y0 + ((sy - 1) / 2))) {
                         return false;
                     }
                     x0 = x0 + sx;
                     f = f - dy;
                 }
-                if (f != 0 && !canCellPass(x0 + ((sx - 1)/2), y0 + ((sy - 1)/2))) {
+                if (f != 0 && !canCellPass(x0 + ((sx - 1) / 2), y0 + ((sy - 1) / 2))) {
                     return false;
                 }
-                if (dx == 0 && !canCellPass(x0, y0 + ((sy - 1)/2)) && !canCellPass(x0 - 1, y0 + ((sy - 1)/2))) {
+                if (dx == 0
+                        && !canCellPass(x0, y0 + ((sy - 1) / 2))
+                        && !canCellPass(x0 - 1, y0 + ((sy - 1) / 2))) {
                     return false;
                 }
                 y0 = y0 + sy;
@@ -306,7 +313,8 @@ public abstract class Grid {
 
     public static final class Serializer implements JsonDeserializer<Grid> {
         @Override
-        public Grid deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public Grid deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
             GridType type = GridType.valueOf(obj.get("type").getAsString());
             return context.deserialize(obj, type.getType());

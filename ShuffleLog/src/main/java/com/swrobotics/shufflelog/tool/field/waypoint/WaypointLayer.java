@@ -1,5 +1,7 @@
 package com.swrobotics.shufflelog.tool.field.waypoint;
 
+import static processing.core.PConstants.CENTER;
+
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.math.Vector2f;
@@ -7,17 +9,17 @@ import com.swrobotics.shufflelog.tool.ToolConstants;
 import com.swrobotics.shufflelog.tool.field.FieldLayer;
 import com.swrobotics.shufflelog.tool.field.FieldViewTool;
 import com.swrobotics.shufflelog.util.Cooldown;
+
 import imgui.ImGui;
 import imgui.flag.ImGuiMouseButton;
 import imgui.flag.ImGuiTableFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
+
 import processing.core.PGraphics;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static processing.core.PConstants.CENTER;
 
 public final class WaypointLayer implements FieldLayer {
     public static WaypointLayer INSTANCE = null;
@@ -59,13 +61,14 @@ public final class WaypointLayer implements FieldLayer {
         hover = null;
         isSelectingPoint = false;
 
-        msg.addDisconnectHandler(() -> {
-            waypoints.clear();
-            hasWaypoints = false;
-            selection = null;
-            hover = null;
-            isSelectingPoint = false;
-        });
+        msg.addDisconnectHandler(
+                () -> {
+                    waypoints.clear();
+                    hasWaypoints = false;
+                    selection = null;
+                    hover = null;
+                    isSelectingPoint = false;
+                });
     }
 
     public void onWaypoints(String type, MessageReader reader) {
@@ -106,27 +109,21 @@ public final class WaypointLayer implements FieldLayer {
 
     @Override
     public void processAlways() {
-        if (cooldown.request())
-            msg.send(MSG_GET_WAYPOINTS);
+        if (cooldown.request()) msg.send(MSG_GET_WAYPOINTS);
     }
 
     @Override
     public void draw(PGraphics g) {
-        if (!msg.isConnected())
-            return;
+        if (!msg.isConnected()) return;
 
-        if (!show.get())
-            return;
+        if (!show.get()) return;
 
         g.ellipseMode(CENTER);
         g.strokeWeight(6);
         for (Waypoint wp : waypoints) {
-            if (wp == selection)
-                g.stroke(255, 128, 0);
-            else if (wp == hover)
-                g.stroke(128, 255, 128);
-            else
-                g.stroke(255);
+            if (wp == selection) g.stroke(255, 128, 0);
+            else if (wp == hover) g.stroke(128, 255, 128);
+            else g.stroke(255);
 
             float x = (float) wp.getX().get();
             float y = (float) wp.getY().get();
@@ -143,11 +140,9 @@ public final class WaypointLayer implements FieldLayer {
 
     private boolean waypointExistsWithName(String name, Waypoint exclusion) {
         for (Waypoint wp : waypoints) {
-            if (wp == exclusion)
-                continue;
+            if (wp == exclusion) continue;
 
-            if (wp.getName().equals(name))
-                return true;
+            if (wp.getName().equals(name)) return true;
         }
         return false;
     }
@@ -156,8 +151,7 @@ public final class WaypointLayer implements FieldLayer {
         String testName = name;
         int i = 1;
         while (true) {
-            if (!waypointExistsWithName(testName, exclusion))
-                return testName;
+            if (!waypointExistsWithName(testName, exclusion)) return testName;
 
             i++;
             testName = name + " (" + i + ")";
@@ -225,15 +219,17 @@ public final class WaypointLayer implements FieldLayer {
 
                 boolean changed, nameChanged;
                 ImGui.beginDisabled(!selection.isEditable());
-                fancyLabel("Name"); changed = nameChanged = ImGui.inputText("##name", nameInput);
-                fancyLabel("X");    changed |= ImGui.inputDouble("##x", selection.getX());
-                fancyLabel("Y");    changed |= ImGui.inputDouble("##y", selection.getY());
+                fancyLabel("Name");
+                changed = nameChanged = ImGui.inputText("##name", nameInput);
+                fancyLabel("X");
+                changed |= ImGui.inputDouble("##x", selection.getX());
+                fancyLabel("Y");
+                changed |= ImGui.inputDouble("##y", selection.getY());
                 ImGui.endDisabled();
 
                 if (changed && selection.isEditable()) {
                     selection.delete(msg);
-                    if (nameChanged)
-                        selection.setName(uniqueify(nameInput.get(), selection));
+                    if (nameChanged) selection.setName(uniqueify(nameInput.get(), selection));
                     selection.add(msg);
                 }
 
@@ -245,8 +241,7 @@ public final class WaypointLayer implements FieldLayer {
             }
         }
 
-        if (isSelectingPoint)
-            ImGui.text("Click on field to set position");
+        if (isSelectingPoint) ImGui.text("Click on field to set position");
 
         if (isSelectingPoint && ImGui.isMouseClicked(ImGuiMouseButton.Left)) {
             Vector2f where = tool.getCursorPos();
@@ -261,8 +256,7 @@ public final class WaypointLayer implements FieldLayer {
     }
 
     public List<Waypoint> getWaypoints() {
-        if (!hasWaypoints)
-            return null;
+        if (!hasWaypoints) return null;
         return waypoints;
     }
 }

@@ -10,16 +10,12 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class AutoBalanceCommand extends CommandBase {
-
     private final DrivetrainSubsystem drive;
 
     private final StopPosition firstStopPosition;
 
     public AutoBalanceCommand(RobotContainer robot) {
         drive = robot.swerveDrive;
-        // pid = new PIDController(KP.get(), 1000.0, 0.0);
-
-        // KP.onChange(() -> pid.setP(KP.get()));
 
         firstStopPosition = drive.getStopPosition();
     }
@@ -41,7 +37,7 @@ public class AutoBalanceCommand extends CommandBase {
         Rotation2d rotation = new Rotation2d(tilt.getX(), tilt.getY());
 
         // double adjustmentAmount = pid.calculate(magnitude, 0.0);
-        double adjustmentAmount = -0.385;//ADJUST_AMOUNT.get();
+        double adjustmentAmount = -0.385; // ADJUST_AMOUNT.get();
         Translation2d output = new Translation2d(adjustmentAmount, rotation);
         drive.addChassisSpeeds(new ChassisSpeeds(output.getX(), output.getY(), 0.0));
     }
@@ -55,5 +51,4 @@ public class AutoBalanceCommand extends CommandBase {
     public void end(boolean interrupted) {
         drive.setStopPosition(firstStopPosition); // Set it back to how it was
     }
-
 }

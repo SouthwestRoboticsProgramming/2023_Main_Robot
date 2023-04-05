@@ -10,7 +10,7 @@ on the coprocessors.
   - Restart tasks if they end unexpectedly
   - Upload, edit, and delete task files over Messenger
   - Send tasks' standard output and error over Messenger
-  
+
 ## Configuration
 
 The configuration is stored in `config.json` in the current working directory.

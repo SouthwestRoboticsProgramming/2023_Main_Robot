@@ -2,6 +2,7 @@ package com.swrobotics.shufflelog.tool.field;
 
 import imgui.ImGui;
 import imgui.type.ImBoolean;
+
 import processing.core.PGraphics;
 
 public final class MeterGridLayer implements FieldLayer {
@@ -14,8 +15,7 @@ public final class MeterGridLayer implements FieldLayer {
 
     @Override
     public void draw(PGraphics g) {
-        if (!show.get())
-            return;
+        if (!show.get()) return;
 
         float width = (float) FieldViewTool.WIDTH;
         float height = (float) FieldViewTool.HEIGHT;

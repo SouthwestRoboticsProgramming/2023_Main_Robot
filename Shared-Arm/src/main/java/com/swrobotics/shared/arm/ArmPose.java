@@ -1,12 +1,13 @@
 package com.swrobotics.shared.arm;
 
+import static com.swrobotics.shared.arm.ArmConstants.*;
+
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-
-import static com.swrobotics.shared.arm.ArmConstants.*;
 
 public final class ArmPose {
     // FIXME: Set based on rules in game manual and dimensions of robot
@@ -24,7 +25,7 @@ public final class ArmPose {
         // Make sure it's possible for the arm to reach the position
         double lengthSq = x * x + y * y;
         if (lengthSq > MathUtil.square(BOTTOM_LENGTH + TOP_LENGTH) + MathUtil.EPSILON
-            || lengthSq + MathUtil.EPSILON < MathUtil.square(BOTTOM_LENGTH - TOP_LENGTH)) {
+                || lengthSq + MathUtil.EPSILON < MathUtil.square(BOTTOM_LENGTH - TOP_LENGTH)) {
             return false;
         }
 
@@ -47,8 +48,13 @@ public final class ArmPose {
         double targetAngle = Math.atan2(-targetX, targetY) + Math.PI / 2;
         double len = Math.sqrt(targetX * targetX + targetY * targetY);
 
-        double angleAL = Math.acos((lengthA * lengthA + len * len - lengthB * lengthB) / (2 * lengthA * len));
-        double angleAB = Math.acos((lengthA * lengthA + lengthB * lengthB - len * len) / (2 * lengthA * lengthB));
+        double angleAL =
+                Math.acos(
+                        (lengthA * lengthA + len * len - lengthB * lengthB) / (2 * lengthA * len));
+        double angleAB =
+                Math.acos(
+                        (lengthA * lengthA + lengthB * lengthB - len * len)
+                                / (2 * lengthA * lengthB));
 
         double angle1 = targetAngle + angleAL;
         double angle2 = angle1 + angleAB - Math.PI;
@@ -70,26 +76,23 @@ public final class ArmPose {
     }
 
     public Translation2d getEndPosition() {
-        Vec2d pos = new Vec2d(BOTTOM_LENGTH, 0).rotateBy(CCWAngle.rad(bottomAngle))
-                .add(new Vec2d(TOP_LENGTH, 0).rotateBy(CCWAngle.rad(topAngle)));
+        Vec2d pos =
+                new Vec2d(BOTTOM_LENGTH, 0)
+                        .rotateBy(CCWAngle.rad(bottomAngle))
+                        .add(new Vec2d(TOP_LENGTH, 0).rotateBy(CCWAngle.rad(topAngle)));
 
         return new Translation2d(pos.x, pos.y);
     }
 
     public boolean isValid() {
-        if (bottomAngle < MIN_LOWER_ANGLE)
-            return false;
-        if (bottomAngle > MAX_LOWER_ANGLE)
-            return false;
+        if (bottomAngle < MIN_LOWER_ANGLE) return false;
+        if (bottomAngle > MAX_LOWER_ANGLE) return false;
 
         return isEndPositionValid(getEndPosition());
     }
 
     @Override
     public String toString() {
-        return "ArmPose{" +
-                "bottomAngle=" + bottomAngle +
-                ", topAngle=" + topAngle +
-                '}';
+        return "ArmPose{" + "bottomAngle=" + bottomAngle + ", topAngle=" + topAngle + '}';
     }
 }

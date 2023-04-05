@@ -3,19 +3,18 @@ package com.swrobotics.robot.commands;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.input.Input;
+
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-import com.swrobotics.lib.drive.swerve.SwerveDrive;
-
-
 public class DefaultDriveCommand extends CommandBase {
-    private final SwerveDrive drive;
+    private final DrivetrainSubsystem drive;
     private final Input input;
 
-    public DefaultDriveCommand(SwerveDrive drive, Input input) {
+    public DefaultDriveCommand(DrivetrainSubsystem drive, Input input) {
         this.drive = drive;
         this.input = input;
         addRequirements(drive);

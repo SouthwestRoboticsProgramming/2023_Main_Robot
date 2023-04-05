@@ -1,8 +1,8 @@
 package com.swrobotics.mathlib;
 
-import org.junit.Test;
-
 import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 public final class Vec2dTest {
     private void assertVecEquals(Vec2d vec, double x, double y) {
@@ -468,7 +468,8 @@ public final class Vec2dTest {
         assertEquals(new Vec2d(1, 2), new Vec2d(1, 2));
         assertNotEquals(new Vec2d(934, 2), new Vec2d(1, 2));
         assertNotEquals(new Vec2d(1, -2), new Vec2d(1, 2));
-        assertNotEquals(new Vec2d(834.1238, 734971192.1723), new Vec2d(-1823471.374, 89713962897429.3));
+        assertNotEquals(
+                new Vec2d(834.1238, 734971192.1723), new Vec2d(-1823471.374, 89713962897429.3));
     }
 
     @Test
