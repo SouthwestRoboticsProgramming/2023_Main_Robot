@@ -4,5 +4,10 @@ repos:
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
-    -   id: check-yaml
-    -   id: check-xml
+    -   id: check-merge-conflict
+
+-   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.0.0
+    hooks:
+      - id: pretty-format-java
+        args: [--aosp, --autofix]
