@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Builder to construct dropdown selectors similar to SendableChooser for
- * use in ShuffleLog. The value is stored as a String in NetworkTables.
+ * Builder to construct dropdown selectors similar to SendableChooser for use in ShuffleLog. The
+ * value is stored as a String in NetworkTables.
  *
- * Example usage:
+ * <p>Example usage:
+ *
  * <pre>{@code
  * NTMultiSelect<String> selectorTest = new NTSelectorBuilder<String>("Test/Selector Test")
  *             .addDefaultOption("Name 1 (def)", "Value 1")
@@ -53,8 +54,7 @@ public final class NTSelectorBuilder<T> {
     }
 
     public NTMultiSelect<T> build() {
-        if (defaultOption == null)
-            throw new IllegalStateException("Default option not set");
+        if (defaultOption == null) throw new IllegalStateException("Default option not set");
 
         Map<String, T> nameToVal = new HashMap<>();
         Map<T, String> valToName = new HashMap<>();
@@ -63,23 +63,22 @@ public final class NTSelectorBuilder<T> {
             valToName.put(option.value, option.name);
         }
 
-        NTMultiSelect<T> selector = new NTMultiSelect<>(path, defaultOption.value) {
-            @Override
-            protected T valueOf(String name) {
-                if (!nameToVal.containsKey(name))
-                    throw new IllegalArgumentException();
-                return nameToVal.get(name);
-            }
+        NTMultiSelect<T> selector =
+                new NTMultiSelect<>(path, defaultOption.value) {
+                    @Override
+                    protected T valueOf(String name) {
+                        if (!nameToVal.containsKey(name)) throw new IllegalArgumentException();
+                        return nameToVal.get(name);
+                    }
 
-            @Override
-            protected String nameOf(T t) {
-                return valToName.get(t);
-            }
-        };
+                    @Override
+                    protected String nameOf(T t) {
+                        return valToName.get(t);
+                    }
+                };
 
         List<T> values = new ArrayList<>();
-        for (Option<T> option : options)
-            values.add(option.value);
+        for (Option<T> option : options) values.add(option.value);
 
         selector.setOptions(values);
 

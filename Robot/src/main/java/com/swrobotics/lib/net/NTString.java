@@ -1,8 +1,6 @@
 package com.swrobotics.lib.net;
 
-/**
- * Represents a {@code String} value stored in NetworkTables.
- */
+/** Represents a {@code String} value stored in NetworkTables. */
 public final class NTString extends NTEntry<String> {
     private final String defaultVal;
 

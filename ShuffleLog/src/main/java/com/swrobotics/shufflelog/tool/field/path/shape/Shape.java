@@ -4,6 +4,7 @@ import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.shufflelog.tool.field.path.FieldNode;
 import com.swrobotics.shufflelog.tool.field.path.PathfindingLayer;
+
 import imgui.type.ImBoolean;
 
 import java.util.UUID;
@@ -25,6 +26,7 @@ public abstract class Shape implements FieldNode {
     }
 
     protected abstract void readContent(MessageReader reader);
+
     public void register(PathfindingLayer layer) {
         layer.registerShape(this);
     }

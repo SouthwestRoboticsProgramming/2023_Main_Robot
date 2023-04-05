@@ -113,4 +113,3 @@ Sent by server.
 | Client names | array of `String` | Names of all connected clients                |
 
 This message is sent by the server as a response to the `Messenger:GetClients` message.
-

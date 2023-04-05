@@ -1,13 +1,11 @@
 package com.swrobotics.mathlib;
 
 /**
- * Represents an angle measurement. All instances of this
- * interface should be immutable (they cannot change value).
+ * Represents an angle measurement. All instances of this interface should be immutable (they cannot
+ * change value).
  */
 public interface Angle {
-    /**
-     * An angle with measure zero.
-     */
+    /** An angle with measure zero. */
     Angle ZERO = AbsoluteAngle.rad(0);
 
     /**

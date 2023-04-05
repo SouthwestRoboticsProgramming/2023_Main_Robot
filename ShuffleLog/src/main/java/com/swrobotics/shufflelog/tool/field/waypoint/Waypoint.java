@@ -1,8 +1,8 @@
 package com.swrobotics.shufflelog.tool.field.waypoint;
 
 import com.swrobotics.messenger.client.MessengerClient;
+
 import imgui.type.ImDouble;
-import imgui.type.ImString;
 
 public final class Waypoint {
     private ImDouble x, y;
@@ -25,9 +25,7 @@ public final class Waypoint {
     }
 
     public void delete(MessengerClient msg) {
-        msg.prepare(WaypointLayer.MSG_REMOVE_WAYPOINT)
-                .addString(name)
-                .send();
+        msg.prepare(WaypointLayer.MSG_REMOVE_WAYPOINT).addString(name).send();
     }
 
     public ImDouble getX() {

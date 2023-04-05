@@ -2,16 +2,12 @@ package com.swrobotics.mathlib;
 
 import java.util.Objects;
 
-/**
- * Represents a two-dimensional vector of {@code double}s.
- */
+/** Represents a two-dimensional vector of {@code double}s. */
 public final class Vec2d {
     public double x;
     public double y;
 
-    /**
-     * Creates a new instance with both x and y set to zero.
-     */
+    /** Creates a new instance with both x and y set to zero. */
     public Vec2d() {
         x = 0;
         y = 0;
@@ -39,8 +35,7 @@ public final class Vec2d {
     }
 
     /**
-     * Creates a new instance in the direction of an angle
-     * with a specified magnitude.
+     * Creates a new instance in the direction of an angle with a specified magnitude.
      *
      * @param angle direction angle
      * @param mag magnitude
@@ -111,8 +106,8 @@ public final class Vec2d {
     }
 
     /**
-     * Adds a vector with the specified components to this vector, and
-     * stores the result in another vector.
+     * Adds a vector with the specified components to this vector, and stores the result in another
+     * vector.
      *
      * @param x x component to add
      * @param y y component to add
@@ -138,8 +133,7 @@ public final class Vec2d {
     }
 
     /**
-     * Adds another vector to this vector, and stores the result in
-     * another vector.
+     * Adds another vector to this vector, and stores the result in another vector.
      *
      * @param o vector to add
      * @param dest destination vector
@@ -165,8 +159,8 @@ public final class Vec2d {
     }
 
     /**
-     * Subtracts a vector with the given components from this vector,
-     * and stores the result in another vector.
+     * Subtracts a vector with the given components from this vector, and stores the result in
+     * another vector.
      *
      * @param x x component to subtract
      * @param y y component to subtract
@@ -192,8 +186,7 @@ public final class Vec2d {
     }
 
     /**
-     * Subtracts a vector from this vector and stores the result in
-     * another vector.
+     * Subtracts a vector from this vector and stores the result in another vector.
      *
      * @param o vector to subtract
      * @param dest destination vector
@@ -218,8 +211,7 @@ public final class Vec2d {
     }
 
     /**
-     * Multiplies this vector by a given scalar and stores the result
-     * in another vector.
+     * Multiplies this vector by a given scalar and stores the result in another vector.
      *
      * @param scalar scalar to multiply by
      * @param dest destination vector
@@ -245,8 +237,8 @@ public final class Vec2d {
     }
 
     /**
-     * Multiplies this vector by a vector with the given components, and
-     * stores the result in another vector.
+     * Multiplies this vector by a vector with the given components, and stores the result in
+     * another vector.
      *
      * @param x x component to multiply by
      * @param y y component to multiply by
@@ -272,8 +264,7 @@ public final class Vec2d {
     }
 
     /**
-     * Multiplies this vector by another vector and stores the result
-     * in another vector.
+     * Multiplies this vector by another vector and stores the result in another vector.
      *
      * @param o vector to multiply by
      * @param dest destination vector
@@ -298,8 +289,7 @@ public final class Vec2d {
     }
 
     /**
-     * Divides this vector by a given scalar and stores the result in
-     * another vector.
+     * Divides this vector by a given scalar and stores the result in another vector.
      *
      * @param scalar scalar to divide by
      * @param dest destination vector
@@ -325,8 +315,8 @@ public final class Vec2d {
     }
 
     /**
-     * Divides this vector by a vector with the given components, and
-     * stores the result in another vector.
+     * Divides this vector by a vector with the given components, and stores the result in another
+     * vector.
      *
      * @param x x component to divide by
      * @param y y component to divide by
@@ -352,8 +342,7 @@ public final class Vec2d {
     }
 
     /**
-     * Divides this vector by another vector, and stores the result
-     * in another vector.
+     * Divides this vector by another vector, and stores the result in another vector.
      *
      * @param o vector to divide by
      * @param dest destination vector
@@ -366,9 +355,9 @@ public final class Vec2d {
     }
 
     /**
-     * Computes the magnitude of this vector, squared. This is more
-     * efficient than computing the actual magnitude, so prefer this
-     * function if you only need to compare the magnitudes of vectors.
+     * Computes the magnitude of this vector, squared. This is more efficient than computing the
+     * actual magnitude, so prefer this function if you only need to compare the magnitudes of
+     * vectors.
      *
      * @return magnitude squared
      */
@@ -386,9 +375,8 @@ public final class Vec2d {
     }
 
     /**
-     * Computes the dot product between this vector and another vector.
-     * This is equivalent to the cosine of the angle between them multiplied
-     * by their magnitudes.
+     * Computes the dot product between this vector and another vector. This is equivalent to the
+     * cosine of the angle between them multiplied by their magnitudes.
      *
      * @param o right hand side
      * @return dot product
@@ -417,9 +405,8 @@ public final class Vec2d {
     }
 
     /**
-     * Computes the distance from this vector to a vector with the
-     * specified components, squared. See the note in {@link #magnitudeSq()}
-     * about efficiency.
+     * Computes the distance from this vector to a vector with the specified components, squared.
+     * See the note in {@link #magnitudeSq()} about efficiency.
      *
      * @param x x component of other vector
      * @param y y component of other vector
@@ -432,8 +419,8 @@ public final class Vec2d {
     }
 
     /**
-     * Computes the distance from this vector to another vector,
-     * squared. See the note in {@link #magnitudeSq()} about efficiency.
+     * Computes the distance from this vector to another vector, squared. See the note in {@link
+     * #magnitudeSq()} about efficiency.
      *
      * @param o other vector
      * @return distance squared
@@ -445,8 +432,7 @@ public final class Vec2d {
     }
 
     /**
-     * Computes the distance from this vector to a vector with the
-     * specified components.
+     * Computes the distance from this vector to a vector with the specified components.
      *
      * @param x x component of other vector
      * @param y y component of other vector
@@ -489,8 +475,7 @@ public final class Vec2d {
     }
 
     /**
-     * Rotates this vector by a given angle and stores the result
-     * in another vector.
+     * Rotates this vector by a given angle and stores the result in another vector.
      *
      * @param angle angle to rotate by
      * @param dest destination vector
@@ -509,8 +494,7 @@ public final class Vec2d {
     }
 
     /**
-     * Normalizes this vector by making its magnitude 1, thus
-     * becoming a unit vector.
+     * Normalizes this vector by making its magnitude 1, thus becoming a unit vector.
      *
      * @return this
      */
@@ -522,8 +506,7 @@ public final class Vec2d {
     }
 
     /**
-     * Normalizes this vector by making its magnitude 1, and stores
-     * the result in another vector.
+     * Normalizes this vector by making its magnitude 1, and stores the result in another vector.
      *
      * @param dest destination vector
      * @return dest
@@ -536,9 +519,8 @@ public final class Vec2d {
     }
 
     /**
-     * Normalizes this vector by scaling it to be along the unit square. This
-     * guarantees that at least one of the components will be 1, unless this
-     * vector is (0, 0).
+     * Normalizes this vector by scaling it to be along the unit square. This guarantees that at
+     * least one of the components will be 1, unless this vector is (0, 0).
      *
      * @return this, normalized to the unit square
      */
@@ -547,9 +529,9 @@ public final class Vec2d {
     }
 
     /**
-     * Normalizes this vector by scaling it to be along the unit square and
-     * stores the result in another vector. This guarantees that at least one
-     * of the components will be 1, unless this vector is (0, 0).
+     * Normalizes this vector by scaling it to be along the unit square and stores the result in
+     * another vector. This guarantees that at least one of the components will be 1, unless this
+     * vector is (0, 0).
      *
      * @param dest destination vector
      * @return dest
@@ -596,8 +578,8 @@ public final class Vec2d {
     }
 
     /**
-     * Takes the absolute value of each component of this vector, and
-     * stores the result in another vector.
+     * Takes the absolute value of each component of this vector, and stores the result in another
+     * vector.
      *
      * @param dest destination vector
      * @return dest
@@ -613,8 +595,7 @@ public final class Vec2d {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Vec2d vec2d = (Vec2d) o;
-        return Double.compare(vec2d.x, x) == 0 &&
-                Double.compare(vec2d.y, y) == 0;
+        return Double.compare(vec2d.x, x) == 0 && Double.compare(vec2d.y, y) == 0;
     }
 
     @Override

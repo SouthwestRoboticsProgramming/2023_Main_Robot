@@ -1,8 +1,8 @@
 package com.swrobotics.mathlib;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 public final class CWAngleTest extends AbstractAngleTest<CWAngle> {
     @Override
@@ -29,4 +29,5 @@ public final class CWAngleTest extends AbstractAngleTest<CWAngle> {
         assertEquals(CWAngle.rad(2).abs().rad(), 2, 0.0001);
         assertEquals(CWAngle.rad(-12).abs().rad(), 12, 0.0001);
         assertEquals(CWAngle.rad(45).abs().rad(), 45, 0.0001);
-    }}
+    }
+}

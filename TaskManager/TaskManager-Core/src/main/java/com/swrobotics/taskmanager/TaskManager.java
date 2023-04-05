@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class TaskManager {
-    private static final Type TASKS_MAP_TYPE = new TypeToken<Map<String, Task>>(){}.getType();
+    private static final Type TASKS_MAP_TYPE = new TypeToken<Map<String, Task>>() {}.getType();
 
     private static final File CONFIG_FILE = new File("config.json");
     private static final File TASKS_FILE = new File("tasks.json");
@@ -24,11 +24,12 @@ public final class TaskManager {
     public TaskManager() {
         TaskManagerConfiguration config = TaskManagerConfiguration.load(CONFIG_FILE);
         api = new TaskManagerAPI(this, config);
-        tasksGson = new GsonBuilder()
-                .registerTypeAdapter(File.class, new FileTypeAdapter())
-                .registerTypeAdapter(Task.class, new TaskSerializer(api, config))
-                .setPrettyPrinting()
-                .create();
+        tasksGson =
+                new GsonBuilder()
+                        .registerTypeAdapter(File.class, new FileTypeAdapter())
+                        .registerTypeAdapter(Task.class, new TaskSerializer(api, config))
+                        .setPrettyPrinting()
+                        .create();
 
         tasks = loadTasks();
 
@@ -43,8 +44,7 @@ public final class TaskManager {
 
     private Map<String, Task> loadTasks() {
         // If the file doesn't exist, there must not be any tasks yet
-        if (!TASKS_FILE.exists())
-            return new HashMap<>();
+        if (!TASKS_FILE.exists()) return new HashMap<>();
 
         try {
             return tasksGson.fromJson(new FileReader(TASKS_FILE), TASKS_MAP_TYPE);

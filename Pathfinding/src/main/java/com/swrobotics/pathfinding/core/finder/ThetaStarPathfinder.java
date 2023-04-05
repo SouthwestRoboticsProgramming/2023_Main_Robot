@@ -11,7 +11,8 @@ public final class ThetaStarPathfinder<P> extends AStarPathfinder<P> {
     @Override
     protected void computeCost(Node<P> current, Node<P> next) {
         if (current.parent != null && graph.lineOfSight(current.parent.position, next.position)) {
-            double newCost = current.parent.cost + graph.cost(current.parent.position, next.position);
+            double newCost =
+                    current.parent.cost + graph.cost(current.parent.position, next.position);
             if (newCost < next.cost) {
                 next.parent = current.parent;
                 next.cost = newCost;

@@ -1,13 +1,15 @@
 package com.swrobotics.shufflelog.tool.field;
 
 import edu.wpi.first.math.util.Units;
+
 import imgui.ImGui;
 import imgui.type.ImBoolean;
+
 import processing.core.PConstants;
 import processing.core.PGraphics;
 
 public final class FieldVectorLayer2023 implements FieldLayer {
-    private static final float width = 54*12+1;
+    private static final float width = 54 * 12 + 1;
     private static final float height = 216.03f + 99.07f;
 
     private static final float centerX = width / 2;
@@ -41,8 +43,10 @@ public final class FieldVectorLayer2023 implements FieldLayer {
 
     // -----------------------------------------------------
 
-    private static final float barrierInnerEndpointX = doubleSubstationInnerFromLeft + loadingZoneOuterSpacingFromDoubleSubstationInner;
-    private static final float gridInnerX = centerX - gamePieceSpacingFromCenterX - gridInnerSpacingFromGamePieces;
+    private static final float barrierInnerEndpointX =
+            doubleSubstationInnerFromLeft + loadingZoneOuterSpacingFromDoubleSubstationInner;
+    private static final float gridInnerX =
+            centerX - gamePieceSpacingFromCenterX - gridInnerSpacingFromGamePieces;
 
     private final ImBoolean show = new ImBoolean(true);
 
@@ -53,8 +57,7 @@ public final class FieldVectorLayer2023 implements FieldLayer {
 
     @Override
     public void draw(PGraphics g) {
-        if (!show.get())
-            return;
+        if (!show.get()) return;
 
         float inchesScale = (float) (1 / Units.metersToInches(1));
         g.scale(inchesScale);
@@ -87,17 +90,13 @@ public final class FieldVectorLayer2023 implements FieldLayer {
     }
 
     private void red(PGraphics g, boolean flipColor) {
-        if (flipColor)
-            g.stroke(0, 0, 255);
-        else
-            g.stroke(255, 0, 0);
+        if (flipColor) g.stroke(0, 0, 255);
+        else g.stroke(255, 0, 0);
     }
 
     private void blue(PGraphics g, boolean flipColor) {
-        if (flipColor)
-            g.stroke(255, 0, 0);
-        else
-            g.stroke(0, 0, 255);
+        if (flipColor) g.stroke(255, 0, 0);
+        else g.stroke(0, 0, 255);
     }
 
     private void drawFieldHalf(PGraphics g, boolean flipColor, float strokeMul) {
@@ -114,13 +113,20 @@ public final class FieldVectorLayer2023 implements FieldLayer {
         g.rect(
                 chargeStationX,
                 chargeStationLowerSpacing,
-                (centerX - gamePieceSpacingFromCenterX - communityLowerSpacingFromGamePieces) - chargeStationX,
-                centerY - chargeStationLowerSpacing
-        );
+                (centerX - gamePieceSpacingFromCenterX - communityLowerSpacingFromGamePieces)
+                        - chargeStationX,
+                centerY - chargeStationLowerSpacing);
         g.noStroke();
         g.fill(128);
-        float cableProtectorWidth = (gridInnerToChargeStationCableProtectorCenterSpacing - gridInnerToChargeStationCableProtectorOuterSpacing) * 2;
-        g.rect(gridInnerX + gridInnerToChargeStationCableProtectorOuterSpacing, 0, cableProtectorWidth, chargeStationLowerSpacing);
+        float cableProtectorWidth =
+                (gridInnerToChargeStationCableProtectorCenterSpacing
+                                - gridInnerToChargeStationCableProtectorOuterSpacing)
+                        * 2;
+        g.rect(
+                gridInnerX + gridInnerToChargeStationCableProtectorOuterSpacing,
+                0,
+                cableProtectorWidth,
+                chargeStationLowerSpacing);
 
         // Blue community tape
         blue(g, flipColor);
@@ -131,13 +137,15 @@ public final class FieldVectorLayer2023 implements FieldLayer {
         g.line(gridInnerX, height - barrierSpacingFromTop, gridInnerX, 0);
 
         float l1x = doubleSubstationInnerFromLeft + gridL1ToDoubleSubstationInnerSpacing;
-        float topCubeCenterY = height - loadingZoneHorizSpacingFromTop - communityHorizToGridTopCubeCenterYSpacing;
+        float topCubeCenterY =
+                height - loadingZoneHorizSpacingFromTop - communityHorizToGridTopCubeCenterYSpacing;
 
         // Cone nodes
         g.strokeWeight(strokeMul);
         float barrierY = height - barrierSpacingFromTop;
         blue(g, flipColor);
-        if (flipColor) g.fill(128, 0, 0); else g.fill(0, 0, 128);
+        if (flipColor) g.fill(128, 0, 0);
+        else g.fill(0, 0, 128);
         float topConeRectH = gridCubeSpacing / 2 + (barrierY - topCubeCenterY);
         g.rect(0, topCubeCenterY - gridCubeSpacing / 2, l1x, topConeRectH);
 
@@ -146,7 +154,8 @@ public final class FieldVectorLayer2023 implements FieldLayer {
         g.rect(0, topCubeCenterY - gridCubeSpacing / 2 - gridCubeSpacing, l1x, gridCubeSpacing);
 
         blue(g, flipColor);
-        if (flipColor) g.fill(128, 0, 0); else g.fill(0, 0, 128);
+        if (flipColor) g.fill(128, 0, 0);
+        else g.fill(0, 0, 128);
         g.rect(0, 0, l1x, topCubeCenterY - gridCubeSpacing / 2 - gridCubeSpacing);
 
         // Cube nodes
@@ -156,7 +165,7 @@ public final class FieldVectorLayer2023 implements FieldLayer {
         g.translate(0, 0, 0.05f);
         for (int i = 0; i < 3; i++) {
             float centerY = topCubeCenterY - i * gridCubeSpacing;
-            g.rect(0, centerY - gridCubeWidth/2f, l1x, gridCubeWidth);
+            g.rect(0, centerY - gridCubeWidth / 2f, l1x, gridCubeWidth);
         }
         g.popMatrix();
 
@@ -169,9 +178,15 @@ public final class FieldVectorLayer2023 implements FieldLayer {
     private void drawLoadingZoneBorderTape(PGraphics g) {
         g.beginShape(PConstants.LINE_STRIP);
         g.vertex(centerX - loadingZoneInnerSpacingFromCenterX, height);
-        g.vertex(centerX - loadingZoneInnerSpacingFromCenterX, height - loadingZoneHorizSpacingFromTop);
-        g.vertex(doubleSubstationInnerFromLeft + loadingZoneOuterSpacingFromDoubleSubstationInner, height - loadingZoneHorizSpacingFromTop);
-        g.vertex(doubleSubstationInnerFromLeft + loadingZoneOuterSpacingFromDoubleSubstationInner, height - barrierSpacingFromTop);
+        g.vertex(
+                centerX - loadingZoneInnerSpacingFromCenterX,
+                height - loadingZoneHorizSpacingFromTop);
+        g.vertex(
+                doubleSubstationInnerFromLeft + loadingZoneOuterSpacingFromDoubleSubstationInner,
+                height - loadingZoneHorizSpacingFromTop);
+        g.vertex(
+                doubleSubstationInnerFromLeft + loadingZoneOuterSpacingFromDoubleSubstationInner,
+                height - barrierSpacingFromTop);
         g.endShape();
     }
 

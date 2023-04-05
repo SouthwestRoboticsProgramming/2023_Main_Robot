@@ -23,7 +23,8 @@ public final class PathFollowerTest {
         return sqr(vx - wx) + sqr(vy - wy);
     }
 
-    private double distanceToLineSegment(double px, double py, double vx, double vy, double wx, double wy) {
+    private double distanceToLineSegment(
+            double px, double py, double vx, double vy, double wx, double wy) {
         double l2 = dist2(vx, vy, wx, wy);
         if (l2 == 0) return dist2(px, py, vx, vy);
         double t = ((px - vx) * (wx - vx) + (py - vy) * (wy - vy)) / l2;
@@ -53,16 +54,17 @@ public final class PathFollowerTest {
         }
 
         // The path is invalid because the robot is nowhere near the path, so leave
-        // This can happen if the target changes, but the start position hasn't updated yet due to latency
-        if (target == null)
-            return "not near path";
+        // This can happen if the target changes, but the start position hasn't updated yet due to
+        // latency
+        if (target == null) return "not near path";
 
         // Find normal vector towards target
         double deltaX = target.x - robotX;
         double deltaY = target.y - robotY;
         double len = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         if (len < tol) return "within target tolerance";
-        deltaX /= len; deltaY /= len;
+        deltaX /= len;
+        deltaY /= len;
 
         // Scale by movement speed
         deltaX *= 0.1;

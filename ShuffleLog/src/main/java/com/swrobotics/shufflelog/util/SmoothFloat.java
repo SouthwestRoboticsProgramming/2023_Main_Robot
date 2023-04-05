@@ -32,10 +32,8 @@ public final class SmoothFloat {
         // Clamp
         float min = Math.min(oldVal, targetValue);
         float max = Math.max(oldVal, targetValue);
-        if (value < min)
-            value = min;
-        if (value > max)
-            value = max;
+        if (value < min) value = min;
+        if (value > max) value = max;
     }
 
     public float get() {

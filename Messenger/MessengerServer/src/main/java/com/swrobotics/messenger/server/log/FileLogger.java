@@ -19,8 +19,7 @@ public final class FileLogger implements MessageLogger {
 
     public FileLogger(File file, boolean compress) {
         try {
-            if (!file.exists())
-                file.createNewFile();
+            if (!file.exists()) file.createNewFile();
 
             OutputStream fileStream = new FileOutputStream(file);
 
@@ -53,7 +52,12 @@ public final class FileLogger implements MessageLogger {
 
     @Override
     public void logMessage(Message msg) {
-        out.println(getTimestamp() + "\t" + msg.getType() + "\t" + Base64.getEncoder().encodeToString(msg.getData()));
+        out.println(
+                getTimestamp()
+                        + "\t"
+                        + msg.getType()
+                        + "\t"
+                        + Base64.getEncoder().encodeToString(msg.getData()));
     }
 
     private void flush() {

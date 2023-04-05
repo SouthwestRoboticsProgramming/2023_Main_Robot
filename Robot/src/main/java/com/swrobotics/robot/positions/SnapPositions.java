@@ -1,11 +1,10 @@
 package com.swrobotics.robot.positions;
 
-import com.swrobotics.lib.net.NTTranslation2d;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
@@ -13,7 +12,8 @@ import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 public final class SnapPositions {
     // Activation tolerances
     private static final double SNAP_RADIUS = 1.5; // Meters; how close to target to enable snap
-    private static final double ANGLE_SNAP_TOL = 22.5; // Degrees; how close to correct to enable snap turn
+    private static final double ANGLE_SNAP_TOL =
+            22.5; // Degrees; how close to correct to enable snap turn
 
     // All field measurements are in inches to be consistent with field drawings
     // Position parameters
@@ -27,18 +27,20 @@ public final class SnapPositions {
     private static final double CONE_SPAN_ADJACENT = 22;
     private static final double BOTTOM_TO_LOWEST_CUBE = 42.19;
     private static final double CUBE_SPAN = 66;
-    private static final double BLUE_RIGHT_X = 4*12 + 6.25;
+    private static final double BLUE_RIGHT_X = 4 * 12 + 6.25;
     private static final double GRID_X = BLUE_RIGHT_X + CENTER_DIST_FROM_WALL;
 
     // Substation measurements
     private static final double FIELD_WIDTH = 54 * 12 + 1;
     private static final double SUBSTATION_LOWER_Y = 216.03;
     private static final double SUBSTATION_DEPTH = 14;
-    private static final double SUBSTATION_X = FIELD_WIDTH - SUBSTATION_DEPTH - CENTER_DIST_FROM_WALL;
+    private static final double SUBSTATION_X =
+            FIELD_WIDTH - SUBSTATION_DEPTH - CENTER_DIST_FROM_WALL;
     private static final double SUBSTATION_AVAIL_AREA = 34.21;
     private static final double SUBSTATION_LENGTH = 99.07;
     private static final double LOW_SUBSTATION_Y = SUBSTATION_LOWER_Y + SUBSTATION_AVAIL_AREA / 2;
-    private static final double HIGH_SUBSTATION_Y = SUBSTATION_LOWER_Y + SUBSTATION_LENGTH - SUBSTATION_AVAIL_AREA / 2;
+    private static final double HIGH_SUBSTATION_Y =
+            SUBSTATION_LOWER_Y + SUBSTATION_LENGTH - SUBSTATION_AVAIL_AREA / 2;
 
     public enum TurnMode {
         DIRECT_TURN, // Turn directly to pose angle
@@ -51,8 +53,11 @@ public final class SnapPositions {
         private final boolean driveSnapEnabled;
         private final TurnMode turnMode;
 
-        public SnapPosition(double x, double y, double rot, boolean driveSnapEnabled, TurnMode turnMode) {
-            bluePose = new Pose2d(Units.inchesToMeters(x), Units.inchesToMeters(y), new Rotation2d(rot));
+        public SnapPosition(
+                double x, double y, double rot, boolean driveSnapEnabled, TurnMode turnMode) {
+            bluePose =
+                    new Pose2d(
+                            Units.inchesToMeters(x), Units.inchesToMeters(y), new Rotation2d(rot));
             this.driveSnapEnabled = driveSnapEnabled;
             this.turnMode = turnMode;
         }
@@ -106,16 +111,24 @@ public final class SnapPositions {
         @Override
         public String toString() {
             return "SnapStatus{"
-                + "pose=" + pose + ","
-                + "turnMode=" + turnMode + ","
-                + "snapDrive=" + snapDrive + ","
-                + "snapTurn=" + snapTurn + "}";
+                    + "pose="
+                    + pose
+                    + ","
+                    + "turnMode="
+                    + turnMode
+                    + ","
+                    + "snapDrive="
+                    + snapDrive
+                    + ","
+                    + "snapTurn="
+                    + snapTurn
+                    + "}";
         }
     }
-    
+
     /**
      * Get current snap behavior based on robot pose
-     * 
+     *
      * @param currentPose current robot pose
      * @return current snap behavior, or null if not in a snap zone
      */
@@ -132,13 +145,13 @@ public final class SnapPositions {
             }
         }
 
-        if (closest == null || minDist > SNAP_RADIUS)
-            return null;
+        if (closest == null || minDist > SNAP_RADIUS) return null;
 
         Pose2d pose = closest.getPose();
-        double absDiff = CCWAngle.rad(currentPose.getRotation().getRadians())
-                .getAbsDiff(CCWAngle.rad(pose.getRotation().getRadians()))
-                .deg();
+        double absDiff =
+                CCWAngle.rad(currentPose.getRotation().getRadians())
+                        .getAbsDiff(CCWAngle.rad(pose.getRotation().getRadians()))
+                        .deg();
 
         return new SnapStatus(pose, closest.turnMode, false, absDiff < ANGLE_SNAP_TOL);
     }

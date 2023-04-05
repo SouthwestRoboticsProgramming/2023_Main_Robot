@@ -3,14 +3,12 @@ package com.swrobotics.pathfinding.field;
 import com.swrobotics.pathfinding.core.grid.Point;
 
 /**
- * Cell coordinates have +X right and +Y down, and 1 unit corresponds to
- * 1 cell. Meter coordinates have +X right and +Y up, and 1 unit corresponds
- * to 1 meter.
+ * Cell coordinates have +X right and +Y down, and 1 unit corresponds to 1 cell. Meter coordinates
+ * have +X right and +Y up, and 1 unit corresponds to 1 meter.
  */
 public final class Field {
     private final double cellSize; // meters
     private final double width, height; // meters
-
     private final int cellsX, cellsY; // cells
     private final double originX, originY; // cells
 
@@ -50,8 +48,7 @@ public final class Field {
     }
 
     /**
-     * Gets the X position of the center of a cell in meters relative
-     * to the field origin.
+     * Gets the X position of the center of a cell in meters relative to the field origin.
      *
      * @param cellX cell X position
      * @return cell center X in meters
@@ -61,8 +58,7 @@ public final class Field {
     }
 
     /**
-     * Gets the Y position of the center of a cell in meters relative
-     * to the field origin.
+     * Gets the Y position of the center of a cell in meters relative to the field origin.
      *
      * @param cellY cell Y position
      * @return cell center Y in meters
@@ -90,8 +86,7 @@ public final class Field {
         double cellY = convertMetersToCellY(y);
         return new Point(
                 (int) clamp(Math.round(cellX), 0, cellsX),
-                (int) clamp(Math.round(cellY), 0, cellsY)
-        );
+                (int) clamp(Math.round(cellY), 0, cellsY));
     }
 
     public int getCellsX() {

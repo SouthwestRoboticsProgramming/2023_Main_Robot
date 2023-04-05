@@ -7,17 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-/**
- * Represents a binary input (pressed or not pressed).
- */
+/** Represents a binary input (pressed or not pressed). */
 public final class InputButton implements InputElement {
     private final Supplier<Boolean> getter;
     private final List<Runnable> onRising, onFalling;
     private boolean pressed, wasPressed;
 
     /**
-     * Creates a new input button that reads its value from a provided
-     * getter function.
+     * Creates a new input button that reads its value from a provided getter function.
      *
      * @param getter value getter
      */
@@ -40,9 +37,8 @@ public final class InputButton implements InputElement {
     }
 
     /**
-     * Gets whether this button was just pressed during this periodic
-     * cycle. This is when the button was not pressed the previous periodic,
-     * but is now pressed.
+     * Gets whether this button was just pressed during this periodic cycle. This is when the button
+     * was not pressed the previous periodic, but is now pressed.
      *
      * @return if button was just pressed
      */
@@ -51,9 +47,8 @@ public final class InputButton implements InputElement {
     }
 
     /**
-     * Gets whether this button was just released during this periodic
-     * cycle. This is when the button was pressed the previous periodic,
-     * but is now not pressed.
+     * Gets whether this button was just released during this periodic cycle. This is when the
+     * button was pressed the previous periodic, but is now not pressed.
      *
      * @return if button was just released
      */
@@ -62,9 +57,8 @@ public final class InputButton implements InputElement {
     }
 
     /**
-     * Adds a function that will be called whenever the button is pressed.
-     * This function will be invoked on each periodic where {@link #isRising()}
-     * returns {@code true}.
+     * Adds a function that will be called whenever the button is pressed. This function will be
+     * invoked on each periodic where {@link #isRising()} returns {@code true}.
      *
      * @param risingFn function to call
      * @return this
@@ -80,9 +74,8 @@ public final class InputButton implements InputElement {
     }
 
     /**
-     * Adds a function that will be called whenever the button is released.
-     * This function will be invoked on each periodic where {@link #isFalling()}
-     * returns {@code true}.
+     * Adds a function that will be called whenever the button is released. This function will be
+     * invoked on each periodic where {@link #isFalling()} returns {@code true}.
      *
      * @param fallingFn function to call
      * @return this

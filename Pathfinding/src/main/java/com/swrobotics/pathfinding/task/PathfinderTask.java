@@ -3,8 +3,6 @@ package com.swrobotics.pathfinding.task;
 import com.swrobotics.messenger.client.MessageBuilder;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
-import com.swrobotics.pathfinding.field.Field;
-import com.swrobotics.pathfinding.core.grid.Point;
 import com.swrobotics.pathfinding.core.finder.Pathfinder;
 import com.swrobotics.pathfinding.core.geom.Circle;
 import com.swrobotics.pathfinding.core.geom.Rectangle;
@@ -15,7 +13,9 @@ import com.swrobotics.pathfinding.core.grid.BitfieldGrid;
 import com.swrobotics.pathfinding.core.grid.Grid;
 import com.swrobotics.pathfinding.core.grid.GridType;
 import com.swrobotics.pathfinding.core.grid.GridUnion;
+import com.swrobotics.pathfinding.core.grid.Point;
 import com.swrobotics.pathfinding.core.grid.ShapeGrid;
+import com.swrobotics.pathfinding.field.Field;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -134,8 +134,7 @@ public final class PathfinderTask {
 
     private void removeGrid(UUID gridId) {
         Grid existingGrid = idToGrid.remove(gridId);
-        if (existingGrid == null)
-            return;
+        if (existingGrid == null) return;
 
         existingGrid.getParent().removeGrid(existingGrid);
 
@@ -146,8 +145,7 @@ public final class PathfinderTask {
 
     private void removeShape(UUID shapeId) {
         Shape existingShape = idToShape.remove(shapeId);
-        if (existingShape != null)
-            existingShape.getParent().removeShape(existingShape);
+        if (existingShape != null) existingShape.getParent().removeShape(existingShape);
     }
 
     private void onAddGrid(String type, MessageReader reader) {
@@ -155,8 +153,7 @@ public final class PathfinderTask {
         long parentIdLsb = reader.readLong();
         UUID parentId = new UUID(parentIdMsb, parentIdLsb);
         GridUnion parent = (GridUnion) idToGrid.get(parentId);
-        if (parent == null)
-            return;
+        if (parent == null) return;
 
         // Sender specifies ID so it can identify the grid later. UUIDs are
         // practically unique so both sides can just generate random IDs with
@@ -237,8 +234,7 @@ public final class PathfinderTask {
         long parentIdLsb = reader.readLong();
         UUID parentId = new UUID(parentIdMsb, parentIdLsb);
         Grid plainGrid = idToGrid.get(parentId);
-        if (plainGrid == null)
-            return;
+        if (plainGrid == null) return;
         if (!(plainGrid instanceof ShapeGrid)) {
             System.err.println("Cannot add shape to " + plainGrid);
             return;

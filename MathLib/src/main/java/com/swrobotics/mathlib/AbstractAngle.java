@@ -1,13 +1,13 @@
 package com.swrobotics.mathlib;
 
-import java.util.Objects;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 
+import java.util.Objects;
+
 /**
- * Implements the operations common to all types of angle, but depend on the
- * specific type. This class exists to avoid having the type parameter in Angle,
- * as well as requiring that you know what type of angle you are working with.
+ * Implements the operations common to all types of angle, but depend on the specific type. This
+ * class exists to avoid having the type parameter in Angle, as well as requiring that you know what
+ * type of angle you are working with.
  *
  * @param <T> the type of the implementing class
  */
@@ -63,7 +63,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
 
     /**
      * Gets the angle as a Rotation2d
-     * 
+     *
      * @return Rotation2d
      */
     public Rotation2d rotation2d() {
@@ -155,8 +155,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
     }
 
     /**
-     * Convenience method to wrap this angle around bounds centered at
-     * zero in radians.
+     * Convenience method to wrap this angle around bounds centered at zero in radians.
      *
      * @param range minimum and maximum distance from zero in radians
      * @return wrapped angle
@@ -166,8 +165,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
     }
 
     /**
-     * Convenience method to wrap this angle around bounds centered at
-     * zero in degrees.
+     * Convenience method to wrap this angle around bounds centered at zero in degrees.
      *
      * @param range minimum and maximum distance from zero in degrees
      * @return wrapped angle
@@ -177,8 +175,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
     }
 
     /**
-     * Convenience method to wrap this angle around bounds centered at
-     * zero in degrees.
+     * Convenience method to wrap this angle around bounds centered at zero in degrees.
      *
      * @param range minimum and maximum distance from zero in rotations
      * @return
@@ -210,8 +207,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
     }
 
     /**
-     * Gets whether this angle is within the specified tolerance from
-     * another angle.
+     * Gets whether this angle is within the specified tolerance from another angle.
      *
      * @param o angle to compare to
      * @param tol tolerance
@@ -227,14 +223,12 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
     }
 
     public double sin() {
-        if (cacheSin < -1.5)
-            cacheSin = Math.sin(rad);
+        if (cacheSin < -1.5) cacheSin = Math.sin(rad);
         return cacheSin;
     }
 
     public double cos() {
-        if (cacheCos < -1.5)
-            cacheCos = Math.cos(rad);
+        if (cacheCos < -1.5) cacheCos = Math.cos(rad);
         return cacheCos;
     }
 

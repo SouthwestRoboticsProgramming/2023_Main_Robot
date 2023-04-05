@@ -3,6 +3,7 @@ package com.swrobotics.robot.commands;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.vision.Limelight;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,7 +17,8 @@ public class LimelightAutoAimCommand extends CommandBase {
     private final Limelight limelight;
     private final PIDController pidController;
 
-    public LimelightAutoAimCommand(DrivetrainSubsystem drivetrainSubsystem, Limelight limelight, int pipeline) {
+    public LimelightAutoAimCommand(
+            DrivetrainSubsystem drivetrainSubsystem, Limelight limelight, int pipeline) {
         this.drivetrainSubsystem = drivetrainSubsystem;
         this.limelight = limelight;
         limelight.setPipeline(pipeline);
@@ -24,7 +26,6 @@ public class LimelightAutoAimCommand extends CommandBase {
         pidController.enableContinuousInput(-Math.PI, Math.PI);
 
         pidController.setTolerance(0.1);
-
     }
 
     @Override
@@ -35,10 +36,13 @@ public class LimelightAutoAimCommand extends CommandBase {
     @Override
     public void execute() {
         // Gets the Output of the PID Algorithim and Clamps it to the Max Angular Velo
-        double ClampedPidOutput = MathUtil.clamp(pidController.calculate(getAngleError(), getCurrentAngle()), -MAX_ROT_VEL, MAX_ROT_VEL);
+        double ClampedPidOutput =
+                MathUtil.clamp(
+                        pidController.calculate(getAngleError(), getCurrentAngle()),
+                        -MAX_ROT_VEL,
+                        MAX_ROT_VEL);
 
         setRotation(ClampedPidOutput);
-
     }
 
     @Override
@@ -58,8 +62,4 @@ public class LimelightAutoAimCommand extends CommandBase {
     private void setRotation(double rotation) {
         drivetrainSubsystem.setTargetRotation(new Rotation2d(rotation));
     }
-
-
-
-
 }

@@ -1,32 +1,20 @@
 package com.swrobotics.mathlib;
 
-/**
- * Contains various mathematical utilities not provided by
- * Java's built-in libraries.
- */
+/** Contains various mathematical utilities not provided by Java's built-in libraries. */
 public final class MathUtil {
-    /**
-     * The mathematical constant tau. This is defined as exactly
-     * twice the value of pi.
-     */
+    /** The mathematical constant tau. This is defined as exactly twice the value of pi. */
     public static final double TAU = Math.PI * 2;
 
-    /**
-     * A very small, effectively zero value to account for
-     * floating-point imprecision.
-     */
+    /** A very small, effectively zero value to account for floating-point imprecision. */
     public static final double EPSILON = 0.000001;
 
-    /**
-     * Constant containing exactly half the value of pi.
-     */
+    /** Constant containing exactly half the value of pi. */
     public static final double HALF_PI = Math.PI / 2;
 
     /**
-     * Clamps a value within a specified range. If the value is
-     * below the minimum, it will be clamped up to the minimum,
-     * and if it is above the maximum, it will be clamped down
-     * to the maximum.
+     * Clamps a value within a specified range. If the value is below the minimum, it will be
+     * clamped up to the minimum, and if it is above the maximum, it will be clamped down to the
+     * maximum.
      *
      * @param val input value
      * @param min minimum output
@@ -42,9 +30,8 @@ public final class MathUtil {
     }
 
     /**
-     * Linearly interpolates between two values based on a given
-     * percentage from 0 to 1. The output can exceed the specified
-     * range if the input goes out of this range.
+     * Linearly interpolates between two values based on a given percentage from 0 to 1. The output
+     * can exceed the specified range if the input goes out of this range.
      *
      * @param min minimum output
      * @param max maximum output
@@ -56,10 +43,9 @@ public final class MathUtil {
     }
 
     /**
-     * Gets the percentage of the way from the minimum to the maximum
-     * the value is from 0 to 1. If the input value is outside of the
-     * specified range, the percentage can be lower than 0 or higher
-     * than 1.
+     * Gets the percentage of the way from the minimum to the maximum the value is from 0 to 1. If
+     * the input value is outside of the specified range, the percentage can be lower than 0 or
+     * higher than 1.
      *
      * @param val input value
      * @param min range minimum
@@ -71,8 +57,8 @@ public final class MathUtil {
     }
 
     /**
-     * Maps a value from one range to another. The output value can exceed
-     * the target range if the input value exceeds the source range.
+     * Maps a value from one range to another. The output value can exceed the target range if the
+     * input value exceeds the source range.
      *
      * @param val input value
      * @param inMin source minimum
@@ -86,25 +72,23 @@ public final class MathUtil {
     }
 
     /**
-     * Returns the floor modulus of the given values. This is needed as
-     * Java Math only contains implementations for {@code int}s and {@code long}s.
+     * Returns the floor modulus of the given values. This is needed as Java Math only contains
+     * implementations for {@code int}s and {@code long}s.
      *
      * @param x dividend
      * @param y divisor
      * @return floor modulus
-     *
      * @see java.lang.Math#floorMod
      */
     public static double floorMod(double x, double y) {
-        if (y == 0)
-            throw new ArithmeticException("Divide by zero");
+        if (y == 0) throw new ArithmeticException("Divide by zero");
 
         return x - Math.floor(x / y) * y;
     }
 
     /**
-     * Wraps a value within specified bounds. If the value exceeds the
-     * bounds in either direction, it will wrap around to the other side.
+     * Wraps a value within specified bounds. If the value exceeds the bounds in either direction,
+     * it will wrap around to the other side.
      *
      * @param val value to wrap
      * @param min minimum bound

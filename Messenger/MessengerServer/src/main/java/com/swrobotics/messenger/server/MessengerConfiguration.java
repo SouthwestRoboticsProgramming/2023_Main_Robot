@@ -8,6 +8,7 @@ import java.util.Properties;
 
 public final class MessengerConfiguration {
     private static final Properties defaultProps = new Properties();
+
     static {
         defaultProps.put("port", "5805");
         defaultProps.put("logFile", "");
@@ -42,9 +43,10 @@ public final class MessengerConfiguration {
 
         return new MessengerConfiguration(
                 Integer.parseInt(props.getProperty("port")),
-                props.getProperty("logFile").equals("") ? null : new File(props.getProperty("logFile")),
-                Boolean.parseBoolean(props.getProperty("compressLog"))
-        );
+                props.getProperty("logFile").equals("")
+                        ? null
+                        : new File(props.getProperty("logFile")),
+                Boolean.parseBoolean(props.getProperty("compressLog")));
     }
 
     public int getPort() {

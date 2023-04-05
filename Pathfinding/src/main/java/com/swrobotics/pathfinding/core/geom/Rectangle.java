@@ -18,7 +18,8 @@ public final class Rectangle extends Shape {
     private final double height;
     private final double rotation;
 
-    public Rectangle(double x, double y, double width, double height, double rotation, boolean inverted) {
+    public Rectangle(
+            double x, double y, double width, double height, double rotation, boolean inverted) {
         super(inverted);
         this.x = x;
         this.y = y;
@@ -63,9 +64,12 @@ public final class Rectangle extends Shape {
         builder.addDouble(rotation);
     }
 
-    public static final class Serializer implements JsonSerializer<Rectangle>, JsonDeserializer<Rectangle> {
+    public static final class Serializer
+            implements JsonSerializer<Rectangle>, JsonDeserializer<Rectangle> {
         @Override
-        public Rectangle deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public Rectangle deserialize(
+                JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
             double x = obj.get("x").getAsDouble();
             double y = obj.get("y").getAsDouble();
@@ -77,7 +81,8 @@ public final class Rectangle extends Shape {
         }
 
         @Override
-        public JsonElement serialize(Rectangle src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(
+                Rectangle src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
             obj.addProperty("type", ShapeType.RECTANGLE.toString());
             obj.addProperty("x", src.x);

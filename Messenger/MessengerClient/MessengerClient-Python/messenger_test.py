@@ -9,7 +9,7 @@ def main():
     client = MessengerClient(host, port, 'test')  # Start up a connections
     while not client.is_connected():  # Wait until it connects
         time.sleep(0.1)
-    
+
     client.add_handler('Test', handler)
 
     # Add 5 numbers to the messenger

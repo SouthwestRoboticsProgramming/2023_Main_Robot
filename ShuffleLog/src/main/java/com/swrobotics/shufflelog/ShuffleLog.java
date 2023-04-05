@@ -14,10 +14,12 @@ import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
 import com.swrobotics.shufflelog.tool.profile.ShuffleLogProfilerTool;
 import com.swrobotics.shufflelog.tool.taskmanager.RoboRIOFilesTool;
 import com.swrobotics.shufflelog.tool.taskmanager.TaskManagerTool;
+
 import edu.wpi.first.math.WPIMathJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
+
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.extension.imguizmo.ImGuizmo;
@@ -25,6 +27,7 @@ import imgui.extension.implot.ImPlot;
 import imgui.extension.implot.ImPlotContext;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
+
 import processing.core.PApplet;
 import processing.core.PFont;
 
@@ -62,11 +65,7 @@ public final class ShuffleLog extends PApplet {
         WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         try {
             CombinedRuntimeLoader.loadLibraries(
-                    ShuffleLog.class,
-                    "wpiutiljni",
-                    "wpimathjni",
-                    "ntcorejni"
-            );
+                    ShuffleLog.class, "wpiutiljni", "wpimathjni", "ntcorejni");
         } catch (IOException e) {
             throw new RuntimeException("Failed to load WPILib libraries", e);
         }
@@ -91,13 +90,11 @@ public final class ShuffleLog extends PApplet {
                 InputStream in = getClass().getClassLoader().getResourceAsStream(LAYOUT_FILE);
                 OutputStream out = new FileOutputStream(defaultLayoutFile);
 
-                if (in == null)
-                    throw new IOException("Failed to load default layout resource");
+                if (in == null) throw new IOException("Failed to load default layout resource");
 
                 byte[] buf = new byte[1024];
                 int read;
-                while ((read = in.read(buf)) > 0)
-                    out.write(buf, 0, read);
+                while ((read = in.read(buf)) > 0) out.write(buf, 0, read);
 
                 in.close();
                 out.close();
@@ -128,7 +125,11 @@ public final class ShuffleLog extends PApplet {
 
         // Set default font
         try {
-            textFont(new PFont(getClass().getClassLoader().getResourceAsStream("fonts/PTSans-Regular-14.vlw")));
+            textFont(
+                    new PFont(
+                            getClass()
+                                    .getClassLoader()
+                                    .getResourceAsStream("fonts/PTSans-Regular-14.vlw")));
         } catch (IOException e) {
             e.printStackTrace();
         }

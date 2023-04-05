@@ -71,9 +71,12 @@ public final class GridUnion extends Grid {
         }
     }
 
-    public static final class Serializer implements JsonSerializer<GridUnion>, JsonDeserializer<GridUnion> {
+    public static final class Serializer
+            implements JsonSerializer<GridUnion>, JsonDeserializer<GridUnion> {
         @Override
-        public GridUnion deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public GridUnion deserialize(
+                JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
             JsonArray children = obj.getAsJsonArray("children");
 
@@ -87,7 +90,8 @@ public final class GridUnion extends Grid {
         }
 
         @Override
-        public JsonElement serialize(GridUnion src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(
+                GridUnion src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
             obj.addProperty("type", GridType.UNION.toString());
             JsonArray children = new JsonArray();

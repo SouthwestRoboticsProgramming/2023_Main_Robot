@@ -1,6 +1,7 @@
 package com.swrobotics.lib.net;
 
 import com.swrobotics.lib.ThreadUtils;
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableEvent;
@@ -21,12 +22,10 @@ public abstract class NTEntry<T> implements Supplier<T> {
     private boolean hasSetChangeListener;
 
     /**
-     * Creates a new entry with a specified path.
-     * The path can be split using the '/' character to organize
-     * entries into groups.
-     * 
-     * <p>
-     * NOTE: This entry is persistent by default.
+     * Creates a new entry with a specified path. The path can be split using the '/' character to
+     * organize entries into groups.
+     *
+     * <p>NOTE: This entry is persistent by default.
      *
      * @param path path
      */
@@ -42,8 +41,7 @@ public abstract class NTEntry<T> implements Supplier<T> {
         entry = table.getEntry(parts[parts.length - 1]);
 
         // Ensure entry actually exists so it is editable
-        if (!entry.exists())
-            set(defaultVal);
+        if (!entry.exists()) set(defaultVal);
 
         entry.setPersistent();
 
@@ -59,9 +57,13 @@ public abstract class NTEntry<T> implements Supplier<T> {
 
     public void onChange(Runnable listener) {
         if (!hasSetChangeListener) {
-            NetworkTableInstance.getDefault().addListener(entry, EnumSet.of(NetworkTableEvent.Kind.kValueAll), (event) -> {
-                fireOnChanged();
-            });
+            NetworkTableInstance.getDefault()
+                    .addListener(
+                            entry,
+                            EnumSet.of(NetworkTableEvent.Kind.kValueAll),
+                            (event) -> {
+                                fireOnChanged();
+                            });
             hasSetChangeListener = true;
         }
 

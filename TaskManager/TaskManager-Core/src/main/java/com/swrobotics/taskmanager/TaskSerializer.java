@@ -21,7 +21,8 @@ public final class TaskSerializer implements JsonSerializer<Task>, JsonDeseriali
     }
 
     @Override
-    public Task deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public Task deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+            throws JsonParseException {
         JsonObject obj = json.getAsJsonObject();
         File workingDir = context.deserialize(obj.get("workingDirectory"), File.class);
         String[] command = context.deserialize(obj.get("command"), String[].class);

@@ -11,13 +11,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 
 /**
- * Contains the fixed parameters for the pathfinder.
- * These parameters are not adjustable via Messenger.
+ * Contains the fixed parameters for the pathfinder. These parameters are not adjustable via
+ * Messenger.
  */
 public final class PathfinderConfigFile {
-    private static final Gson GSON = new GsonBuilder()
-            .setPrettyPrinting()
-            .create();
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static PathfinderConfigFile load(File file) {
         try {

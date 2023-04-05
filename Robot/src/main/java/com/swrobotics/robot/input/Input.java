@@ -1,23 +1,21 @@
 package com.swrobotics.robot.input;
 
 import com.swrobotics.lib.input.XboxController;
-import com.swrobotics.lib.net.NTTranslation2d;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTTranslation2d;
 import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
 import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.positions.ArmPositions;
 import com.swrobotics.robot.positions.SnapPositions;
-import com.swrobotics.robot.positions.SnapPositions.SnapPosition;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.vision.Limelight;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -25,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public final class Input extends SubsystemBase {
-    /* 
+    /*
      * Manipulator:
      *  left bumper:   set to cube
      *  right bumper:  set to cone
@@ -35,14 +33,14 @@ public final class Input extends SubsystemBase {
      *  dpad up:       top score
      *  dpad down:     mid score
      *  analog sticks: arm nudge
-     * 
+     *
      * Driver:
      *  left stick:    drive translation
      *  right stick:   drive rotation
      *  right bumper:  fast mode
      *  left bumper:   snap
      *  start:         reset gyro
-     * 
+     *
      * snap:
      *   when at grid:
      *     drive to scoring position
@@ -56,17 +54,20 @@ public final class Input extends SubsystemBase {
     private static final NTDouble SPEED_RATE_LIMIT = new NTDouble("Input/Speed Slew Limit", 20);
 
     public enum IntakeMode {
-        INTAKE, EJECT, OFF
+        INTAKE,
+        EJECT,
+        OFF
     }
 
     private static final int DRIVER_PORT = 0;
     private static final int MANIPULATOR_PORT = 1;
 
     private static final double DEADBAND = 0.1;
-    private static final double TRIGGER_DEADBAND = 0.2; // Intentionally small to prevent the gamer lock mode from breaking anything
+    private static final double TRIGGER_DEADBAND =
+            0.2; // Intentionally small to prevent the gamer lock mode from breaking anything
 
     private static final double DEFAULT_SPEED = 1.5; // Meters per second
-    private static final double FAST_SPEED = 4.11;   // Meters per second
+    private static final double FAST_SPEED = 4.11; // Meters per second
     private static final Angle MAX_ROTATION = AbsoluteAngle.rad(Math.PI);
 
     private static final double NUDGE_PER_PERIODIC = 0.25 * 0.02;
@@ -74,7 +75,7 @@ public final class Input extends SubsystemBase {
     private static final NTBoolean L_IS_CONE = new NTBoolean("Is Cone", false);
 
     private final RobotContainer robot;
-	
+
     private final XboxController driver;
     private final XboxController manipulator;
 
@@ -100,16 +101,18 @@ public final class Input extends SubsystemBase {
 
         driver.start.onRising(robot.drivetrainSubsystem::zeroGyroscope);
 
-        manipulator.leftBumper.onRising(() -> {
-            gamePiece = GamePiece.CUBE;
-            robot.messenger.prepare("Robot:GamePiece").addBoolean(false).send();
-            L_IS_CONE.set(false);
-        });
-        manipulator.rightBumper.onRising(() -> {
-            gamePiece = GamePiece.CONE;
-            robot.messenger.prepare("Robot:GamePiece").addBoolean(true).send();
-            L_IS_CONE.set(true);
-        });
+        manipulator.leftBumper.onRising(
+                () -> {
+                    gamePiece = GamePiece.CUBE;
+                    robot.messenger.prepare("Robot:GamePiece").addBoolean(false).send();
+                    L_IS_CONE.set(false);
+                });
+        manipulator.rightBumper.onRising(
+                () -> {
+                    gamePiece = GamePiece.CONE;
+                    robot.messenger.prepare("Robot:GamePiece").addBoolean(true).send();
+                    L_IS_CONE.set(true);
+                });
 
         snapDriveCmd = new PathfindToPointCommand(robot, null);
         snapTurnCmd = new TurnToAngleCommand(robot, () -> snapAngle, false);
@@ -125,14 +128,16 @@ public final class Input extends SubsystemBase {
          */
         double rate = SPEED_RATE_LIMIT.get();
         limiter = new SlewRateLimiter(rate, -rate, 0);
-        SPEED_RATE_LIMIT.onChange(() -> {
-            double newRate = SPEED_RATE_LIMIT.get();
-            limiter = new SlewRateLimiter(newRate, -newRate, 0);
-        });
+        SPEED_RATE_LIMIT.onChange(
+                () -> {
+                    double newRate = SPEED_RATE_LIMIT.get();
+                    limiter = new SlewRateLimiter(newRate, -newRate, 0);
+                });
     }
 
     /**
      * Pre-process inputs from joysticks
+     *
      * @param val Joystick inputs
      * @return Processed outputs
      */
@@ -166,8 +171,6 @@ public final class Input extends SubsystemBase {
         return driver.rightTrigger.get() >= TRIGGER_DEADBAND || shouldBeRobotRelative;
     }
 
-
-
     private void disableSnap() {
         setCommandEnabled(snapDriveCmd, false);
         setCommandEnabled(snapTurnCmd, false);
@@ -195,7 +198,7 @@ public final class Input extends SubsystemBase {
             setCommandEnabled(snapDriveCmd, false);
         }
 
-        if (false) {// FIXME
+        if (false) { // FIXME
             Rotation2d poseAngle = snap.pose.getRotation();
 
             switch (snap.turnMode) {
@@ -204,11 +207,20 @@ public final class Input extends SubsystemBase {
                     break;
                 case CONE_NODE_AIM:
                     robot.limelight.setPipeline(Limelight.CONE_NODE_PIPELINE);
-                    snapAngle = CCWAngle.rad(currentPose.getRotation().getRadians() - robot.limelight.getXAngle().getRadians());
+                    snapAngle =
+                            CCWAngle.rad(
+                                    currentPose.getRotation().getRadians()
+                                            - robot.limelight.getXAngle().getRadians());
                     break;
                 case GAME_PIECE_AIM:
-                    robot.limelight.setPipeline(getGamePiece() == GamePiece.CONE ? Limelight.CONE_PIPELINE : Limelight.CUBE_PIPELINE);
-                    snapAngle = CCWAngle.rad(currentPose.getRotation().getRadians() - robot.limelight.getXAngle().getRadians());
+                    robot.limelight.setPipeline(
+                            getGamePiece() == GamePiece.CONE
+                                    ? Limelight.CONE_PIPELINE
+                                    : Limelight.CUBE_PIPELINE);
+                    snapAngle =
+                            CCWAngle.rad(
+                                    currentPose.getRotation().getRadians()
+                                            - robot.limelight.getXAngle().getRadians());
                     break;
             }
 
@@ -220,7 +232,9 @@ public final class Input extends SubsystemBase {
             shouldBeRobotRelative = false;
         }
 
-        boolean driveInput = Math.abs(driver.leftStickX.get()) > DEADBAND || Math.abs(driver.leftStickY.get()) > DEADBAND;
+        boolean driveInput =
+                Math.abs(driver.leftStickX.get()) > DEADBAND
+                        || Math.abs(driver.leftStickY.get()) > DEADBAND;
         boolean turnInput = Math.abs(driver.rightStickX.get()) > DEADBAND;
 
         boolean rumble = (driveInput && snap.snapDrive) || (turnInput || snap.snapTurn);
@@ -236,15 +250,11 @@ public final class Input extends SubsystemBase {
     private boolean isEject() {
         return manipulator.leftTrigger.get() > TRIGGER_DEADBAND;
     }
-	
 
     public NTTranslation2d getArmTarget() {
-        if (manipulator.dpad.up.isPressed())
-			return getArmHigh();
-        if (manipulator.dpad.down.isPressed())
-			return getArmMid();
-        if (manipulator.b.isPressed())
-			return getSubstationPickup();
+        if (manipulator.dpad.up.isPressed()) return getArmHigh();
+        if (manipulator.dpad.down.isPressed()) return getArmMid();
+        if (manipulator.b.isPressed()) return getSubstationPickup();
         if (manipulator.a.isPressed()) {
             return null; // Home target - position is retrieved from arm subsystem later
         }
@@ -253,38 +263,33 @@ public final class Input extends SubsystemBase {
     }
 
     private NTTranslation2d getArmHigh() {
-        if (getGamePiece() == GamePiece.CUBE)
-            return ArmPositions.CUBE_UPPER;
+        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_UPPER;
         return ArmPositions.CONE_UPPER;
     }
 
     private NTTranslation2d getArmMid() {
-        if (getGamePiece() == GamePiece.CUBE)
-            return ArmPositions.CUBE_CENTER;
+        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_CENTER;
         return ArmPositions.CONE_CENTER;
     }
 
     private NTTranslation2d getSubstationPickup() {
-        if (getGamePiece() == GamePiece.CUBE)
-            return ArmPositions.CUBE_PICKUP;
+        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_PICKUP;
         return ArmPositions.CONE_PICKUP;
     }
 
     private IntakeMode getIntakeMode() {
-        if (isEject())
-            return IntakeMode.EJECT;
+        if (isEject()) return IntakeMode.EJECT;
 
-        if (manipulator.a.isPressed() || manipulator.b.isPressed() || manipulator.rightTrigger.get() > TRIGGER_DEADBAND)
-            return IntakeMode.INTAKE;
+        if (manipulator.a.isPressed()
+                || manipulator.b.isPressed()
+                || manipulator.rightTrigger.get() > TRIGGER_DEADBAND) return IntakeMode.INTAKE;
 
         return IntakeMode.OFF;
     }
 
     private void setCommandEnabled(Command cmd, boolean enabled) {
-        if (enabled && !cmd.isScheduled())
-            cmd.schedule();
-        if (!enabled && cmd.isScheduled())
-            cmd.cancel();
+        if (enabled && !cmd.isScheduled()) cmd.schedule();
+        if (!enabled && cmd.isScheduled()) cmd.cancel();
     }
 
     private static final double SNAP_DRIVE_TOL = 0.05;
@@ -302,17 +307,17 @@ public final class Input extends SubsystemBase {
     private void snapToAngle(Rotation2d angle) {
         Pose2d currentPose = robot.drivetrainSubsystem.getPose();
 
-        double angleDiff = CCWAngle.rad(angle.getRadians())
-            .getAbsDiff(CCWAngle.rad(currentPose.getRotation().getRadians())).rad();
+        double angleDiff =
+                CCWAngle.rad(angle.getRadians())
+                        .getAbsDiff(CCWAngle.rad(currentPose.getRotation().getRadians()))
+                        .rad();
 
         setCommandEnabled(snapTurnCmd, angleDiff > SNAP_TURN_TOL);
     }
 
     private void manipulatorPeriodic() {
-        if (getGamePiece() == GamePiece.CONE)
-            robot.lights.set(Lights.Color.YELLOW);
-        else
-            robot.lights.set(Lights.Color.BLUE);
+        if (getGamePiece() == GamePiece.CONE) robot.lights.set(Lights.Color.YELLOW);
+        else robot.lights.set(Lights.Color.BLUE);
 
         IntakeMode intakeMode = getIntakeMode();
         switch (intakeMode) {
@@ -333,28 +338,32 @@ public final class Input extends SubsystemBase {
         }
 
         // Update arm nudge
-        Translation2d armNudge = new Translation2d(
-            deadband(manipulator.rightStickX.get()) * NUDGE_PER_PERIODIC,
-            deadband(-manipulator.rightStickY.get()) * NUDGE_PER_PERIODIC
-        );
-        armNudge = armNudge.plus(new Translation2d(
-                deadband(manipulator.leftStickX.get()) * NUDGE_PER_PERIODIC,
-                deadband(-manipulator.leftStickY.get()) * NUDGE_PER_PERIODIC
-        ));
+        Translation2d armNudge =
+                new Translation2d(
+                        deadband(manipulator.rightStickX.get()) * NUDGE_PER_PERIODIC,
+                        deadband(-manipulator.rightStickY.get()) * NUDGE_PER_PERIODIC);
+        armNudge =
+                armNudge.plus(
+                        new Translation2d(
+                                deadband(manipulator.leftStickX.get()) * NUDGE_PER_PERIODIC,
+                                deadband(-manipulator.leftStickY.get()) * NUDGE_PER_PERIODIC));
 
         NTTranslation2d ntArmTarget = getArmTarget();
-        boolean isGrid = ntArmTarget != null
-            && ntArmTarget != ArmPositions.CUBE_PICKUP
-            && ntArmTarget != ArmPositions.CONE_PICKUP
-            && ntArmTarget != ArmPositions.DEFAULT;
-        Translation2d armTarget = ntArmTarget == null ? robot.arm.getHomeTarget() : ntArmTarget.getTranslation();
+        boolean isGrid =
+                ntArmTarget != null
+                        && ntArmTarget != ArmPositions.CUBE_PICKUP
+                        && ntArmTarget != ArmPositions.CONE_PICKUP
+                        && ntArmTarget != ArmPositions.DEFAULT;
+        Translation2d armTarget =
+                ntArmTarget == null ? robot.arm.getHomeTarget() : ntArmTarget.getTranslation();
 
         // If it is moving to a new target
         if (!armTarget.equals(prevArmTarget) && (isGrid || prevWasGrid)) {
             armNudge = new Translation2d(0, 0);
 
             // Move to an intermediate position first
-            robot.arm.setTargetPosition(new Translation2d(0.6, Math.max(armTarget.getY(), prevArmTarget.getY())));
+            robot.arm.setTargetPosition(
+                    new Translation2d(0.6, Math.max(armTarget.getY(), prevArmTarget.getY())));
             if (!robot.arm.isInTolerance()) {
                 return; // Keep moving to the intermediate position
             }
@@ -373,8 +382,7 @@ public final class Input extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (!DriverStation.isTeleop())
-            return;
+        if (!DriverStation.isTeleop()) return;
 
         driverPeriodic();
         manipulatorPeriodic();

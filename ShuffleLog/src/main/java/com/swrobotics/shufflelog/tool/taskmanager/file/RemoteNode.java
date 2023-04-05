@@ -30,10 +30,8 @@ public abstract class RemoteNode {
         StringBuilder builder = new StringBuilder();
         boolean separator = false;
         for (RemoteNode n : nodes) {
-            if (separator)
-                builder.append("/");
-            else
-                separator = true;
+            if (separator) builder.append("/");
+            else separator = true;
 
             builder.append(n.name);
         }

@@ -15,10 +15,12 @@ import com.swrobotics.shufflelog.tool.field.path.shape.Circle;
 import com.swrobotics.shufflelog.tool.field.path.shape.Rectangle;
 import com.swrobotics.shufflelog.tool.field.path.shape.Shape;
 import com.swrobotics.shufflelog.util.Cooldown;
+
 import imgui.ImGui;
 import imgui.flag.ImGuiTableFlags;
 import imgui.flag.ImGuiTreeNodeFlags;
 import imgui.type.ImBoolean;
+
 import processing.core.PConstants;
 import processing.core.PGraphics;
 
@@ -26,7 +28,7 @@ import java.util.*;
 
 public final class PathfindingLayer implements FieldLayer {
     // Main API
-    private static final String MSG_SET_POS  = "Pathfinder:SetPos";
+    private static final String MSG_SET_POS = "Pathfinder:SetPos";
     private static final String MSG_SET_GOAL = "Pathfinder:SetGoal";
     private static final String MSG_PATH = "Pathfinder:Path";
 
@@ -90,14 +92,15 @@ public final class PathfindingLayer implements FieldLayer {
         msg.addHandler(MSG_SET_GOAL, this::onSetGoal);
         msg.addHandler(MSG_ROBOT_SHAPE, this::onRobotShape);
 
-        msg.addDisconnectHandler(() -> {
-            fieldInfo = null;
-            path = null;
-            grid = null;
-            cellData = null;
-            needsRefreshCellData = true;
-            robotShape = null;
-        });
+        msg.addDisconnectHandler(
+                () -> {
+                    fieldInfo = null;
+                    path = null;
+                    grid = null;
+                    cellData = null;
+                    needsRefreshCellData = true;
+                    robotShape = null;
+                });
 
         showGridLines = new ImBoolean(false);
         showGridCells = new ImBoolean(true);
@@ -117,10 +120,8 @@ public final class PathfindingLayer implements FieldLayer {
     private void onPath(String type, MessageReader reader) {
         boolean valid = reader.readBoolean();
         if (valid) {
-            if (path != null)
-                path.clear();
-            else
-                path = new ArrayList<>();
+            if (path != null) path.clear();
+            else path = new ArrayList<>();
 
             int count = reader.readInt();
             for (int i = 0; i < count; i++) {
@@ -171,8 +172,7 @@ public final class PathfindingLayer implements FieldLayer {
 
     @Override
     public void draw(PGraphics g) {
-        if (!msg.isConnected())
-            return;
+        if (!msg.isConnected()) return;
 
         if (grid == null && reqGridsCooldown.request()) {
             msg.send(MSG_GET_GRIDS);
@@ -184,23 +184,22 @@ public final class PathfindingLayer implements FieldLayer {
             msg.send(MSG_GET_ROBOT_SHAPE);
         }
         if (fieldInfo == null) {
-            if (reqFieldInfoCooldown.request())
-                msg.send(MSG_GET_FIELD_INFO);
+            if (reqFieldInfoCooldown.request()) msg.send(MSG_GET_FIELD_INFO);
             return;
         }
 
         // Wavy ends go wheeeeeeee (for testing latency)
-//        msg.prepare(MSG_SET_POS)
-//                .addDouble(follower.getX())
-//                .addDouble(follower.getY())
-//                .send();
+        //        msg.prepare(MSG_SET_POS)
+        //                .addDouble(follower.getX())
+        //                .addDouble(follower.getY())
+        //                .send();
 
         Vector2f cursor = tool.getCursorPos();
         if (cursor != null) {
-//            msg.prepare(MSG_SET_GOAL)
-//                    .addDouble(cursor.x)
-//                    .addDouble(cursor.y)
-//                    .send();
+            //            msg.prepare(MSG_SET_GOAL)
+            //                    .addDouble(cursor.x)
+            //                    .addDouble(cursor.y)
+            //                    .send();
         }
 
         boolean lines = showGridLines.get();
@@ -260,15 +259,13 @@ public final class PathfindingLayer implements FieldLayer {
                 g.strokeWeight(4);
                 g.stroke(214, 196, 32, 128);
                 g.beginShape(PConstants.LINE_STRIP);
-                for (Point p : this.path)
-                    g.vertex((float) p.x, (float) p.y);
+                for (Point p : this.path) g.vertex((float) p.x, (float) p.y);
                 g.endShape();
 
                 g.strokeWeight(2);
                 g.stroke(214, 196, 32);
                 g.beginShape(PConstants.LINE_STRIP);
-                for (Point p : this.path)
-                    g.vertex((float) p.x, (float) p.y);
+                for (Point p : this.path) g.vertex((float) p.x, (float) p.y);
                 g.endShape();
             }
 
@@ -287,24 +284,27 @@ public final class PathfindingLayer implements FieldLayer {
             g.popMatrix();
         }
 
-//        follower.setPath(this.path);
-//        followerStatus = follower.go();
-//
-//        if (robotShape != null)
-//            drawShape(
-//                    g,
-//                    robotShape,
-//                    strokeMul,
-//                    g.color(255, 0, 255),
-//                    g.color(255, 0, 255, 128),
-//                    (float) follower.getX(),
-//                    (float) follower.getY()
-//            );
+        //        follower.setPath(this.path);
+        //        followerStatus = follower.go();
+        //
+        //        if (robotShape != null)
+        //            drawShape(
+        //                    g,
+        //                    robotShape,
+        //                    strokeMul,
+        //                    g.color(255, 0, 255),
+        //                    g.color(255, 0, 255, 128),
+        //                    (float) follower.getX(),
+        //                    (float) follower.getY()
+        //            );
     }
 
     String followerStatus = "";
 
-    private void drawShape(PGraphics g, Shape shape, int fg, int bg) { drawShape(g, shape, fg, bg, 0, 0); }
+    private void drawShape(PGraphics g, Shape shape, int fg, int bg) {
+        drawShape(g, shape, fg, bg, 0, 0);
+    }
+
     private void drawShape(PGraphics g, Shape shape, int fg, int bg, float ox, float oy) {
         if (shape instanceof Circle) {
             Circle c = (Circle) shape;
@@ -336,10 +336,10 @@ public final class PathfindingLayer implements FieldLayer {
             g.noFill();
             g.strokeWeight(4);
             g.stroke(bg);
-            g.rect(-w/2, -h/2, w, h);
+            g.rect(-w / 2, -h / 2, w, h);
             g.stroke(fg);
             g.strokeWeight(2);
-            g.rect(-w/2, -h/2, w, h);
+            g.rect(-w / 2, -h / 2, w, h);
 
             g.popMatrix();
         }
@@ -424,7 +424,11 @@ public final class PathfindingLayer implements FieldLayer {
     private void showBitfieldGrid(BitfieldGrid grid) {
         String id = "Bitfield Grid##" + grid.getId();
         ImGui.tableNextColumn();
-        ImGui.treeNodeEx(id, ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
+        ImGui.treeNodeEx(
+                id,
+                ImGuiTreeNodeFlags.SpanFullWidth
+                        | ImGuiTreeNodeFlags.Leaf
+                        | ImGuiTreeNodeFlags.NoTreePushOnOpen);
         if (ImGui.isItemHovered()) hoveredNode = grid;
         if (this.grid != grid && ImGui.beginPopupContextItem()) {
             if (ImGui.selectable("Delete")) {
@@ -498,12 +502,9 @@ public final class PathfindingLayer implements FieldLayer {
     }
 
     private void showGrid(Grid grid, boolean isRoot) {
-        if (grid instanceof GridUnion)
-            showGridUnion((GridUnion) grid, isRoot);
-        else if (grid instanceof BitfieldGrid)
-            showBitfieldGrid((BitfieldGrid) grid);
-        else if (grid instanceof ShapeGrid)
-            showShapeGrid((ShapeGrid) grid, isRoot);
+        if (grid instanceof GridUnion) showGridUnion((GridUnion) grid, isRoot);
+        else if (grid instanceof BitfieldGrid) showBitfieldGrid((BitfieldGrid) grid);
+        else if (grid instanceof ShapeGrid) showShapeGrid((ShapeGrid) grid, isRoot);
     }
 
     private void removeShape(ShapeGrid grid, Shape shape) {
@@ -540,7 +541,11 @@ public final class PathfindingLayer implements FieldLayer {
     private void fieldHeader(String name) {
         ImGui.tableNextColumn();
         ImGui.alignTextToFramePadding();
-        ImGui.treeNodeEx(name, ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+        ImGui.treeNodeEx(
+                name,
+                ImGuiTreeNodeFlags.Leaf
+                        | ImGuiTreeNodeFlags.NoTreePushOnOpen
+                        | ImGuiTreeNodeFlags.SpanFullWidth);
         ImGui.tableNextColumn();
         ImGui.setNextItemWidth(-1);
     }
@@ -563,10 +568,14 @@ public final class PathfindingLayer implements FieldLayer {
         if (open) {
             boolean changed;
 
-            fieldHeader("X");        changed =  ImGui.inputDouble("##x", circle.x);
-            fieldHeader("Y");        changed |= ImGui.inputDouble("##y", circle.y);
-            fieldHeader("Radius");   changed |= ImGui.inputDouble("##radius", circle.radius);
-            fieldHeader("Inverted"); changed |= ImGui.checkbox("##inverted", circle.inverted);
+            fieldHeader("X");
+            changed = ImGui.inputDouble("##x", circle.x);
+            fieldHeader("Y");
+            changed |= ImGui.inputDouble("##y", circle.y);
+            fieldHeader("Radius");
+            changed |= ImGui.inputDouble("##radius", circle.radius);
+            fieldHeader("Inverted");
+            changed |= ImGui.checkbox("##inverted", circle.inverted);
 
             if (changed) {
                 MessageBuilder builder = msg.prepare(MSG_ALTER_SHAPE);
@@ -596,12 +605,18 @@ public final class PathfindingLayer implements FieldLayer {
 
         if (open) {
             boolean changed;
-            fieldHeader("X");        changed  = ImGui.inputDouble("##x", rect.x);
-            fieldHeader("Y");        changed |= ImGui.inputDouble("##y", rect.y);
-            fieldHeader("Width");    changed |= ImGui.inputDouble("##width", rect.width);
-            fieldHeader("Height");   changed |= ImGui.inputDouble("##height", rect.height);
-            fieldHeader("Rotation"); changed |= ImGui.inputDouble("##rotation", rect.rotation);
-            fieldHeader("Inverted"); changed |= ImGui.checkbox("##inverted", rect.inverted);
+            fieldHeader("X");
+            changed = ImGui.inputDouble("##x", rect.x);
+            fieldHeader("Y");
+            changed |= ImGui.inputDouble("##y", rect.y);
+            fieldHeader("Width");
+            changed |= ImGui.inputDouble("##width", rect.width);
+            fieldHeader("Height");
+            changed |= ImGui.inputDouble("##height", rect.height);
+            fieldHeader("Rotation");
+            changed |= ImGui.inputDouble("##rotation", rect.rotation);
+            fieldHeader("Inverted");
+            changed |= ImGui.checkbox("##inverted", rect.inverted);
 
             if (changed) {
                 MessageBuilder builder = msg.prepare(MSG_ALTER_SHAPE);
@@ -615,10 +630,8 @@ public final class PathfindingLayer implements FieldLayer {
     }
 
     private void showShape(ShapeGrid grid, Shape shape) {
-        if (shape instanceof Circle)
-            showCircle(grid, (Circle) shape);
-        else if (shape instanceof Rectangle)
-            showRectangle(grid, (Rectangle) shape);
+        if (shape instanceof Circle) showCircle(grid, (Circle) shape);
+        else if (shape instanceof Rectangle) showRectangle(grid, (Rectangle) shape);
     }
 
     @Override

@@ -9,10 +9,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 
 public final class TaskManagerConfiguration {
-    public static Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(File.class, new FileTypeAdapter())
-            .setPrettyPrinting()
-            .create();
+    public static Gson GSON =
+            new GsonBuilder()
+                    .registerTypeAdapter(File.class, new FileTypeAdapter())
+                    .setPrettyPrinting()
+                    .create();
 
     public static TaskManagerConfiguration load(File file) {
         try {

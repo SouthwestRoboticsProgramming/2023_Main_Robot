@@ -1,5 +1,7 @@
 package com.swrobotics.shufflelog.tool.field.tag;
 
+import static com.swrobotics.shufflelog.util.ProcessingUtils.setPMatrix;
+
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.shufflelog.math.Matrix4f;
@@ -9,8 +11,10 @@ import com.swrobotics.shufflelog.tool.field.FieldLayer;
 import com.swrobotics.shufflelog.tool.field.FieldViewTool;
 import com.swrobotics.shufflelog.tool.field.GizmoTarget;
 import com.swrobotics.shufflelog.util.Cooldown;
+
 import imgui.ImGui;
 import imgui.type.ImBoolean;
+
 import processing.core.PGraphics;
 import processing.core.PMatrix3D;
 
@@ -18,8 +22,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.swrobotics.shufflelog.util.ProcessingUtils.setPMatrix;
 
 public final class TagTrackerLayer implements FieldLayer {
     private static final String MSG_QUERY_ENVIRONMENT = "TagTracker:QueryEnvironment";
@@ -52,23 +54,28 @@ public final class TagTrackerLayer implements FieldLayer {
 
         msg.addHandler(MSG_ENVIRONMENT, this::onEnvironment);
 
-        msg.addDisconnectHandler(() -> {
-            hasEnvironment = false;
-            selection = null;
-            tags.clear();
-            cameras.clear();
-        });
+        msg.addDisconnectHandler(
+                () -> {
+                    hasEnvironment = false;
+                    selection = null;
+                    tags.clear();
+                    cameras.clear();
+                });
 
         // TODO: This should come from the tag tracker estimate
-        robotPose = new RobotPose(new Vector3f(1, 1, 1), new Matrix4f().translate(new Vector3f(0, -4, 0)));
+        robotPose =
+                new RobotPose(
+                        new Vector3f(1, 1, 1), new Matrix4f().translate(new Vector3f(0, -4, 0)));
 
-        msg.addHandler("TagTracker:TestMtx", (type, reader) -> {
-            estimatedPoses.clear();
-            int count = reader.readInt();
-            for (int i = 0; i < count; i++) {
-                estimatedPoses.add(readMatrix(reader));
-            }
-        });
+        msg.addHandler(
+                "TagTracker:TestMtx",
+                (type, reader) -> {
+                    estimatedPoses.clear();
+                    int count = reader.readInt();
+                    for (int i = 0; i < count; i++) {
+                        estimatedPoses.add(readMatrix(reader));
+                    }
+                });
     }
 
     @Override
@@ -78,8 +85,7 @@ public final class TagTrackerLayer implements FieldLayer {
 
     private Matrix4f readMatrix(MessageReader reader) {
         float[] data = new float[16];
-        for (int i = 0; i < data.length; i++)
-            data[i] = reader.readFloat();
+        for (int i = 0; i < data.length; i++) data[i] = reader.readFloat();
         return Matrix4f.fromColumnMajor(data);
     }
 
@@ -100,7 +106,9 @@ public final class TagTrackerLayer implements FieldLayer {
             String name = reader.readString();
             int port = reader.readInt();
             Matrix4f transform = readMatrix(reader);
-            cameras.add(new Camera(name + " (" + port + ")", port, transform, robotPose.getTransform()));
+            cameras.add(
+                    new Camera(
+                            name + " (" + port + ")", port, transform, robotPose.getTransform()));
         }
 
         hasEnvironment = true;
@@ -118,14 +126,11 @@ public final class TagTrackerLayer implements FieldLayer {
 
     @Override
     public void draw(PGraphics g) {
-        if (!msg.isConnected())
-            return;
+        if (!msg.isConnected()) return;
 
-        if (!hasEnvironment && queryEnvironmentCooldown.request())
-            msg.send(MSG_QUERY_ENVIRONMENT);
+        if (!hasEnvironment && queryEnvironmentCooldown.request()) msg.send(MSG_QUERY_ENVIRONMENT);
 
-        if (!showTags.get())
-            return;
+        if (!showTags.get()) return;
 
         g.stroke(0, 255, 0);
         g.strokeWeight(4);
@@ -136,17 +141,17 @@ public final class TagTrackerLayer implements FieldLayer {
             g.applyMatrix(txMat);
 
             boolean seen = false;
-//            for (TestSample sample : test) {
-//                if (sample.tagId == tag.getId()) {
-//                    seen = true;
-//                    break;
-//                }
-//            }
+            //            for (TestSample sample : test) {
+            //                if (sample.tagId == tag.getId()) {
+            //                    seen = true;
+            //                    break;
+            //                }
+            //            }
 
             g.fill(0, 255, 0, seen ? 196 : 64);
 
             float s = (float) tag.getSize();
-            g.rect(-s/2, -s/2, s, s);
+            g.rect(-s / 2, -s / 2, s, s);
             g.popMatrix();
         }
 
@@ -160,9 +165,9 @@ public final class TagTrackerLayer implements FieldLayer {
             g.stroke(185, 66, 245);
             g.strokeWeight(3);
             Vector3f sz = new Vector3f(1, 1, 1);
-            g.translate(0, 0, sz.z/2);
+            g.translate(0, 0, sz.z / 2);
             g.box(sz.x, sz.y, sz.z);
-            g.translate(0, 0, -sz.z/2);
+            g.translate(0, 0, -sz.z / 2);
 
             // Cameras
             for (Camera camera : cameras) {
@@ -186,7 +191,7 @@ public final class TagTrackerLayer implements FieldLayer {
         setPMatrix(txMat, robotPose.getTransform());
         g.applyMatrix(txMat);
         Vector3f sz = robotPose.getSize();
-        g.translate(0, 0, sz.z/2);
+        g.translate(0, 0, sz.z / 2);
         g.box(sz.x, sz.y, sz.z);
         g.popMatrix();
 
@@ -200,10 +205,10 @@ public final class TagTrackerLayer implements FieldLayer {
             g.applyMatrix(txMat);
 
             // Pyramid thing that isn't a pyramid
-            g.line(0, 0, 0, -s, s, s*-2);
-            g.line(0, 0, 0, s, s, s*-2);
-            g.line(0, 0, 0, s, -s, s*-2);
-            g.line(0, 0, 0, -s, -s, s*-2);
+            g.line(0, 0, 0, -s, s, s * -2);
+            g.line(0, 0, 0, s, s, s * -2);
+            g.line(0, 0, 0, s, -s, s * -2);
+            g.line(0, 0, 0, -s, -s, s * -2);
 
             g.popMatrix();
         }

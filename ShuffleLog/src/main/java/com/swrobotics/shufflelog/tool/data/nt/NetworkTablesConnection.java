@@ -1,6 +1,7 @@
 package com.swrobotics.shufflelog.tool.data.nt;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
+
 import imgui.ImGui;
 
 import java.util.Objects;
@@ -31,9 +32,9 @@ public final class NetworkTablesConnection {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Params params = (Params) o;
-            return isAddress == params.isAddress &&
-                    portOrTeam == params.portOrTeam &&
-                    Objects.equals(host, params.host);
+            return isAddress == params.isAddress
+                    && portOrTeam == params.portOrTeam
+                    && Objects.equals(host, params.host);
         }
 
         @Override
@@ -91,17 +92,13 @@ public final class NetworkTablesConnection {
             instance = NetworkTableInstance.create();
             activeInstances.incrementAndGet();
 
-            if (isNt4)
-                instance.startClient4(CLIENT_ID);
-            else
-                instance.startClient3(CLIENT_ID);
+            if (isNt4) instance.startClient4(CLIENT_ID);
+            else instance.startClient3(CLIENT_ID);
 
             this.isNt4 = isNt4;
 
-            if (params.isAddress)
-                instance.setServer(params.host, params.portOrTeam);
-            else
-                instance.setServerTeam(params.portOrTeam);
+            if (params.isAddress) instance.setServer(params.host, params.portOrTeam);
+            else instance.setServerTeam(params.portOrTeam);
 
             rootTable = new NetworkTableRepr(instance.getTable("/"));
             this.params = params;
@@ -109,17 +106,14 @@ public final class NetworkTablesConnection {
 
         // If the current client already satisfies the desired parameters,
         // it doesn't need to restart
-        if (this.isNt4 == isNt4 && params.equals(this.params))
-            return;
+        if (this.isNt4 == isNt4 && params.equals(this.params)) return;
 
         // Wait for the stop future to finish so we don't create
         // too many instances (there is a maximum of 16)
-        if (stopFuture != null && !stopFuture.isDone())
-            return;
+        if (stopFuture != null && !stopFuture.isDone()) return;
 
         // Dispose of cached entries if they exist
-        if (rootTable != null)
-            rootTable.close();
+        if (rootTable != null) rootTable.close();
         rootTable = null;
 
         // Save a reference to the current instance and clear instance variable so
@@ -131,18 +125,19 @@ public final class NetworkTablesConnection {
         // 10 seconds sometimes, and we don't want to freeze the GUI
         // We need to completely restart the NT instance because NT does not clear
         // local entries when switching servers
-        stopFuture = threadPool.submit(() -> {
-            savedInstance.setServer(new String[0], 0);
-            savedInstance.stopClient();
-            savedInstance.stopLocal();
-            savedInstance.close();
-            activeInstances.decrementAndGet();
-        });
+        stopFuture =
+                threadPool.submit(
+                        () -> {
+                            savedInstance.setServer(new String[0], 0);
+                            savedInstance.stopClient();
+                            savedInstance.stopLocal();
+                            savedInstance.close();
+                            activeInstances.decrementAndGet();
+                        });
     }
 
     public Status getStatus() {
-        if (stopFuture != null && !stopFuture.isDone())
-            return Status.CLOSING;
+        if (stopFuture != null && !stopFuture.isDone()) return Status.CLOSING;
 
         return (instance != null && instance.isConnected()) ? Status.CONNECTED : Status.IDLE;
     }

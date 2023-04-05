@@ -1,9 +1,9 @@
 package com.swrobotics.mathlib;
 
 /**
- * Represents either a directionless angle, or an angle without a known
- * direction. Note: It is still possible for an absolute angle to be negative.
- * Being an instance of this class only indicates that it has no direction.
+ * Represents either a directionless angle, or an angle without a known direction. Note: It is still
+ * possible for an absolute angle to be negative. Being an instance of this class only indicates
+ * that it has no direction.
  */
 public final class AbsoluteAngle extends AbstractAngle<AbsoluteAngle> {
     /**
