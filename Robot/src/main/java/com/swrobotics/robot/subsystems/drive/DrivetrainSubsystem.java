@@ -400,27 +400,25 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
         SwerveAutoBuilder autoBuilder =
                 new SwerveAutoBuilder(
                         this::getPathPlannerPose, // Pose2d supplier
-                        this
-                                ::resetPose, // Pose2d consumer, used to reset odometry at the
-                                             // beginning of auto
+                        this::resetPose, // Pose2d consumer, used to reset odometry at the
+                        // beginning of auto
                         kinematics, // SwerveDriveKinematics
                         new PIDConstants(
                                 0.0, 0.0,
                                 0.0), // PID constants to correct for translation error (used to
-                                      // create the X
+                        // create the X
                         // and Y PID controllers)
                         new PIDConstants(
                                 2.0, 0.0,
                                 0.0), // PID constants to correct for rotation error (used to create
-                                      // the
+                        // the
                         // rotation controller)
-                        this
-                                ::cheatChassisSpeeds, // Module states consumer used to output to
-                                                      // the drive subsystem
+                        this::cheatChassisSpeeds, // Module states consumer used to output to
+                        // the drive subsystem
                         eventMap,
                         true,
                         this // The drive subsystem. Used to properly set the requirements of path
-                             // following
+                        // following
                         // commands
                         ) {
                     @Override
@@ -435,8 +433,8 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
                                             if (activePathPlannerCommands == 1)
                                                 DrivetrainSubsystem.this.resetPose(getPose());
                                             activePathPlannerCommands--; // Decrement after so
-                                                                         // getPose() returns good
-                                                                         // pose above
+                                            // getPose() returns good
+                                            // pose above
                                         });
                     }
                 };

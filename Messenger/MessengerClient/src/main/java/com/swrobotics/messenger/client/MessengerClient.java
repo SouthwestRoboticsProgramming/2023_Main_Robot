@@ -179,7 +179,7 @@ public final class MessengerClient {
                                             > TIMEOUT) {
                                         System.err.println(
                                                 "Messenger watchdog: Force-closing socket due to"
-                                                    + " server timeout");
+                                                        + " server timeout");
                                         if (!socket.isClosed()) {
                                             disconnectSocket();
                                             lastConnectFailException =

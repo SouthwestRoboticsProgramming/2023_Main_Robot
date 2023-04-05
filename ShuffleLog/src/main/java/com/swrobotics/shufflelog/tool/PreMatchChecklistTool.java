@@ -45,7 +45,7 @@ public final class PreMatchChecklistTool implements Tool {
                             "Have you selected the correct auto?",
                             "Use the auto chooser in ShuffleBoard for this.",
                             "If selecting Block Auto, you must select a sequence in 'Auto/Sequence'"
-                                + " in NetworkTables."),
+                                    + " in NetworkTables."),
                     new Entry("Are you behind the white line?")
                 };
 

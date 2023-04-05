@@ -770,7 +770,7 @@ public class ImGuiImplGlfw {
                                 0,
                                 GLFW_RELEASE,
                                 0); // Later params are only used for main viewport, on which this
-                                    // function is never called.
+                        // function is never called.
                     }
                 }
 
