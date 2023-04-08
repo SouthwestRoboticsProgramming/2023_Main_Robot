@@ -1,13 +1,1 @@
-repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
-    hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-merge-conflict
 
--   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.8.0
-    hooks:
-      - id: pretty-format-java
-        args: [--aosp, --autofix]
