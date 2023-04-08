@@ -1,8 +1,11 @@
+stages: [pre-push, manual, pre-merge-commit]
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:
     -   id: trailing-whitespace
+    -   id: end-of-file-fixer
     -   id: end-of-file-fixer
     -   id: check-merge-conflict
 
