@@ -20,6 +20,9 @@ public interface FeedbackMotor extends Motor {
     void setVelocity(Angle velocity);
 
     Encoder getIntegratedEncoder();
+    default void setIntegratedEncoder(Encoder encoder) {
+        throw new UnsupportedOperationException();
+    }
 
     void resetIntegrator();
 

@@ -1,9 +1,12 @@
 package com.swrobotics.lib.motor.ctre;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.BaseTalon;
+import com.ctre.phoenix.sensors.CANCoder;
+import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.Motor;
@@ -11,6 +14,44 @@ import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CWAngle;
 
 public abstract class TalonMotor implements FeedbackMotor {
+    public static final class IntegratedEncoder implements Encoder {
+        public final TalonMotor motor;
+
+        private IntegratedEncoder(TalonMotor motor) {
+            this.motor = motor;
+        }
+
+        @Override
+        public Angle getAngle() {
+            return CWAngle.rot(
+                    motor.talon.getSelectedSensorPosition()
+                            / motor.encoderTicksPerRotation);
+        }
+
+        @Override
+        public Angle getVelocity() {
+            return CWAngle.rot(
+                    motor.talon.getSelectedSensorVelocity()
+                            / motor.encoderTicksPerRotation
+                            * 10);
+        }
+
+        @Override
+        public void setAngle(Angle angle) {
+            motor.talon.setSelectedSensorPosition(
+                    angle.cw().rot() * motor.encoderTicksPerRotation);
+        }
+
+        @Override
+        public void setInverted(boolean inverted) {
+            if (!motor.canSetSensorPhase())
+                throw new UnsupportedOperationException(
+                        "Cannot invert integrated encoder");
+
+            motor.talon.setSensorPhase(inverted);
+        }
+    }
+
     protected final BaseTalon talon;
     private Encoder integratedEncoder;
     private boolean inverted, following;
@@ -31,39 +72,7 @@ public abstract class TalonMotor implements FeedbackMotor {
 
     protected void enableIntegratedEncoder(int encoderTicksPerRotation) {
         this.encoderTicksPerRotation = encoderTicksPerRotation;
-
-        integratedEncoder =
-                new Encoder() {
-                    @Override
-                    public Angle getAngle() {
-                        return CWAngle.rot(
-                                TalonMotor.this.talon.getSelectedSensorPosition()
-                                        / encoderTicksPerRotation);
-                    }
-
-                    @Override
-                    public Angle getVelocity() {
-                        return CWAngle.rot(
-                                TalonMotor.this.talon.getSelectedSensorVelocity()
-                                        / encoderTicksPerRotation
-                                        * 10);
-                    }
-
-                    @Override
-                    public void setAngle(Angle angle) {
-                        TalonMotor.this.talon.setSelectedSensorPosition(
-                                angle.cw().rot() * encoderTicksPerRotation);
-                    }
-
-                    @Override
-                    public void setInverted(boolean inverted) {
-                        if (!canSetSensorPhase())
-                            throw new UnsupportedOperationException(
-                                    "Cannot invert integrated encoder");
-
-                        talon.setSensorPhase(inverted);
-                    }
-                };
+        integratedEncoder = new IntegratedEncoder(this);
     }
 
     private void updateInvertState() {
@@ -121,6 +130,21 @@ public abstract class TalonMotor implements FeedbackMotor {
     @Override
     public Encoder getIntegratedEncoder() {
         return integratedEncoder;
+    }
+
+    @Override
+    public void setIntegratedEncoder(Encoder encoder) {
+        if (encoder instanceof IntegratedEncoder) {
+            TalonMotor srcTalon = ((IntegratedEncoder) encoder).motor;
+            talon.configRemoteFeedbackFilter(srcTalon.talon, 0);
+        } else if (encoder instanceof CanCoder.RelativeEncoder) {
+            CANCoder canCoder = ((CanCoder.RelativeEncoder) encoder).can;
+            talon.configRemoteFeedbackFilter(canCoder, 0);
+        } else {
+            throw new IllegalArgumentException(encoder + " cannot be set as Talon feedback sensor");
+        }
+
+        talon.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0);
     }
 
     @Override

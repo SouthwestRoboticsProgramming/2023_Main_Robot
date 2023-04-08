@@ -13,6 +13,35 @@ import com.swrobotics.mathlib.CWAngle;
  * the top (LED) side of the CANCoder.
  */
 public final class CanCoder {
+    public static final class RelativeEncoder implements Encoder {
+        public final CANCoder can;
+        private double flip = 1;
+
+        private RelativeEncoder(CANCoder can) {
+            this.can = can;
+        }
+
+        @Override
+        public Angle getAngle() {
+            return CCWAngle.deg(can.getPosition() * flip);
+        }
+
+        @Override
+        public Angle getVelocity() {
+            return CCWAngle.deg(can.getVelocity() * flip);
+        }
+
+        @Override
+        public void setAngle(Angle angle) {
+            can.setPosition(angle.ccw().deg() * flip);
+        }
+
+        @Override
+        public void setInverted(boolean inverted) {
+            flip = inverted ? -1 : 1;
+        }
+    }
+
     private final CANCoder can;
     private final Encoder relative;
     private final Encoder absolute;
@@ -32,29 +61,7 @@ public final class CanCoder {
         config.sensorDirection = false;
         can.configAllSettings(config);
 
-        relative = new Encoder() {
-            private double flip = 1;
-
-            @Override
-            public Angle getAngle() {
-                return CCWAngle.deg(can.getPosition() * flip);
-            }
-
-            @Override
-            public Angle getVelocity() {
-                return CCWAngle.deg(can.getVelocity() * flip);
-            }
-
-            @Override
-            public void setAngle(Angle angle) {
-                can.setPosition(angle.ccw().deg() * flip);
-            }
-
-            @Override
-            public void setInverted(boolean inverted) {
-                flip = inverted ? -1 : 1;
-            }
-        };
+        relative = new RelativeEncoder(can);
 
         // Cannot set absolute position, it's absolute
         absolute = new Encoder() {
@@ -77,10 +84,22 @@ public final class CanCoder {
         };
     }
 
+    /**
+     * Gets the relative encoder output from this CANCoder. This can be used as
+     * a feedback sensor for Talon FX and Talon SRX motors.
+     *
+     * @return relative encoder
+     */
     public Encoder getRelative() {
         return relative;
     }
 
+    /**
+     * Gets the absolute encoder output from thie CANCoder. This cannot be used
+     * as a feedback sensor.
+     *
+     * @return absolute encoder
+     */
     public Encoder getAbsolute() {
         return absolute;
     }
