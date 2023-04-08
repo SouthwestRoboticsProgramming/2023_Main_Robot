@@ -27,6 +27,12 @@ public final class TalonFXMotor extends TalonMotor {
     }
 
     public TalonFXMotor(int canID, String canBus) {
-        super(createFX(canID, canBus), 2048);
+        super(createFX(canID, canBus));
+        enableIntegratedEncoder(2048);
+    }
+
+    @Override
+    protected boolean canSetSensorPhase() {
+        return false;
     }
 }
