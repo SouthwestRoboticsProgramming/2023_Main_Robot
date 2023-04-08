@@ -11,11 +11,16 @@ import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.*;
+
+import java.util.Arrays;
 
 public final class DrivetrainSubsystem extends SwerveDrive {
     public static final FieldInfo FIELD = FieldInfo.CHARGED_UP_2023;
@@ -117,9 +122,10 @@ public final class DrivetrainSubsystem extends SwerveDrive {
 
     public static final class StateVisualizer {
         private final SwerveDrive drive;
+        private final FieldObject2d fieldWheels;
         private final MechanismLigament2d[] ligaments;
 
-        public StateVisualizer(String name, double size, SwerveDrive drive) {
+        public StateVisualizer(String name, double size, DrivetrainSubsystem drive) {
             this.drive = drive;
 
             Mechanism2d m = new Mechanism2d(size, size);
@@ -134,16 +140,40 @@ public final class DrivetrainSubsystem extends SwerveDrive {
                 ligaments[i] = new MechanismLigament2d(i + " Vector",0.2,0);
                 root.append(ligaments[i]);
             }
+
+            fieldWheels = drive.field.getObject("Swerve Modules");
         }
 
         public void update() {
+            SwerveModule[] modules = drive.getModules();
             SwerveModuleState[] states = drive.getModuleStates();
+
+            Pose2d robotPose = drive.getPose();
+
+            Pose2d[] fieldPoses = new Pose2d[ligaments.length];
             for (int i = 0; i < ligaments.length; i++) {
                 MechanismLigament2d ligament = ligaments[i];
                 SwerveModuleState state = states[i];
                 ligament.setAngle(state.angle.getDegrees());
                 ligament.setLength(state.speedMetersPerSecond / 4.11 + Math.copySign(0.05, state.speedMetersPerSecond));
+
+                Rotation2d outputAngle;
+                if (state.speedMetersPerSecond == 0) {
+                    outputAngle = state.angle;
+                } else {
+                    outputAngle = new Translation2d(state.speedMetersPerSecond, 0).rotateBy(state.angle).getAngle();
+                }
+
+                SwerveModule module = modules[i];
+                Pose2d fieldPose = new Pose2d(
+                        robotPose.getTranslation().plus(module.position.rotateBy(robotPose.getRotation())),
+                        outputAngle.plus(robotPose.getRotation())
+                );
+                fieldPoses[i] = fieldPose;
             }
+            System.out.println(Arrays.toString(fieldPoses));
+
+            fieldWheels.setPoses(fieldPoses);
         }
     }
 }
