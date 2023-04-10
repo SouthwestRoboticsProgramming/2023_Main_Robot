@@ -11,7 +11,8 @@ import edu.wpi.first.math.util.Units;
 public abstract class SparkMaxMotor implements FeedbackMotor {
     public enum EncoderPort {
         PRIMARY,
-        ALTERNATE
+        ALTERNATE,
+        ABSOLUTE
     }
 
     private final CANSparkMax spark;
@@ -19,7 +20,9 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
 
     private EncoderPort feedbackEncoderPort;
     private Encoder primaryEncoder, alternateEncoder;
+    private Encoder absoluteEncoder;
     private RelativeEncoder primaryEncoderRev, alternateEncoderRev;
+    private AbsoluteEncoder absoluteEncoderRev;
 
     private boolean inverted;
     private CANSparkMax leader;
@@ -32,6 +35,7 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
         leader = null;
 
         feedbackEncoderPort = EncoderPort.PRIMARY;
+        primaryEncoder = alternateEncoder = absoluteEncoder;
     }
 
     @Override
@@ -91,6 +95,10 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
 
     public Encoder getAlternateEncoder() {
         return alternateEncoder;
+    }
+
+    public Encoder getAbsoluteEncoder() {
+        return absoluteEncoder;
     }
 
     public SparkMaxMotor withPrimaryEncoder(SparkMaxRelativeEncoder.Type type, int ticksPerRotation) {
@@ -165,15 +173,56 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
         return this;
     }
 
+    public SparkMaxMotor withAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type type) {
+        if (absoluteEncoder != null)
+            throw new IllegalStateException("Absolute encoder already set");
+
+        absoluteEncoderRev = spark.getAbsoluteEncoder(type);
+        absoluteEncoderRev.setPositionConversionFactor(1);
+        absoluteEncoderRev.setVelocityConversionFactor(1);
+
+        if (feedbackEncoderPort == EncoderPort.ABSOLUTE)
+            pid.setFeedbackDevice(absoluteEncoderRev);
+
+        absoluteEncoder = new Encoder() {
+            @Override
+            public Angle getAngle() {
+                return CWAngle.rot(absoluteEncoderRev.getPosition());
+            }
+
+            @Override
+            public Angle getVelocity() {
+                return CWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(absoluteEncoderRev.getVelocity()));
+            }
+
+            @Override
+            public void setInverted(boolean inverted) {
+                absoluteEncoderRev.setInverted(inverted);
+            }
+        };
+
+        return this;
+    }
+
     public SparkMaxMotor setFeedbackEncoder(EncoderPort feedbackEncoderPort) {
         this.feedbackEncoderPort = feedbackEncoderPort;
-        if (feedbackEncoderPort == EncoderPort.PRIMARY) {
-            if (primaryEncoder != null)
-                pid.setFeedbackDevice(primaryEncoderRev);
-        } else {
-            if (alternateEncoder != null)
-                pid.setFeedbackDevice(alternateEncoderRev);
+
+        switch (feedbackEncoderPort) {
+            case PRIMARY:
+                if (primaryEncoder != null)
+                    pid.setFeedbackDevice(primaryEncoderRev);
+                break;
+            case ALTERNATE:
+                if (alternateEncoder != null)
+                    pid.setFeedbackDevice(alternateEncoderRev);
+                break;
+            case ABSOLUTE:
+                if (absoluteEncoder != null)
+                    pid.setFeedbackDevice(absoluteEncoderRev);
+            default:
+                throw new IllegalArgumentException(String.valueOf(feedbackEncoderPort));
         }
+
         return this;
     }
 
