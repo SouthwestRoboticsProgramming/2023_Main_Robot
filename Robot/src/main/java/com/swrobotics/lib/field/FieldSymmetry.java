@@ -44,6 +44,14 @@ public enum FieldSymmetry {
         }
     };
 
+    /**
+     * Flips a pose relative to the blue alliance side to be relative to the
+     * red alliance side.
+     *
+     * @param bluePose pose relative to blue alliance
+     * @param field information about the field
+     * @return pose relative to red alliance
+     */
     protected abstract Pose2d flipRed(Pose2d bluePose, FieldInfo field);
 
     /**

@@ -33,6 +33,7 @@ public final class NavXGyroscope extends Gyroscope {
     }
 
     // TODO: Angle-ify
+    // TODO: There could also be an interface for 3-axis gyroscopes
     public double getPitch() {
         return navx.getPitch();
     }

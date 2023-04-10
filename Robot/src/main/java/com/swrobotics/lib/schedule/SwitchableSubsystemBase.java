@@ -5,6 +5,11 @@ import com.swrobotics.lib.net.NTBoolean;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
+/**
+ * Abstract class to allow subsystems to be toggled in NetworkTables.
+ * This should be used in place of SubsystemBase. The toggle will be
+ * a NTBoolean in the "Subsystems/" table.
+ */
 public abstract class SwitchableSubsystemBase implements Subsystem {
     private static final String TABLE_NAME = "Subsystems/";
 
@@ -26,8 +31,16 @@ public abstract class SwitchableSubsystemBase implements Subsystem {
         updateEnabled(enable.get());
     }
 
+    /**
+     * Called when the subsystem is disabled.
+     */
     protected void onDisable() {}
 
+    /**
+     * Gets whether this subsystem is currently enabled.
+     *
+     * @return whether the subsystem is enabled
+     */
     public boolean isEnabled() {
         return enable.get();
     }

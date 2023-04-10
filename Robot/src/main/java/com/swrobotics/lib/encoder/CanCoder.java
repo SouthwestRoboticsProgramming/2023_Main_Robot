@@ -46,10 +46,22 @@ public final class CanCoder {
     private final Encoder relative;
     private final Encoder absolute;
 
+    /**
+     * Creates a new CANCoder instance with the specified CAN id on the RoboRIO
+     * CAN bus.
+     *
+     * @param canID can ID of the CANCoder
+     */
     public CanCoder(int canID) {
         this(canID, "");
     }
 
+    /**
+     * Creates a new CANCoder instance with the specified CAN id and bus.
+     *
+     * @param canID can ID of the CANCoder
+     * @param canBus can bus the CANCoder is wired to
+     */
     public CanCoder(int canID, String canBus) {
         can = new CANCoder(canID, canBus);
 

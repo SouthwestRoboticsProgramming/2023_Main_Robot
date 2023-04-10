@@ -1,7 +1,5 @@
 package com.swrobotics.lib.drive.swerve;
 
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.net.NTDouble;
@@ -15,6 +13,9 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.RobotBase;
 
+/**
+ * Represents and controls one swerve module.
+ */
 public class SwerveModule {
     private final SwerveModuleAttributes attribs;
 
@@ -73,11 +74,11 @@ public class SwerveModule {
         calibrateWithAbsoluteEncoder();
     }
 
-
-
-
-
-
+    /**
+     * Sets the target state and motor outputs to achieve that state.
+     *
+     * @param state new target state
+     */
     public void setState(SwerveModuleState state) {
         // Optimize direction to be as close to current as possible
         SwerveModuleState outputState = optimize(state.speedMetersPerSecond, state.angle.getRadians());
@@ -93,23 +94,36 @@ public class SwerveModule {
         drive.setPercentOut(driveOutput);
     }
 
+    /**
+     * Stops both motors.
+     */
     public void stop() {
         turn.setPercentOut(0);
         drive.setPercentOut(0);
     }
 
     /**
-     * Get the current velocity and rotation of the module as read by the encoders
-     * @return State measured by encoders 
+     * Gets the current velocity and rotation of the module as read by the encoders
+     * @return state measured by encoders
      */
     public SwerveModuleState getState() {
         return new SwerveModuleState(getDriveVelocity(), getAngle());
     }
 
+    /**
+     * Gets the current rotation and distance the drive wheel has travelled.
+     *
+     * @return position measured by encoders
+     */
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(getDistance(), getAngle());
     }
 
+    /**
+     * Gets the current angle of the module. Zero is forward.
+     *
+     * @return current angle
+     */
     public Rotation2d getAngle() {
         if (RobotBase.isSimulation()) {
             return targetState.angle;
@@ -118,6 +132,11 @@ public class SwerveModule {
         return fromNativeTurnUnits(turnEncoder.getAngle());
     }
 
+    /**
+     * Gets the distance the drive wheel has travelled in meters.
+     *
+     * @return measured travel distance
+     */
     public double getDistance() {
         if (RobotBase.isSimulation()) {
             return simulatedDistance;
@@ -125,6 +144,11 @@ public class SwerveModule {
         return fromNativeDriveUnits(driveEncoder.getAngle());
     }
 
+    /**
+     * Gets the absolute angle as measured by the absolute encoder.
+     *
+     * @return absolute angle
+     */
     public Rotation2d getAbsoluteAngle() {
         return Rotation2d.fromDegrees(encoder.getAngle().ccw().deg() - offset.get() - positionalOffset);
     }
@@ -133,15 +157,29 @@ public class SwerveModule {
         return encoder.getAngle().ccw().deg() - positionalOffset; // No offset applied
     }
 
+    /**
+     * Calibrates the module by setting its offset to its current position.
+     * The module should be pointing forward when this is called.
+     */
     public void calibrate() {
         offset.set(getCalibrationAngle());
         calibrateWithAbsoluteEncoder();
     }
 
+    /**
+     * Sets whether brake mode should be enabled on the drive motor.
+     *
+     * @param brake whether to enable brake mode
+     */
     public void setBrakeMode(boolean brake) {
         drive.setBrakeMode(brake);
     }
 
+    /**
+     * Gets the current velocity of the drive wheel in meters per second.
+     *
+     * @return current velocity
+     */
     public double getDriveVelocity() {
         if (RobotBase.isSimulation()) {
             return targetState.speedMetersPerSecond;
@@ -159,7 +197,6 @@ public class SwerveModule {
 
         Rotation2d targetAngle = new Rotation2d(angleRad);
         Rotation2d invAngle = targetAngle.plus(Rotation2d.fromDegrees(180));
-        // Possibly the trouble lines
 
         double absDiff = absDiffRad(targetAngle, current).getRadians();
         double invAbsDiff = absDiffRad(invAngle, current).getRadians();
@@ -171,7 +208,6 @@ public class SwerveModule {
         } else {
             target = targetAngle;
         }
-
 
         double currentAngleRadiansMod = current.getRadians() % (2.0 * Math.PI);
         if (currentAngleRadiansMod < 0.0) {

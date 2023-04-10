@@ -1,6 +1,5 @@
 package com.swrobotics.lib.drive.swerve;
 
-import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.BaseAutoBuilder;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
@@ -9,18 +8,13 @@ import com.swrobotics.lib.field.FieldInfo;
 import com.swrobotics.lib.field.FieldSymmetry;
 import com.swrobotics.lib.gyro.Gyroscope;
 import com.swrobotics.mathlib.CCWAngle;
-import com.swrobotics.mathlib.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
-import java.util.List;
 import java.util.Map;
 
 public class SwerveDrive extends Drivetrain {
@@ -46,7 +40,7 @@ public class SwerveDrive extends Drivetrain {
         kinematics = new SwerveDriveKinematics(modulePositions);
         odometry = new SwerveDriveOdometry(kinematics, gyro.getAngle().ccw().rotation2d(), getModulePositions());
 
-        stopPosition = StopPosition.NONE;
+        stopPosition = StopPosition.FORWARD;
         setBrakeMode(true);
     }
 

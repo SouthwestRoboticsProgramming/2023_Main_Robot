@@ -29,7 +29,10 @@ import java.util.Map;
  * Base class for a drivetrain.
  */
 public abstract class Drivetrain extends SwitchableSubsystemBase {
+    /** Information about the game field this drive base is running on. */
     protected final FieldInfo fieldInfo;
+
+    /** Gyroscope used for orientation. */
     protected final Gyroscope gyro;
 
     private int activePathPlannerCommands;
@@ -103,7 +106,21 @@ public abstract class Drivetrain extends SwitchableSubsystemBase {
         chassisSpeeds.omegaRadiansPerSecond += rotation.getRadians();
     }
 
+    /**
+     * Gets the current odometry pose.
+     *
+     * Note: This may not be the actual robot pose! This is protected because
+     * {@link #getPose()} should be used to get the real pose.
+     *
+     * @return odometry pose
+     */
     protected abstract Pose2d getOdometryPose();
+
+    /**
+     * Resets the current odometry pose to the specified pose.
+     * @param pose new odometry pose to set
+     * @see #getOdometryPose()
+     */
     protected abstract void setOdometryPose(Pose2d pose);
 
     /**

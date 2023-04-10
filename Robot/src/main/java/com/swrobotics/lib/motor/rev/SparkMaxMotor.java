@@ -8,6 +8,9 @@ import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CWAngle;
 import edu.wpi.first.math.util.Units;
 
+/**
+ * Abstract motor implementation for a Spark MAX motor connected via CAN.
+ */
 public abstract class SparkMaxMotor implements FeedbackMotor {
     public enum EncoderPort {
         PRIMARY,
@@ -27,6 +30,12 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
     private boolean inverted;
     private CANSparkMax leader;
 
+    /**
+     * Creates a new instance with a specified CAN ID and motor type
+     *
+     * @param canID can ID of the Spark MAX
+     * @param type motor type connected
+     */
     public SparkMaxMotor(int canID, CANSparkMaxLowLevel.MotorType type) {
         spark = new CANSparkMax(canID, type);
         pid = spark.getPIDController();
@@ -89,18 +98,40 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
         return feedbackEncoderPort == EncoderPort.PRIMARY ? primaryEncoder : alternateEncoder;
     }
 
+    /**
+     * Gets the relative encoder connected to the encoder port.
+     *
+     * @return primary encoder
+     */
     public Encoder getPrimaryEncoder() {
         return primaryEncoder;
     }
 
+    /**
+     * Gets the secondary encoder connected to the data port.
+     *
+     * @return alternate encoder
+     */
     public Encoder getAlternateEncoder() {
         return alternateEncoder;
     }
 
+    /**
+     * Gets the absolute encoder connected to the data port.
+     *
+     * @return absolute encoder
+     */
     public Encoder getAbsoluteEncoder() {
         return absoluteEncoder;
     }
 
+    /**
+     * Enables feedback using a relative encoder connected to the encoder port.
+     *
+     * @param type type of the encoder connected
+     * @param ticksPerRotation number of ticks per encoder rotation
+     * @return this
+     */
     public SparkMaxMotor withPrimaryEncoder(SparkMaxRelativeEncoder.Type type, int ticksPerRotation) {
         if (primaryEncoder != null)
             throw new IllegalStateException("Primary encoder already set");
@@ -137,9 +168,20 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
         return this;
     }
 
+    /**
+     * Enables feedback using a relative encoder connected to the data port.
+     * The alternate encoder cannot be used at the same time as the absolute
+     * encoder.
+     *
+     * @param type type of encoder connected
+     * @param ticksPerRotation number of encoder ticks per rotation
+     * @return this
+     */
     public SparkMaxMotor withAlternateEncoder(SparkMaxAlternateEncoder.Type type, int ticksPerRotation) {
         if (alternateEncoder != null)
             throw new IllegalStateException("Primary encoder already set");
+        if (absoluteEncoder != null)
+            throw new IllegalStateException("Alternate and absolute encoders cannot be used at the same time");
 
         alternateEncoderRev = spark.getAlternateEncoder(type, ticksPerRotation);
         alternateEncoderRev.setPositionConversionFactor(1); // Rotations
@@ -173,9 +215,18 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
         return this;
     }
 
+    /**
+     * Enables feedback using an absolute encoder connected to the data port. The
+     * absolute encoder can not be used at the same time as the alternate encoder.
+     *
+     * @param type encoder type connected
+     * @return this
+     */
     public SparkMaxMotor withAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type type) {
         if (absoluteEncoder != null)
             throw new IllegalStateException("Absolute encoder already set");
+        if (alternateEncoder != null)
+            throw new IllegalStateException("Cannot use absolute and alternate encoder at the same time");
 
         absoluteEncoderRev = spark.getAbsoluteEncoder(type);
         absoluteEncoderRev.setPositionConversionFactor(1);
@@ -204,6 +255,13 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
         return this;
     }
 
+    /**
+     * Selects which encoder is used for feedback control. The default is the
+     * primary encoder.
+     *
+     * @param feedbackEncoderPort which encoder to use
+     * @return this
+     */
     public SparkMaxMotor setFeedbackEncoder(EncoderPort feedbackEncoderPort) {
         this.feedbackEncoderPort = feedbackEncoderPort;
 

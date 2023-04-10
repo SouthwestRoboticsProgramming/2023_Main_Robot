@@ -4,7 +4,9 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 
-// TODO: Remote feedback sensors
+/**
+ * Motor implementation for a Talon SRX connected via CAN.
+ */
 public final class TalonSRXMotor extends TalonMotor {
     private static TalonSRX createSRX(int id) {
         TalonSRXConfiguration config = new TalonSRXConfiguration();
@@ -33,6 +35,14 @@ public final class TalonSRXMotor extends TalonMotor {
         return true;
     }
 
+    /**
+     * Enables feedback control using an encoder connected to the Gadgeteer
+     * port on the Talon SRX.
+     *
+     * @param device the type of device that is connected
+     * @param ticksPerRotation number of ticks per rotation of the sensor input
+     * @return this
+     */
     public TalonSRXMotor enableIntegratedEncoder(FeedbackDevice device, int ticksPerRotation) {
         TalonSRX srx = (TalonSRX) talon;
         srx.configSelectedFeedbackSensor(device);

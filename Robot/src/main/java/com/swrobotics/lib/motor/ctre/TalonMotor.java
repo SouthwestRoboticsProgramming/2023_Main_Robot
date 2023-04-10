@@ -13,7 +13,13 @@ import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CWAngle;
 
+/**
+ * Abstract motor implementation for CTRE Talon motors connected via CAN.
+ */
 public abstract class TalonMotor implements FeedbackMotor {
+    /**
+     * Encoder implementation for the integrated encoder.
+     */
     public static final class IntegratedEncoder implements Encoder {
         public final TalonMotor motor;
 
@@ -68,8 +74,20 @@ public abstract class TalonMotor implements FeedbackMotor {
         integratedEncoder = null;
     }
 
+    /**
+     * Gets whether the hardware supports setting the phase of the integrated
+     * sensor.
+     *
+     * @return if the sensor phase can be set
+     */
     protected abstract boolean canSetSensorPhase();
 
+    /**
+     * Enables support for the integrated encoder, with specified ticks per
+     * rotation.
+     *
+     * @param encoderTicksPerRotation number of encoder ticks per shaft rotation
+     */
     protected void enableIntegratedEncoder(int encoderTicksPerRotation) {
         this.encoderTicksPerRotation = encoderTicksPerRotation;
         integratedEncoder = new IntegratedEncoder(this);
