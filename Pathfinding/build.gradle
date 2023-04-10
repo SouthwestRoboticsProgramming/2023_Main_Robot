@@ -18,7 +18,6 @@ dependencies {
 
 jar {
     dependsOn ':Messenger:MessengerClient:jar'
-    dependsOn ':Shared-Arm:jar'
 
     manifest {
         attributes 'Main-Class': 'com.swrobotics.pathfinding.task.PathfinderMain'
