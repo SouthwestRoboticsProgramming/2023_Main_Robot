@@ -1,4 +1,4 @@
-package com.swrobotics.shared.arm;
+package com.swrobotics.robot.subsystems.arm;
 
 import edu.wpi.first.math.util.Units;
 

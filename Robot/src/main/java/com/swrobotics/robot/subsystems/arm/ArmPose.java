@@ -1,6 +1,6 @@
-package com.swrobotics.shared.arm;
+package com.swrobotics.robot.subsystems.arm;
 
-import static com.swrobotics.shared.arm.ArmConstants.*;
+import static com.swrobotics.robot.subsystems.arm.ArmConstants.*;
 
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
