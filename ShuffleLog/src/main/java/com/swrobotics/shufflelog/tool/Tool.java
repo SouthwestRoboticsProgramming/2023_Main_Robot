@@ -1,5 +1,5 @@
 package com.swrobotics.shufflelog.tool;
 
 public interface Tool {
-  void process();
+    void process();
 }
