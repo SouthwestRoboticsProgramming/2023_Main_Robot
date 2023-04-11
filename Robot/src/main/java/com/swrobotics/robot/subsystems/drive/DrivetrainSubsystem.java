@@ -11,6 +11,7 @@ import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTEntry;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;

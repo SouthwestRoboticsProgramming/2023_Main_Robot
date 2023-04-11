@@ -86,7 +86,7 @@ public final class CanCoder {
 
             @Override
             public Angle getVelocity() {
-                return CCWAngle.deg(can.getVelocity() * flip);
+                return CWAngle.deg(can.getVelocity() * flip);
             }
 
             @Override

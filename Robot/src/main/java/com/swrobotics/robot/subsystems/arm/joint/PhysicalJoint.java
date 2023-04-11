@@ -45,7 +45,7 @@ public final class PhysicalJoint implements ArmJoint {
     }
 
     private double getRawEncoderPos() {
-        return flip * encoder.getAngle().cw().rad();
+        return flip * encoder.getAngle().cw().rot();
     }
 
     private double getEncoderPos() {
@@ -53,7 +53,7 @@ public final class PhysicalJoint implements ArmJoint {
     }
 
     private double getRawCanCoderPos() {
-        return flip * canCoder.getAngle().ccw().rad();
+        return -flip * canCoder.getAngle().cw().deg();
     }
 
     private double getCanCoderPos() {
