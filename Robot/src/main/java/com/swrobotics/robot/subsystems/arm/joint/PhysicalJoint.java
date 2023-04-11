@@ -17,72 +17,69 @@ import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 
 // TODO: Check if encoder directions are correct
 public final class PhysicalJoint implements ArmJoint {
-    private final NEOMotor motor;
-    private final Encoder encoder;
-    private final Encoder canCoder;
+  private final NEOMotor motor;
+  private final Encoder encoder;
+  private final Encoder canCoder;
 
-    private final double gearRatio;
-    private final double flip;
+  private final double gearRatio;
+  private final double flip;
 
-    private double encoderOffset;
-    private final NTDouble canCoderOffset;
+  private double encoderOffset;
+  private final NTDouble canCoderOffset;
 
-    public PhysicalJoint(
-            int motorId,
-            int canCoderId,
-            double gearRatio,
-            NTDouble canCoderOffset,
-            boolean inverted) {
-        motor = new NEOMotor(motorId);
-        motor.setBrakeMode(true);
-        encoder = motor.getIntegratedEncoder();
+  public PhysicalJoint(
+      int motorId, int canCoderId, double gearRatio, NTDouble canCoderOffset, boolean inverted) {
+    motor = new NEOMotor(motorId);
+    motor.setBrakeMode(true);
+    encoder = motor.getIntegratedEncoder();
 
-        this.gearRatio = gearRatio;
-        this.flip = inverted ? -1 : 1;
+    this.gearRatio = gearRatio;
+    this.flip = inverted ? -1 : 1;
 
-        canCoder = new CanCoder(canCoderId).getAbsolute();
-        this.canCoderOffset = canCoderOffset;
-    }
+    canCoder = new CanCoder(canCoderId).getAbsolute();
+    this.canCoderOffset = canCoderOffset;
+  }
 
-    private double getRawEncoderPos() {
-        return flip * encoder.getAngle().cw().rot();
-    }
+  private double getRawEncoderPos() {
+    return flip * encoder.getAngle().cw().rot();
+  }
 
-    private double getEncoderPos() {
-        return getRawEncoderPos() + encoderOffset;
-    }
+  private double getEncoderPos() {
+    return getRawEncoderPos() + encoderOffset;
+  }
 
-    private double getRawCanCoderPos() {
-        return -flip * canCoder.getAngle().cw().deg();
-    }
+  private double getRawCanCoderPos() {
+    return -flip * canCoder.getAngle().cw().deg();
+  }
 
-    private double getCanCoderPos() {
-        return MathUtil.wrap(getRawCanCoderPos() + canCoderOffset.get(), -180, 180) / ArmSubsystem.JOINT_TO_CANCODER_RATIO;
-    }
+  private double getCanCoderPos() {
+    return MathUtil.wrap(getRawCanCoderPos() + canCoderOffset.get(), -180, 180)
+        / ArmSubsystem.JOINT_TO_CANCODER_RATIO;
+  }
 
-    // Called when specified in NT
-    @Override
-    public void calibrateCanCoder() {
-        canCoderOffset.set(-getRawCanCoderPos());
-    }
+  // Called when specified in NT
+  @Override
+  public void calibrateCanCoder() {
+    canCoderOffset.set(-getRawCanCoderPos());
+  }
 
-    @Override
-    public double getCurrentAngle() {
-        return getEncoderPos() / gearRatio * 2 * Math.PI;
-    }
+  @Override
+  public double getCurrentAngle() {
+    return getEncoderPos() / gearRatio * 2 * Math.PI;
+  }
 
-    // Called on startup
-    @Override
-    public void calibrateHome(double homeAngle) {
-        double actualAngle = homeAngle - Math.toRadians(getCanCoderPos());
+  // Called on startup
+  @Override
+  public void calibrateHome(double homeAngle) {
+    double actualAngle = homeAngle - Math.toRadians(getCanCoderPos());
 
-        double actualPos = getRawEncoderPos();
-        double expectedPos = actualAngle / (2 * Math.PI) * gearRatio;
-        encoderOffset = expectedPos - actualPos;
-    }
+    double actualPos = getRawEncoderPos();
+    double expectedPos = actualAngle / (2 * Math.PI) * gearRatio;
+    encoderOffset = expectedPos - actualPos;
+  }
 
-    @Override
-    public void setMotorOutput(double out) {
-        motor.setPercentOut(out * flip);
-    }
+  @Override
+  public void setMotorOutput(double out) {
+    motor.setPercentOut(out * flip);
+  }
 }
