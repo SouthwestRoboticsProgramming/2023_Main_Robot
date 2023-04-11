@@ -7,17 +7,17 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * This can include controllers, joysticks, buttons, etc.
  */
 public abstract class InputSource extends SubsystemBase {
-    @Override
-    public final void periodic() {
-        for (InputElement elem : getElements()) {
-            elem.update();
-        }
+  @Override
+  public final void periodic() {
+    for (InputElement elem : getElements()) {
+      elem.update();
     }
+  }
 
-    /**
-     * Gets all the elements present in this source.
-     *
-     * @return elements present
-     */
-    protected abstract Iterable<InputElement> getElements();
+  /**
+   * Gets all the elements present in this source.
+   *
+   * @return elements present
+   */
+  protected abstract Iterable<InputElement> getElements();
 }
