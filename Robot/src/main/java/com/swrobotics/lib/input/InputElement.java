@@ -5,6 +5,6 @@ package com.swrobotics.lib.input;
  * d-pads.
  */
 public interface InputElement {
-    /** Called every periodic to read new input. */
-    void update();
+  /** Called every periodic to read new input. */
+  void update();
 }
