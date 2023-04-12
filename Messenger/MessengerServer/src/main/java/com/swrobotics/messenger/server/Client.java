@@ -1,9 +1,9 @@
 package com.swrobotics.messenger.server;
 
 public interface Client {
-  String getName();
+    String getName();
 
-  void sendMessage(Message msg);
+    void sendMessage(Message msg);
 
-  boolean listensTo(String type);
+    boolean listensTo(String type);
 }

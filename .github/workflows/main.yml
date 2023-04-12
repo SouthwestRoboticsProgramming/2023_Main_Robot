@@ -1,4 +1,5 @@
 name: Format & Build
+
 on:
   push:
     branches: [main]
