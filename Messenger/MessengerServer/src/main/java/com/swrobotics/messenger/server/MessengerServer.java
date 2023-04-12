@@ -3,7 +3,6 @@ package com.swrobotics.messenger.server;
 import com.swrobotics.messenger.server.log.FileLogger;
 import com.swrobotics.messenger.server.log.MessageLogger;
 import com.swrobotics.messenger.server.log.NoOpLogger;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -12,95 +11,95 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class MessengerServer {
-    private static final String MSG_GET_CLIENTS = "Messenger:GetClients";
-    private static final String MSG_CLIENTS = "Messenger:Clients";
+  private static final String MSG_GET_CLIENTS = "Messenger:GetClients";
+  private static final String MSG_CLIENTS = "Messenger:Clients";
 
-    private static final MessengerServer INSTANCE = new MessengerServer();
+  private static final MessengerServer INSTANCE = new MessengerServer();
 
-    public static MessengerServer get() {
-        return INSTANCE;
+  public static MessengerServer get() {
+    return INSTANCE;
+  }
+
+  private final MessengerConfiguration config;
+  private final Set<Client> clients;
+  private final MessageLogger log;
+
+  private MessengerServer() {
+    config = MessengerConfiguration.loadFromFile(new File("config.properties"));
+    clients = ConcurrentHashMap.newKeySet();
+
+    if (config.getLogFile() == null) {
+      log = new NoOpLogger();
+    } else {
+      log = new FileLogger(config.getLogFile(), config.isCompressLog());
+    }
+  }
+
+  public void broadcastEvent(String type, String name, String descriptor) {
+    log.logEvent(type, name, descriptor);
+
+    byte[] data;
+    try {
+      ByteArrayOutputStream b = new ByteArrayOutputStream();
+      DataOutputStream out = new DataOutputStream(b);
+
+      out.writeUTF(type);
+      out.writeUTF(name);
+      out.writeUTF(descriptor);
+
+      data = b.toByteArray();
+    } catch (IOException e) {
+      return;
     }
 
-    private final MessengerConfiguration config;
-    private final Set<Client> clients;
-    private final MessageLogger log;
+    dispatchMessage(new Message("Messenger:Event", data));
+  }
 
-    private MessengerServer() {
-        config = MessengerConfiguration.loadFromFile(new File("config.properties"));
-        clients = ConcurrentHashMap.newKeySet();
+  public void onMessage(Message msg) {
+    if (log != null) log.logMessage(msg);
 
-        if (config.getLogFile() == null) {
-            log = new NoOpLogger();
-        } else {
-            log = new FileLogger(config.getLogFile(), config.isCompressLog());
-        }
-    }
+    if (msg.getType().equals(MSG_GET_CLIENTS)) {
+      try {
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        DataOutputStream d = new DataOutputStream(b);
 
-    public void broadcastEvent(String type, String name, String descriptor) {
-        log.logEvent(type, name, descriptor);
-
-        byte[] data;
-        try {
-            ByteArrayOutputStream b = new ByteArrayOutputStream();
-            DataOutputStream out = new DataOutputStream(b);
-
-            out.writeUTF(type);
-            out.writeUTF(name);
-            out.writeUTF(descriptor);
-
-            data = b.toByteArray();
-        } catch (IOException e) {
-            return;
-        }
-
-        dispatchMessage(new Message("Messenger:Event", data));
-    }
-
-    public void onMessage(Message msg) {
-        if (log != null) log.logMessage(msg);
-
-        if (msg.getType().equals(MSG_GET_CLIENTS)) {
-            try {
-                ByteArrayOutputStream b = new ByteArrayOutputStream();
-                DataOutputStream d = new DataOutputStream(b);
-
-                d.writeInt(clients.size());
-                for (Client client : clients) {
-                    d.writeUTF(client.getName());
-                }
-
-                dispatchMessage(new Message(MSG_CLIENTS, b.toByteArray()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return;
-        }
-
-        dispatchMessage(msg);
-    }
-
-    private void dispatchMessage(Message msg) {
+        d.writeInt(clients.size());
         for (Client client : clients) {
-            if (client.listensTo(msg.getType())) {
-                client.sendMessage(msg);
-            }
+          d.writeUTF(client.getName());
         }
+
+        dispatchMessage(new Message(MSG_CLIENTS, b.toByteArray()));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      return;
     }
 
-    public void addClient(Client client) {
-        clients.add(client);
-    }
+    dispatchMessage(msg);
+  }
 
-    public void removeClient(Client client) {
-        clients.remove(client);
+  private void dispatchMessage(Message msg) {
+    for (Client client : clients) {
+      if (client.listensTo(msg.getType())) {
+        client.sendMessage(msg);
+      }
     }
+  }
 
-    public MessengerConfiguration getConfig() {
-        return config;
-    }
+  public void addClient(Client client) {
+    clients.add(client);
+  }
 
-    public MessageLogger getLog() {
-        return log;
-    }
+  public void removeClient(Client client) {
+    clients.remove(client);
+  }
+
+  public MessengerConfiguration getConfig() {
+    return config;
+  }
+
+  public MessageLogger getLog() {
+    return log;
+  }
 }
