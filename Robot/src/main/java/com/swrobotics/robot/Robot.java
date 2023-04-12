@@ -12,88 +12,90 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * project.
  */
 public class Robot extends TimedRobot {
-  private Command autonomousCommand;
-  private final Timer autonomousTimer = new Timer();
+    private Command autonomousCommand;
+    private final Timer autonomousTimer = new Timer();
 
-  private RobotContainer robotContainer;
+    private RobotContainer robotContainer;
 
-  /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
-   */
-  @Override
-  public void robotInit() {
-    // Create a RobotContainer to manage our subsystems and our buttons
-    robotContainer = new RobotContainer();
-  }
-
-  /**
-   * This function is called every robot packet, no matter the mode. Use this for items like
-   * diagnostics that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
-  @Override
-  public void robotPeriodic() {
-    // Runs the Scheduler. This is responsible for polling buttons, adding
-    // newly-scheduled
-    // commands, running already-scheduled commands, removing finished or
-    // interrupted commands,
-    // and running subsystem periodic() methods. This must be called from the
-    // robot's periodic
-    // block in order for anything in the Command-based framework to work.
-    CommandScheduler.getInstance().run();
-
-    // Run all operations queued to run on main thread
-    // ThreadUtils.runMainThreadOperations();
-
-    // Handle messages being sent by the raspberry pi
-    // FIXME: Re-enable once loop overrun is fixed
-    // robotContainer.getMessenger().readMessages();
-  }
-
-  /** This function is called once each time the robot enters Disabled mode. */
-  @Override
-  public void disabledInit() {}
-
-  @Override
-  public void disabledPeriodic() {}
-
-  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
-  @Override
-  public void autonomousInit() {
-    // If an autonomous command has already be set, reset it
-    if (autonomousCommand != null) {
-      autonomousCommand.cancel();
-      System.out.println("Canceled the current auto command");
+    /**
+     * This function is run when the robot is first started up and should be used for any
+     * initialization code.
+     */
+    @Override
+    public void robotInit() {
+        // Create a RobotContainer to manage our subsystems and our buttons
+        robotContainer = new RobotContainer();
     }
 
-    // Get autonomous from selector
-    autonomousCommand = robotContainer.getAutonomousCommand();
+    /**
+     * This function is called every robot packet, no matter the mode. Use this for items like
+     * diagnostics that you want ran during disabled, autonomous, teleoperated and test.
+     *
+     * <p>This runs after the mode specific periodic functions, but before LiveWindow and
+     * SmartDashboard integrated updating.
+     */
+    @Override
+    public void robotPeriodic() {
+        // Runs the Scheduler. This is responsible for polling buttons, adding
+        // newly-scheduled
+        // commands, running already-scheduled commands, removing finished or
+        // interrupted commands,
+        // and running subsystem periodic() methods. This must be called from the
+        // robot's periodic
+        // block in order for anything in the Command-based framework to work.
+        CommandScheduler.getInstance().run();
 
-    // schedule the autonomous command (example)
-    if (autonomousCommand != null) {
-      // Follow up autonomous command with diagnostics on how quickly it ran
-      // autonomousCommand = autonomousCommand.andThen(
-      //         new PrintCommand("Auto Completed!"),
-      //         new RunCommand(() -> autonomousTimer.stop()));
-      //         new RunCommand(() -> System.out.printf("Auto finished in %.3f seconds\n",
-      // autonomousTimer.get())
-      // );
+        // Run all operations queued to run on main thread
+        // ThreadUtils.runMainThreadOperations();
 
-      autonomousCommand.schedule();
-
-      // Reset the timer
-      autonomousTimer.reset();
-      autonomousTimer.start();
+        // Handle messages being sent by the raspberry pi
+        // FIXME: Re-enable once loop overrun is fixed
+        // robotContainer.getMessenger().readMessages();
     }
-  }
 
-  @Override
-  public void autonomousExit() {
-    if (autonomousCommand != null) {
-      autonomousCommand.cancel();
+    /** This function is called once each time the robot enters Disabled mode. */
+    @Override
+    public void disabledInit() {}
+
+    @Override
+    public void disabledPeriodic() {}
+
+    /**
+     * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
+     */
+    @Override
+    public void autonomousInit() {
+        // If an autonomous command has already be set, reset it
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
+            System.out.println("Canceled the current auto command");
+        }
+
+        // Get autonomous from selector
+        autonomousCommand = robotContainer.getAutonomousCommand();
+
+        // schedule the autonomous command (example)
+        if (autonomousCommand != null) {
+            // Follow up autonomous command with diagnostics on how quickly it ran
+            // autonomousCommand = autonomousCommand.andThen(
+            //         new PrintCommand("Auto Completed!"),
+            //         new RunCommand(() -> autonomousTimer.stop()));
+            //         new RunCommand(() -> System.out.printf("Auto finished in %.3f seconds\n",
+            // autonomousTimer.get())
+            // );
+
+            autonomousCommand.schedule();
+
+            // Reset the timer
+            autonomousTimer.reset();
+            autonomousTimer.start();
+        }
     }
-  }
+
+    @Override
+    public void autonomousExit() {
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
+        }
+    }
 }
