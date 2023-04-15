@@ -10,6 +10,7 @@ import com.swrobotics.lib.gyro.Gyroscope;
 import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
+
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,9 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 import java.util.Map;
 
-/**
- * Drivetrain implementation for a differential drivetrain.
- */
+/** Drivetrain implementation for a differential drivetrain. */
 public class DifferentialDrive extends Drivetrain {
     private static final double IS_MOVING_TOL = 0.1;
 
@@ -46,9 +45,8 @@ public class DifferentialDrive extends Drivetrain {
     private final DifferentialDriveOdometry odometry;
 
     /**
-     * Creates a new differential drive instance. If there are multiple
-     * motors per side, the leader should be passed in here, and the
-     * other motors should follow the leader.
+     * Creates a new differential drive instance. If there are multiple motors per side, the leader
+     * should be passed in here, and the other motors should follow the leader.
      *
      * @param fieldInfo information about the game field
      * @param gyro gyroscope to measure orientation
@@ -63,8 +61,7 @@ public class DifferentialDrive extends Drivetrain {
             FeedbackMotor leftMotor,
             FeedbackMotor rightMotor,
             double wheelRadius,
-            double wheelSpacing
-    ) {
+            double wheelSpacing) {
         super(fieldInfo, gyro);
 
         this.leftMotor = leftMotor;
@@ -74,7 +71,9 @@ public class DifferentialDrive extends Drivetrain {
 
         this.wheelRadius = wheelRadius;
         kinematics = new DifferentialDriveKinematics(wheelSpacing);
-        odometry = new DifferentialDriveOdometry(getGyroRotation2d(), getDistance(leftEncoder), getDistance(rightEncoder));
+        odometry =
+                new DifferentialDriveOdometry(
+                        getGyroRotation2d(), getDistance(leftEncoder), getDistance(rightEncoder));
 
         controlMode = ControlMode.VELOCITY;
     }
@@ -104,7 +103,8 @@ public class DifferentialDrive extends Drivetrain {
 
     @Override
     protected void setOdometryPose(Pose2d pose) {
-        odometry.resetPosition(getGyroRotation2d(), getDistance(leftEncoder), getDistance(rightEncoder), pose);
+        odometry.resetPosition(
+                getGyroRotation2d(), getDistance(leftEncoder), getDistance(rightEncoder), pose);
     }
 
     @Override
@@ -131,8 +131,7 @@ public class DifferentialDrive extends Drivetrain {
                 this::driveWheels,
                 eventMap,
                 fieldInfo.getSymmetry() == FieldSymmetry.LATERAL,
-                this
-        );
+                this);
     }
 
     private void driveWheels(double leftMPS, double rightMPS) {
