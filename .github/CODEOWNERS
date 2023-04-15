@@ -1,1 +1,3 @@
-/.github/ @foehammer127
+# Ensure Only Specific People Can Edit this File
+/.github/  @SouthwestRoboticsProgramming/approvers
+
