@@ -1,6 +1,7 @@
 package com.swrobotics.lib.motor.rev;
 
 import com.swrobotics.lib.motor.PWMMotor;
+
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 /**
@@ -8,7 +9,7 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
  * using the REV Hardware Client over USB.
  */
 public final class PWMSparkMaxMotor extends PWMMotor {
-  public PWMSparkMaxMotor(int pwmPort) {
-    super(new PWMSparkMax(pwmPort));
-  }
+    public PWMSparkMaxMotor(int pwmPort) {
+        super(new PWMSparkMax(pwmPort));
+    }
 }

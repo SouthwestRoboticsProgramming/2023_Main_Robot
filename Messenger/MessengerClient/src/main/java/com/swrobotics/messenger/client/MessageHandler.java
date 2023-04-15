@@ -7,11 +7,11 @@ package com.swrobotics.messenger.client;
  */
 @FunctionalInterface
 public interface MessageHandler {
-  /**
-   * Called when a matching message is received.
-   *
-   * @param type message type
-   * @param reader message data reader
-   */
-  void handle(String type, MessageReader reader);
+    /**
+     * Called when a matching message is received.
+     *
+     * @param type message type
+     * @param reader message data reader
+     */
+    void handle(String type, MessageReader reader);
 }
