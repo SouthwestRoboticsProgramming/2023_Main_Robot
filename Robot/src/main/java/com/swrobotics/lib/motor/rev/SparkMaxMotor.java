@@ -9,7 +9,22 @@ import com.swrobotics.mathlib.CWAngle;
 
 import edu.wpi.first.math.util.Units;
 
-/** Abstract motor implementation for a Spark MAX motor connected via CAN. */
+/**
+ * Abstract motor implementation for a Spark MAX motor connected via CAN.
+ *
+ * How to connect encoders to the Spark MAX:
+ *   - If in Brushless mode, the NEO encoder must be connected to the primary
+ *     encoder port. An additional encoder must be connected to the data port,
+ *     and rewired to match the Alternate Encoder Mode pinout.
+ *   - If in Brushed mode, the primary encoder can be wired to either the primary
+ *     encoder port or the data port. If you want two encoders, the primary encoder
+ *     must be wired to the primary encoder port, and the alternate encoder must be
+ *     wired to the data port in Alternate Encoder Mode.
+ *
+ * See the <a href="https://docs.revrobotics.com/sparkmax/feature-description/encoder-port">Encoder Port Documentation</a>
+ * and <a href="https://docs.revrobotics.com/sparkmax/feature-description/data-port">Data Port Documentation</a>
+ * for how to wire the encoders to the ports.
+ */
 public abstract class SparkMaxMotor implements FeedbackMotor {
     public enum EncoderPort {
         PRIMARY,
