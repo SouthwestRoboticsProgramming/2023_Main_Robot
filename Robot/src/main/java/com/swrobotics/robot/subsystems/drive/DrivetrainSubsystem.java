@@ -187,7 +187,6 @@ public final class DrivetrainSubsystem extends SwerveDrive {
                                 outputAngle.plus(robotPose.getRotation()));
                 fieldPoses[i] = fieldPose;
             }
-            System.out.println(Arrays.toString(fieldPoses));
 
             fieldWheels.setPoses(fieldPoses);
         }
