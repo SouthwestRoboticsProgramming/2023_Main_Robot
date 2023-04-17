@@ -21,6 +21,11 @@ import edu.wpi.first.math.util.Units;
  *     must be wired to the primary encoder port, and the alternate encoder must be
  *     wired to the data port in Alternate Encoder Mode.
  *
+ * Warning: If you have a alternate encoder, the Spark MAX data port must be
+ * configured and flashed for Alternate Encoder Mode using the REV Hardware
+ * Client BEFORE connecting the encoder to the data port, or you may damage the
+ * Spark MAX and/or encoder.
+ *
  * See the <a href="https://docs.revrobotics.com/sparkmax/feature-description/encoder-port">Encoder Port Documentation</a>
  * and <a href="https://docs.revrobotics.com/sparkmax/feature-description/data-port">Data Port Documentation</a>
  * for how to wire the encoders to the ports.
