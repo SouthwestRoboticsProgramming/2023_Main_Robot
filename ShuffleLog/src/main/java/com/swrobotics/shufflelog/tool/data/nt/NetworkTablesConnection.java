@@ -1,5 +1,6 @@
 package com.swrobotics.shufflelog.tool.data.nt;
 
+import com.swrobotics.shufflelog.tool.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import imgui.ImGui;
@@ -90,6 +91,7 @@ public final class NetworkTablesConnection {
         // Start a new client if there is not one currently
         if (instance == null) {
             instance = NetworkTableInstance.create();
+            SmartDashboard.INSTANCE.init(instance);
             activeInstances.incrementAndGet();
 
             if (isNt4) instance.startClient4(CLIENT_ID);
@@ -128,6 +130,7 @@ public final class NetworkTablesConnection {
         stopFuture =
                 threadPool.submit(
                         () -> {
+                            SmartDashboard.INSTANCE.close();
                             savedInstance.setServer(new String[0], 0);
                             savedInstance.stopClient();
                             savedInstance.stopLocal();

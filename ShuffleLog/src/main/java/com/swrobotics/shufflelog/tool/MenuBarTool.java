@@ -1,5 +1,6 @@
 package com.swrobotics.shufflelog.tool;
 
+import com.swrobotics.shufflelog.tool.smartdashboard.SmartDashboard;
 import imgui.ImGui;
 import imgui.extension.implot.ImPlot;
 import imgui.type.ImBoolean;
@@ -25,10 +26,17 @@ public final class MenuBarTool implements Tool {
                 ImGui.endMenu();
             }
 
+            if (ImGui.beginMenu("NetworkTables")) {
+                SmartDashboard.INSTANCE.showMenuItems();
+                ImGui.endMenu();
+            }
+
             ImGui.endMainMenuBar();
         }
 
         if (showDemo.get()) ImGui.showDemoWindow();
         if (showPlotDemo.get()) ImPlot.showDemoWindow(plotDemoOpen);
+
+        SmartDashboard.INSTANCE.process();
     }
 }
