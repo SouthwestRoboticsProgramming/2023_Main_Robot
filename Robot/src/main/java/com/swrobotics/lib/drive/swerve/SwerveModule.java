@@ -86,7 +86,8 @@ public class SwerveModule {
         simulatedDistance += outputState.speedMetersPerSecond * 0.02;
 
         Angle turnUnits = toNativeTurnUnits(outputState.angle);
-        turn.setPosition(CWAngle.rot((System.currentTimeMillis() % 1000) / 1000.0 * attribs.getTurnGearRatio()));
+        turn.setPosition(turnUnits);
+//        turn.setPosition(CWAngle.rot((System.currentTimeMillis() % 1000) / 1000.0 * attribs.getTurnGearRatio()));
 
         double driveOutput = outputState.speedMetersPerSecond / attribs.getMaxVelocity();
         drive.setPercentOut(driveOutput);
@@ -246,6 +247,6 @@ public class SwerveModule {
     }
 
     private double fromNativeDriveUnits(Angle units) {
-        return units.cw().rad() / attribs.getDriveGearRatio() * (attribs.getWheelDiameter() / 2);
+        return units.ccw().rad() / attribs.getDriveGearRatio() * (attribs.getWheelDiameter() / 2);
     }
 }
