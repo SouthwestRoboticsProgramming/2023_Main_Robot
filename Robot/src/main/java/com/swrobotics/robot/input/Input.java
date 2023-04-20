@@ -126,7 +126,6 @@ public final class Input extends SubsystemBase {
          * fast mode. It doesn't effect the sticks directly as that was not a problem that we faced. Instead,
          * it just effects fast mode ramping.
          */
-        double rate = SPEED_RATE_LIMIT.get();
         SPEED_RATE_LIMIT.nowAndOnChange(
                 () -> {
                     double newRate = SPEED_RATE_LIMIT.get();
