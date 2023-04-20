@@ -40,8 +40,7 @@ public final class PhysicalJoint implements ArmJoint {
             NTDouble canCoderOffset,
             boolean inverted) {
         motor = new NEOMotor(motorId);
-        motor.setBrakeMode(BRAKE_MODE.get());
-        BRAKE_MODE.onChange(() -> motor.setBrakeMode(BRAKE_MODE.get()));
+        BRAKE_MODE.nowAndOnChange(() -> motor.setBrakeMode(BRAKE_MODE.get()));
         encoder = motor.getIntegratedEncoder();
 
         this.gearRatio = gearRatio;

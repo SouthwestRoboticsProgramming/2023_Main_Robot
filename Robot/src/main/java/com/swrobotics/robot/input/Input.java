@@ -127,8 +127,7 @@ public final class Input extends SubsystemBase {
          * it just effects fast mode ramping.
          */
         double rate = SPEED_RATE_LIMIT.get();
-        limiter = new SlewRateLimiter(rate, -rate, 0);
-        SPEED_RATE_LIMIT.onChange(
+        SPEED_RATE_LIMIT.nowAndOnChange(
                 () -> {
                     double newRate = SPEED_RATE_LIMIT.get();
                     limiter = new SlewRateLimiter(newRate, -newRate, 0);

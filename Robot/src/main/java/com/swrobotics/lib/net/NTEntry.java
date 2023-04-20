@@ -70,6 +70,11 @@ public abstract class NTEntry<T> implements Supplier<T> {
         changeListeners.add(listener);
     }
 
+    public void nowAndOnChange(Runnable listener) {
+        listener.run();
+        onChange(listener);
+    }
+
     private void fireOnChanged() {
         for (Runnable listener : changeListeners) {
             ThreadUtils.runOnMainThread(listener);

@@ -43,10 +43,10 @@ public interface FeedbackMotor extends Motor {
     }
 
     default void setPID(NTDouble kP, NTDouble kI, NTDouble kD) {
-        setPID(kP.get(), kI.get(), kD.get());
-        kP.onChange(() -> setP(kP.get()));
-        kI.onChange(() -> setI(kI.get()));
-        kD.onChange(() -> setD(kD.get()));
+        kP.nowAndOnChange(() -> setP(kP.get()));
+        kI.nowAndOnChange(() -> setI(kI.get()));
+        kD.nowAndOnChange(() -> setD(kD.get()));
+        setF(0);
     }
 
     default void setPIDF(double kP, double kI, double kD, double kF) {
@@ -58,7 +58,6 @@ public interface FeedbackMotor extends Motor {
 
     default void setPIDF(NTDouble kP, NTDouble kI, NTDouble kD, NTDouble kF) {
         setPID(kP, kI, kD);
-        setF(kF.get());
-        kF.onChange(() -> setF(kF.get()));
+        kF.nowAndOnChange(() -> setF(kF.get()));
     }
 }
