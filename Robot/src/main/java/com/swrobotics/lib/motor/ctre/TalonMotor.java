@@ -1,10 +1,12 @@
 package com.swrobotics.lib.motor.ctre;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.Faults;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.BaseTalon;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
@@ -13,6 +15,8 @@ import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.CWAngle;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 
 /** Abstract motor implementation for CTRE Talon motors connected via CAN. */
 public abstract class TalonMotor implements FeedbackMotor {
@@ -51,6 +55,8 @@ public abstract class TalonMotor implements FeedbackMotor {
     }
 
     protected final BaseTalon talon;
+    private final Faults faults;
+
     private Encoder integratedEncoder;
     private boolean inverted, following;
     private int encoderTicksPerRotation;
@@ -60,6 +66,8 @@ public abstract class TalonMotor implements FeedbackMotor {
      */
     public TalonMotor(BaseTalon talon) {
         this.talon = talon;
+        faults = new Faults();
+
         inverted = false;
         following = false;
 
@@ -85,7 +93,15 @@ public abstract class TalonMotor implements FeedbackMotor {
     }
 
     private void updateInvertState() {
-        // TODO: Fix sensor phase for sensors besides TalonFX integrated sensor
+        // This will invert both the motor output and sensor input, keeping the
+        // overall sensor phase the same.
+
+        // According to CTRE Docs: Sensor phase is not the same as sensor
+        // direction. When SetInverted is called on a motor controller, the
+        // values reported by the selected sensor are also inverted. As a
+        // result, changing the SetInverted input does not require changing
+        // the sensor phase.
+
         if (following) {
             talon.setInverted(inverted ? InvertType.OpposeMaster : InvertType.FollowMaster);
         } else {
@@ -107,9 +123,30 @@ public abstract class TalonMotor implements FeedbackMotor {
         updateInvertState();
     }
 
+    private double prevSensorFaultTimestamp = Double.NEGATIVE_INFINITY;
+    private void testSensorPhase() {
+        // Talon FX always has correct sensor phase, so we can skip checking
+        // CTRE Docs: Talon FX automatically phases your sensor for you. It
+        // will always be correct, provided you use the getSelected* API and
+        // have configured the selected feedback type to be integrated sensor.
+        if (talon instanceof TalonFX)
+            return;
+
+        talon.getFaults(faults);
+        if (faults.SensorOutOfPhase) {
+            // Limit warning to print at most every 5 seconds
+            double time = Timer.getFPGATimestamp();
+            if (prevSensorFaultTimestamp < time + 5) {
+                DriverStation.reportWarning("Talon (" + talon.getDeviceID() + ") sensor out of phase, use #getIntegratedEncoder().setInverted() to fix this", true);
+                prevSensorFaultTimestamp = time;
+            }
+        }
+    }
+
     @Override
     public void setPercentOut(double percent) {
         talon.set(ControlMode.PercentOutput, percent);
+        testSensorPhase();
     }
 
     @Override
@@ -117,6 +154,7 @@ public abstract class TalonMotor implements FeedbackMotor {
         if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
 
         talon.set(ControlMode.Position, position.ccw().rot() * encoderTicksPerRotation);
+        testSensorPhase();
     }
 
     @Override
@@ -124,6 +162,7 @@ public abstract class TalonMotor implements FeedbackMotor {
         if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
 
         talon.set(ControlMode.Velocity, velocity.ccw().rot() * encoderTicksPerRotation / 10);
+        testSensorPhase();
     }
 
     @Override
