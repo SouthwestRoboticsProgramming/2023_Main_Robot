@@ -45,7 +45,7 @@ public class SwerveModule {
      * @param driveMotor motor for driving the wheel
      * @param turnMotor motor for turning the wheel
      * @param encoder absolute encoder for calibration
-     * @param position position relative to robot center
+     * @param position position relative to robot center, +X forward, +Y left
      * @param offset NetworkTables entry to store encoder offset
      */
     public SwerveModule(

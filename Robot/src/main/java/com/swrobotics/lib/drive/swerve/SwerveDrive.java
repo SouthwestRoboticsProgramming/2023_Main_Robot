@@ -69,17 +69,17 @@ public class SwerveDrive extends Drivetrain {
         final double periodicTime = 0.02;
 
         // "Borrowed" from team 254
-        Pose2d robot_pose_vel =
+        Pose2d robotPoseVel =
                 new Pose2d(
                         speeds.vxMetersPerSecond * periodicTime,
                         speeds.vyMetersPerSecond * periodicTime,
                         Rotation2d.fromRadians(speeds.omegaRadiansPerSecond * periodicTime));
-        Twist2d twist_vel = IDENTITY_POSE.log(robot_pose_vel);
+        Twist2d twistVel = IDENTITY_POSE.log(robotPoseVel);
         speeds =
                 new ChassisSpeeds(
-                        twist_vel.dx / periodicTime,
-                        twist_vel.dy / periodicTime,
-                        twist_vel.dtheta / periodicTime);
+                        twistVel.dx / periodicTime,
+                        twistVel.dy / periodicTime,
+                        twistVel.dtheta / periodicTime);
 
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
