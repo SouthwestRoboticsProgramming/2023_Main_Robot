@@ -11,6 +11,7 @@ import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.CWAngle;
 
 /** Abstract motor implementation for CTRE Talon motors connected via CAN. */
@@ -25,19 +26,19 @@ public abstract class TalonMotor implements FeedbackMotor {
 
         @Override
         public Angle getAngle() {
-            return CWAngle.rot(
+            return CCWAngle.rot(
                     motor.talon.getSelectedSensorPosition() / motor.encoderTicksPerRotation);
         }
 
         @Override
         public Angle getVelocity() {
-            return CWAngle.rot(
+            return CCWAngle.rot(
                     motor.talon.getSelectedSensorVelocity() / motor.encoderTicksPerRotation * 10);
         }
 
         @Override
         public void setAngle(Angle angle) {
-            motor.talon.setSelectedSensorPosition(angle.cw().rot() * motor.encoderTicksPerRotation);
+            motor.talon.setSelectedSensorPosition(angle.ccw().rot() * motor.encoderTicksPerRotation);
         }
 
         @Override
@@ -63,6 +64,7 @@ public abstract class TalonMotor implements FeedbackMotor {
         following = false;
 
         integratedEncoder = null;
+        updateInvertState();
     }
 
     /**
@@ -83,6 +85,7 @@ public abstract class TalonMotor implements FeedbackMotor {
     }
 
     private void updateInvertState() {
+        // TODO: Fix sensor phase for sensors besides TalonFX integrated sensor
         if (following) {
             talon.setInverted(inverted ? InvertType.OpposeMaster : InvertType.FollowMaster);
         } else {
@@ -113,14 +116,14 @@ public abstract class TalonMotor implements FeedbackMotor {
     public void setPosition(Angle position) {
         if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
 
-        talon.set(ControlMode.Position, position.cw().rot() * encoderTicksPerRotation);
+        talon.set(ControlMode.Position, position.ccw().rot() * encoderTicksPerRotation);
     }
 
     @Override
     public void setVelocity(Angle velocity) {
         if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
 
-        talon.set(ControlMode.Velocity, velocity.cw().rot() * encoderTicksPerRotation / 10);
+        talon.set(ControlMode.Velocity, velocity.ccw().rot() * encoderTicksPerRotation / 10);
     }
 
     @Override

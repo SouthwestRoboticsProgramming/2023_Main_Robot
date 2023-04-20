@@ -9,7 +9,7 @@ package com.swrobotics.lib.motor;
 public interface Motor {
     /**
      * Sets the percent output of the motor. When not inverted, a positive percentage should be
-     * clockwise.
+     * counterclockwise.
      *
      * @param percent percent output from -1 to 1
      */

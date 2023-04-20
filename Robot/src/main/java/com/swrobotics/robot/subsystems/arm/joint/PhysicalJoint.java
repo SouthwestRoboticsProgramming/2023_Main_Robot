@@ -3,7 +3,9 @@ package com.swrobotics.robot.subsystems.arm.joint;
 import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.motor.rev.NEOMotor;
+import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 
@@ -17,6 +19,8 @@ import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 
 // TODO: Check if encoder directions are correct
 public final class PhysicalJoint implements ArmJoint {
+    private static final NTBoolean BRAKE_MODE = new NTBoolean("Arm/Brake Mode", true);
+
     private final NEOMotor motor;
     private final Encoder encoder;
     private final Encoder canCoder;
@@ -27,6 +31,8 @@ public final class PhysicalJoint implements ArmJoint {
     private double encoderOffset;
     private final NTDouble canCoderOffset;
 
+    private NTEntry<Double> canCoderLogTest;
+
     public PhysicalJoint(
             int motorId,
             int canCoderId,
@@ -34,7 +40,8 @@ public final class PhysicalJoint implements ArmJoint {
             NTDouble canCoderOffset,
             boolean inverted) {
         motor = new NEOMotor(motorId);
-        motor.setBrakeMode(true);
+        motor.setBrakeMode(BRAKE_MODE.get());
+        BRAKE_MODE.onChange(() -> motor.setBrakeMode(BRAKE_MODE.get()));
         encoder = motor.getIntegratedEncoder();
 
         this.gearRatio = gearRatio;
@@ -42,6 +49,8 @@ public final class PhysicalJoint implements ArmJoint {
 
         canCoder = new CanCoder(canCoderId).getAbsolute();
         this.canCoderOffset = canCoderOffset;
+
+        canCoderLogTest = new NTDouble("Log/Arm/CANCoder " + canCoderId + " (cw deg)", 12345).setTemporary();
     }
 
     private double getRawEncoderPos() {
@@ -53,7 +62,7 @@ public final class PhysicalJoint implements ArmJoint {
     }
 
     private double getRawCanCoderPos() {
-        return -flip * canCoder.getAngle().cw().deg();
+        return -flip * canCoder.getAngle().ccw().deg();
     }
 
     private double getCanCoderPos() {
@@ -85,5 +94,6 @@ public final class PhysicalJoint implements ArmJoint {
     @Override
     public void setMotorOutput(double out) {
         motor.setPercentOut(out * flip);
+        canCoderLogTest.set(canCoder.getAngle().cw().deg());
     }
 }

@@ -5,6 +5,7 @@ import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
+import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.mathlib.MathUtil;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -20,7 +21,7 @@ public class SwerveModule {
     private final FeedbackMotor turn;
     private final FeedbackMotor drive;
 
-    private final Encoder encoder;
+    public final Encoder encoder;
     private final Encoder turnEncoder;
     private final Encoder driveEncoder;
 
@@ -85,7 +86,7 @@ public class SwerveModule {
         simulatedDistance += outputState.speedMetersPerSecond * 0.02;
 
         Angle turnUnits = toNativeTurnUnits(outputState.angle);
-        turn.setPosition(turnUnits);
+        turn.setPosition(CWAngle.rot((System.currentTimeMillis() % 1000) / 1000.0 * attribs.getTurnGearRatio()));
 
         double driveOutput = outputState.speedMetersPerSecond / attribs.getMaxVelocity();
         drive.setPercentOut(driveOutput);

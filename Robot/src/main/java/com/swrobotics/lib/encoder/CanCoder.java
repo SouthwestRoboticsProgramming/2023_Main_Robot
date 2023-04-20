@@ -67,7 +67,7 @@ public final class CanCoder {
         config.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
         config.absoluteSensorRange = AbsoluteSensorRange.Unsigned_0_to_360;
         config.sensorTimeBase = SensorTimeBase.PerSecond;
-        // TODO: Check if correct, documentation has conflicting information
+        // Configure for CCW positive reading
         config.sensorDirection = false;
         can.configAllSettings(config);
 
@@ -80,12 +80,12 @@ public final class CanCoder {
 
                     @Override
                     public Angle getAngle() {
-                        return CWAngle.deg(can.getAbsolutePosition() * flip);
+                        return CCWAngle.deg(can.getAbsolutePosition() * flip);
                     }
 
                     @Override
                     public Angle getVelocity() {
-                        return CWAngle.deg(can.getVelocity() * flip);
+                        return CCWAngle.deg(can.getVelocity() * flip);
                     }
 
                     @Override

@@ -5,6 +5,7 @@ import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.CWAngle;
 
 import edu.wpi.first.math.util.Units;
@@ -163,19 +164,19 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
                 new Encoder() {
                     @Override
                     public Angle getAngle() {
-                        return CWAngle.rot(primaryEncoderRev.getPosition());
+                        return CCWAngle.rot(primaryEncoderRev.getPosition());
                     }
 
                     @Override
                     public Angle getVelocity() {
-                        return CWAngle.rad(
+                        return CCWAngle.rad(
                                 Units.rotationsPerMinuteToRadiansPerSecond(
                                         primaryEncoderRev.getVelocity()));
                     }
 
                     @Override
                     public void setAngle(Angle angle) {
-                        primaryEncoderRev.setPosition(angle.cw().rot());
+                        primaryEncoderRev.setPosition(angle.ccw().rot());
                     }
 
                     @Override
@@ -214,19 +215,19 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
                 new Encoder() {
                     @Override
                     public Angle getAngle() {
-                        return CWAngle.rot(alternateEncoderRev.getPosition());
+                        return CCWAngle.rot(alternateEncoderRev.getPosition());
                     }
 
                     @Override
                     public Angle getVelocity() {
-                        return CWAngle.rad(
+                        return CCWAngle.rad(
                                 Units.rotationsPerMinuteToRadiansPerSecond(
                                         alternateEncoderRev.getVelocity()));
                     }
 
                     @Override
                     public void setAngle(Angle angle) {
-                        alternateEncoderRev.setPosition(angle.cw().rot());
+                        alternateEncoderRev.setPosition(angle.ccw().rot());
                     }
 
                     @Override
@@ -262,12 +263,12 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
                 new Encoder() {
                     @Override
                     public Angle getAngle() {
-                        return CWAngle.rot(absoluteEncoderRev.getPosition());
+                        return CCWAngle.rot(absoluteEncoderRev.getPosition());
                     }
 
                     @Override
                     public Angle getVelocity() {
-                        return CWAngle.rad(
+                        return CCWAngle.rad(
                                 Units.rotationsPerMinuteToRadiansPerSecond(
                                         absoluteEncoderRev.getVelocity()));
                     }
