@@ -1,69 +1,135 @@
 package com.swrobotics.robot;
 
-import org.littletonrobotics.junction.LoggedRobot;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.function.BiConsumer;
 
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import com.swrobotics.robot.Settings.RobotType;
+import com.swrobotics.robot.Settings.Mode;
+
+import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-/**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
- */
 public class Robot extends LoggedRobot {
     private Command autonomousCommand;
     private final Timer autonomousTimer = new Timer();
 
     private RobotContainer robotContainer;
 
-    /**
-     * This function is run when the robot is first started up and should be used for any
-     * initialization code.
-     */
+    public Robot() {
+        super(1 / 50); // Standard loop time
+    }
+
     @Override
     public void robotInit() {
+        // Configure logging
+        Logger logger = Logger.getInstance();
+
+        // Record metadata so that the logs have more to work off of
+        logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
+        logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
+        logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+        logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
+        logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+        switch (BuildConstants.DIRTY) {
+            case 0:
+                logger.recordMetadata("GitDirty", "All changes committed");
+                break;
+            case 1:
+                logger.recordMetadata("GitDirty", "Uncomitted changes");
+                break;
+            default:
+                logger.recordMetadata("GitDirty", "Unknown");
+                break;
+        }
+
+        // Set up data receivers & replay source
+        switch (Settings.getMode()) {
+            case REAL:
+                String folder = Settings.logFolders.get(Settings.robot);
+                if (folder != null) {
+                    logger.addDataReceiver(new WPILOGWriter(folder));
+                }
+                logger.addDataReceiver(new NT4Publisher());
+                if (Settings.robot == RobotType.COMPETITION) {
+                    LoggedPowerDistribution.getInstance(50, ModuleType.kAutomatic);
+                }
+                break;
+
+            case SIMULATION:
+                logger.addDataReceiver(new NT4Publisher());
+                break;
+
+            case REPLAY:
+                String path = LogFileUtil.findReplayLog();
+                logger.setReplaySource(new WPILOGReader(path));
+                logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(path, "_sim")));
+                break;
+        }
+
+        // Start AdvantageKit logger
+        setUseTiming(Settings.getMode() != Mode.REPLAY);
+        logger.start();
+
         // Create a RobotContainer to manage our subsystems and our buttons
         robotContainer = new RobotContainer();
+
+        // Log active commands
+        Map<String, Integer> commandCounts = new HashMap<>();
+        BiConsumer<Command, Boolean> logCommandFunction = (Command command, Boolean active) -> {
+            String name = command.getName();
+            int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
+            commandCounts.put(name, count);
+            Logger.getInstance()
+                    .recordOutput(
+                            "CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()), active);
+            Logger.getInstance().recordOutput("CommandsAll/" + name, count > 0);
+        };
+        CommandScheduler.getInstance()
+                .onCommandInitialize(
+                        (Command command) -> {
+                            logCommandFunction.accept(command, true);
+                        });
+        CommandScheduler.getInstance()
+                .onCommandFinish(
+                        (Command command) -> {
+                            logCommandFunction.accept(command, false);
+                        });
+        CommandScheduler.getInstance()
+                .onCommandInterrupt(
+                        (Command command) -> {
+                            logCommandFunction.accept(command, false);
+                        });
+
+        // Random alliance in sim (this makes sure that things work on both sides)
+        if (Settings.getMode() == Mode.SIMULATION) {
+            if (new Random().nextBoolean()) {
+                DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+            }
+        }
     }
 
-    /**
-     * This function is called every robot packet, no matter the mode. Use this for items like
-     * diagnostics that you want ran during disabled, autonomous, teleoperated and test.
-     *
-     * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-     * SmartDashboard integrated updating.
-     */
     @Override
     public void robotPeriodic() {
-        // Runs the Scheduler. This is responsible for polling buttons, adding
-        // newly-scheduled
-        // commands, running already-scheduled commands, removing finished or
-        // interrupted commands,
-        // and running subsystem periodic() methods. This must be called from the
-        // robot's periodic
-        // block in order for anything in the Command-based framework to work.
-        CommandScheduler.getInstance().run();
+        Threads.setCurrentThreadPriority(true, 99);
 
-        // Run all operations queued to run on main thread
-        // ThreadUtils.runMainThreadOperations();
-
-        // Handle messages being sent by the raspberry pi
-        // FIXME: Re-enable once loop overrun is fixed
-        // robotContainer.getMessenger().readMessages();
+        CommandScheduler.getInstance().run(); // Leave this alone
     }
 
-    /** This function is called once each time the robot enters Disabled mode. */
-    @Override
-    public void disabledInit() {}
-
-    @Override
-    public void disabledPeriodic() {}
-
-    /**
-     * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
-     */
     @Override
     public void autonomousInit() {
         // If an autonomous command has already be set, reset it
@@ -77,14 +143,6 @@ public class Robot extends LoggedRobot {
 
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
-            // Follow up autonomous command with diagnostics on how quickly it ran
-            // autonomousCommand = autonomousCommand.andThen(
-            //         new PrintCommand("Auto Completed!"),
-            //         new RunCommand(() -> autonomousTimer.stop()));
-            //         new RunCommand(() -> System.out.printf("Auto finished in %.3f seconds\n",
-            // autonomousTimer.get())
-            // );
-
             autonomousCommand.schedule();
 
             // Reset the timer

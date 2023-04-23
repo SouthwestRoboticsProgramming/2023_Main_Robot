@@ -50,3 +50,6 @@ ShuffleLog/persistence.properties
 Robot/waypoints.tsv
 Robot/BlockAuto/
 .Glass/
+
+# BuildConstants file
+src/main/java/com/swrobotics/robot/BuildConstants.java
