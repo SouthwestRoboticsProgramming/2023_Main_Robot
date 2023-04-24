@@ -14,6 +14,7 @@ import com.swrobotics.robot.subsystems.StatusLogging;
 import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -37,6 +38,8 @@ import edu.wpi.first.wpilibj2.command.*;
 import java.util.HashMap;
 import java.util.List;
 
+import org.littletonrobotics.junction.Logger;
+
 /*
  * Calibration instructions:
  * Align all wheel to face forward with bevel gears to the right
@@ -45,7 +48,7 @@ import java.util.List;
  * Look at RioLog and type those numbers into the module declarations
  */
 
-public class DrivetrainSubsystem extends SwitchableSubsystemBase implements StatusLoggable {
+public class DrivetrainSubsystem extends SwitchableSubsystemBase {
     public static Angle getAllianceForward() {
         return DriverStation.getAlliance() == DriverStation.Alliance.Blue
                 ? Angle.ZERO
@@ -67,12 +70,6 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
                 new Rotation2d(
                         MathUtil.wrap(
                                 Math.PI - asBlue.getRotation().getRadians(), 0, 2 * Math.PI)));
-    }
-
-    public StatusLogging logger;
-
-    public void initLogging(StatusLogging logger) {
-        this.logger = logger;
     }
 
     // The Stop Position Enum
@@ -113,7 +110,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
     // Setting for Robot Stop Position
     private StopPosition stopPosition = StopPosition.NONE;
 
-    public static final double MAX_VELOCITY_METERS_PER_SECOND = 4.0;
+    public static final double MAX_VELOCITY_METERS_PER_SECOND = 4.11;
 
     /**
      * The maximum angular velocity of the robot in radians per second.
@@ -152,11 +149,10 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
     // Create a field sim to view where the odometry thinks we are
     public final Field2d field = new Field2d();
-    private final FieldObject2d ppPose = field.getObject("PathPlanner pose");
 
     private final SwerveModule[] modules;
 
-    private final SwerveDriveOdometry odometry;
+    private final SwerveDrivePoseEstimator odometry;
 
     private Translation2d centerOfRotation = new Translation2d();
 
@@ -224,10 +220,8 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
         gyro.calibrate();
 
-        // FIXME: Change back to getGyroscopeRotation
         odometry =
-                new SwerveDriveOdometry(
-                        kinematics, getRawGyroscopeRotation(), getModulePositions());
+                new SwerveDrivePoseEstimator(kinematics, getGyroscopeRotation(), getModulePositions(), new Pose2d());
 
         // Initially start facing forward
         resetPose(new Pose2d(0, 0, new Rotation2d(0)));
@@ -318,7 +312,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
      * @return the wacky pose
      */
     public Pose2d getPathPlannerPose() {
-        return odometry.getPoseMeters();
+        return odometry.getEstimatedPosition();
     }
 
     public boolean isPathPlannerRunning() {
@@ -542,8 +536,15 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
             odometry.update(getGyroscopeRotation(), getModulePositions());
         }
 
+        // Log states
+        Logger.getInstance().recordOutput("SwerveStates/Setpoints", states);
+        Logger.getInstance().recordOutput("SwerveStates/Measured", getModuleStates());
+
+        // Log odometry pose
+        Logger.getInstance().recordOutput("Odometry/Robot2d", getPose());
+
         // ppPose.setPose(getPathPlannerPose());
-        // field.setRobotPose(getPose());
+        field.setRobotPose(getPose());
         // SnapPositions.showPositions(field);
 
         // Check if it should calibrate the wheels

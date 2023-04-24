@@ -18,8 +18,6 @@ import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.drive.Pathfinder;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
-import com.swrobotics.robot.subsystems.vision.Limelight;
-import com.swrobotics.robot.subsystems.vision.Photon;
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -52,6 +50,11 @@ public class RobotContainer {
         BOTTOM
     }
 
+    // TODO: Endgame alert with rumble
+    // TODO: Coast on decceleration
+    // TODO: Characterization mode
+
+
     // Configuration for our Raspberry Pi communication service
     private static final String MESSENGER_HOST_ROBOT = "10.21.29.3";
     private static final String MESSENGER_HOST_SIM = "localhost";
@@ -65,9 +68,6 @@ public class RobotContainer {
     public final Input input;
     public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
     public final Pathfinder pathfinder;
-
-    public final Photon photon = new Photon(this);
-    public final Limelight limelight = null; // new Limelight();
 
     public final ArmSubsystem arm;
     public final IntakeSubsystem intake = new IntakeSubsystem();

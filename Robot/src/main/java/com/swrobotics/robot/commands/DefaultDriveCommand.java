@@ -1,5 +1,7 @@
 package com.swrobotics.robot.commands;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.input.Input;
@@ -39,6 +41,8 @@ public class DefaultDriveCommand extends CommandBase {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-x, -y, rotationCCW, gyro);
         }
 
+        Logger.getInstance().recordOutput("ChassisSpeeds/DemandedY", speeds.vyMetersPerSecond);
+        System.out.println(speeds);
         drive.setChassisSpeeds(speeds);
     }
 

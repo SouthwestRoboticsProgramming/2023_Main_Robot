@@ -12,7 +12,6 @@ import com.swrobotics.robot.positions.ArmPositions;
 import com.swrobotics.robot.positions.SnapPositions;
 import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
-import com.swrobotics.robot.subsystems.vision.Limelight;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -196,40 +195,6 @@ public final class Input extends SubsystemBase {
             snapToPosition(snap.pose.getTranslation());
         } else {
             setCommandEnabled(snapDriveCmd, false);
-        }
-
-        if (false) { // FIXME
-            Rotation2d poseAngle = snap.pose.getRotation();
-
-            switch (snap.turnMode) {
-                case DIRECT_TURN:
-                    snapAngle = CCWAngle.rad(poseAngle.getRadians());
-                    break;
-                case CONE_NODE_AIM:
-                    robot.limelight.setPipeline(Limelight.CONE_NODE_PIPELINE);
-                    snapAngle =
-                            CCWAngle.rad(
-                                    currentPose.getRotation().getRadians()
-                                            - robot.limelight.getXAngle().getRadians());
-                    break;
-                case GAME_PIECE_AIM:
-                    robot.limelight.setPipeline(
-                            getGamePiece() == GamePiece.CONE
-                                    ? Limelight.CONE_PIPELINE
-                                    : Limelight.CUBE_PIPELINE);
-                    snapAngle =
-                            CCWAngle.rad(
-                                    currentPose.getRotation().getRadians()
-                                            - robot.limelight.getXAngle().getRadians());
-                    break;
-            }
-
-            snapToAngle(poseAngle);
-            if (snap.turnMode == SnapPositions.TurnMode.GAME_PIECE_AIM)
-                shouldBeRobotRelative = true;
-        } else {
-            setCommandEnabled(snapTurnCmd, false);
-            shouldBeRobotRelative = false;
         }
 
         boolean driveInput =
