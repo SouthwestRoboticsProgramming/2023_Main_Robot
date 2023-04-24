@@ -69,6 +69,7 @@ public final class NetworkTablesConnection {
     private static final String CLIENT_ID = "ShuffleLog";
 
     private final ExecutorService threadPool;
+    private final SmartDashboard smartDashboard;
     private NetworkTableInstance instance;
     private Future<?> stopFuture;
     private Boolean isNt4;
@@ -77,8 +78,10 @@ public final class NetworkTablesConnection {
     private NetworkTableRepr rootTable;
     private final AtomicInteger activeInstances;
 
-    public NetworkTablesConnection(ExecutorService threadPool) {
+    public NetworkTablesConnection(ExecutorService threadPool, SmartDashboard smartDashboard) {
         this.threadPool = threadPool;
+        this.smartDashboard = smartDashboard;
+
         instance = null;
         stopFuture = null;
         isNt4 = null;
@@ -91,7 +94,7 @@ public final class NetworkTablesConnection {
         // Start a new client if there is not one currently
         if (instance == null) {
             instance = NetworkTableInstance.create();
-            SmartDashboard.INSTANCE.init(instance);
+            smartDashboard.init(instance);
             activeInstances.incrementAndGet();
 
             if (isNt4) instance.startClient4(CLIENT_ID);
@@ -123,6 +126,8 @@ public final class NetworkTablesConnection {
         NetworkTableInstance savedInstance = instance;
         instance = null;
 
+        smartDashboard.close();
+
         // Stop on other thread because stopping the client can take around
         // 10 seconds sometimes, and we don't want to freeze the GUI
         // We need to completely restart the NT instance because NT does not clear
@@ -130,7 +135,6 @@ public final class NetworkTablesConnection {
         stopFuture =
                 threadPool.submit(
                         () -> {
-                            SmartDashboard.INSTANCE.close();
                             savedInstance.setServer(new String[0], 0);
                             savedInstance.stopClient();
                             savedInstance.stopLocal();

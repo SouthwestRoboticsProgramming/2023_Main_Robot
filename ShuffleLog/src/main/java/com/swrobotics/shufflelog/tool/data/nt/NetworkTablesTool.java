@@ -5,6 +5,7 @@ import com.swrobotics.shufflelog.tool.data.DataLogTool;
 import com.swrobotics.shufflelog.tool.data.PlotDef;
 import com.swrobotics.shufflelog.tool.data.ValueAccessor;
 
+import com.swrobotics.shufflelog.tool.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
@@ -62,14 +63,14 @@ public final class NetworkTablesTool implements Tool {
     private final ImDouble tempDouble = new ImDouble();
     private final ImString tempString = new ImString(1024);
 
-    public NetworkTablesTool(ExecutorService threadPool) {
+    public NetworkTablesTool(ExecutorService threadPool, SmartDashboard smartDashboard) {
         version = new ImInt(DEFAULT_VERSION);
         connectionMode = new ImInt(DEFAULT_CONN_MODE);
         host = new ImString(64);
         host.set(DEFAULT_HOST);
         portOrTeamNumber = new ImInt(getDefaultPortOrTeamNumber());
 
-        connection = new NetworkTablesConnection(threadPool);
+        connection = new NetworkTablesConnection(threadPool, smartDashboard);
     }
 
     // --- Server connection ---

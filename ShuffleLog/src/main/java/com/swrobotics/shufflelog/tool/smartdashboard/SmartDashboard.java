@@ -1,26 +1,22 @@
 package com.swrobotics.shufflelog.tool.smartdashboard;
 
+import com.swrobotics.shufflelog.tool.Tool;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public final class SmartDashboard {
+public final class SmartDashboard implements Tool {
     public static final String WINDOW_PREFIX = "SD: ";
-    public static final SmartDashboard INSTANCE = new SmartDashboard();
 
     private NetworkTable table;
     private final Map<String, SmartDashboardTool> tools;
     private final Set<String> openTools;
     private final ImBoolean pOpen;
 
-    private SmartDashboard() {
+    public SmartDashboard() {
         tools = new HashMap<>();
         openTools = new HashSet<>();
         pOpen = new ImBoolean(false);
@@ -71,6 +67,7 @@ public final class SmartDashboard {
         }
     }
 
+    @Override
     public void process() {
         for (String key : openTools) {
             tools.get(key).process();

@@ -12,6 +12,7 @@ import com.swrobotics.shufflelog.tool.data.nt.NetworkTablesTool;
 import com.swrobotics.shufflelog.tool.field.FieldViewTool;
 import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
 import com.swrobotics.shufflelog.tool.profile.ShuffleLogProfilerTool;
+import com.swrobotics.shufflelog.tool.smartdashboard.SmartDashboard;
 import com.swrobotics.shufflelog.tool.taskmanager.RoboRIOFilesTool;
 import com.swrobotics.shufflelog.tool.taskmanager.TaskManagerTool;
 
@@ -134,13 +135,15 @@ public final class ShuffleLog extends PApplet {
             e.printStackTrace();
         }
 
-        tools.add(new MenuBarTool());
+        SmartDashboard smartDashboard = new SmartDashboard();
+        tools.add(smartDashboard);
+        tools.add(new MenuBarTool(smartDashboard));
         MessengerTool msg = new MessengerTool(this);
         tools.add(msg);
         tools.add(new ShuffleLogProfilerTool(this));
         DataLogTool dataLog = new DataLogTool(this);
         tools.add(dataLog);
-        tools.add(new NetworkTablesTool(threadPool));
+        tools.add(new NetworkTablesTool(threadPool, smartDashboard));
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new RoboRIOFilesTool(this));
         tools.add(new FieldViewTool(this));

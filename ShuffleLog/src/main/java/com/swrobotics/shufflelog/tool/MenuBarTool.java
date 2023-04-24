@@ -6,10 +6,13 @@ import imgui.extension.implot.ImPlot;
 import imgui.type.ImBoolean;
 
 public final class MenuBarTool implements Tool {
+    private final SmartDashboard smartDashboard;
     private final ImBoolean showDemo, showPlotDemo;
     private final ImBoolean plotDemoOpen;
 
-    public MenuBarTool() {
+    public MenuBarTool(SmartDashboard smartDashboard) {
+        this.smartDashboard = smartDashboard;
+
         showDemo = new ImBoolean(false);
         showPlotDemo = new ImBoolean(false);
 
@@ -27,7 +30,7 @@ public final class MenuBarTool implements Tool {
             }
 
             if (ImGui.beginMenu("NetworkTables")) {
-                SmartDashboard.INSTANCE.showMenuItems();
+                smartDashboard.showMenuItems();
                 ImGui.endMenu();
             }
 
@@ -36,7 +39,5 @@ public final class MenuBarTool implements Tool {
 
         if (showDemo.get()) ImGui.showDemoWindow();
         if (showPlotDemo.get()) ImPlot.showDemoWindow(plotDemoOpen);
-
-        SmartDashboard.INSTANCE.process();
     }
 }
