@@ -52,4 +52,4 @@ Robot/BlockAuto/
 .Glass/
 
 # BuildConstants file
-BuildConstants.java
+**/BuildConstants.java
