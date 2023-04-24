@@ -31,6 +31,20 @@ public final class SmartDashboard implements Tool {
     }
 
     public void showMenuItems() {
+        ArrayList<String> keys = new ArrayList<>(tools.keySet());
+        keys.sort(String.CASE_INSENSITIVE_ORDER);
+        for (String key : keys) {
+            pOpen.set(openTools.contains(key));
+            ImGui.menuItem(key, null, pOpen);
+            if (pOpen.get())
+                openTools.add(key);
+            else
+                openTools.remove(key);
+        }
+    }
+
+    @Override
+    public void process() {
         // Update tools
         Set<String> removedTools = new HashSet<>(tools.keySet());
         for (String childName : table.getSubTables()) {
@@ -53,24 +67,30 @@ public final class SmartDashboard implements Tool {
         }
         for (String removed : removedTools) {
             tools.remove(removed);
+            // Do not remove from openTools so it stays open if it reappears
         }
 
-        ArrayList<String> keys = new ArrayList<>(tools.keySet());
-        keys.sort(String.CASE_INSENSITIVE_ORDER);
-        for (String key : keys) {
-            pOpen.set(openTools.contains(key));
-            ImGui.menuItem(key, null, pOpen);
-            if (pOpen.get())
-                openTools.add(key);
-            else
-                openTools.remove(key);
+        for (String key : openTools) {
+            SmartDashboardTool tool = tools.get(key);
+            if (tool != null)
+                tool.process();
         }
     }
 
     @Override
-    public void process() {
-        for (String key : openTools) {
-            tools.get(key).process();
-        }
+    public void loadPersistence(Properties props) {
+        String prop = props.getProperty("smartdashboard.tools", "");
+        if (prop.isEmpty())
+            return;
+
+        String[] names = prop.split(",");
+        openTools.addAll(Arrays.asList(names));
+    }
+
+    @Override
+    public void savePersistence(Properties props) {
+        String[] toolNames = new String[openTools.size()];
+        openTools.toArray(toolNames);
+        props.setProperty("smartdashboard.tools", String.join(",", toolNames));
     }
 }

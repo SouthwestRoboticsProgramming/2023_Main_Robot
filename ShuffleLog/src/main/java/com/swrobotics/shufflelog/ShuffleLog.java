@@ -151,6 +151,10 @@ public final class ShuffleLog extends PApplet {
         tools.add(new PreMatchChecklistTool(msg));
         tools.add(new ConeOrCubeTool(messenger));
 
+        for (Tool tool : tools) {
+            tool.loadPersistence(persistence);
+        }
+
         startTime = System.currentTimeMillis();
     }
 
@@ -211,6 +215,10 @@ public final class ShuffleLog extends PApplet {
 
         ImPlot.destroyContext(imPlotCtx);
         ImGui.destroyContext();
+
+        for (Tool tool : tools) {
+            tool.savePersistence(persistence);
+        }
 
         try {
             persistence.store(new FileWriter(PERSISTENCE_FILE), "ShuffleLog persistent data");
