@@ -30,6 +30,9 @@ Vision/Test.py
 # Emacs temporary files
 *~
 
+# BuildConstants file
+Robot/src/main/java/com/swrobotics/robot/BuildConstants.java
+
 # Local Properties File
 local.properties
 
@@ -51,5 +54,4 @@ Robot/waypoints.tsv
 Robot/BlockAuto/
 .Glass/
 
-# BuildConstants file
-Robot/src/main/java/com/swrobotics/robot/BuildConstants.java
+
