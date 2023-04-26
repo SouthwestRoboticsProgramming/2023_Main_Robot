@@ -12,10 +12,8 @@ import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.positions.ArmPositions;
-import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
-import com.swrobotics.robot.subsystems.drive.Pathfinder;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
@@ -67,12 +65,9 @@ public class RobotContainer {
     // The robot's subsystems are defined here...
     public final Input input;
     public final DrivetrainSubsystem drivetrainSubsystem = new DrivetrainSubsystem();
-    public final Pathfinder pathfinder;
 
     public final ArmSubsystem arm;
     public final IntakeSubsystem intake = new IntakeSubsystem();
-
-    public final Lights lights = new Lights();
 
     public final MessengerClient messenger;
 
@@ -90,9 +85,6 @@ public class RobotContainer {
 
         new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
         arm = new ArmSubsystem(messenger);
-
-        // Initialize pathfinder to be able to drive to any point on the field
-        pathfinder = new Pathfinder(messenger, drivetrainSubsystem);
 
         input = new Input(this);
         drivetrainSubsystem.setDefaultCommand(new DefaultDriveCommand(drivetrainSubsystem, input));
@@ -214,7 +206,6 @@ public class RobotContainer {
 
         // Autos that don't do anything
         Command blankAuto = new InstantCommand();
-        Command printAuto = new PrintCommand("Auto chooser is working!");
 
         // Autos to just drive off the line
         Command taxiSmart =

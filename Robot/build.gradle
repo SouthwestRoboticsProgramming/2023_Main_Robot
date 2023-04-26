@@ -96,6 +96,9 @@ dependencies {
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.mockito:mockito-core:2.+'
+
+    def akitJson = new groovy.json.JsonSlurper().parseText(new File(projectDir.getAbsolutePath() + "/vendordeps/AdvantageKit.json").text)
+    annotationProcessor "org.littletonrobotics.akit.junction:junction-autolog:$akitJson.version"
 }
 
 configurations.all {

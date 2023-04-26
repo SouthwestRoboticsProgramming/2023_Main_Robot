@@ -4,21 +4,14 @@ import com.swrobotics.lib.input.XboxController;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTTranslation2d;
-import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
-import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.positions.ArmPositions;
-import com.swrobotics.robot.positions.SnapPositions;
-import com.swrobotics.robot.subsystems.Lights;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public final class Input extends SubsystemBase {
@@ -80,10 +73,6 @@ public final class Input extends SubsystemBase {
 
     private SlewRateLimiter limiter;
 
-    private final PathfindToPointCommand snapDriveCmd;
-    private final TurnToAngleCommand snapTurnCmd;
-    private Angle snapAngle;
-
     private Translation2d prevArmTarget;
     private boolean prevWasGrid;
 
@@ -112,9 +101,6 @@ public final class Input extends SubsystemBase {
                     robot.messenger.prepare("Robot:GamePiece").addBoolean(true).send();
                     L_IS_CONE.set(true);
                 });
-
-        snapDriveCmd = new PathfindToPointCommand(robot, null);
-        snapTurnCmd = new TurnToAngleCommand(robot, () -> snapAngle, false);
 
         prevWasGrid = false;
         prevArmTarget = ArmPositions.DEFAULT.getTranslation();
@@ -170,42 +156,6 @@ public final class Input extends SubsystemBase {
         return driver.rightTrigger.get() >= TRIGGER_DEADBAND || shouldBeRobotRelative;
     }
 
-    private void disableSnap() {
-        setCommandEnabled(snapDriveCmd, false);
-        setCommandEnabled(snapTurnCmd, false);
-        driver.setRumble(0);
-        shouldBeRobotRelative = false;
-    }
-
-    private void driverPeriodic() {
-        if (!driver.leftBumper.isPressed()) {
-            disableSnap();
-            return;
-        }
-
-        // Calculate snapping
-        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
-        SnapPositions.SnapStatus snap = SnapPositions.getSnap(currentPose);
-        if (snap == null) {
-            disableSnap();
-            return;
-        }
-
-        if (snap.snapDrive) {
-            snapToPosition(snap.pose.getTranslation());
-        } else {
-            setCommandEnabled(snapDriveCmd, false);
-        }
-
-        boolean driveInput =
-                Math.abs(driver.leftStickX.get()) > DEADBAND
-                        || Math.abs(driver.leftStickY.get()) > DEADBAND;
-        boolean turnInput = Math.abs(driver.rightStickX.get()) > DEADBAND;
-
-        boolean rumble = (driveInput && snap.snapDrive) || (turnInput || snap.snapTurn);
-        driver.setRumble(rumble ? 0.5 : 0);
-    }
-
     // ---- Manipulator controls ----
 
     private GamePiece getGamePiece() {
@@ -252,37 +202,9 @@ public final class Input extends SubsystemBase {
         return IntakeMode.OFF;
     }
 
-    private void setCommandEnabled(Command cmd, boolean enabled) {
-        if (enabled && !cmd.isScheduled()) cmd.schedule();
-        if (!enabled && cmd.isScheduled()) cmd.cancel();
-    }
-
-    private static final double SNAP_DRIVE_TOL = 0.05;
-    private static final double SNAP_TURN_TOL = Math.toRadians(1);
-
-    private void snapToPosition(Translation2d position) {
-        snapDriveCmd.setGoal(new Vec2d(position.getX(), position.getY()));
-
-        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
-        double dist = currentPose.getTranslation().minus(position).getNorm();
-
-        setCommandEnabled(snapDriveCmd, dist > SNAP_DRIVE_TOL);
-    }
-
-    private void snapToAngle(Rotation2d angle) {
-        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
-
-        double angleDiff =
-                CCWAngle.rad(angle.getRadians())
-                        .getAbsDiff(CCWAngle.rad(currentPose.getRotation().getRadians()))
-                        .rad();
-
-        setCommandEnabled(snapTurnCmd, angleDiff > SNAP_TURN_TOL);
-    }
-
     private void manipulatorPeriodic() {
-        if (getGamePiece() == GamePiece.CONE) robot.lights.set(Lights.Color.YELLOW);
-        else robot.lights.set(Lights.Color.BLUE);
+        // if (getGamePiece() == GamePiece.CONE) robot.lights.set(Lights.Color.YELLOW); // TODO: Lights
+        // else robot.lights.set(Lights.Color.BLUE);
 
         IntakeMode intakeMode = getIntakeMode();
         switch (intakeMode) {
@@ -348,8 +270,6 @@ public final class Input extends SubsystemBase {
     @Override
     public void periodic() {
         if (!DriverStation.isTeleop()) return;
-
-        driverPeriodic();
         manipulatorPeriodic();
     }
 }
