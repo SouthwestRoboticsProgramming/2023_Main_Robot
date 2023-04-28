@@ -20,18 +20,16 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public class SwerveModule {
-    private static final String NT_PATH =
-            "Swerve/Modules/"; // All module constants will be in the Swerve/Module folder
+    private static final String NT_PATH = "Swerve/Modules/"; // All module constants will be in the Swerve/Module folder
 
     private static final int TALON_FX_ENCODER_TICKS_PER_ROTATION = 2048;
 
     // Configured for an SDS MK4 L1 module
     private static final double DRIVE_MOTOR_GEAR_RATIO = 8.14; // 8.14 : 1
     private static final double TURN_MOTOR_GEAR_RATIO = 12.8; // 12.8 : 1
-    private static final double WHEEL_DIAMETER_METERS =
-            Units.inchesToMeters(4.0); // FIXME: Slightly less than 4 inches -> Measure
-    private static final double MAX_ACHIEVABLE_VELOCITY =
-            4.11; // Meters / Second, Listed on SDS website
+    private static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(4.0); // FIXME: Slightly less than 4 inches
+                                                                                   // -> Measure
+    private static final double MAX_ACHIEVABLE_VELOCITY = 4.11; // Meters / Second, Listed on SDS website
 
     /* Tunable Constants */
     private static final NTDouble TURN_KP = new NTDouble(NT_PATH + "Turn kP", 0.2);
@@ -65,9 +63,8 @@ public class SwerveModule {
         this.positionalOffset = positionalOffset;
 
         // Offset is stored in NTDouble to save it for the next match
-        offset =
-                new NTDouble(
-                        "Swerve/Modules/" + moduleInfo.name + "/Offset Degrees", moduleInfo.offset);
+        offset = new NTDouble(
+                "Swerve/Modules/" + moduleInfo.name + "/Offset Degrees", moduleInfo.offset);
 
         TalonFXConfiguration turnConfig = new TalonFXConfiguration();
         turnConfig.slot0.kP = TURN_KP.get();
@@ -80,7 +77,8 @@ public class SwerveModule {
         driveConfig.slot0.kI = 0;
         driveConfig.slot0.kD = 0;
         driveConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
-        // FIXME: Remove limits imposed to keep robot from breaking Mason's house FIXME: Break the
+        // FIXME: Remove limits imposed to keep robot from breaking Mason's house FIXME:
+        // Break the
         // house
         // driveConfig.peakOutputForward = 0.1;
         // driveConfig.peakOutputReverse = -0.1;
@@ -103,8 +101,7 @@ public class SwerveModule {
 
         setState(new SwerveModuleState());
 
-        turnEncoderToAngle =
-                TALON_FX_ENCODER_TICKS_PER_ROTATION * TURN_MOTOR_GEAR_RATIO / (Math.PI * 2);
+        turnEncoderToAngle = TALON_FX_ENCODER_TICKS_PER_ROTATION * TURN_MOTOR_GEAR_RATIO / (Math.PI * 2);
         // driveEncoderVelocityToMPS = ((600.0 / 2048.0) / DRIVE_MOTOR_GEAR_RATIO *
         // WHEEL_DIAMETER_METERS * Math.PI) / 60; // Copied from Citrus Circuits
         driveEncoderVelocityToMPS = 1 / ((2048 * 10) * Math.PI * WHEEL_DIAMETER_METERS);
@@ -118,8 +115,7 @@ public class SwerveModule {
 
     public void setState(SwerveModuleState state) {
         // Optimize direction to be as close to current as possible
-        SwerveModuleState outputState =
-                optimize(state.speedMetersPerSecond, state.angle.getRadians());
+        SwerveModuleState outputState = optimize(state.speedMetersPerSecond, state.angle.getRadians());
         targetState = outputState;
 
         // Simulate encoder distance for odometry
@@ -223,9 +219,9 @@ public class SwerveModule {
             currentAngleRadiansMod += 2.0 * Math.PI;
         }
 
-        // The reference angle has the range [0, 2pi) but the Falcon's encoder can go above that
-        double adjustedReferenceAngleRadians =
-                target.getRadians() + current.getRadians() - currentAngleRadiansMod;
+        // The reference angle has the range [0, 2pi) but the Falcon's encoder can go
+        // above that
+        double adjustedReferenceAngleRadians = target.getRadians() + current.getRadians() - currentAngleRadiansMod;
         if (target.getRadians() - currentAngleRadiansMod > Math.PI) {
             adjustedReferenceAngleRadians -= 2.0 * Math.PI;
         } else if (target.getRadians() - currentAngleRadiansMod < -Math.PI) {

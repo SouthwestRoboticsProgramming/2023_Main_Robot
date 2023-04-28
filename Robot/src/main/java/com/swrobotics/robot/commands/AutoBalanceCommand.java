@@ -2,7 +2,7 @@ package com.swrobotics.robot.commands;
 
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
-import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem.StopPosition;
+import com.swrobotics.robot.subsystems.drive.DrivetrainConstants.StopPosition;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -33,7 +33,6 @@ public class AutoBalanceCommand extends CommandBase {
     public void execute() {
         var tilt = drive.getTiltAsTranslation().times(-1);
         double magnitude = tilt.getNorm();
-        System.out.println("M: " + magnitude);
         if (Math.abs(magnitude) < 1.5) {
             drive.setChassisSpeeds(new ChassisSpeeds());
             return;

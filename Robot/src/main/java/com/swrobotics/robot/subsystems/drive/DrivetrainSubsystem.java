@@ -10,13 +10,11 @@ import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
+import static com.swrobotics.robot.subsystems.drive.DrivetrainConstants.*;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -26,9 +24,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 
 import java.util.HashMap;
@@ -45,106 +40,13 @@ import org.littletonrobotics.junction.Logger;
  */
 
 public class DrivetrainSubsystem extends SwitchableSubsystemBase {
-    public static Angle getAllianceForward() {
-        return DriverStation.getAlliance() == DriverStation.Alliance.Blue
-                ? Angle.ZERO
-                : CCWAngle.deg(180);
-    }
 
-    public static Angle getAllianceReverse() {
-        return DriverStation.getAlliance() == DriverStation.Alliance.Blue
-                ? CWAngle.deg(180)
-                : Angle.ZERO;
-    }
-
-    public static Pose2d flipForAlliance(Pose2d asBlue) {
-        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) return asBlue;
-
-        // Flip horizontally to be on red alliance side
-        return new Pose2d(
-                new Translation2d(FIELD_WIDTH_METERS - asBlue.getX(), asBlue.getY()),
-                new Rotation2d(
-                        MathUtil.wrap(
-                                Math.PI - asBlue.getRotation().getRadians(), 0, 2 * Math.PI)));
-    }
-
-    // The Stop Position Enum
-    public enum StopPosition {
-        NONE,
-        CROSS,
-        CIRCLE,
-    }
-
-    /* Modules that could be hot-swapped into a location on the swerve drive */
-    private static final SwerveModuleInfo[] SELECTABLE_MODULES =
-            new SwerveModuleInfo[] {
-                new SwerveModuleInfo("Module 0", 9, 5, 1, 38.41), // Default front left
-                new SwerveModuleInfo("Module 1", 10, 6, 2, 185.45), // Default front right
-                new SwerveModuleInfo("Module 2", 11, 7, 3, 132.63), // Default back left
-                new SwerveModuleInfo("Module 3", 12, 8, 4, 78.93) // Default back right
-            };
-    // Currently, no fifth module is built (not enough falcons)
-
-    /* Chooser to select module locations */
-    private final SendableChooser<SwerveModuleInfo> FRONT_LEFT_SELECT;
-    private final SendableChooser<SwerveModuleInfo> FRONT_RIGHT_SELECT;
-    private final SendableChooser<SwerveModuleInfo> BACK_LEFT_SELECT;
-    private final SendableChooser<SwerveModuleInfo> BACK_RIGHT_SELECT;
-
+    // Toggle to calibrate all of the modules in one click
     private static final NTBoolean CALIBRATE = new NTBoolean("Swerve/Calibrate", false);
 
-    public static final double DRIVETRAIN_TRACKWIDTH_METERS = Units.inchesToMeters(18.5);
-    public static final double DRIVETRAIN_WHEELBASE_METERS = DRIVETRAIN_TRACKWIDTH_METERS;
-
-    /**
-     * The maximum velocity of the robot in meters per second.
-     *
-     * <p>This is a measure of how fast the robot should be able to drive in a straight line.
-     */
-    public static final double MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND = 4.11; // From SDS website
-
-    // Setting for Robot Stop Position
-    private StopPosition stopPosition = StopPosition.NONE;
-
-    public static final double MAX_VELOCITY_METERS_PER_SECOND = 4.11;
-
-    /**
-     * The maximum angular velocity of the robot in radians per second.
-     *
-     * <p>This is a measure of how fast the robot can rotate in place.
-     */
-    // Here we calculate the theoretical maximum angular velocity. You can also
-    // replace this with a measured amount.
-    public static final double MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND =
-            MAX_ACHIEVABLE_VELOCITY_METERS_PER_SECOND
-                    / (2
-                            * Math.PI
-                            * Math.hypot(
-                                    DRIVETRAIN_TRACKWIDTH_METERS / 2.0,
-                                    DRIVETRAIN_WHEELBASE_METERS / 2.0));
-
-    private final SwerveDriveKinematics kinematics =
-            new SwerveDriveKinematics(
-                    // Front left
-                    new Translation2d(
-                            DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
-                    // Front right
-                    new Translation2d(
-                            DRIVETRAIN_TRACKWIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0),
-                    // Back left
-                    new Translation2d(
-                            -DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
-                    // Back right
-                    new Translation2d(
-                            -DRIVETRAIN_TRACKWIDTH_METERS / 2.0,
-                            -DRIVETRAIN_WHEELBASE_METERS / 2.0));
-
-    // Initialize a NavX over MXP port
+    // Initialize a NavX2 over MXP port
     private final AHRS gyro = new AHRS(Port.kMXP);
     private Rotation2d gyroOffset = new Rotation2d(0); // Subtracted to get angle
-
-    // Create a field sim to view where the odometry thinks we are
-    public final Field2d field = new Field2d();
 
     private final SwerveModule[] modules;
 
@@ -152,77 +54,46 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
 
     private Translation2d centerOfRotation = new Translation2d();
 
+    private StopPosition stopPosition = StopPosition.STRAIGHT;
+
     private Translation2d translation = new Translation2d();
     private Rotation2d rotation = new Rotation2d();
     private ChassisSpeeds speeds = new ChassisSpeeds();
 
-    private int activePathPlannerCommands;
+    private int activePathPlannerCommands = 0;
 
     public DrivetrainSubsystem() {
 
-        FRONT_LEFT_SELECT = new SendableChooser<SwerveModuleInfo>();
-        FRONT_RIGHT_SELECT = new SendableChooser<SwerveModuleInfo>();
-        BACK_LEFT_SELECT = new SendableChooser<SwerveModuleInfo>();
-        BACK_RIGHT_SELECT = new SendableChooser<SwerveModuleInfo>();
-
-        SmartDashboard.putData("Front Left Module", FRONT_LEFT_SELECT);
-        SmartDashboard.putData("Front Right Module", FRONT_RIGHT_SELECT);
-        SmartDashboard.putData("Back Left Module", BACK_LEFT_SELECT);
-        SmartDashboard.putData("Back Right Module", BACK_RIGHT_SELECT);
-
-        // Add all available modules to each chooser
-        for (SwerveModuleInfo info : SELECTABLE_MODULES) {
-            FRONT_LEFT_SELECT.addOption(info.name, info);
-            FRONT_RIGHT_SELECT.addOption(info.name, info);
-            BACK_LEFT_SELECT.addOption(info.name, info);
-            BACK_RIGHT_SELECT.addOption(info.name, info);
-        }
-
-        FRONT_LEFT_SELECT.setDefaultOption(SELECTABLE_MODULES[0].name, SELECTABLE_MODULES[0]);
-        FRONT_RIGHT_SELECT.setDefaultOption(SELECTABLE_MODULES[1].name, SELECTABLE_MODULES[1]);
-        BACK_LEFT_SELECT.setDefaultOption(SELECTABLE_MODULES[2].name, SELECTABLE_MODULES[2]);
-        BACK_RIGHT_SELECT.setDefaultOption(SELECTABLE_MODULES[3].name, SELECTABLE_MODULES[3]);
-
         // Configure modules using currently selected options
-        modules =
-                new SwerveModule[] {
-                    // For now, each positional offset is 0.0, this will be changed later FIXME
-                    new SwerveModule(
-                            FRONT_LEFT_SELECT.getSelected(),
-                            new Translation2d(0.3, 0.3),
-                            0.0), // Front left
-                    new SwerveModule(
-                            FRONT_RIGHT_SELECT.getSelected(),
-                            new Translation2d(0.3, -0.3),
-                            90.0), // Front right
-                    new SwerveModule(
-                            BACK_LEFT_SELECT.getSelected(),
-                            new Translation2d(-0.3, 0.3),
-                            180.0), // Back left
-                    new SwerveModule(
-                            BACK_RIGHT_SELECT.getSelected(),
-                            new Translation2d(-0.3, -0.3),
-                            270.0) // Back right
-                };
+        modules = new SwerveModule[] {
+                // For now, each positional offset is 0.0, this will be changed later FIXME
+                new SwerveModule(
+                        MODULES[0],
+                        FRONT_LEFT_POSITION,
+                        0.0), // Front left
+                new SwerveModule(
+                        MODULES[1],
+                        FRONT_RIGHT_POSITION,
+                        90.0), // Front right
+                new SwerveModule(
+                        MODULES[2],
+                        BACK_LEFT_POSITION,
+                        180.0), // Back left
+                new SwerveModule(
+                        MODULES[3],
+                        BACK_RIGHT_POSITION,
+                        270.0) // Back right
+        };
 
-        setBrakeMode(true);
+        // TODO: Proper brake mode
 
-        SmartDashboard.putData("Field", field);
-        // field.getObject("traj").setTrajectory(new Trajectory()); // Clear trajectory view
-
-        for (int i = 0; i < 15; i++) {
-            printEncoderOffsets();
-        }
-
+        // Calibrate gyro on boot
         gyro.calibrate();
 
-        odometry =
-                new SwerveDrivePoseEstimator(kinematics, getGyroscopeRotation(), getModulePositions(), new Pose2d());
+        // Create a system to measure where the robot is
+        odometry = new SwerveDrivePoseEstimator(kinematics, getGyroscopeRotation(), getModulePositions(), new Pose2d());
 
-        // Initially start facing forward
-        resetPose(new Pose2d(0, 0, new Rotation2d(0)));
-
-        activePathPlannerCommands = 0;
+        CALIBRATE.onChange(() -> calibrate());
     }
 
     // Keep this private - use getPose().getRotation() instead
@@ -230,13 +101,18 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
         return gyro.getRotation2d().plus(gyroOffset);
     }
 
-    public Translation2d getTiltAsTranslation() {
-        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
-    }
-
+    // Get the gyroscope without any offsets etc.
     private Rotation2d getRawGyroscopeRotation() {
         // return gyro.getRotation2d();
         return Rotation2d.fromDegrees(gyro.getAngle());
+    }
+
+    /*
+     * Representing non-yaw tilt as a translation helps to drive in the correct
+     * direction to balance
+     */
+    public Translation2d getTiltAsTranslation() {
+        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
     }
 
     public void zeroGyroscope() {
@@ -248,13 +124,14 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
      */
     private void setGyroscopeRotation(Rotation2d newRotation) {
         gyroOffset = getRawGyroscopeRotation().plus(newRotation);
-        //        resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
     }
 
+    // Set the desired movement of the drivebase
     public void setChassisSpeeds(ChassisSpeeds speeds) {
         this.speeds = speeds;
     }
 
+    // Set the desired movement with just translation (for auto features)
     public void setTargetTranslation(Translation2d targetTranslation, boolean fieldRelative) {
         translation = targetTranslation;
 
@@ -263,26 +140,15 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
         }
     }
 
+    // Set the desired movement with just rotation (for auto features)
     public void setTargetRotation(Rotation2d targeRotation) {
         rotation = targeRotation;
-    }
-
-    public void setCenterOfRotation(Translation2d centerOfRotation) {
-        this.centerOfRotation = centerOfRotation;
-    }
-
-    public void resetCenterOfRotation() {
-        centerOfRotation = new Translation2d();
-    }
-
-    public Translation2d getCenterOfRotation() {
-        return centerOfRotation;
     }
 
     /**
      * Gets the field-relative WPI pose of the robot.
      *
-     * @return the good pose
+     * @return The estimated pose of the robot
      */
     public Pose2d getPose() {
         // If on blue alliance or not running PathPlanner, pose is correct already
@@ -293,26 +159,12 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
         Pose2d currentPose = getPathPlannerPose();
 
         // Undo PathPlanner pose flipping vertically
-        Pose2d asBlue =
-                new Pose2d(
-                        new Translation2d(
-                                currentPose.getX(), FIELD_HEIGHT_METERS - currentPose.getY()),
-                        currentPose.getRotation().times(-1));
+        Pose2d asBlue = new Pose2d(
+                new Translation2d(
+                        currentPose.getX(), FIELD_HEIGHT_METERS - currentPose.getY()),
+                currentPose.getRotation().times(-1));
 
         return flipForAlliance(asBlue);
-    }
-
-    /**
-     * Gets the pose that PathPlanner uses that is transformed when on red alliance
-     *
-     * @return the wacky pose
-     */
-    public Pose2d getPathPlannerPose() {
-        return odometry.getEstimatedPosition();
-    }
-
-    public boolean isPathPlannerRunning() {
-        return activePathPlannerCommands > 0;
     }
 
     /**
@@ -349,17 +201,16 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
         return positions;
     }
 
-    private static final double IS_MOVING_THRESH = 0.1;
-    private static final double IS_MOVING_TURN_THRESH = Math.toRadians(15);
+    public void setCenterOfRotation(Translation2d centerOfRotation) {
+        this.centerOfRotation = centerOfRotation;
+    }
 
-    public boolean isMoving() {
-        ChassisSpeeds currentMovement = kinematics.toChassisSpeeds(getModuleStates());
-        Translation2d translation =
-                new Translation2d(
-                        currentMovement.vxMetersPerSecond, currentMovement.vyMetersPerSecond);
-        double chassisVelocity = translation.getNorm();
-        return chassisVelocity > IS_MOVING_THRESH
-                || currentMovement.omegaRadiansPerSecond > IS_MOVING_TURN_THRESH;
+    public void resetCenterOfRotation() {
+        centerOfRotation = new Translation2d();
+    }
+
+    public Translation2d getCenterOfRotation() {
+        return centerOfRotation;
     }
 
     public void setStopPosition(StopPosition position) {
@@ -376,77 +227,76 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
         }
     }
 
+    // Used to work around a semi-broken PathPlanner feature
     private void cheatChassisSpeeds(SwerveModuleState[] states) {
         setChassisSpeeds(kinematics.toChassisSpeeds(states));
     }
-
-    private static final double FIELD_WIDTH_METERS = Units.inchesToMeters(54 * 12 + 1);
-    private static final double FIELD_HEIGHT_METERS = 8.02;
 
     public SwerveAutoBuilder getAutoBuilder(HashMap<String, Command> eventMap) {
         // Create the AutoBuilder. This only needs to be created once when robot code
         // starts, not every time you want to create an auto command. A good place to
         // put this is in RobotContainer along with your subsystems.
-        SwerveAutoBuilder autoBuilder =
-                new SwerveAutoBuilder(
-                        this::getPathPlannerPose, // Pose2d supplier
-                        this::resetPose, // Pose2d consumer, used to reset odometry at the
-                        // beginning of auto
-                        kinematics, // SwerveDriveKinematics
-                        new PIDConstants(
-                                0.0, 0.0,
-                                0.0), // PID constants to correct for translation error (used to
-                        // create the X
-                        // and Y PID controllers)
-                        new PIDConstants(
-                                2.0, 0.0,
-                                0.0), // PID constants to correct for rotation error (used to create
-                        // the
-                        // rotation controller)
-                        this::cheatChassisSpeeds, // Module states consumer used to output to
-                        // the drive subsystem
-                        eventMap,
-                        true,
-                        this // The drive subsystem. Used to properly set the requirements of path
-                        // following
-                        // commands
-                        ) {
-                    @Override
-                    public CommandBase fullAuto(List<PathPlannerTrajectory> trajectorySet) {
-                        return new SequentialCommandGroup(
-                                        new InstantCommand(() -> activePathPlannerCommands++),
-                                        super.fullAuto(trajectorySet) // Run the path
-                                        )
-                                .finallyDo(
-                                        (cancelled) -> {
-                                            // If no longer running PathPlanner, fix pose
-                                            if (activePathPlannerCommands == 1)
-                                                DrivetrainSubsystem.this.resetPose(getPose());
-                                            activePathPlannerCommands--; // Decrement after so
-                                            // getPose() returns good
-                                            // pose above
-                                        });
-                    }
-                };
+        SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
+                this::getPathPlannerPose, // Pose2d supplier
+                this::resetPose, // Pose2d consumer, used to reset odometry at the
+                // beginning of auto
+                kinematics, // SwerveDriveKinematics
+                new PIDConstants(
+                        0.0, 0.0, // FIXME: Closed loop here instead
+                        0.0), // PID constants to correct for translation error (used to
+                // create the X
+                // and Y PID controllers)
+                new PIDConstants(
+                        2.0, 0.0,
+                        0.0), // PID constants to correct for rotation error (used to create
+                // the
+                // rotation controller)
+                this::cheatChassisSpeeds, // Module states consumer used to output to
+                // the drive subsystem
+                eventMap,
+                true,
+                this // The drive subsystem. Used to properly set the requirements of path
+        // following
+        // commands
+        ) {
+            @Override
+            public CommandBase fullAuto(List<PathPlannerTrajectory> trajectorySet) {
+                return new SequentialCommandGroup(
+                        new InstantCommand(() -> activePathPlannerCommands++),
+                        super.fullAuto(trajectorySet) // Run the path
+                )
+                        .finallyDo(
+                                (cancelled) -> {
+                                    // If no longer running PathPlanner, fix pose
+                                    if (activePathPlannerCommands == 1)
+                                        DrivetrainSubsystem.this.resetPose(getPose());
+                                    activePathPlannerCommands--; // Decrement after so
+                                    // getPose() returns good
+                                    // pose above
+                                });
+            }
+        };
 
         return autoBuilder;
     }
 
-    public void printEncoderOffsets() {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < modules.length; i++) {
-            builder.append("M");
-            builder.append(i);
-            builder.append(" ");
-
-            builder.append(String.format("%.3f", modules[i].getCalibrationAngle()));
-            builder.append(" ");
-        }
-        System.out.println(builder);
-        System.out.println();
+    /**
+     * Gets the pose that PathPlanner uses that is transformed when on red alliance
+     *
+     * @return the wacky pose
+     */
+    private Pose2d getPathPlannerPose() {
+        return odometry.getEstimatedPosition();
     }
 
+    private boolean isPathPlannerRunning() {
+        return activePathPlannerCommands > 0;
+    }
+
+    // Calibrates the swerve modules when they are rotated correctly
     private void calibrate() {
+        CALIBRATE.set(false); // Reset the NT value
+
         // Reset each of the modules so that the current position is 0
         for (SwerveModule module : modules) {
             module.calibrate();
@@ -457,34 +307,28 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
         System.out.println("<---------------------------------------------------------->");
     }
 
-    public void showApriltags(AprilTagFieldLayout layout) {
-
-        Pose2d[] poses = new Pose2d[layout.getTags().size()];
-        for (int i = 0; i < poses.length; i++) {
-            poses[i] = layout.getTags().get(i).pose.toPose2d();
-        }
-
-        field.getObject("Apriltags").setPoses(poses);
-    }
-
-    public void showCameraPoses(Transform3d... transforms) {
-        Pose2d[] poses = new Pose2d[transforms.length];
-        for (int i = 0; i < poses.length; i++) {
-            poses[i] = new Pose3d().transformBy(transforms[i]).toPose2d();
-        }
-
-        field.getObject("Cameras").setPoses(poses);
-    }
-
+    // TODO: Determine if we have climbed to automatically coast in if we haven't
     @Override
     protected void onDisable() {
+        // Stop the modules
         for (SwerveModule module : modules) {
             module.stop();
         }
+
+        // Clear setpoint logs
+        Logger.getInstance().recordOutput("SwerveStates/Setpoints", new double[] {});
     }
 
     @Override
     public void periodic() {
+        // Log gyro data
+        Logger.getInstance().recordOutput("Gyro/RawPitch", gyro.getPitch());
+        Logger.getInstance().recordOutput("Gyro/RawYaw", gyro.getYaw());
+        Logger.getInstance().recordOutput("Gyro/RawRoll", gyro.getRoll());
+        Logger.getInstance().recordOutput("Gyro/OffsetAmountDeg", gyroOffset.getDegrees());
+
+        // TODO: Characterization mode
+
         // Check if it should use auto for some or all of the movement
         if (translation.getNorm() != 0.0) {
             speeds.vxMetersPerSecond = translation.getX();
@@ -497,21 +341,19 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
 
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
+
         double vx = speeds.vxMetersPerSecond;
         double vy = speeds.vyMetersPerSecond;
         double omega = speeds.omegaRadiansPerSecond;
         if (vx == 0 && vy == 0 && omega == 0) {
-            switch (stopPosition) {
-                case CROSS:
-                    states = setCross(states);
-                    break;
-                case CIRCLE:
-                    states = setCircle(states);
-                    break;
-                default:
-                    states = kinematics.toSwerveModuleStates(speeds, centerOfRotation);
-                    SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
-                    break;
+            if (stopPosition != StopPosition.COAST) {
+                states = stopPosition.getStates();
+            } else { // Keep going in the same direction
+                states = getModuleStates();
+                // Remove any velocity
+                for (SwerveModuleState state : states) {
+                    state = new SwerveModuleState(0, state.angle);
+                }
             }
         }
         setModuleStates(states);
@@ -525,8 +367,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
         // Freshly estimated the new rotation based off of the wheels
         if (RobotBase.isSimulation()) {
             ChassisSpeeds estimatedChassis = kinematics.toChassisSpeeds(getModuleStates());
-            gyroOffset =
-                    gyroOffset.plus(new Rotation2d(estimatedChassis.omegaRadiansPerSecond * 0.02));
+            gyroOffset = gyroOffset.plus(new Rotation2d(estimatedChassis.omegaRadiansPerSecond * 0.02));
             odometry.update(gyroOffset, getModulePositions());
         } else {
             odometry.update(getGyroscopeRotation(), getModulePositions());
@@ -538,32 +379,33 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
 
         // Log odometry pose
         Logger.getInstance().recordOutput("Odometry/Robot2d", getPose());
-
-        // ppPose.setPose(getPathPlannerPose());
-        field.setRobotPose(getPose());
-        // SnapPositions.showPositions(field);
-
-        // Check if it should calibrate the wheels
-        if (CALIBRATE.get()) {
-            CALIBRATE.set(
-                    false); // Instantly set back so that it doesn't calibrate more than needed
-            calibrate();
-        }
     }
 
-    private SwerveModuleState[] setCross(SwerveModuleState[] states) {
-        states[0] = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
-        states[1] = new SwerveModuleState(0, Rotation2d.fromDegrees(315));
-        states[2] = new SwerveModuleState(0, Rotation2d.fromDegrees(135));
-        states[3] = new SwerveModuleState(0, Rotation2d.fromDegrees(225));
-        return states;
+    public static Angle getAllianceForward() {
+        return DriverStation.getAlliance() == DriverStation.Alliance.Blue
+                ? Angle.ZERO
+                : CCWAngle.deg(180);
     }
 
-    private SwerveModuleState[] setCircle(SwerveModuleState[] states) {
-        states[0] = new SwerveModuleState(0, Rotation2d.fromDegrees(315));
-        states[1] = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
-        states[2] = new SwerveModuleState(0, Rotation2d.fromDegrees(225));
-        states[3] = new SwerveModuleState(0, Rotation2d.fromDegrees(135));
-        return states;
+    public static Angle getAllianceReverse() {
+        return DriverStation.getAlliance() == DriverStation.Alliance.Blue
+                ? CWAngle.deg(180)
+                : Angle.ZERO;
+    }
+
+    // Used to flip for blue alliance
+    private static final double FIELD_WIDTH_METERS = Units.inchesToMeters(54 * 12 + 1);
+    private static final double FIELD_HEIGHT_METERS = 8.02;
+
+    public static Pose2d flipForAlliance(Pose2d asBlue) {
+        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue)
+            return asBlue;
+
+        // Flip horizontally to be on red alliance side
+        return new Pose2d(
+                new Translation2d(FIELD_WIDTH_METERS - asBlue.getX(), asBlue.getY()),
+                new Rotation2d(
+                        MathUtil.wrap(
+                                Math.PI - asBlue.getRotation().getRadians(), 0, 2 * Math.PI)));
     }
 }

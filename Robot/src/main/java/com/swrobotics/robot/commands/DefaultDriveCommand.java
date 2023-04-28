@@ -41,8 +41,6 @@ public class DefaultDriveCommand extends CommandBase {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-x, -y, rotationCCW, gyro);
         }
 
-        Logger.getInstance().recordOutput("ChassisSpeeds/DemandedY", speeds.vyMetersPerSecond);
-        System.out.println(speeds);
         drive.setChassisSpeeds(speeds);
     }
 
