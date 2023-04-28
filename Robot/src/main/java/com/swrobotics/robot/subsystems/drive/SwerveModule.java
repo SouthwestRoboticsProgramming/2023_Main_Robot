@@ -23,20 +23,18 @@ public class SwerveModule {
     private static final String NT_PATH = "Swerve/Modules/"; // All module constants will be in the Swerve/Module folder
 
     private static final int TALON_FX_ENCODER_TICKS_PER_ROTATION = 2048;
+    private static final double DRIVE_REDUCTION = (14.0 / 50.0) * (28.0 / 16.0) * (15.0 / 45.0);
 
-    // Configured for an SDS MK4 L1 module
-    private static final double DRIVE_MOTOR_GEAR_RATIO = 8.14; // 8.14 : 1
+    // Configured for an SDS MK4i L3 module
     private static final double TURN_MOTOR_GEAR_RATIO = 12.8; // 12.8 : 1
-    private static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(4.0); // FIXME: Slightly less than 4 inches
-                                                                                   // -> Measure
-    private static final double MAX_ACHIEVABLE_VELOCITY = 4.11; // Meters / Second, Listed on SDS website
+    private static final double WHEEL_RADIUS_METERS = Units.inchesToMeters(1.9689740567);
 
     /* Tunable Constants */
     private static final NTDouble TURN_KP = new NTDouble(NT_PATH + "Turn kP", 0.2);
     private static final NTDouble TURN_KI = new NTDouble(NT_PATH + "Turn kI", 0.0);
     private static final NTDouble TURN_KD = new NTDouble(NT_PATH + "Turn kD", 0.1);
 
-    // Currently, drive is open-loop so no constants are required
+    private static final NTDouble DRIVE_KP = new NTDouble(NT_PATH + "Turn kP", 0.05);
 
     private final TalonFX turn;
     private final TalonFX drive;
@@ -52,7 +50,8 @@ public class SwerveModule {
 
     // Conversion helpers
     private final double turnEncoderToAngle;
-    private final double driveEncoderVelocityToMPS;
+    private final double driveEncoderPositionToMeters;
+    private final double driveEncoderVelocityToMeters;
 
     // Simulate drive encoder distance
     private double simulatedDistance = 0.0;
@@ -73,18 +72,14 @@ public class SwerveModule {
         turnConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
-        driveConfig.slot0.kP = 0;
-        driveConfig.slot0.kI = 0;
-        driveConfig.slot0.kD = 0;
+        driveConfig.slot0.kP = DRIVE_KP.get();
+        driveConfig.slot0.kI = 0.0;
+        driveConfig.slot0.kD = 0.0;
         driveConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
-        // FIXME: Remove limits imposed to keep robot from breaking Mason's house FIXME:
-        // Break the
-        // house
-        // driveConfig.peakOutputForward = 0.1;
-        // driveConfig.peakOutputReverse = -0.1;
 
         this.turn = new TalonFX(moduleInfo.turnMotorID);
         this.turn.configAllSettings(turnConfig);
+        this.turn.setInverted(true); // FIXME: SDS says this is different than MK4, should double check
 
         this.drive = new TalonFX(moduleInfo.driveMotorID);
         this.drive.configAllSettings(driveConfig);
@@ -104,13 +99,18 @@ public class SwerveModule {
         turnEncoderToAngle = TALON_FX_ENCODER_TICKS_PER_ROTATION * TURN_MOTOR_GEAR_RATIO / (Math.PI * 2);
         // driveEncoderVelocityToMPS = ((600.0 / 2048.0) / DRIVE_MOTOR_GEAR_RATIO *
         // WHEEL_DIAMETER_METERS * Math.PI) / 60; // Copied from Citrus Circuits
-        driveEncoderVelocityToMPS = 1 / ((2048 * 10) * Math.PI * WHEEL_DIAMETER_METERS);
+        driveEncoderPositionToMeters = 2 * Math.PI * WHEEL_RADIUS_METERS * DRIVE_REDUCTION
+                / TALON_FX_ENCODER_TICKS_PER_ROTATION;
+
+        driveEncoderVelocityToMeters = driveEncoderPositionToMeters * 10; // 10 ticks per second
         calibrateWithAbsoluteEncoder();
 
         // Update PID constants if they are changed
         TURN_KP.onChange(this::updateTurnPID);
         TURN_KI.onChange(this::updateTurnPID);
         TURN_KD.onChange(this::updateTurnPID);
+
+        DRIVE_KP.onChange(this::updateDrivePID);
     }
 
     public void setState(SwerveModuleState state) {
@@ -122,11 +122,10 @@ public class SwerveModule {
         simulatedDistance += outputState.speedMetersPerSecond * 0.02;
 
         double turnUnits = toNativeTurnUnits(outputState.angle);
+        double driveUnits = toNativeDriveUnits(outputState.speedMetersPerSecond);
 
         turn.set(TalonFXControlMode.Position, turnUnits);
-
-        double driveOutput = outputState.speedMetersPerSecond / MAX_ACHIEVABLE_VELOCITY;
-        drive.set(TalonFXControlMode.PercentOutput, driveOutput);
+        drive.set(TalonFXControlMode.Velocity, driveUnits);
     }
 
     public void stop() {
@@ -239,6 +238,10 @@ public class SwerveModule {
         turn.config_kD(0, TURN_KD.get());
     }
 
+    private void updateDrivePID() {
+        drive.config_kP(0, DRIVE_KP.get());
+    }
+
     private Rotation2d absDiffRad(Rotation2d angle1, Rotation2d angle2) {
         double normSelf = wrap(angle1.getRadians(), 0, 2.0 * Math.PI);
         double normOther = wrap(angle2.getRadians(), 0, 2.0 * Math.PI);
@@ -267,14 +270,14 @@ public class SwerveModule {
     }
 
     private double toNativeDriveUnits(double velocityMPS) {
-        return velocityMPS / driveEncoderVelocityToMPS;
+        return velocityMPS / driveEncoderVelocityToMeters;
     }
 
     private double fromNativeDriveVelocityUnits(double units) {
-        return units / ((2048 / 10) * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
+        return units * driveEncoderVelocityToMeters;
     }
 
     private double fromNativeDrivePositionUnits(double units) {
-        return units / (2048 * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
+        return units * driveEncoderVelocityToMeters;
     }
 }
