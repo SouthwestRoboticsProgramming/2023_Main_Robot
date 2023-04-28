@@ -53,8 +53,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
     private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 0.75);
     private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);
-    private static final NTDouble START_TOL =
-            new NTDouble("Arm/Start Tolerance", 0.04); // Must be larger than stop tolerance
+    private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.04); // Must be larger than stop
+                                                                                         // tolerance
 
     private static final NTBoolean HOME_CALIBRATE = new NTBoolean("Arm/Home/Calibrate", false);
     private static final NTDouble HOME_BOTTOM = new NTDouble("Arm/Home/Bottom", 0.5 * Math.PI);
@@ -64,26 +64,27 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble KI = new NTDouble("Arm/PID/kI", 0);
     private static final NTDouble KD = new NTDouble("Arm/PID/kD", 0);
 
-    private static final NTEntry<Double> LOG_CURRENT_BOTTOM =
-            new NTDouble("Log/Arm/Current Bottom", 0).setTemporary();
-    private static final NTEntry<Double> LOG_CURRENT_TOP =
-            new NTDouble("Log/Arm/Current Top", 0).setTemporary();
-    private static final NTEntry<Double> LOG_TARGET_BOTTOM =
-            new NTDouble("Log/Arm/Target Bottom", 0).setTemporary();
-    private static final NTEntry<Double> LOG_TARGET_TOP =
-            new NTDouble("Log/Arm/Target Top", 0).setTemporary();
-    private static final NTEntry<Double> LOG_MOTOR_BOTTOM =
-            new NTDouble("Log/Arm/Motor Out Bottom", 0).setTemporary();
-    private static final NTEntry<Double> LOG_MOTOR_TOP =
-            new NTDouble("Log/Arm/Motor Out Top", 0).setTemporary();
+    // private static final NTEntry<Double> LOG_CURRENT_BOTTOM =
+    // new NTDouble("Log/Arm/Current Bottom", 0).setTemporary();
+    // private static final NTEntry<Double> LOG_CURRENT_TOP =
+    // new NTDouble("Log/Arm/Current Top", 0).setTemporary();
+    // private static final NTEntry<Double> LOG_TARGET_BOTTOM =
+    // new NTDouble("Log/Arm/Target Bottom", 0).setTemporary();
+    // private static final NTEntry<Double> LOG_TARGET_TOP =
+    // new NTDouble("Log/Arm/Target Top", 0).setTemporary();
+    // private static final NTEntry<Double> LOG_MOTOR_BOTTOM =
+    // new NTDouble("Log/Arm/Motor Out Bottom", 0).setTemporary();
+    // private static final NTEntry<Double> LOG_MOTOR_TOP =
+    // new NTDouble("Log/Arm/Motor Out Top", 0).setTemporary();
 
-    private static final NTEntry<Double> LOG_MAG =
-            new NTDouble("Log/Arm/Error Mag", 0).setTemporary();
-    private static final NTEntry<Boolean> LOG_IN_TOLERANCE_H =
-            new NTBoolean("Log/Arm/In Tolerance (Hysteresis)", false).setTemporary();
+    // private static final NTEntry<Double> LOG_MAG = new NTDouble("Log/Arm/Error
+    // Mag", 0).setTemporary();
+    // private static final NTEntry<Boolean> LOG_IN_TOLERANCE_H = new
+    // NTBoolean("Log/Arm/In Tolerance (Hysteresis)", false)
+    // .setTemporary();
 
     private final ArmJoint topJoint, bottomJoint;
-    //    private final ArmPathfinder finder;
+    // private final ArmPathfinder finder;
     private final PIDController pid;
     private ArmPose targetPose;
     private boolean inToleranceHysteresis;
@@ -96,48 +97,44 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             bottomJoint = new SimJoint(BOTTOM_LENGTH, BOTTOM_GEAR_RATIO);
             topJoint = new SimJoint(TOP_LENGTH, TOP_GEAR_RATIO);
         } else {
-            //            DigitalInput armDetect = new DigitalInput(RIOPorts.ARM_DETECT_DIO);
-            //            PhysicalArmInfo armInfo = armDetect.get() ? PhysicalArmInfo.ARM_1 :
+            // DigitalInput armDetect = new DigitalInput(RIOPorts.ARM_DETECT_DIO);
+            // PhysicalArmInfo armInfo = armDetect.get() ? PhysicalArmInfo.ARM_1 :
             // PhysicalArmInfo.ARM_2;
             PhysicalArmInfo armInfo = PhysicalArmInfo.ARM_1;
 
-            bottomJoint =
-                    new PhysicalJoint(
-                            BOTTOM_MOTOR_ID,
-                            BOTTOM_CANCODER_ID,
-                            BOTTOM_GEAR_RATIO,
-                            armInfo.bottomOffset,
-                            true);
-            topJoint =
-                    new PhysicalJoint(
-                            TOP_MOTOR_ID,
-                            TOP_CANCODER_ID,
-                            TOP_GEAR_RATIO,
-                            armInfo.topOffset,
-                            false);
+            bottomJoint = new PhysicalJoint(
+                    BOTTOM_MOTOR_ID,
+                    BOTTOM_CANCODER_ID,
+                    BOTTOM_GEAR_RATIO,
+                    armInfo.bottomOffset,
+                    true);
+            topJoint = new PhysicalJoint(
+                    TOP_MOTOR_ID,
+                    TOP_CANCODER_ID,
+                    TOP_GEAR_RATIO,
+                    armInfo.topOffset,
+                    false);
         }
 
         double extent = (BOTTOM_LENGTH + TOP_LENGTH) * 2;
         Mechanism2d mechanism = new Mechanism2d(extent, extent);
-        currentVisualizer =
-                new ArmVisualizer(
-                        extent / 2,
-                        extent / 2,
-                        mechanism,
-                        "Current Arm",
-                        Color.kDarkGreen,
-                        Color.kGreen);
-        targetVisualizer =
-                new ArmVisualizer(
-                        extent / 2,
-                        extent / 2,
-                        mechanism,
-                        "Target Arm",
-                        Color.kDarkRed,
-                        Color.kRed);
+        currentVisualizer = new ArmVisualizer(
+                extent / 2,
+                extent / 2,
+                mechanism,
+                "Current Arm",
+                Color.kDarkGreen,
+                Color.kGreen);
+        targetVisualizer = new ArmVisualizer(
+                extent / 2,
+                extent / 2,
+                mechanism,
+                "Target Arm",
+                Color.kDarkRed,
+                Color.kRed);
         SmartDashboard.putData("Arm", mechanism);
 
-        //        finder = new ArmPathfinder(msg);
+        // finder = new ArmPathfinder(msg);
 
         ArmPose home = new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get());
         calibrateHome(home);
@@ -172,8 +169,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     }
 
     private void idle() {
-        LOG_MOTOR_BOTTOM.set(0.0);
-        LOG_MOTOR_TOP.set(0.0);
+        // LOG_MOTOR_BOTTOM.set(0.0);
+        // LOG_MOTOR_TOP.set(0.0);
         bottomJoint.setMotorOutput(0);
         topJoint.setMotorOutput(0);
     }
@@ -196,10 +193,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         }
 
         currentVisualizer.setPose(currentPose);
-        LOG_CURRENT_BOTTOM.set(currentPose.bottomAngle);
-        LOG_CURRENT_TOP.set(currentPose.topAngle);
+        // LOG_CURRENT_BOTTOM.set(currentPose.bottomAngle);
+        // LOG_CURRENT_TOP.set(currentPose.topAngle);
 
-        LOG_IN_TOLERANCE_H.set(inToleranceHysteresis);
+        // LOG_IN_TOLERANCE_H.set(inToleranceHysteresis);
 
         if (targetPose == null) {
             idle();
@@ -207,61 +204,61 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         }
 
         targetVisualizer.setPose(targetPose);
-        //        finder.setInfo(currentPose, targetPose);
+        // finder.setInfo(currentPose, targetPose);
 
         double startTol = START_TOL.get();
         double stopTol = STOP_TOL.get();
 
         ArmPose currentTarget = null;
         Vec2d currentPoseVec = toStateSpaceVec(currentPose);
-        //        if (!finder.isPathValid()) {
+        // if (!finder.isPathValid()) {
         // Wait for it to become valid, and move directly to target in the meantime
         // Ideally this should happen very rarely
         currentTarget = targetPose;
-        //        } else {
-        //            List<ArmPose> currentPath = finder.getPath();
+        // } else {
+        // List<ArmPose> currentPath = finder.getPath();
         //
-        //            double minDist = Double.POSITIVE_INFINITY;
-        //            for (int i = currentPath.size() - 1; i > 0; i--) {
-        //                ArmPose pose = currentPath.get(i);
-        //                Vec2d point = toStateSpaceVec(pose);
-        //                Vec2d prev = toStateSpaceVec(currentPath.get(i - 1));
+        // double minDist = Double.POSITIVE_INFINITY;
+        // for (int i = currentPath.size() - 1; i > 0; i--) {
+        // ArmPose pose = currentPath.get(i);
+        // Vec2d point = toStateSpaceVec(pose);
+        // Vec2d prev = toStateSpaceVec(currentPath.get(i - 1));
         //
-        //                double dist = currentPoseVec.distanceToLineSegmentSq(point, prev);
+        // double dist = currentPoseVec.distanceToLineSegmentSq(point, prev);
         //
-        //                if (dist < minDist) {
-        //                    currentTarget = pose;
-        //                    minDist = dist;
-        //                }
-        //            }
+        // if (dist < minDist) {
+        // currentTarget = pose;
+        // minDist = dist;
+        // }
+        // }
         //
-        //            // Path is empty for some reason, maybe we are already at the target?
-        //            if (currentTarget == null) {
-        //                idle();
-        //                return;
-        //            }
-        //        }
+        // // Path is empty for some reason, maybe we are already at the target?
+        // if (currentTarget == null) {
+        // idle();
+        // return;
+        // }
+        // }
 
-        LOG_TARGET_BOTTOM.set(currentTarget.bottomAngle);
-        LOG_TARGET_TOP.set(currentTarget.topAngle);
+        // LOG_TARGET_BOTTOM.set(currentTarget.bottomAngle);
+        // LOG_TARGET_TOP.set(currentTarget.topAngle);
 
         double topAngle = MathUtil.wrap(currentTarget.topAngle + Math.PI, 0, Math.PI * 2) - Math.PI;
 
-        Vec2d towardsTarget =
-                new Vec2d(currentTarget.bottomAngle, topAngle)
-                        .sub(currentPose.bottomAngle, currentPose.topAngle);
+        Vec2d towardsTarget = new Vec2d(currentTarget.bottomAngle, topAngle)
+                .sub(currentPose.bottomAngle, currentPose.topAngle);
 
         // Tolerance hysteresis so the motor doesn't do the shaky shaky
         double magSqToFinalTarget = toStateSpaceVec(targetPose).sub(currentPoseVec).magnitudeSq();
         boolean prevInTolerance = inToleranceHysteresis;
-        LOG_MAG.set(Math.sqrt(magSqToFinalTarget));
+        // LOG_MAG.set(Math.sqrt(magSqToFinalTarget));
         if (magSqToFinalTarget > startTol * startTol) {
             inToleranceHysteresis = false;
         } else if (magSqToFinalTarget < stopTol * stopTol) {
             inToleranceHysteresis = true;
         }
 
-        if (prevInTolerance && !inToleranceHysteresis) pid.reset();
+        if (prevInTolerance && !inToleranceHysteresis)
+            pid.reset();
 
         double bottomMotorOut, topMotorOut;
         if (inToleranceHysteresis) {
@@ -279,8 +276,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
         bottomJoint.setMotorOutput(bottomMotorOut);
         topJoint.setMotorOutput(topMotorOut);
-        LOG_MOTOR_BOTTOM.set(bottomMotorOut);
-        LOG_MOTOR_TOP.set(topMotorOut);
+        // LOG_MOTOR_BOTTOM.set(bottomMotorOut);
+        // LOG_MOTOR_TOP.set(topMotorOut);
     }
 
     @Override
@@ -289,10 +286,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         topJoint.setMotorOutput(0);
     }
 
-    private static final NTEntry<Double> L_TARGET_X =
-            new NTDouble("Log/Arm/Target X", 0).setTemporary();
-    private static final NTEntry<Double> L_TARGET_Y =
-            new NTDouble("Log/Arm/Target Y", 0).setTemporary();
+    private static final NTEntry<Double> L_TARGET_X = new NTDouble("Log/Arm/Target X", 0).setTemporary();
+    private static final NTEntry<Double> L_TARGET_Y = new NTDouble("Log/Arm/Target Y", 0).setTemporary();
 
     public void setTargetPosition(Translation2d position) {
         L_TARGET_X.set(position.getX());
@@ -306,7 +301,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     }
 
     public boolean isInTolerance() {
-        if (targetPose == null) return true;
+        if (targetPose == null)
+            return true;
 
         Vec2d currentPoseVec = toStateSpaceVec(getCurrentPose());
         double magSqToFinalTarget = toStateSpaceVec(targetPose).sub(currentPoseVec).magnitudeSq();
