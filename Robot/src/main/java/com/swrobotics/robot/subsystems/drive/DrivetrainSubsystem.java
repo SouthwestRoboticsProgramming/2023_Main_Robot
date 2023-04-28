@@ -54,7 +54,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
 
     private Translation2d centerOfRotation = new Translation2d();
 
-    private StopPosition stopPosition = StopPosition.STRAIGHT;
+    private StopPosition stopPosition = StopPosition.COAST;
 
     private Translation2d translation = new Translation2d();
     private Rotation2d rotation = new Rotation2d();
@@ -339,8 +339,10 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
             speeds.omegaRadiansPerSecond = rotation.getRadians();
         }
 
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
+        SwerveModuleState[] rawStates = kinematics.toSwerveModuleStates(speeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(rawStates, 4.0);
+
+        SwerveModuleState[] states = new SwerveModuleState[4];
 
         double vx = speeds.vxMetersPerSecond;
         double vy = speeds.vyMetersPerSecond;
@@ -351,12 +353,16 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
             } else { // Keep going in the same direction
                 states = getModuleStates();
                 // Remove any velocity
-                for (SwerveModuleState state : states) {
-                    state = new SwerveModuleState(0, state.angle);
+                for (int i = 0; i < rawStates.length; i++) {
+                    states[i] = new SwerveModuleState(0.0, rawStates[i].angle);
                 }
             }
+        } else {
+            states = rawStates;
         }
+
         setModuleStates(states);
+
         // Reset the ChassisSpeeds for next iteration
         speeds = new ChassisSpeeds();
 
