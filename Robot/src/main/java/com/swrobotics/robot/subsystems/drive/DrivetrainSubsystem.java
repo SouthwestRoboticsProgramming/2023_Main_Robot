@@ -339,10 +339,8 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
             speeds.omegaRadiansPerSecond = rotation.getRadians();
         }
 
-        SwerveModuleState[] rawStates = kinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(rawStates, 4.0);
-
-        SwerveModuleState[] states = new SwerveModuleState[4];
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
 
         double vx = speeds.vxMetersPerSecond;
         double vy = speeds.vyMetersPerSecond;
@@ -353,12 +351,10 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase {
             } else { // Keep going in the same direction
                 states = getModuleStates();
                 // Remove any velocity
-                for (int i = 0; i < rawStates.length; i++) {
-                    states[i] = new SwerveModuleState(0.0, rawStates[i].angle);
+                for (int i = 0; i < states.length; i++) {
+                    states[i] = new SwerveModuleState(0.0, getModuleStates()[i].angle);
                 }
             }
-        } else {
-            states = rawStates;
         }
 
         setModuleStates(states);
