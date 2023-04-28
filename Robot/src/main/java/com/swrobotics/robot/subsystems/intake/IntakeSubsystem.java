@@ -1,5 +1,7 @@
 package com.swrobotics.robot.subsystems.intake;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.robot.RIOPorts;
 import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
@@ -7,8 +9,6 @@ import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
-    private static final NTDouble L_INTAKE_SPEED =
-            (NTDouble) new NTDouble("Intake/Current Speed", 0).setTemporary();
     private static final NTDouble CONE_HOLD = new NTDouble("Intake/Cone Hold", 0.1);
     private static final NTDouble CUBE_HOLD = new NTDouble("Intake/Cube Hold", -0.1);
 
@@ -32,7 +32,8 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
         this.expectedPiece = expectedPiece;
 
         // Become more stopped
-        if (!running) stop();
+        if (!running)
+            stop();
     }
 
     public void run() {
@@ -60,12 +61,15 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     }
 
     public void debugSetRunning(boolean running) {
-        if (running) run();
-        else stop();
+        if (running)
+            run();
+        else
+            stop();
     }
 
     @Override
     public void periodic() {
-        L_INTAKE_SPEED.set(motor.get());
+        Logger.getInstance().recordOutput("Intake/MotorOutput", motor.get());
+        Logger.getInstance().recordOutput("Intake/ExpectedPiece", expectedPiece.name());
     }
 }
