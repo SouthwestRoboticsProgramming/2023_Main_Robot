@@ -30,10 +30,6 @@ public class Robot extends LoggedRobot {
 
     private RobotContainer robotContainer;
 
-    public Robot() {
-        super(1 / 50); // Standard loop time
-    }
-
     @Override
     public void robotInit() {
         // Configure logging
@@ -66,7 +62,7 @@ public class Robot extends LoggedRobot {
                 }
                 logger.addDataReceiver(new NT4Publisher());
                 if (Settings.robot == RobotType.COMPETITION) {
-                    LoggedPowerDistribution.getInstance(50, ModuleType.kAutomatic);
+                    LoggedPowerDistribution.getInstance(50, ModuleType.kAutomatic); // FIXME: Correct ID
                 }
                 break;
 
