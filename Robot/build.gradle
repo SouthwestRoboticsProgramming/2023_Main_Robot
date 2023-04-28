@@ -4,12 +4,12 @@ plugins {
     id "com.peterabeles.gversion" version "1.10"
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 compileJava {
-    sourceCompatibility = '11'
-    targetCompatibility = '11'
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
 }
 
 def ROBOT_MAIN_CLASS = "com.swrobotics.robot.Main"
