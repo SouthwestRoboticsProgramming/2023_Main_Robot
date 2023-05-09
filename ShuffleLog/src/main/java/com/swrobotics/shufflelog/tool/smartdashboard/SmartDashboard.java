@@ -14,11 +14,13 @@ public final class SmartDashboard implements Tool {
     private NetworkTable table;
     private final Map<String, SmartDashboardTool> tools;
     private final Set<String> openTools;
+    private final Map<String, Field2d> fields;
     private final ImBoolean pOpen;
 
     public SmartDashboard() {
         tools = new HashMap<>();
         openTools = new HashSet<>();
+        fields = new HashMap<>();
         pOpen = new ImBoolean(false);
     }
 
@@ -28,6 +30,10 @@ public final class SmartDashboard implements Tool {
 
     public void close() {
         table = null;
+    }
+
+    public Collection<Field2d> getFields() {
+        return fields.values();
     }
 
     public void showMenuItems() {
@@ -45,8 +51,15 @@ public final class SmartDashboard implements Tool {
 
     @Override
     public void process() {
+        if (table == null) {
+            tools.clear();
+            fields.clear();
+            return;
+        }
+
         // Update tools
         Set<String> removedTools = new HashSet<>(tools.keySet());
+        removedTools.addAll(fields.keySet());
         for (String childName : table.getSubTables()) {
             removedTools.remove(childName);
             if (tools.containsKey(childName))
@@ -63,10 +76,13 @@ public final class SmartDashboard implements Tool {
                 case "Mechanism2d":
                     tools.put(name, new Mechanism2dTool(name, child));
                     break;
+                case "Field2d":
+                    fields.put(name, new Field2d(name, child));
             }
         }
         for (String removed : removedTools) {
             tools.remove(removed);
+            fields.remove(removed);
             // Do not remove from openTools so it stays open if it reappears
         }
 

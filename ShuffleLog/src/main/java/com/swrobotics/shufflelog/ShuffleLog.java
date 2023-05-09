@@ -146,7 +146,7 @@ public final class ShuffleLog extends PApplet {
         tools.add(new NetworkTablesTool(threadPool, smartDashboard));
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new RoboRIOFilesTool(this));
-        tools.add(new FieldViewTool(this));
+        tools.add(new FieldViewTool(this, smartDashboard));
         tools.add(new ArmDebugTool(this, messenger));
         tools.add(new PreMatchChecklistTool(msg));
         tools.add(new ConeOrCubeTool(messenger));

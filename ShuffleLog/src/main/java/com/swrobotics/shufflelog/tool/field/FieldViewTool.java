@@ -10,6 +10,8 @@ import com.swrobotics.shufflelog.math.*;
 import com.swrobotics.shufflelog.tool.ViewportTool;
 import com.swrobotics.shufflelog.tool.field.path.PathfindingLayer;
 import com.swrobotics.shufflelog.tool.field.waypoint.WaypointLayer;
+import com.swrobotics.shufflelog.tool.smartdashboard.Field2dLayer;
+import com.swrobotics.shufflelog.tool.smartdashboard.SmartDashboard;
 import com.swrobotics.shufflelog.util.SmoothFloat;
 
 import imgui.ImGui;
@@ -80,7 +82,7 @@ public final class FieldViewTool extends ViewportTool {
     private float orthoScale;
     private float orthoCameraRotYTarget;
 
-    public FieldViewTool(ShuffleLog log) {
+    public FieldViewTool(ShuffleLog log, SmartDashboard smartDashboard) {
         // Be in 3d rendering mode
         super(
                 log,
@@ -95,6 +97,7 @@ public final class FieldViewTool extends ViewportTool {
         layers.add(new PathfindingLayer(msg, this));
         // layers.add(new TagTrackerLayer(this, msg));
         layers.add(new WaypointLayer(this, msg));
+        layers.add(new Field2dLayer(smartDashboard));
 
         projection = new SmoothMatrix(SMOOTH);
 
