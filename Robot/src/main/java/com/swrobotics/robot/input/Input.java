@@ -114,8 +114,8 @@ public final class Input extends SubsystemBase {
                     L_IS_CONE.set(true);
                 });
 
-        snapDriveCmd = new PathfindToPointCommand(robot, null);
-        snapTurnCmd = new TurnToAngleCommand(robot, () -> snapAngle, false);
+        snapDriveCmd = new PathfindToPointCommand(robot.swerveDrive, robot.pathfinder, null);
+        snapTurnCmd = new TurnToAngleCommand(robot.swerveDrive, () -> snapAngle, false);
 
         prevWasGrid = false;
         prevArmTarget = ArmPositions.DEFAULT.getTranslation();

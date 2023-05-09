@@ -220,7 +220,7 @@ public class RobotContainer {
                 swerveDrive.buildPathPlannerAuto("Taxi Auto"); // Drive forward and reset position
         Command taxiDumb =
                 new DriveBlindCommand(
-                                this,
+                                swerveDrive,
                                 DrivetrainSubsystem.FIELD::getAllianceForwardAngle,
                                 0.5,
                                 false)

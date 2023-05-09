@@ -61,6 +61,7 @@ dependencies {
     implementation project(':TaskManager:TaskManager-FileSystem')
     implementation project(':Profiler')
     implementation project(':MathLib')
+    implementation project(':RobotLib')
 
     implementation 'com.google.code.gson:gson:2.9.0'
 
@@ -97,6 +98,7 @@ jar {
     dependsOn ':TaskManager:TaskManager-FileSystem:jar'
     dependsOn ':Profiler:jar'
     dependsOn ':MathLib:jar'
+    dependsOn ':RobotLib:jar'
 
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)

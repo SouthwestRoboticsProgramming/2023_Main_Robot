@@ -11,3 +11,5 @@ include 'Profiler'
 include 'ShuffleLog'
 include 'TaskManager:TaskManager-Core'
 include 'TaskManager:TaskManager-FileSystem'
+include 'RobotLib'
+

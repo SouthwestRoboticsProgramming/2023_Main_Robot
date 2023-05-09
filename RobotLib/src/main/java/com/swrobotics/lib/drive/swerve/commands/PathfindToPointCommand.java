@@ -1,10 +1,9 @@
 package com.swrobotics.lib.drive.swerve.commands;
 
 import com.swrobotics.lib.drive.swerve.Pathfinder;
+import com.swrobotics.lib.drive.swerve.SwerveDrive;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
-import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -20,16 +19,16 @@ public final class PathfindToPointCommand extends CommandBase {
     // Position tolerance in meters
     private static final double TOLERANCE = 0.06;
 
-    private final DrivetrainSubsystem drive;
+    private final SwerveDrive drive;
     private final Pathfinder finder;
     private final PIDController pid;
 
     private Vec2d goal;
     private boolean finished;
 
-    public PathfindToPointCommand(RobotContainer robot, Vec2d goal) {
-        drive = robot.swerveDrive;
-        finder = robot.pathfinder;
+    public PathfindToPointCommand(SwerveDrive drive, Pathfinder pathfinder, Vec2d goal) {
+        this.drive = drive;
+        this.finder = pathfinder;
         this.goal = goal;
 
         // FIXME: Tune

@@ -2,7 +2,6 @@ package com.swrobotics.lib.drive.swerve.commands;
 
 import com.swrobotics.lib.drive.swerve.SwerveDrive;
 import com.swrobotics.mathlib.Angle;
-import com.swrobotics.robot.RobotContainer;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -19,11 +18,11 @@ public class DriveBlindCommand extends CommandBase {
     private final boolean robotRelative;
 
     public DriveBlindCommand(
-            RobotContainer robot,
+            SwerveDrive drive,
             Supplier<Angle> direction,
             double velocityMetersPerSecond,
             boolean robotRelative) {
-        drive = robot.swerveDrive;
+        this.drive = drive;
 
         this.direction = direction;
         this.velocityMetersPerSecond = velocityMetersPerSecond;

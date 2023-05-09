@@ -19,7 +19,7 @@ public class BalanceSequenceCommand extends SequentialCommandGroup {
 
         addCommands(
                 new StartBalanceCommand(robot, angle, -1.5, false).withTimeout(3),
-                new DriveBlindCommand(robot, angle, -1.5, false)
+                new DriveBlindCommand(robot.swerveDrive, angle, -1.5, false)
                         .withTimeout(1.25), // Keep driving for 1 second
                 new AutoBalanceCommand(robot));
     }

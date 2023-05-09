@@ -29,7 +29,7 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
 
     public TurnWithArmSafetyCommand(
             RobotContainer robot, Supplier<Angle> angle, Vec2d driveTarget) {
-        super(robot, angle, false);
+        super(robot.swerveDrive, angle, false);
         this.robot = robot;
         this.driveTarget = new Translation2d(driveTarget.x, driveTarget.y);
 

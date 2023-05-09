@@ -16,7 +16,7 @@ public class StartBalanceCommand extends DriveBlindCommand {
             Supplier<Angle> direction,
             double velocityMetersPerSecond,
             boolean robotRelative) {
-        super(robot, direction, velocityMetersPerSecond, robotRelative);
+        super(robot.swerveDrive, direction, velocityMetersPerSecond, robotRelative);
         drive = robot.swerveDrive;
     }
 

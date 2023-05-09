@@ -1,9 +1,8 @@
 package com.swrobotics.lib.drive.swerve.commands;
 
+import com.swrobotics.lib.drive.swerve.SwerveDrive;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.MathUtil;
-import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -15,13 +14,13 @@ public class TurnToAngleCommand extends CommandBase {
     private static final double ANGLE_TOLERANCE_RAD = 0.05;
     public static final double MAX_ROTATIONAL_VEL = Math.PI / 2;
 
-    private final DrivetrainSubsystem drive;
+    private final SwerveDrive drive;
     private final PIDController pid;
     private Supplier<Angle> angle;
     private final boolean robotRelative;
 
-    public TurnToAngleCommand(RobotContainer robot, Supplier<Angle> angle, boolean robotRelative) {
-        drive = robot.swerveDrive;
+    public TurnToAngleCommand(SwerveDrive drive, Supplier<Angle> angle, boolean robotRelative) {
+        this.drive = drive;
         this.angle = angle;
         this.robotRelative = robotRelative;
 
