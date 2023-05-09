@@ -12,4 +12,5 @@ include 'ShuffleLog'
 include 'TaskManager:TaskManager-Core'
 include 'TaskManager:TaskManager-FileSystem'
 include 'RobotLib'
+include 'TestBench'
 
