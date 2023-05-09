@@ -1,5 +1,7 @@
 package com.swrobotics.robot.commands.arm;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.MathUtil;
@@ -15,16 +17,17 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 public final class ManualArmControlCommand extends CommandBase {
     private static final double MAX_RATE = 1; // Meters/s
 
-    private static final NTEntry<Double> L_TARGET_X =
-            new NTDouble("Log/Arm/Target X", 0).setTemporary();
-    private static final NTEntry<Double> L_TARGET_Y =
-            new NTDouble("Log/Arm/Target Y", 0).setTemporary();
-
     private final ArmSubsystem arm;
     private final XboxController joystick;
     private Translation2d targetPos;
 
-    public ManualArmControlCommand(RobotContainer robot, Joystick joystick) {
+    /**
+     * Command meant for debugging,
+     * plug a controller into port 3 to use
+     * 
+     * @param robot
+     */
+    public ManualArmControlCommand(RobotContainer robot) {
         this.arm = robot.arm;
         this.joystick = new XboxController(3);
 
@@ -43,8 +46,10 @@ public final class ManualArmControlCommand extends CommandBase {
         ArmPose pose = ArmPose.fromEndPosition(newTarget);
         if (pose != null && pose.isValid()) {
             targetPos = newTarget;
-            L_TARGET_X.set(targetPos.getX());
-            L_TARGET_Y.set(targetPos.getY());
+
+            Logger.getInstance().recordOutput("arm/target/manualX", targetPos.getX());
+            Logger.getInstance().recordOutput("arm/target/manualY", targetPos.getY());
+
             arm.setTargetPosition(targetPos);
         }
     }

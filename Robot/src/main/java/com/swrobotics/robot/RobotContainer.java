@@ -14,7 +14,6 @@ import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.positions.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
-import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
 
@@ -24,14 +23,11 @@ import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SelectCommand;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -44,12 +40,6 @@ import java.util.function.Supplier;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-    private enum ScoreHeight {
-        TOP,
-        MID,
-        BOTTOM
-    }
-
     // TODO: Endgame alert with rumble
     // TODO: Coast on decceleration
     // TODO: Characterization mode
@@ -94,98 +84,9 @@ public class RobotContainer {
 
         HashMap<String, Command> eventMap = new HashMap<>();
 
-        SendableChooser<ScoreHeight> positionSelector = new SendableChooser<>();
-
-        positionSelector.setDefaultOption("High", ScoreHeight.TOP);
-        positionSelector.addOption("Mid", ScoreHeight.MID);
-        positionSelector.addOption("Low", ScoreHeight.BOTTOM);
-
-        SmartDashboard.putData("Auto Position", positionSelector);
-
-        Command cubeLow = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
-                .andThen(
-                        new MoveArmToPositionCommand(
-                                this, () -> ArmPositions.DEFAULT.getTranslation()),
-                        Commands.run(intake::eject, intake).withTimeout(1.0));
-
-        Command coneLow = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
-                .andThen(
-                        new MoveArmToPositionCommand(
-                                this, () -> ArmPositions.DEFAULT.getTranslation()),
-                        Commands.run(intake::eject, intake).withTimeout(1.0));
-
-        Command cubeMid = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
-                .andThen(
-                        new MoveArmToPositionCommand(
-                                this,
-                                () -> new Translation2d(
-                                        0.6,
-                                        ArmPositions.CUBE_CENTER
-                                                .getTranslation()
-                                                .getY())),
-                        new MoveArmToPositionCommand(
-                                this, () -> ArmPositions.CUBE_CENTER.getTranslation()),
-                        Commands.run(intake::eject, intake).withTimeout(1.0));
-
-        Command cubeHigh = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CUBE), intake)
-                .andThen(
-                        new MoveArmToPositionCommand(
-                                this,
-                                () -> new Translation2d(
-                                        0.6,
-                                        ArmPositions.CUBE_UPPER
-                                                .getTranslation()
-                                                .getY())),
-                        new MoveArmToPositionCommand(
-                                this, () -> ArmPositions.CUBE_UPPER.getTranslation()),
-                        Commands.run(intake::eject, intake).withTimeout(1.0));
-
-        Command coneMid = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
-                .andThen(
-                        new MoveArmToPositionCommand(
-                                this,
-                                () -> new Translation2d(
-                                        0.6,
-                                        ArmPositions.CONE_CENTER
-                                                .getTranslation()
-                                                .getY())),
-                        new MoveArmToPositionCommand(
-                                this, () -> ArmPositions.CONE_CENTER.getTranslation()),
-                        Commands.run(intake::eject, intake).withTimeout(1.0));
-
-        Command coneHigh = Commands.runOnce(() -> intake.setExpectedPiece(GamePiece.CONE), intake)
-                .andThen(
-                        new MoveArmToPositionCommand(
-                                this,
-                                () -> new Translation2d(
-                                        0.6,
-                                        ArmPositions.CONE_UPPER
-                                                .getTranslation()
-                                                .getY())),
-                        new MoveArmToPositionCommand(
-                                this, () -> ArmPositions.CONE_UPPER.getTranslation()),
-                        Commands.run(intake::eject, intake).withTimeout(1.0));
-
-        Command scoreCone = new SelectCommand(
-                Map.ofEntries(
-                        Map.entry(ScoreHeight.TOP, coneHigh),
-                        Map.entry(ScoreHeight.MID, coneMid),
-                        Map.entry(ScoreHeight.BOTTOM, coneLow)),
-                positionSelector::getSelected);
-
-        Command scoreCube = new SelectCommand(
-                Map.ofEntries(
-                        Map.entry(ScoreHeight.TOP, cubeHigh),
-                        Map.entry(ScoreHeight.MID, cubeMid),
-                        Map.entry(ScoreHeight.BOTTOM, cubeLow)),
-                positionSelector::getSelected);
-
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
-
-        eventMap.put("SCORE_CUBE", scoreCube);
-        eventMap.put("SCORE_CONE", scoreCone);
 
         eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getTranslation));
         // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
@@ -246,10 +147,6 @@ public class RobotContainer {
         // Score and balance without taxi (16 pts)
         autoSelector.addOption("Cube Balance Short", () -> cubeMidBalanceShort);
         autoSelector.addOption("Cone Balance Short", () -> coneMidBalanceShort);
-
-        // Just score and don't move (4 pts)
-        autoSelector.addOption("Just Cube", () -> scoreCube);
-        autoSelector.addOption("Just Cone", () -> scoreCone);
 
         // Prepare for next cycle without scoring (3 pts)
         autoSelector.addOption("Run Away Wall", () -> getOfOfTheWayWall);
