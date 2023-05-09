@@ -538,12 +538,12 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
             gyroOffset =
                     gyroOffset.plus(new Rotation2d(estimatedChassis.omegaRadiansPerSecond * 0.02));
             odometry.update(gyroOffset, getModulePositions());
+            ppPose.setPose(getPathPlannerPose());
+            field.setRobotPose(getPose());
         } else {
             odometry.update(getGyroscopeRotation(), getModulePositions());
         }
 
-        // ppPose.setPose(getPathPlannerPose());
-        // field.setRobotPose(getPose());
         // SnapPositions.showPositions(field);
 
         // Check if it should calibrate the wheels
