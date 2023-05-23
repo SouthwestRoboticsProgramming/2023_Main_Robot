@@ -1,3 +1,6 @@
+// TODO: Use lazy theta*
+// http://idm-lab.org/bib/abstracts/papers/aaai10b.pdf
+
 use std::cell::{Cell, RefCell};
 
 use ordered_float::OrderedFloat;

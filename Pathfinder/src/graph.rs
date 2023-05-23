@@ -1,6 +1,32 @@
 use crate::vectors::Vec2i;
 use bit_vec::BitVec;
 
+pub struct GridBuilder {
+    bias_x: f64,
+    bias_y: f64,
+    size: Vec2i,
+}
+
+impl GridBuilder {
+    pub fn new(size: Vec2i) -> Self {
+        Self {
+            bias_x: 1.0,
+            bias_y: 1.0,
+            size,
+        }
+    }
+
+    pub fn with_bias(&mut self, bias_x: f64, bias_y: f64) -> &mut Self {
+        self.bias_x = bias_x;
+        self.bias_y = bias_y;
+        self
+    }
+
+    pub fn build(&self) -> Grid2D {
+        Grid2D::new(self)
+    }
+}
+
 pub struct Grid2D {
     passable: BitVec,
     bias_x: f64,
@@ -9,35 +35,32 @@ pub struct Grid2D {
 }
 
 impl Grid2D {
-    pub fn new(width: u32, height: u32) -> Self {
-        return Self::new_with_bias(width, height, 1.0, 1.0);
-    }
-
-    pub fn new_with_bias(width: u32, height: u32, bias_x: f64, bias_y: f64) -> Self {
-        let passable = BitVec::from_elem((width * height) as usize, true);
+    fn new(builder: &GridBuilder) -> Self {
+        let passable = BitVec::from_elem((builder.size.x * builder.size.y) as usize, true);
 
         return Self {
             passable,
-            bias_x,
-            bias_y,
-            size: Vec2i {
-                x: width as i32,
-                y: height as i32,
-            },
+            bias_x: builder.bias_x,
+            bias_y: builder.bias_y,
+            size: builder.size,
         };
     }
 
-    fn cell_idx(&self, pos: Vec2i) -> usize {
+    fn cell_idx(&self, pos: &Vec2i) -> usize {
         (pos.x + pos.y * self.size.x) as usize
     }
 
     pub fn can_pass(&self, x: i32, y: i32) -> bool {
+        if x < 0 || y < 0 || x >= self.size.x || y >= self.size.y {
+            return false;
+        }
+
         self.passable
-            .get(self.cell_idx(Vec2i { x, y }))
+            .get(self.cell_idx(&Vec2i { x, y }))
             .unwrap_or(false)
     }
 
-    pub fn set_cell_passable(&mut self, pos: Vec2i, passable: bool) {
+    pub fn set_cell_passable(&mut self, pos: &Vec2i, passable: bool) {
         self.passable.set(self.cell_idx(pos), passable);
     }
 
