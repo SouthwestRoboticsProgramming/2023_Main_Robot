@@ -1,6 +1,3 @@
-// TODO: Some way of getting the arm out of invalid states
-//       At the moment, the pathfinder won't report a path if either current or goal is invalid
-
 use collision::{Circle, Rectangle};
 use graph::Grid2D;
 use lerp::Lerp;
@@ -9,6 +6,7 @@ use std::time::Instant;
 use vectors::Vec2f;
 
 pub mod collision;
+pub mod dijkstra;
 pub mod graph;
 pub mod theta_star;
 pub mod vectors;
@@ -156,7 +154,7 @@ fn state_to_pose(state_x: f32, state_y: f32) -> ArmPose {
     }
 }
 
-const CELL_SZ: f32 = 4.0;
+const CELL_SZ: f32 = 3.0;
 
 fn draw_state_space_grid(grid: &Grid2D) {
     for y in 0..STATE_SZ.y {
@@ -311,12 +309,17 @@ async fn main() {
             let right_down =
                 macroquad::input::is_mouse_button_down(macroquad::input::MouseButton::Right);
 
-            if left_down {
-                start_pos = mouse_grid_pos;
-            }
-            if right_down {
-                goal_pos = mouse_grid_pos;
-            }
+            match dijkstra::find_nearest_passable(&grid, mouse_grid_pos) {
+                Some(pos) => {
+                    if left_down {
+                        start_pos = pos;
+                    }
+                    if right_down {
+                        goal_pos = pos;
+                    }
+                }
+                None => {}
+            };
 
             draw_state_preview(mouse_grid_pos.x as f32, mouse_grid_pos.y as f32);
         }

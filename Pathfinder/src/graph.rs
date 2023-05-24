@@ -60,6 +60,13 @@ impl Grid2D {
             .unwrap_or(false)
     }
 
+    pub fn can_point_pass(&self, pos: &Vec2i) -> bool {
+        let mut pass = self.can_pass(pos.x - 1, pos.y - 1);
+        pass |= self.can_pass(pos.x, pos.y - 1);
+        pass |= self.can_pass(pos.x - 1, pos.y);
+        pass | self.can_pass(pos.x, pos.y)
+    }
+
     pub fn set_cell_passable(&mut self, pos: &Vec2i, passable: bool) {
         self.passable.set(self.cell_idx(pos), passable);
     }
@@ -87,6 +94,29 @@ impl Grid2D {
         let biased_y = (dy as f64) * self.bias_y;
 
         (biased_x * biased_x + biased_y * biased_y).sqrt()
+    }
+
+    pub fn get_all_neighbors(&self, current: &Vec2i) -> Vec<Vec2i> {
+        let mut out = Vec::with_capacity(8);
+
+        let Vec2i { x: w, y: h } = self.point_size();
+        for x in (-1)..=1 {
+            for y in (-1)..=1 {
+                if x == 0 && y == 0 {
+                    continue;
+                }
+
+                let px = current.x + x;
+                let py = current.y + y;
+                let p = Vec2i { x: px, y: py };
+
+                if px >= 0 && px < w && py >= 0 && py < h {
+                    out.push(p);
+                }
+            }
+        }
+
+        out
     }
 
     pub fn get_neighbors(&self, current: &Vec2i) -> Vec<Vec2i> {
