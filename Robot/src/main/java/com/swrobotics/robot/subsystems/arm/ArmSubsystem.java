@@ -107,14 +107,14 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
                 mechanism,
                 "Current Arm",
                 Color.kDarkGreen,
-                Color.kGreen);
+                Color.kGreen, Color.kAqua);
         targetVisualizer = new ArmVisualizer(
                 extent / 2,
                 extent / 2,
                 mechanism,
                 "Target Arm",
                 Color.kDarkRed,
-                Color.kRed);
+                Color.kRed, Color.kCoral);
         SmartDashboard.putData("Arm", mechanism);
 
         // finder = new ArmPathfinder(msg);
