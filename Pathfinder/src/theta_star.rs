@@ -60,7 +60,6 @@ fn compute_cost<'a>(grid: &Grid2D, current: &'a Node<'a>, next: &'a Node<'a>) {
             return;
         }
     }
-    drop(current_parent_opt);
 
     let cost = current.cost.get() + grid.cost(&current.position, &next.position);
     if cost < next.cost.get() {
