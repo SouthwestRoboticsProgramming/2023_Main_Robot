@@ -1,5 +1,5 @@
 use collision::{Circle, Rectangle};
-use graph::Grid2D;
+use grid::Grid2D;
 use lerp::Lerp;
 use std::f64::consts::PI;
 use std::time::Instant;
@@ -7,7 +7,7 @@ use vectors::Vec2f;
 
 pub mod collision;
 pub mod dijkstra;
-pub mod graph;
+pub mod grid;
 pub mod theta_star;
 pub mod vectors;
 
@@ -270,7 +270,7 @@ async fn main() {
     let bias_x = (BOTTOM_RANGE.1 - BOTTOM_RANGE.0) * BOTTOM_GEAR_RATIO;
     let bias_y = (TOP_RANGE.1 - TOP_RANGE.0) * TOP_GEAR_RATIO;
 
-    let mut grid = graph::GridBuilder::new(STATE_SZ)
+    let mut grid = grid::GridBuilder::new(STATE_SZ)
         .with_bias(bias_x, bias_y)
         .build();
 

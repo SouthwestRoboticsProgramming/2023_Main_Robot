@@ -6,7 +6,7 @@ use std::cell::{Cell, RefCell};
 use ordered_float::OrderedFloat;
 use priority_queue::PriorityQueue;
 
-use crate::{graph::Grid2D, vectors::Vec2i};
+use crate::{grid::Grid2D, vectors::Vec2i};
 
 struct Node<'a> {
     position: Vec2i,

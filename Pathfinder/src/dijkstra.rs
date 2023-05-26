@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{graph::Grid2D, vectors::Vec2i};
+use crate::{grid::Grid2D, vectors::Vec2i};
 use ordered_float::OrderedFloat;
 use priority_queue::PriorityQueue;
 

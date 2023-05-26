@@ -142,6 +142,8 @@ impl Grid2D {
         out
     }
 
+    // This was taken from somewhere
+    // TODO: Figure out where so credit can be properly given
     pub fn line_of_sight(&self, s: &Vec2i, sp: &Vec2i) -> bool {
         let mut x0 = s.x;
         let mut y0 = s.y;
