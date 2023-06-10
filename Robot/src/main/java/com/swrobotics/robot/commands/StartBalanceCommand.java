@@ -1,6 +1,6 @@
 package com.swrobotics.robot.commands;
 
-import com.swrobotics.lib.swerve.commands.DriveBlindCommand;
+import com.swrobotics.lib.drive.swerve.commands.DriveBlindCommand;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
@@ -16,8 +16,8 @@ public class StartBalanceCommand extends DriveBlindCommand {
             Supplier<Angle> direction,
             double velocityMetersPerSecond,
             boolean robotRelative) {
-        super(robot, direction, velocityMetersPerSecond, robotRelative);
-        drive = robot.drivetrainSubsystem;
+        super(robot.swerveDrive, direction, velocityMetersPerSecond, robotRelative);
+        drive = robot.swerveDrive;
     }
 
     @Override

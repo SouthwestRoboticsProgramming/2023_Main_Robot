@@ -1,7 +1,5 @@
 package com.swrobotics.robot.subsystems.vision;
 
-import com.swrobotics.lib.net.NTBoolean;
-import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.lib.net.NTInteger;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.Vec2d;
@@ -11,18 +9,13 @@ import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.SimVisionSystem;
 
 import java.io.IOException;
@@ -70,7 +63,6 @@ public class Photon extends SubsystemBase {
 
     // Create a pose estimator to use multiple tags + multiple cameras to figure out where the robot
     // is
-    // FIXME-Mason: Use PhotonPoseEstimator, RobotPoseEstimator is deprecated
     private final PhotonPoseEstimator frontPoseEstimator;
     private final PhotonPoseEstimator backPoseEstimator;
 
@@ -79,7 +71,7 @@ public class Photon extends SubsystemBase {
     public Photon(RobotContainer robot) {
         L_TARGETS_FOUND.setTemporary();
 
-        drive = robot.drivetrainSubsystem;
+        drive = robot.swerveDrive;
 
         AprilTagFieldLayout layout;
 
@@ -98,10 +90,16 @@ public class Photon extends SubsystemBase {
 
         frontPoseEstimator =
                 new PhotonPoseEstimator(
-                        layout, PoseStrategy.AVERAGE_BEST_TARGETS, frontCam, frontCamTransform);
+                        layout,
+                        PhotonPoseEstimator.PoseStrategy.AVERAGE_BEST_TARGETS,
+                        frontCam,
+                        frontCamTransform);
         backPoseEstimator =
                 new PhotonPoseEstimator(
-                        layout, PoseStrategy.AVERAGE_BEST_TARGETS, backCam, backCamTransform);
+                        layout,
+                        PhotonPoseEstimator.PoseStrategy.AVERAGE_BEST_TARGETS,
+                        backCam,
+                        backCamTransform);
 
         // Simulate cameras
         if (RobotBase.isSimulation()) {
@@ -115,30 +113,34 @@ public class Photon extends SubsystemBase {
             frontSim.addVisionTargets(layout);
             backSim.addVisionTargets(layout);
 
-            drive.showApriltags(layout);
-            drive.showCameraPoses(frontCamTransform);
+            //            drive.showApriltags(layout);
+            //            drive.showCameraPoses(frontCamTransform);
         }
 
         latestPose = new AtomicReference<>(null);
 
         // Run it on seperate thread
-        new Thread(
-                        () -> {
-                            while (!Thread.interrupted()) {
-                                update();
+        if (!RobotBase.isSimulation()) {
+            new Thread(
+                            () -> {
+                                while (!Thread.interrupted()) {
+                                    update();
 
-                                try {
-                                    Thread.sleep(5);
-                                } catch (InterruptedException e) {
-                                    break;
+                                    try {
+                                        Thread.sleep(5);
+                                    } catch (InterruptedException e) {
+                                        break;
+                                    }
                                 }
-                            }
-                        })
-                .start();
+                            })
+                    .start();
+        }
     }
 
     @Override
     public void periodic() {
+        if (RobotBase.isSimulation()) update();
+
         Pose2d poseOut = latestPose.getAndSet(null);
         if (poseOut == null) return;
 
@@ -197,9 +199,6 @@ public class Photon extends SubsystemBase {
         // System.out.println(estimatedPose.get().getFirst());
 
         // // Update drive with estimated pose
-        // L_MOVING.set(drive.isMoving());
         latestPose.set(poseOut);
     }
-
-    private final NTEntry<Boolean> L_MOVING = new NTBoolean("Log/Moving", false).setTemporary();
 }

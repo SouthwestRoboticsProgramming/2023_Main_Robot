@@ -1,5 +1,7 @@
 package com.swrobotics.mathlib;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+
 /**
  * Represents an angle measurement. All instances of this interface should be immutable (they cannot
  * change value).
@@ -35,4 +37,8 @@ public interface Angle {
      * @return negated angle
      */
     Angle negate();
+
+    static Angle fromRotation2d(Rotation2d rot) {
+        return CCWAngle.rad(rot.getRadians());
+    }
 }

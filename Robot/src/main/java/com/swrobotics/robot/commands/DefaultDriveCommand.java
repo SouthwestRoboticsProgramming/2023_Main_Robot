@@ -39,11 +39,11 @@ public class DefaultDriveCommand extends CommandBase {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-x, -y, rotationCCW, gyro);
         }
 
-        drive.setChassisSpeeds(speeds);
+        drive.addChassisSpeeds(speeds);
     }
 
     @Override
     public void end(boolean interrupted) {
-        drive.setChassisSpeeds(new ChassisSpeeds(0.0, 0.0, 0.0));
+        drive.addChassisSpeeds(new ChassisSpeeds(0.0, 0.0, 0.0));
     }
 }

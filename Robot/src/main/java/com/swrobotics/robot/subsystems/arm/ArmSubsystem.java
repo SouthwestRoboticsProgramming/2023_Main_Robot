@@ -1,19 +1,18 @@
 package com.swrobotics.robot.subsystems.arm;
 
+import static com.swrobotics.robot.subsystems.arm.ArmConstants.*;
 import static com.swrobotics.robot.subsystems.arm.ArmPathfinder.toStateSpaceVec;
-import static com.swrobotics.shared.arm.ArmConstants.*;
 
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTEntry;
+import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
-import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import com.swrobotics.robot.subsystems.arm.joint.ArmJoint;
 import com.swrobotics.robot.subsystems.arm.joint.PhysicalJoint;
 import com.swrobotics.robot.subsystems.arm.joint.SimJoint;
-import com.swrobotics.shared.arm.ArmPose;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;

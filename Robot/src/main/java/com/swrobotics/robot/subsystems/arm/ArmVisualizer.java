@@ -1,8 +1,5 @@
 package com.swrobotics.robot.subsystems.arm;
 
-import com.swrobotics.shared.arm.ArmConstants;
-import com.swrobotics.shared.arm.ArmPose;
-
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;

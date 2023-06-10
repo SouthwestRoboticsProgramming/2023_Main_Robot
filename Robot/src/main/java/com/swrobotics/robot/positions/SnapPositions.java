@@ -63,7 +63,7 @@ public final class SnapPositions {
         }
 
         public Pose2d getPose() {
-            return DrivetrainSubsystem.flipForAlliance(bluePose);
+            return DrivetrainSubsystem.FIELD.flipPoseForAlliance(bluePose);
         }
     }
 

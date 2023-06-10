@@ -1,11 +1,11 @@
 package com.swrobotics.robot.input;
 
+import com.swrobotics.lib.drive.swerve.commands.PathfindToPointCommand;
+import com.swrobotics.lib.drive.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.lib.input.XboxController;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTTranslation2d;
-import com.swrobotics.lib.swerve.commands.PathfindToPointCommand;
-import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.positions.ArmPositions;
@@ -99,7 +99,7 @@ public final class Input extends SubsystemBase {
         driver = new XboxController(DRIVER_PORT);
         manipulator = new XboxController(MANIPULATOR_PORT);
 
-        driver.start.onRising(robot.drivetrainSubsystem::zeroGyroscope);
+        driver.start.onRising(robot.swerveDrive::zeroGyroscope);
 
         manipulator.leftBumper.onRising(
                 () -> {
@@ -114,8 +114,8 @@ public final class Input extends SubsystemBase {
                     L_IS_CONE.set(true);
                 });
 
-        snapDriveCmd = new PathfindToPointCommand(robot, null);
-        snapTurnCmd = new TurnToAngleCommand(robot, () -> snapAngle, false);
+        snapDriveCmd = new PathfindToPointCommand(robot.swerveDrive, robot.pathfinder, null);
+        snapTurnCmd = new TurnToAngleCommand(robot.swerveDrive, () -> snapAngle, false);
 
         prevWasGrid = false;
         prevArmTarget = ArmPositions.DEFAULT.getTranslation();
@@ -126,9 +126,7 @@ public final class Input extends SubsystemBase {
          * fast mode. It doesn't effect the sticks directly as that was not a problem that we faced. Instead,
          * it just effects fast mode ramping.
          */
-        double rate = SPEED_RATE_LIMIT.get();
-        limiter = new SlewRateLimiter(rate, -rate, 0);
-        SPEED_RATE_LIMIT.onChange(
+        SPEED_RATE_LIMIT.nowAndOnChange(
                 () -> {
                     double newRate = SPEED_RATE_LIMIT.get();
                     limiter = new SlewRateLimiter(newRate, -newRate, 0);
@@ -185,7 +183,7 @@ public final class Input extends SubsystemBase {
         }
 
         // Calculate snapping
-        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
+        Pose2d currentPose = robot.swerveDrive.getPose();
         SnapPositions.SnapStatus snap = SnapPositions.getSnap(currentPose);
         if (snap == null) {
             disableSnap();
@@ -298,14 +296,14 @@ public final class Input extends SubsystemBase {
     private void snapToPosition(Translation2d position) {
         snapDriveCmd.setGoal(new Vec2d(position.getX(), position.getY()));
 
-        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
+        Pose2d currentPose = robot.swerveDrive.getPose();
         double dist = currentPose.getTranslation().minus(position).getNorm();
 
         setCommandEnabled(snapDriveCmd, dist > SNAP_DRIVE_TOL);
     }
 
     private void snapToAngle(Rotation2d angle) {
-        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
+        Pose2d currentPose = robot.swerveDrive.getPose();
 
         double angleDiff =
                 CCWAngle.rad(angle.getRadians())

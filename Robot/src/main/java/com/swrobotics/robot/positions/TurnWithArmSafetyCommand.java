@@ -1,6 +1,6 @@
 package com.swrobotics.robot.positions;
 
-import com.swrobotics.lib.swerve.commands.TurnToAngleCommand;
+import com.swrobotics.lib.drive.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
@@ -29,7 +29,7 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
 
     public TurnWithArmSafetyCommand(
             RobotContainer robot, Supplier<Angle> angle, Vec2d driveTarget) {
-        super(robot, angle, false);
+        super(robot.swerveDrive, angle, false);
         this.robot = robot;
         this.driveTarget = new Translation2d(driveTarget.x, driveTarget.y);
 
@@ -42,7 +42,7 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
 
     @Override
     public void execute() {
-        Pose2d currentPose = robot.drivetrainSubsystem.getPose();
+        Pose2d currentPose = robot.swerveDrive.getPose();
 
         // Determine whether the walls are relevant and which one
         double armExtension =
@@ -62,8 +62,7 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
         }
 
         // Get current and target angles
-        Angle current =
-                CCWAngle.rad(robot.drivetrainSubsystem.getPose().getRotation().getRadians());
+        Angle current = CCWAngle.rad(robot.swerveDrive.getPose().getRotation().getRadians());
         Angle target = getTargetAngle();
 
         // Angle wrapping magic - we set the wrap point towards the
@@ -98,6 +97,6 @@ public final class TurnWithArmSafetyCommand extends TurnToAngleCommand {
         // Turn
         double pidOut = pid.calculate(currentIn, targetIn);
         pidOut = MathUtil.clamp(pidOut, -MAX_ROTATIONAL_VEL, MAX_ROTATIONAL_VEL);
-        robot.drivetrainSubsystem.setTargetRotation(new Rotation2d(pidOut));
+        robot.swerveDrive.addRotation(new Rotation2d(pidOut));
     }
 }

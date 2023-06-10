@@ -4,7 +4,6 @@ import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
-import com.swrobotics.shared.arm.ArmPose;
 
 import java.util.ArrayList;
 import java.util.List;

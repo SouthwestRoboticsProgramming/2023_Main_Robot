@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 // Not completely physically accurate but should reflect the
 // behavior of the real arm
+// TODO: Simulate the CANCoder too
 public final class SimJoint implements ArmJoint {
     private static final double KG_PER_METER = 1;
 
