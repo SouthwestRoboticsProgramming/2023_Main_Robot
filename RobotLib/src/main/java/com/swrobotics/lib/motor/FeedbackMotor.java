@@ -1,7 +1,7 @@
 package com.swrobotics.lib.motor;
 
 import com.swrobotics.lib.encoder.Encoder;
-import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.Angle;
 
 public interface FeedbackMotor extends Motor {
@@ -42,7 +42,7 @@ public interface FeedbackMotor extends Motor {
         setF(0);
     }
 
-    default void setPID(NTDouble kP, NTDouble kI, NTDouble kD) {
+    default void setPID(NTEntry<Double> kP, NTEntry<Double> kI, NTEntry<Double> kD) {
         kP.nowAndOnChange(() -> setP(kP.get()));
         kI.nowAndOnChange(() -> setI(kI.get()));
         kD.nowAndOnChange(() -> setD(kD.get()));
@@ -56,7 +56,7 @@ public interface FeedbackMotor extends Motor {
         setF(kF);
     }
 
-    default void setPIDF(NTDouble kP, NTDouble kI, NTDouble kD, NTDouble kF) {
+    default void setPIDF(NTEntry<Double> kP, NTEntry<Double> kI, NTEntry<Double> kD, NTEntry<Double> kF) {
         setPID(kP, kI, kD);
         kF.nowAndOnChange(() -> setF(kF.get()));
     }

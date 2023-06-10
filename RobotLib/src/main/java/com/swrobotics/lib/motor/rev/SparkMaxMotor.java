@@ -144,7 +144,8 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
     }
 
     /**
-     * Enables feedback using a relative encoder connected to the encoder port.
+     * Enables feedback using a relative encoder connected to the encoder port,
+     * or the data port if in brushed mode.
      *
      * @param type type of the encoder connected
      * @param ticksPerRotation number of ticks per encoder rotation
