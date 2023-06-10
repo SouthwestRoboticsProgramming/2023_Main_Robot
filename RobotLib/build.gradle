@@ -1,0 +1,34 @@
+plugins {
+    id 'java-library'
+    id "edu.wpi.first.GradleRIO" version "2023.3.2"
+}
+
+group 'com.swrobotics'
+version '2023'
+
+compileJava {
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
+}
+
+dependencies {
+    api project(':Messenger:MessengerClient')
+    api project(':TaskManager:TaskManager-FileSystem')
+    api project(':Profiler')
+    api project(':MathLib')
+
+    implementation 'com.google.code.gson:gson:2.9.0'
+
+    implementation wpi.java.deps.wpilib()
+    implementation wpi.java.vendor.java()
+}
+
+jar {
+    dependsOn ':Messenger:MessengerClient:jar'
+    dependsOn ':TaskManager:TaskManager-FileSystem:jar'
+    dependsOn ':Profiler:jar'
+    dependsOn ':MathLib:jar'
+
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}

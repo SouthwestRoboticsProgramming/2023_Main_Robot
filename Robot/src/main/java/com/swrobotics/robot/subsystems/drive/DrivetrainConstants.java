@@ -36,37 +36,38 @@ public final class DrivetrainConstants {
             new SwerveModuleInfo("Back Right", 12, 8, 4, 78.93) // Default back right
     };
 
+    // FIXME: Library stop positions are missing coast mode
     /* Stop positions */
-    public enum StopPosition {
-        COAST(null),
-        STRAIGHT(new SwerveModuleState[] {
-                new SwerveModuleState(),
-                new SwerveModuleState(),
-                new SwerveModuleState(),
-                new SwerveModuleState()
-        }),
-        CROSS(new SwerveModuleState[] { // Automatically point towards the defined center
-                new SwerveModuleState(0, FRONT_LEFT_POSITION.getAngle()),
-                new SwerveModuleState(0, FRONT_RIGHT_POSITION.getAngle()),
-                new SwerveModuleState(0, BACK_LEFT_POSITION.getAngle()),
-                new SwerveModuleState(0, BACK_RIGHT_POSITION.getAngle())
-        }),
-        CIRCLE(new SwerveModuleState[] { // Automatically point towards the defined center
-                new SwerveModuleState(0, FRONT_LEFT_POSITION.getAngle().plus(Rotation2d.fromDegrees(90))),
-                new SwerveModuleState(0, FRONT_RIGHT_POSITION.getAngle().plus(Rotation2d.fromDegrees(90))),
-                new SwerveModuleState(0, BACK_LEFT_POSITION.getAngle().plus(Rotation2d.fromDegrees(90))),
-                new SwerveModuleState(0, BACK_RIGHT_POSITION.getAngle().plus(Rotation2d.fromDegrees(90)))
-        });
-
-        private final SwerveModuleState[] states;
-
-        private StopPosition(SwerveModuleState[] states) {
-            this.states = states;
-        }
-
-        public SwerveModuleState[] getStates() {
-            return states;
-        }
-    }
+//    public enum StopPosition {
+//        COAST(null),
+//        STRAIGHT(new SwerveModuleState[] {
+//                new SwerveModuleState(),
+//                new SwerveModuleState(),
+//                new SwerveModuleState(),
+//                new SwerveModuleState()
+//        }),
+//        CROSS(new SwerveModuleState[] { // Automatically point towards the defined center
+//                new SwerveModuleState(0, FRONT_LEFT_POSITION.getAngle()),
+//                new SwerveModuleState(0, FRONT_RIGHT_POSITION.getAngle()),
+//                new SwerveModuleState(0, BACK_LEFT_POSITION.getAngle()),
+//                new SwerveModuleState(0, BACK_RIGHT_POSITION.getAngle())
+//        }),
+//        CIRCLE(new SwerveModuleState[] { // Automatically point towards the defined center
+//                new SwerveModuleState(0, FRONT_LEFT_POSITION.getAngle().plus(Rotation2d.fromDegrees(90))),
+//                new SwerveModuleState(0, FRONT_RIGHT_POSITION.getAngle().plus(Rotation2d.fromDegrees(90))),
+//                new SwerveModuleState(0, BACK_LEFT_POSITION.getAngle().plus(Rotation2d.fromDegrees(90))),
+//                new SwerveModuleState(0, BACK_RIGHT_POSITION.getAngle().plus(Rotation2d.fromDegrees(90)))
+//        });
+//
+//        private final SwerveModuleState[] states;
+//
+//        private StopPosition(SwerveModuleState[] states) {
+//            this.states = states;
+//        }
+//
+//        public SwerveModuleState[] getStates() {
+//            return states;
+//        }
+//    }
 
 }

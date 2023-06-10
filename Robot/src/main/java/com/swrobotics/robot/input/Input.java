@@ -1,5 +1,7 @@
 package com.swrobotics.robot.input;
 
+import com.swrobotics.lib.drive.swerve.commands.PathfindToPointCommand;
+import com.swrobotics.lib.drive.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.lib.input.XboxController;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
@@ -87,7 +89,7 @@ public final class Input extends SubsystemBase {
         driver = new XboxController(DRIVER_PORT);
         manipulator = new XboxController(MANIPULATOR_PORT);
 
-        driver.start.onRising(robot.drivetrainSubsystem::zeroGyroscope);
+        driver.start.onRising(robot.swerveDrive::zeroGyroscope);
 
         manipulator.leftBumper.onRising(
                 () -> {
@@ -111,9 +113,7 @@ public final class Input extends SubsystemBase {
          * fast mode. It doesn't effect the sticks directly as that was not a problem that we faced. Instead,
          * it just effects fast mode ramping.
          */
-        double rate = SPEED_RATE_LIMIT.get();
-        limiter = new SlewRateLimiter(rate, -rate, 0);
-        SPEED_RATE_LIMIT.onChange(
+        SPEED_RATE_LIMIT.nowAndOnChange(
                 () -> {
                     double newRate = SPEED_RATE_LIMIT.get();
                     limiter = new SlewRateLimiter(newRate, -newRate, 0);
@@ -154,6 +154,16 @@ public final class Input extends SubsystemBase {
 
     public boolean isRobotRelative() {
         return driver.rightTrigger.get() >= TRIGGER_DEADBAND || shouldBeRobotRelative;
+    }
+
+    private void driverPeriodic() {
+        boolean driveInput =
+                Math.abs(driver.leftStickX.get()) > DEADBAND
+                        || Math.abs(driver.leftStickY.get()) > DEADBAND;
+        boolean turnInput = Math.abs(driver.rightStickX.get()) > DEADBAND;
+
+//        boolean rumble = (driveInput && snap.snapDrive) || (turnInput || snap.snapTurn);
+//        driver.setRumble(rumble ? 0.5 : 0);
     }
 
     // ---- Manipulator controls ----

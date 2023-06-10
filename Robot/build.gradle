@@ -1,7 +1,7 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2023.3.2"
-    id "com.peterabeles.gversion" version "1.10"
+    //id "com.peterabeles.gversion" version "1.10"
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -56,15 +56,16 @@ test {
 }
 
 // Create a class with data on what verion the code is
-project.compileJava.dependsOn(createVersionFile)
-gversion {
-  srcDir       = "src/main/java/"
-  classPackage = "com.swrobotics.robot"
-  className    = "BuildConstants"
-  dateFormat   = "yyyy-MM-dd HH:mm:ss z"
-  timeZone     = "America/Chicago" // Use preferred time zone
-  indent       = "  "
-}
+// FIXME: Using the gversion plugin breaks project import in IDEA for some reason
+//project.compileJava.dependsOn(createVersionFile)
+//gversion {
+//  srcDir       = "src/main/java/"
+//  classPackage = "com.swrobotics.robot"
+//  className    = "BuildConstants"
+//  dateFormat   = "yyyy-MM-dd HH:mm:ss z"
+//  timeZone     = "America/Chicago" // Use preferred time zone
+//  indent       = "  "
+//}
 
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
 // Also defines JUnit 4.
@@ -73,7 +74,7 @@ dependencies {
     implementation project(':TaskManager:TaskManager-FileSystem')
     implementation project(':Profiler')
     implementation project(':MathLib')
-    implementation project(':Shared-Arm')
+    implementation project(':RobotLib')
 
     implementation 'com.google.code.gson:gson:2.9.0'
 
@@ -117,7 +118,7 @@ jar {
     dependsOn ':TaskManager:TaskManager-FileSystem:jar'
     dependsOn ':Profiler:jar'
     dependsOn ':MathLib:jar'
-    dependsOn ':Shared-Arm:jar'
+    dependsOn ':RobotLib:jar'
 
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)

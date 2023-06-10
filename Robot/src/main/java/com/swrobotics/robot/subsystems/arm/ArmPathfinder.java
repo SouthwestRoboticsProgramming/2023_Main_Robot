@@ -4,11 +4,11 @@ import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessageReader;
 import com.swrobotics.messenger.client.MessengerClient;
-import com.swrobotics.shared.arm.ArmPose;
 
 import java.util.ArrayList;
 import java.util.List;
 
+// FIXME: old
 public final class ArmPathfinder {
     private static final String MSG_ARM_SET_INFO = "Pathfinder:Arm:SetInfo";
     private static final String MSG_ARM_PATH = "Pathfinder:Arm:Path";
@@ -27,7 +27,7 @@ public final class ArmPathfinder {
         this.msg = msg;
         path = new ArrayList<>();
         msg.addHandler(MSG_ARM_PATH, this::onPath);
-        goal = new ArmPose(0, 0);
+        goal = new ArmPose(0, 0, 0);
     }
 
     public void setInfo(ArmPose current, ArmPose target) {
@@ -68,7 +68,7 @@ public final class ArmPathfinder {
             double bottom = reader.readDouble();
             double top = reader.readDouble();
 
-            path.add(new ArmPose(bottom, top));
+            path.add(new ArmPose(bottom, top, 0));
         }
     }
 }

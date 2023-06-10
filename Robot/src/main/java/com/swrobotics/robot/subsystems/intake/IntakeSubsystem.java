@@ -2,30 +2,26 @@ package com.swrobotics.robot.subsystems.intake;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.swrobotics.lib.motor.Motor;
+import com.swrobotics.lib.motor.rev.PWMSparkMaxMotor;
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import com.swrobotics.robot.RIOPorts;
-import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
-
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble CONE_HOLD = new NTDouble("Intake/Cone Hold", 0.1);
     private static final NTDouble CUBE_HOLD = new NTDouble("Intake/Cube Hold", -0.1);
 
-    private final PWMSparkMax motor;
+    private final Motor motor;
 
     private GamePiece expectedPiece;
     private boolean running;
 
     public IntakeSubsystem() {
-        motor = new PWMSparkMax(RIOPorts.INTAKE_PWM);
+        motor = new PWMSparkMaxMotor(RIOPorts.INTAKE_PWM);
 
         expectedPiece = GamePiece.CUBE;
         running = false;
-    }
-
-    public GamePiece getExpectedPiece() {
-        return expectedPiece;
     }
 
     public void setExpectedPiece(GamePiece expectedPiece) {
@@ -38,38 +34,31 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
 
     public void run() {
         if (isEnabled()) {
-            motor.set(expectedPiece.getIntakeOutput());
+            motor.setPercentOut(expectedPiece.getIntakeOutput());
             running = true;
         }
     }
 
     public void eject() {
         if (isEnabled()) {
-            motor.set(-expectedPiece.getOuttakeOutput());
+            motor.setPercentOut(-expectedPiece.getOuttakeOutput());
             running = true;
         }
     }
 
     public void stop() {
-        motor.set(expectedPiece == GamePiece.CONE ? (CONE_HOLD.get()) : CUBE_HOLD.get());
+        motor.setPercentOut(expectedPiece == GamePiece.CONE ? (CONE_HOLD.get()) : CUBE_HOLD.get());
         running = false;
     }
 
     @Override
     public void onDisable() {
-        motor.set(0);
-    }
-
-    public void debugSetRunning(boolean running) {
-        if (running)
-            run();
-        else
-            stop();
+        stop();
     }
 
     @Override
     public void periodic() {
-        Logger.getInstance().recordOutput("Intake/MotorOutput", motor.get());
+//        Logger.getInstance().recordOutput("Intake/MotorOutput", motor.get());
         Logger.getInstance().recordOutput("Intake/ExpectedPiece", expectedPiece.name());
     }
 }
