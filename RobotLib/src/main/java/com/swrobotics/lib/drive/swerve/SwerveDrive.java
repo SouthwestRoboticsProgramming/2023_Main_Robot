@@ -91,7 +91,7 @@ public class SwerveDrive extends Drivetrain {
         if (vx == 0 && vy == 0 && omega == 0) {
             for (int i = 0; i < states.length; i++) {
                 states[i] =
-                        new SwerveModuleState(0, stopPosition.getForModule(modules[i].position));
+                        new SwerveModuleState(0, stopPosition.getForModule(modules[i]));
             }
         }
 
