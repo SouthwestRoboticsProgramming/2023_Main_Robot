@@ -1,5 +1,6 @@
 package com.swrobotics.robot.subsystems.drive;
 
+import com.swrobotics.lib.drive.swerve.StopPosition;
 import com.swrobotics.lib.drive.swerve.SwerveDrive;
 import com.swrobotics.lib.drive.swerve.SwerveModule;
 import com.swrobotics.lib.drive.swerve.SwerveModuleAttributes;
@@ -60,6 +61,8 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     @Override
     public void periodic() {
         // FIXME: Bring back coast mode (this should be in lib)
+        setBrakeMode(getStopPosition() != StopPosition.COAST);
+
         super.periodic();
 
         if (CALIBRATE.get()) {
