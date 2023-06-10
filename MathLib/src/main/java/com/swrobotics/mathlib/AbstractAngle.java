@@ -222,11 +222,21 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
         return create(-rad);
     }
 
+    /**
+     * Gets the sine of this angle.
+     *
+     * @return sine
+     */
     public double sin() {
         if (cacheSin < -1.5) cacheSin = Math.sin(rad);
         return cacheSin;
     }
 
+    /**
+     * Gets the cosine of this angle.
+     *
+     * @return cosine
+     */
     public double cos() {
         if (cacheCos < -1.5) cacheCos = Math.cos(rad);
         return cacheCos;
@@ -236,6 +246,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
+        if (!(o instanceof AbstractAngle)) return false;
         AbstractAngle<?> that = (AbstractAngle<?>) o;
 
         return this.ccw().rad() == that.ccw().rad();
