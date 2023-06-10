@@ -60,6 +60,7 @@ public abstract class TalonMotor implements FeedbackMotor {
     private Encoder integratedEncoder;
     private boolean inverted, following;
     private int encoderTicksPerRotation;
+    private Boolean brake;
 
     /**
      * @param talon talon to wrap, should already be configured
@@ -70,6 +71,9 @@ public abstract class TalonMotor implements FeedbackMotor {
 
         inverted = false;
         following = false;
+
+        // Null is neither true nor false, so first call to brake mode will always update motor state
+        brake = null;
 
         integratedEncoder = null;
         updateInvertState();
@@ -173,7 +177,10 @@ public abstract class TalonMotor implements FeedbackMotor {
 
     @Override
     public void setBrakeMode(boolean brake) {
-        talon.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
+        if (brake != this.brake) {
+            talon.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
+            this.brake = brake;
+        }
     }
 
     @Override

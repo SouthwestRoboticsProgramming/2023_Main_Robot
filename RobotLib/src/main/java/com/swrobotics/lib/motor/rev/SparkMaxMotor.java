@@ -48,6 +48,7 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
     private AbsoluteEncoder absoluteEncoderRev;
 
     private boolean inverted;
+    private Boolean brake;
     private CANSparkMax leader;
 
     /**
@@ -62,6 +63,7 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
 
         inverted = false;
         leader = null;
+        brake = null;
 
         feedbackEncoderPort = EncoderPort.PRIMARY;
         primaryEncoder = alternateEncoder = absoluteEncoder;
@@ -108,7 +110,10 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
 
     @Override
     public void setBrakeMode(boolean brake) {
-        spark.setIdleMode(brake ? CANSparkMax.IdleMode.kBrake : CANSparkMax.IdleMode.kCoast);
+        if (this.brake != brake) {
+            spark.setIdleMode(brake ? CANSparkMax.IdleMode.kBrake : CANSparkMax.IdleMode.kCoast);
+            this.brake = brake;
+        }
     }
 
     @Override
