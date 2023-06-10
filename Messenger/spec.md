@@ -82,13 +82,13 @@ Sent by server.
 
 | Name       | Type     | Description |
 | ---------- | -------- | ----------- |
-| Type       | `String` | The type of event |
-| Name       | `String` | Name of the client which generated the event. This can be `Connect`, `Listen`, `Unlisten`, `Disconnect`, `Timeout`, or `Error` |
+| Type       | `String` | The type of event. This can be `Connect`, `Listen`, `Unlisten`, `Disconnect`, `Timeout`, or `Error` |
+| Name       | `String` | Name of the client which generated the event |
 | Descriptor | `String` | Target ID for `Listen` and `Unlisten`, empty for all others |
 
-An event message is sent whenever a client generates an event. These events can have the following names:
+An event message is sent whenever a client generates an event. These events can have the following types:
 
-| Name         | Condition                                              |
+| Type         | Condition                                              |
 | ------------ | ------------------------------------------------------ |
 | `Connect`    | A new client completes its handshake                   |
 | `Listen`     | A client listens to a type ID                          |
