@@ -177,7 +177,7 @@ public abstract class TalonMotor implements FeedbackMotor {
 
     @Override
     public void setBrakeMode(boolean brake) {
-        if (brake != this.brake) {
+        if (this.brake != Boolean.valueOf(brake)) {
             talon.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
             this.brake = brake;
         }

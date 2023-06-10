@@ -12,7 +12,11 @@ import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 import org.littletonrobotics.junction.Logger;
 
 import static com.swrobotics.robot.subsystems.drive.DrivetrainConstants.*;
@@ -27,6 +31,10 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     private static final NTDouble TURN_KD = new NTDouble("Swerve/Modules/Turn kD", 0.1);
 
     private final NavXGyroscope gyro;
+
+    private final Field2d field = new Field2d();
+    private final FieldObject2d ppPose = field.getObject("PathPlanner pose");
+    private final StateVisualizer stateVisualizer;
 
     // FIXME: Update for MK4i
     private static SwerveModule makeModule(SwerveModuleInfo info, Translation2d pos) {
@@ -50,6 +58,11 @@ public final class DrivetrainSubsystem extends SwerveDrive {
                 makeModule(MODULES[3], BACK_RIGHT_POSITION));
 
         this.gyro = gyro;
+        stateVisualizer = new StateVisualizer("Swerve", DRIVETRAIN_TRACKWIDTH_METERS * 2, this);
+
+        SmartDashboard.putData("Field", field);
+
+        setStopPosition(StopPosition.COAST);
     }
 
     // FIXME: Correct for weird gyro mounting
@@ -81,6 +94,11 @@ public final class DrivetrainSubsystem extends SwerveDrive {
 
         // Log odometry pose
         Logger.getInstance().recordOutput("Odometry/Robot2d", getPose());
+
+        // TODO-Mason: Does logger provide a better way of doing this?
+        ppPose.setPose(getOdometryPose());
+        field.setRobotPose(getPose());
+        stateVisualizer.update();
     }
 
     @Override
@@ -89,5 +107,72 @@ public final class DrivetrainSubsystem extends SwerveDrive {
 
         // Clear setpoint logs
         Logger.getInstance().recordOutput("SwerveStates/Setpoints", new double[] {});
+    }
+
+    public static final class StateVisualizer {
+        private final SwerveDrive drive;
+        private final FieldObject2d fieldWheels;
+        private final MechanismLigament2d[] ligaments;
+
+        public StateVisualizer(String name, double size, DrivetrainSubsystem drive) {
+            this.drive = drive;
+
+            Mechanism2d m = new Mechanism2d(size, size);
+            SmartDashboard.putData(name, m);
+
+            SwerveModule[] modules = drive.getModules();
+
+            ligaments = new MechanismLigament2d[modules.length];
+            for (int i = 0; i < modules.length; i++) {
+                SwerveModule module = modules[i];
+                MechanismRoot2d root =
+                        m.getRoot(
+                                String.valueOf(i),
+                                module.position.getX() + size / 2,
+                                module.position.getY() + size / 2);
+                ligaments[i] = new MechanismLigament2d(i + " Vector", 0.2, 0);
+                root.append(ligaments[i]);
+            }
+
+            fieldWheels = drive.field.getObject("Swerve Modules");
+        }
+
+        public void update() {
+            SwerveModule[] modules = drive.getModules();
+            SwerveModuleState[] states = drive.getModuleStates();
+
+            Pose2d robotPose = drive.getPose();
+
+            Pose2d[] fieldPoses = new Pose2d[ligaments.length];
+            for (int i = 0; i < ligaments.length; i++) {
+                MechanismLigament2d ligament = ligaments[i];
+                SwerveModuleState state = states[i];
+                ligament.setAngle(state.angle.getDegrees());
+                ligament.setLength(
+                        state.speedMetersPerSecond / 4.11
+                                + Math.copySign(0.05, state.speedMetersPerSecond));
+
+                Rotation2d outputAngle;
+                if (state.speedMetersPerSecond == 0) {
+                    outputAngle = state.angle;
+                } else {
+                    outputAngle =
+                            new Translation2d(state.speedMetersPerSecond, 0)
+                                    .rotateBy(state.angle)
+                                    .getAngle();
+                }
+
+                SwerveModule module = modules[i];
+                Pose2d fieldPose =
+                        new Pose2d(
+                                robotPose
+                                        .getTranslation()
+                                        .plus(module.position.rotateBy(robotPose.getRotation())),
+                                outputAngle.plus(robotPose.getRotation()));
+                fieldPoses[i] = fieldPose;
+            }
+
+            fieldWheels.setPoses(fieldPoses);
+        }
     }
 }

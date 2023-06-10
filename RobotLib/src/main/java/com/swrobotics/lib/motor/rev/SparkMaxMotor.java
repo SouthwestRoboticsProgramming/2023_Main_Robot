@@ -110,7 +110,7 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
 
     @Override
     public void setBrakeMode(boolean brake) {
-        if (this.brake != brake) {
+        if (this.brake != Boolean.valueOf(brake)) {
             spark.setIdleMode(brake ? CANSparkMax.IdleMode.kBrake : CANSparkMax.IdleMode.kCoast);
             this.brake = brake;
         }
