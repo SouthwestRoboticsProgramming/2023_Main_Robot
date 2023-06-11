@@ -33,13 +33,25 @@ fn wrap(val: f64, min: f64, max: f64) -> f64 {
     (val - min).rem_euclid(max - min) + min
 }
 
+fn percent(val: f64, min: f64, max: f64) -> f64 {
+    (val - min) / (max - min)
+}
+
 fn pose_to_state(pose: ArmPose) -> Vec2i {
+    println!("Y infos: top: {} range: {:?} wrap: {} pct: {} sz: {}",
+    pose.top_angle,
+    TOP_RANGE,
+    wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1),
+    percent(wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1), TOP_RANGE.0, TOP_RANGE.1),
+    (percent(wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1), TOP_RANGE.0, TOP_RANGE.1)
+                * (STATE_SZ.y as f64)) as i32
+    );
+
     Vec2i {
-        x: (wrap(pose.bottom_angle, BOTTOM_RANGE.0, BOTTOM_RANGE.1)
-            / (BOTTOM_RANGE.1 - BOTTOM_RANGE.0)
-            * (STATE_SZ.x as f64)) as i32,
-        y: (wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1) / (TOP_RANGE.1 - TOP_RANGE.0)
-            * (STATE_SZ.y as f64)) as i32,
+        x: (percent(wrap(pose.bottom_angle, BOTTOM_RANGE.0, BOTTOM_RANGE.1), BOTTOM_RANGE.0, BOTTOM_RANGE.1)
+                           * (STATE_SZ.x as f64)) as i32,
+        y: (percent(wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1), TOP_RANGE.0, TOP_RANGE.1)
+                           * (STATE_SZ.y as f64)) as i32,
     }
 }
 
@@ -69,6 +81,8 @@ async fn handle_connection(grid: &grid::Grid2D) -> Result<(), std::io::Error> {
                     top_angle: goal_top,
                 });
 
+                println!("Pathing from {:?} to {:?}", start, goal);
+
                 if let Some(start_pos) = dijkstra::find_nearest_passable(grid, start) {
                     if let Some(goal_pos) = dijkstra::find_nearest_passable(grid, goal) {
                         let data = match theta_star::find_path(grid, start_pos, goal_pos) {
@@ -81,9 +95,13 @@ async fn handle_connection(grid: &grid::Grid2D) -> Result<(), std::io::Error> {
                                     buf.put_f64(pose.bottom_angle);
                                     buf.put_f64(pose.top_angle);
                                 }
+                                println!("Yes path");
                                 buf
                             }
-                            None => BytesMut::zeroed(1),
+                            None => {
+                                println!("No path");
+                                BytesMut::zeroed(1)
+                            }
                         };
 
                         msg.send_message(Message {
