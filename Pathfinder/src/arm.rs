@@ -12,7 +12,7 @@ pub const INTAKE_RAD: f64 = (6.49785148 + 1.125) / IN_PER_M; // Maximum distance
 pub const MIDPOINT_RAD: f64 = 3.3 / IN_PER_M; // Radius of middle joint pulley
 
 pub const BOTTOM_GEAR_RATIO: f64 = 600.0;
-pub const TOP_GEAR_RATIO: f64 = 300.0;
+pub const TOP_GEAR_RATIO: f64 = 288.0;
 
 // Limitations from game rules
 const HEIGHT_LIMIT: f64 = 1.98;
