@@ -37,7 +37,7 @@ fn percent(val: f64, min: f64, max: f64) -> f64 {
     (val - min) / (max - min)
 }
 
-fn pose_to_state(pose: ArmPose) -> Vec2i {
+fn pose_to_state(pose: &ArmPose) -> Vec2i {
     println!(
         "Y infos: top: {} range: {:?} wrap: {} pct: {} sz: {}",
         pose.top_angle,
@@ -86,28 +86,31 @@ async fn handle_connection(grid: &grid::Grid2D) -> Result<(), std::io::Error> {
                 let goal_bot = d.get_f64();
                 let goal_top = d.get_f64();
 
-                let start = pose_to_state(ArmPose {
+                let start = pose_to_state(&ArmPose {
                     bottom_angle: start_bot,
                     top_angle: start_top,
                 });
-                let goal = pose_to_state(ArmPose {
+                let goal_pose = ArmPose {
                     bottom_angle: goal_bot,
                     top_angle: goal_top,
-                });
+                };
+                let goal = pose_to_state(&goal_pose);
 
                 println!("Pathing from {:?} to {:?}", start, goal);
 
                 if let Some(start_pos) = dijkstra::find_nearest_passable(grid, start) {
-                    let data = match theta_star::find_path(grid, start_pos, goal_pos) {
+                    let data = match theta_star::find_path(grid, start_pos, goal) {
                         Some(path) => {
                             let mut buf = BytesMut::with_capacity(5 + 8 * path.len());
                             buf.put_u8(1);
-                            buf.put_i32(path.len() as i32);
+                            buf.put_i32((path.len() + 1) as i32);
                             for point in path {
                                 let pose = state_to_pose(point.x as f32, point.y as f32);
                                 buf.put_f64(pose.bottom_angle);
                                 buf.put_f64(pose.top_angle);
                             }
+                            buf.put_f64(goal_pose.bottom_angle);
+                            buf.put_f64(goal_pose.top_angle);
                             println!("Yes path");
                             buf
                         }
