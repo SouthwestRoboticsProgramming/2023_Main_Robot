@@ -63,9 +63,8 @@ public final class ArmPosition {
 
         Angle angle1 = CCWAngle.rad(targetAngle + flip * angleAL);
         Angle angle2 = angle1.ccw().add(CCWAngle.rad(flip * angleAB - Math.PI)).wrapDeg(-270, 90);
-        Angle wrist = wristAngle.sub(angle2);
 
-        return new ArmPose(angle1, angle2, wrist);
+        return new ArmPose(angle1, angle2, wristAngle);
     }
 
     @Override

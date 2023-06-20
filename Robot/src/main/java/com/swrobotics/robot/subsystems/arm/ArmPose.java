@@ -10,7 +10,7 @@ public final class ArmPose {
     // Angle of top segment relative to horizontal
     public final Angle topAngle;
 
-    // Angle of wrist angle relative to top segment (NOT horizontal! This is different from ArmPosition)
+    // Angle of wrist angle relative to horizontal
     public final Angle wristAngle;
 
     public ArmPose(Angle bottomAngle, Angle topAngle, Angle wristAngle) {
@@ -38,10 +38,7 @@ public final class ArmPose {
     }
 
     public ArmPosition toPosition() {
-        Vec2d axisPos = getAxisPos();
-        Angle wristHorizontal = wristAngle.add(topAngle);
-
-        return new ArmPosition(axisPos, wristHorizontal);
+        return new ArmPosition(getAxisPos(), wristAngle);
     }
 
     @Override

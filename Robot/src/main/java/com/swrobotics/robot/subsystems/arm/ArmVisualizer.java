@@ -1,5 +1,6 @@
 package com.swrobotics.robot.subsystems.arm;
 
+import com.swrobotics.mathlib.CCWAngle;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -36,9 +37,8 @@ public final class ArmVisualizer {
         bottom.setAngle(pose.bottomAngle.ccw().deg());
 
         // Visualization is relative, pose is absolute
-        top.setAngle(pose.topAngle.ccw().sub(pose.bottomAngle.ccw()).deg());
+        top.setAngle(pose.topAngle.sub(pose.bottomAngle).ccw().deg());
 
-        // Wrist is relative to top segment
-        wrist.setAngle(pose.wristAngle.ccw().deg());
+        wrist.setAngle(pose.wristAngle.sub(pose.topAngle).ccw().deg());
     }
 }

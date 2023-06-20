@@ -72,7 +72,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     }
 
     public ArmPose getCurrentPose() {
-        return new ArmPose(bottom.getCurrentAngle(), top.getCurrentAngle(), wrist.getCurrentAngle());
+        Angle bottomAngle = bottom.getCurrentAngle();
+        Angle topAngle = top.getCurrentAngle();
+        Angle wristAngle = wrist.getCurrentAngle().add(topAngle);
+        return new ArmPose(bottomAngle, topAngle, wristAngle);
     }
 
     // Converts each axis to motor rotation count
@@ -99,11 +102,11 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         if (counter++ == 100) {
             counter = 0;
 
-//            targetPose = new ArmPosition(new Vec2d(
-//                    Math.random() * 2 - 1,
-//                    Math.random() + 0.2
-//            ), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
-            targetPose = new ArmPosition(new Vec2d(0.5, 1), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
+            targetPose = new ArmPosition(new Vec2d(
+                    Math.random() * 2 - 1,
+                    Math.random() + 0.2
+            ), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
+//            targetPose = new ArmPosition(new Vec2d(0.5, 1), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
         }
 
         currentVisualizer.setPose(getCurrentPose());
@@ -176,7 +179,9 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             top.setMotorOutput(towardsTarget.y);
         }
 
-        wrist.setTargetAngle(targetPose.wristAngle);
+        // TODO: When inside frame perimeter with a game piece, the wrist needs to prevent it from colliding
+        Angle wristRef = currentPose.topAngle;
+        wrist.setTargetAngle(targetPose.wristAngle.sub(wristRef));
     }
 
     public void setTargetPose(ArmPose targetPose) {
