@@ -31,6 +31,11 @@ public interface Angle {
      */
     Angle negate();
 
+    default Angle add(Angle o) { return ccw().add(o.ccw()); }
+    default Angle sub(Angle o) { return ccw().sub(o.ccw()); }
+    default Angle mul(double scalar) { return ccw().mul(scalar); }
+    default Angle div(double scalar) { return ccw().div(scalar); }
+
     static Angle fromRotation2d(Rotation2d rot) {
         return CCWAngle.rad(rot.getRadians());
     }
