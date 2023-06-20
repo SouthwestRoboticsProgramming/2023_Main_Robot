@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems.arm2;
+package com.swrobotics.robot.subsystems.arm;
 
 import com.swrobotics.lib.net.NTAngle;
 import com.swrobotics.lib.net.NTBoolean;
@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj.util.Color;
 
 import java.util.List;
 
-import static com.swrobotics.robot.subsystems.arm2.ArmConstants.*;
+import static com.swrobotics.robot.subsystems.arm.ArmConstants.*;
 
 public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble MOVE_KP = new NTDouble("Arm/Move PID/kP", 8);

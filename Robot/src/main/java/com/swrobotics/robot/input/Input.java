@@ -6,7 +6,7 @@ import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.positions.ArmPositions;
-import com.swrobotics.robot.subsystems.arm2.ArmPosition;
+import com.swrobotics.robot.subsystems.arm.ArmPosition;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;

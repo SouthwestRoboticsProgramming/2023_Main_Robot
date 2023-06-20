@@ -1,7 +1,7 @@
 package com.swrobotics.robot.positions;
 
 import com.swrobotics.mathlib.Angle;
-import com.swrobotics.robot.subsystems.arm2.ArmPosition;
+import com.swrobotics.robot.subsystems.arm.ArmPosition;
 
 // FIXME: Monch has different arm positions
 public final class ArmPositions {

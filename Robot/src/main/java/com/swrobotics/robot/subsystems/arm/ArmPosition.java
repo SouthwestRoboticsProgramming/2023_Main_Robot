@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems.arm2;
+package com.swrobotics.robot.subsystems.arm;
 
 import com.swrobotics.lib.net.NTDoubleArray;
 import com.swrobotics.mathlib.Angle;

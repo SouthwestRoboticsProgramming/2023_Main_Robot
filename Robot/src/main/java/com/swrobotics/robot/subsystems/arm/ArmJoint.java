@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems.arm2;
+package com.swrobotics.robot.subsystems.arm;
 
 import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;

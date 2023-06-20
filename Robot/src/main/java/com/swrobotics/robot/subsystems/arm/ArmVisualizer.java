@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems.arm2;
+package com.swrobotics.robot.subsystems.arm;
 
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;

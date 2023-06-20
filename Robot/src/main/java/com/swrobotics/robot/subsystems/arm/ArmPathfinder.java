@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems.arm2;
+package com.swrobotics.robot.subsystems.arm;
 
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;

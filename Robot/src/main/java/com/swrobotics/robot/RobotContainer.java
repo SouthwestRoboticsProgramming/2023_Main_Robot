@@ -12,7 +12,7 @@ import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.positions.ArmPositions;
-import com.swrobotics.robot.subsystems.arm2.ArmSubsystem;
+import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
