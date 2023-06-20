@@ -8,14 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
  */
 public interface Angle {
     /** An angle with measure zero. */
-    Angle ZERO = AbsoluteAngle.rad(0);
-
-    /**
-     * Gets the absolute value of this angle.
-     *
-     * @return absolute value
-     */
-    AbsoluteAngle abs();
+    Angle ZERO = CCWAngle.rad(0);
 
     /**
      * Gets this angle as counterclockwise.
