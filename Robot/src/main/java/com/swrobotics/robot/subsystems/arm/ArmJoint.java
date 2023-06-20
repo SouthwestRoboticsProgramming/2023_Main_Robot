@@ -14,13 +14,13 @@ import edu.wpi.first.wpilibj.RobotBase;
 //       the two segments and facing forward parallel to the top segment for the wrist
 // TODO: Figure out what zero should mean for the wrist - it should be relative to the
 //       top segment, but what is the "direction" of the intake?
-public final class ArmJoint {
-    private final FeedbackMotor motor;
+public class ArmJoint {
+    protected final FeedbackMotor motor;
     private final Encoder motorEncoder;
     private final Encoder absoluteEncoder;
 
     private final double canCoderToArmRatio;
-    private final double motorToArmRatio;
+    protected final double motorToArmRatio;
     private final NTAngle absEncoderOffset;
 
     /**

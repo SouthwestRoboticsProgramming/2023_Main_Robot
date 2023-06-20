@@ -23,9 +23,9 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble MOVE_KP = new NTDouble("Arm/Move PID/kP", 8);
     private static final NTDouble MOVE_KI = new NTDouble("Arm/Move PID/kI", 0);
     private static final NTDouble MOVE_KD = new NTDouble("Arm/Move PID/kD", 0);
-    private static final NTDouble WRIST_KP = new NTDouble("Arm/Wrist PID/kP", 0);
-    private static final NTDouble WRIST_KI = new NTDouble("Arm/Wrist PID/kI", 0);
-    private static final NTDouble WRIST_KD = new NTDouble("Arm/Wrist PID/kD", 0);
+    public static final NTDouble WRIST_KP = new NTDouble("Arm/Wrist PID/kP", 0.1);
+    public static final NTDouble WRIST_KI = new NTDouble("Arm/Wrist PID/kI", 0);
+    public static final NTDouble WRIST_KD = new NTDouble("Arm/Wrist PID/kD", 0);
 
     private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 1.0);
     private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 1.5);
@@ -34,10 +34,12 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTBoolean CALIBRATE_CANCODERS = new NTBoolean("Arm/Offsets/Calibrate", false);
     private static final NTAngle BOTTOM_OFFSET = new NTAngle("Arm/Offsets/Bottom", Angle.ZERO, NTAngle.Mode.CCW_DEG);
     private static final NTAngle TOP_OFFSET = new NTAngle("Arm/Offsets/Top", Angle.ZERO, NTAngle.Mode.CCW_DEG);
+    private static final NTAngle WRIST_OFFSET = new NTAngle("Arm/Offsets/Wrist", Angle.ZERO, NTAngle.Mode.CCW_DEG);
 
     private static final ArmPosition.NT HOME_POSITION = new ArmPosition.NT("Arm/Home", 1, 1, Angle.ZERO);
 
-    private final ArmJoint bottom, top, wrist;
+    private final ArmJoint bottom, top;
+    private final WristJoint wrist;
     private final ArmPathfinder pathfinder;
     private final PIDController movePid;
     private ArmPose targetPose;
@@ -46,9 +48,9 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private final ArmVisualizer currentVisualizer, stepTargetVisualizer, targetVisualizer;
 
     public ArmSubsystem(MessengerClient msg) {
-        bottom = new ArmJoint(BOTTOM_MOTOR_ID, BOTTOM_CANCODER_ID, JOINT_TO_CANCODER_RATIO, BOTTOM_GEAR_RATIO, BOTTOM_OFFSET, false);
-        top = new ArmJoint(TOP_MOTOR_ID, TOP_CANCODER_ID, JOINT_TO_CANCODER_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, true);
-        wrist = null; // TODO: Wrist is different
+        bottom = new ArmJoint(BOTTOM_MOTOR_ID, BOTTOM_CANCODER_ID, CANCODER_TO_ARM_RATIO, BOTTOM_GEAR_RATIO, BOTTOM_OFFSET, false);
+        top = new ArmJoint(TOP_MOTOR_ID, TOP_CANCODER_ID, CANCODER_TO_ARM_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, true);
+        wrist = new WristJoint(WRIST_MOTOR_ID, WRIST_CANCODER_ID, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, WRIST_OFFSET, false);
 
         double size = (BOTTOM_LENGTH + TOP_LENGTH + WRIST_LENGTH) * 2;
         Mechanism2d visualizer = new Mechanism2d(size, size);
@@ -62,7 +64,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             throw new IllegalStateException("Home position must be valid!");
         bottom.calibratePosition(home.bottomAngle);
         top.calibratePosition(home.topAngle);
-        // wrist.calibratePosition(home.wristAngle);
+        wrist.calibratePosition(home.wristAngle);
 
         pathfinder = new ArmPathfinder(msg);
         movePid = NTUtil.tunablePID(MOVE_KP, MOVE_KI, MOVE_KD);
@@ -70,7 +72,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     }
 
     public ArmPose getCurrentPose() {
-        return new ArmPose(bottom.getCurrentAngle(), top.getCurrentAngle(), /*wrist.getCurrentAngle()*/Angle.ZERO);
+        return new ArmPose(bottom.getCurrentAngle(), top.getCurrentAngle(), wrist.getCurrentAngle());
     }
 
     // Converts each axis to motor rotation count
@@ -91,16 +93,17 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             // Assume arm is already at home position
             bottom.calibrateCanCoder();
             top.calibrateCanCoder();
-            // wrist.calibrateCanCoder();
+            wrist.calibrateCanCoder();
         }
 
         if (counter++ == 100) {
             counter = 0;
 
-            targetPose = new ArmPosition(new Vec2d(
-                    Math.random() * 2 - 1,
-                    Math.random() + 0.2
-            ), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
+//            targetPose = new ArmPosition(new Vec2d(
+//                    Math.random() * 2 - 1,
+//                    Math.random() + 0.2
+//            ), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
+            targetPose = new ArmPosition(new Vec2d(0.5, 1), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
         }
 
         currentVisualizer.setPose(getCurrentPose());
@@ -172,6 +175,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             bottom.setMotorOutput(towardsTarget.x);
             top.setMotorOutput(towardsTarget.y);
         }
+
+        wrist.setTargetAngle(targetPose.wristAngle);
     }
 
     public void setTargetPose(ArmPose targetPose) {
@@ -195,5 +200,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     protected void onDisable() {
         bottom.setMotorOutput(0);
         top.setMotorOutput(0);
+        wrist.setMotorOutput(0);
     }
 }

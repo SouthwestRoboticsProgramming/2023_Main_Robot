@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.BiConsumer;
 
+import com.swrobotics.lib.ThreadUtils;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -124,6 +125,7 @@ public class Robot extends LoggedRobot {
         Threads.setCurrentThreadPriority(true, 99);
 
         robotContainer.messenger.readMessages();
+        ThreadUtils.runMainThreadOperations();
         CommandScheduler.getInstance().run(); // Leave this alone
     }
 
