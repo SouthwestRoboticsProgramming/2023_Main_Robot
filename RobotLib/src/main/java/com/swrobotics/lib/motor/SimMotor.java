@@ -20,18 +20,20 @@ public final class SimMotor extends SubsystemBase implements FeedbackMotor {
         public final double sensorUnitsPerRot;
         public final double sensorUnitsPerRPS;
         public final double pidCalcInterval;
+        public final double pidOutputScale;
 
-        public MotorCaps(Angle freeSpeed, double sensorUnitsPerRot, double sensorUnitsPerRPS, double pidCalcInterval) {
+        public MotorCaps(Angle freeSpeed, double sensorUnitsPerRot, double sensorUnitsPerRPS, double pidCalcInterval, double pidOutputScale) {
             this.freeSpeed = freeSpeed;
             this.sensorUnitsPerRot = sensorUnitsPerRot;
             this.sensorUnitsPerRPS = sensorUnitsPerRPS;
             this.pidCalcInterval = pidCalcInterval;
+            this.pidOutputScale = pidOutputScale;
         }
     }
 
-    // TODO: TalonFX
-    public static final MotorCaps NEO = new MotorCaps(CCWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(5676)), 1, 1/60.0, 0.001);
-    public static final MotorCaps NEO550 = new MotorCaps(CCWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(11000)), 1, 1/60.0, 0.001);
+    public static final MotorCaps TALON_FX = new MotorCaps(CCWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(6380)), 2048, 2048/10.0, 0.001, 1023);
+    public static final MotorCaps NEO = new MotorCaps(CCWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(5676)), 1, 60, 0.001, 1);
+    public static final MotorCaps NEO550 = new MotorCaps(CCWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(11000)), 1, 60, 0.001, 1);
 
     private enum ControlMode {
         PERCENT,
@@ -92,7 +94,7 @@ public final class SimMotor extends SubsystemBase implements FeedbackMotor {
 
         double f = setpoint * kF;
 
-        return MathUtil.clamp(p + integralAcc + d + f, -1, 1);
+        return MathUtil.clamp((p + integralAcc + d + f) / caps.pidOutputScale, -1, 1);
     }
 
     @Override
