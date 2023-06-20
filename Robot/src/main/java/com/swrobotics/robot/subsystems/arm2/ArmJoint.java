@@ -48,7 +48,7 @@ public final class ArmJoint {
      * @return current angle
      */
     public Angle getCurrentAngle() {
-        return motorEncoder.getAngle().ccw().div(motorToArmRatio);
+        return motorEncoder.getAngle().div(motorToArmRatio);
     }
 
     /**
@@ -57,12 +57,12 @@ public final class ArmJoint {
      */
     public void calibratePosition(Angle home) {
         // Get CanCoder position: angle relative to home angle at the cancoder axis
-        Angle canCoderPos = absoluteEncoder.getAngle().ccw().sub(absEncoderOffset.get().ccw());
+        Angle canCoderPos = absoluteEncoder.getAngle().sub(absEncoderOffset.get());
 
         // Arm position: position of arm relative to horizontal
-        Angle armPos = home.ccw().add(canCoderPos.ccw().div(canCoderToArmRatio));
+        Angle armPos = home.add(canCoderPos.div(canCoderToArmRatio));
 
-        motorEncoder.setAngle(armPos.ccw().mul(motorToArmRatio));
+        motorEncoder.setAngle(armPos.mul(motorToArmRatio));
     }
 
     /**
