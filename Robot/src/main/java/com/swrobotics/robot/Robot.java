@@ -123,6 +123,7 @@ public class Robot extends LoggedRobot {
     public void robotPeriodic() {
         Threads.setCurrentThreadPriority(true, 99);
 
+        robotContainer.messenger.readMessages();
         CommandScheduler.getInstance().run(); // Leave this alone
     }
 

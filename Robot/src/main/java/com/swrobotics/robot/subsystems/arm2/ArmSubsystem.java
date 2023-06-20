@@ -28,8 +28,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTDouble WRIST_KD = new NTDouble("Arm/Wrist PID/kD", 0);
 
     private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 1.0);
-    private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);
-    private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.04);
+    private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 1.5);
+    private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 2.5);
 
     private static final NTBoolean CALIBRATE_CANCODERS = new NTBoolean("Arm/Offsets/Calibrate", false);
     private static final NTAngle BOTTOM_OFFSET = new NTAngle("Arm/Offsets/Bottom", Angle.ZERO, NTAngle.Mode.CCW_DEG);
@@ -109,10 +109,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         ArmPose currentPose = getCurrentPose();
         ArmPathfinder.PathPoint startPoint = ArmPathfinder.PathPoint.fromPose(currentPose);
         ArmPathfinder.PathPoint targetPoint = ArmPathfinder.PathPoint.fromPose(targetPose);
-//        if (counter % 10 == 0) {
-            // FIXME: Send every periodic once pathfinding can handle more frequent messages
-            pathfinder.setEndpoints(startPoint, targetPoint);
-//        }
+        pathfinder.setEndpoints(startPoint, targetPoint);
         Vec2d biasedStart = bias(startPoint);
         Vec2d biasedTarget = bias(targetPoint);
 
@@ -149,7 +146,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
         // Tolerance hysteresis so the motor doesn't do the shaky shaky
         double magSqToFinalTarget = new Vec2d(biasedTarget).sub(biasedStart).magnitudeSq();
-        System.out.println(Math.sqrt(magSqToFinalTarget));
         boolean prevInTolerance = inToleranceHysteresis;
 
         double startTol = START_TOL.get();
@@ -176,6 +172,23 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             bottom.setMotorOutput(towardsTarget.x);
             top.setMotorOutput(towardsTarget.y);
         }
+    }
+
+    public void setTargetPose(ArmPose targetPose) {
+        this.targetPose = targetPose;
+    }
+
+    public void setTargetPosition(ArmPosition targetPosition) {
+        ArmPose pose = targetPosition.toPose();
+        if (pose == null) {
+            System.err.println("Trying to set arm to invalid position");
+            return;
+        }
+        targetPose = pose;
+    }
+
+    public boolean isInTolerance() {
+        return inToleranceHysteresis;
     }
 
     @Override

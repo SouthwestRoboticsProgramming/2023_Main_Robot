@@ -1,14 +1,12 @@
 package com.swrobotics.robot.input;
 
-import com.swrobotics.lib.drive.swerve.commands.PathfindToPointCommand;
-import com.swrobotics.lib.drive.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.lib.input.XboxController;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
-import com.swrobotics.lib.net.NTTranslation2d;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.positions.ArmPositions;
+import com.swrobotics.robot.subsystems.arm2.ArmPosition;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -62,7 +60,7 @@ public final class Input extends SubsystemBase {
 
     private static final double DEFAULT_SPEED = 1.5; // Meters per second
     private static final double FAST_SPEED = 4.11; // Meters per second
-    private static final Angle MAX_ROTATION = AbsoluteAngle.rad(Math.PI);
+    private static final CWAngle MAX_ROTATION = CWAngle.rad(Math.PI);
 
     private static final double NUDGE_PER_PERIODIC = 0.25 * 0.02;
 
@@ -75,7 +73,7 @@ public final class Input extends SubsystemBase {
 
     private SlewRateLimiter limiter;
 
-    private Translation2d prevArmTarget;
+    private ArmPosition prevArmTarget;
     private boolean prevWasGrid;
 
     private GamePiece gamePiece;
@@ -105,7 +103,7 @@ public final class Input extends SubsystemBase {
                 });
 
         prevWasGrid = false;
-        prevArmTarget = ArmPositions.DEFAULT.getTranslation();
+        prevArmTarget = ArmPositions.DEFAULT.getPosition();
         gamePiece = GamePiece.CUBE;
 
         /*
@@ -149,7 +147,7 @@ public final class Input extends SubsystemBase {
     }
 
     public Angle getDriveRotation() {
-        return MAX_ROTATION.cw().mul(deadband(driver.rightStickX.get()));
+        return MAX_ROTATION.mul(deadband(driver.rightStickX.get()));
     }
 
     public boolean isRobotRelative() {
@@ -167,6 +165,7 @@ public final class Input extends SubsystemBase {
     }
 
     // ---- Manipulator controls ----
+    // TODO: New arm controls
 
     private GamePiece getGamePiece() {
         return gamePiece;
@@ -176,31 +175,31 @@ public final class Input extends SubsystemBase {
         return manipulator.leftTrigger.get() > TRIGGER_DEADBAND;
     }
 
-    public NTTranslation2d getArmTarget() {
-        if (manipulator.dpad.up.isPressed()) return getArmHigh();
-        if (manipulator.dpad.down.isPressed()) return getArmMid();
-        if (manipulator.b.isPressed()) return getSubstationPickup();
-        if (manipulator.a.isPressed()) {
-            return null; // Home target - position is retrieved from arm subsystem later
-        }
-
-        return ArmPositions.DEFAULT;
-    }
-
-    private NTTranslation2d getArmHigh() {
-        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_UPPER;
-        return ArmPositions.CONE_UPPER;
-    }
-
-    private NTTranslation2d getArmMid() {
-        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_CENTER;
-        return ArmPositions.CONE_CENTER;
-    }
-
-    private NTTranslation2d getSubstationPickup() {
-        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_PICKUP;
-        return ArmPositions.CONE_PICKUP;
-    }
+//    public NTTranslation2d getArmTarget() {
+//        if (manipulator.dpad.up.isPressed()) return getArmHigh();
+//        if (manipulator.dpad.down.isPressed()) return getArmMid();
+//        if (manipulator.b.isPressed()) return getSubstationPickup();
+//        if (manipulator.a.isPressed()) {
+//            return null; // Home target - position is retrieved from arm subsystem later
+//        }
+//
+//        return ArmPositions.DEFAULT;
+//    }
+//
+//    private NTTranslation2d getArmHigh() {
+//        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_UPPER;
+//        return ArmPositions.CONE_UPPER;
+//    }
+//
+//    private NTTranslation2d getArmMid() {
+//        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_CENTER;
+//        return ArmPositions.CONE_CENTER;
+//    }
+//
+//    private NTTranslation2d getSubstationPickup() {
+//        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_PICKUP;
+//        return ArmPositions.CONE_PICKUP;
+//    }
 
     private IntakeMode getIntakeMode() {
         if (isEject()) return IntakeMode.EJECT;
@@ -245,36 +244,36 @@ public final class Input extends SubsystemBase {
                                 deadband(manipulator.leftStickX.get()) * NUDGE_PER_PERIODIC,
                                 deadband(-manipulator.leftStickY.get()) * NUDGE_PER_PERIODIC));
 
-        NTTranslation2d ntArmTarget = getArmTarget();
-        boolean isGrid =
-                ntArmTarget != null
-                        && ntArmTarget != ArmPositions.CUBE_PICKUP
-                        && ntArmTarget != ArmPositions.CONE_PICKUP
-                        && ntArmTarget != ArmPositions.DEFAULT;
-        Translation2d armTarget =
-                ntArmTarget == null ? robot.arm.getHomeTarget() : ntArmTarget.getTranslation();
-
-        // If it is moving to a new target
-        if (!armTarget.equals(prevArmTarget) && (isGrid || prevWasGrid)) {
-            armNudge = new Translation2d(0, 0);
-
-            // Move to an intermediate position first
-            robot.arm.setTargetPosition(
-                    new Translation2d(0.6, Math.max(armTarget.getY(), prevArmTarget.getY())));
-            if (!robot.arm.isInTolerance()) {
-                return; // Keep moving to the intermediate position
-            }
-        }
-        prevArmTarget = armTarget;
-        prevWasGrid = isGrid;
-
-        armTarget = armTarget.plus(armNudge);
-        if (ntArmTarget != null && ntArmTarget != ArmPositions.DEFAULT) {
-            ntArmTarget.set(armTarget);
-            prevArmTarget = armTarget;
-        }
-
-        robot.arm.setTargetPosition(armTarget);
+//        NTTranslation2d ntArmTarget = getArmTarget();
+//        boolean isGrid =
+//                ntArmTarget != null
+//                        && ntArmTarget != ArmPositions.CUBE_PICKUP
+//                        && ntArmTarget != ArmPositions.CONE_PICKUP
+//                        && ntArmTarget != ArmPositions.DEFAULT;
+//        Translation2d armTarget =
+//                ntArmTarget == null ? robot.arm.getHomeTarget() : ntArmTarget.getTranslation();
+//
+//        // If it is moving to a new target
+//        if (!armTarget.equals(prevArmTarget) && (isGrid || prevWasGrid)) {
+//            armNudge = new Translation2d(0, 0);
+//
+//            // Move to an intermediate position first
+//            robot.arm.setTargetPosition(
+//                    new Translation2d(0.6, Math.max(armTarget.getY(), prevArmTarget.getY())));
+//            if (!robot.arm.isInTolerance()) {
+//                return; // Keep moving to the intermediate position
+//            }
+//        }
+//        prevArmTarget = armTarget;
+//        prevWasGrid = isGrid;
+//
+//        armTarget = armTarget.plus(armNudge);
+//        if (ntArmTarget != null && ntArmTarget != ArmPositions.DEFAULT) {
+//            ntArmTarget.set(armTarget);
+//            prevArmTarget = armTarget;
+//        }
+//
+//        robot.arm.setTargetPosition(armTarget);
     }
 
     @Override

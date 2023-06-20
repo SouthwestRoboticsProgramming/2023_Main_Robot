@@ -12,7 +12,7 @@ import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.positions.ArmPositions;
-import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
+import com.swrobotics.robot.subsystems.arm2.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
@@ -91,7 +91,7 @@ public class RobotContainer {
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
-        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getTranslation));
+        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getPosition));
         // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
 
         // Allow for easy creation of autos using PathPlanner
