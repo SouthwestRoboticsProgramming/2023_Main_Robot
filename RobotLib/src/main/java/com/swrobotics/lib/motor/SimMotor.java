@@ -130,7 +130,7 @@ public final class SimMotor extends SubsystemBase implements FeedbackMotor {
     }
 
     @Override
-    public void setIntegratedEncoder(Encoder encoder) {
+    public void useExternalEncoder(Encoder encoder) {
         throw new AssertionError("Not yet implemented");
     }
 

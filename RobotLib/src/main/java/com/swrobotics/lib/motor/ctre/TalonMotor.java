@@ -189,7 +189,7 @@ public abstract class TalonMotor implements FeedbackMotor {
     }
 
     @Override
-    public void setIntegratedEncoder(Encoder encoder) {
+    public void useExternalEncoder(Encoder encoder) {
         if (encoder instanceof IntegratedEncoder) {
             TalonMotor srcTalon = ((IntegratedEncoder) encoder).motor;
             talon.configRemoteFeedbackFilter(srcTalon.talon, 0);

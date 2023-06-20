@@ -21,7 +21,7 @@ public interface FeedbackMotor extends Motor {
 
     Encoder getIntegratedEncoder();
 
-    default void setIntegratedEncoder(Encoder encoder) {
+    default void useExternalEncoder(Encoder encoder) {
         throw new UnsupportedOperationException();
     }
 
