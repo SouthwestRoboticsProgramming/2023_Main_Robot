@@ -79,7 +79,7 @@ impl MessengerClient {
             tokio::select! {
                 _ = self.heartbeat_interval.tick() => {
                     self.write.write_all(&self.packed_heartbeat).await?;
-                    println!("Heartbeat!");
+                    // println!("Heartbeat!");
                 }
 
                 result = self.read.next() => match result {

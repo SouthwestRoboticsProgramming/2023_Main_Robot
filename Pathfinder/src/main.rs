@@ -1,7 +1,8 @@
 use arm::ArmPose;
 use bytes::{Buf, BufMut, BytesMut};
 use lerp::Lerp;
-use std::{f64::consts::PI, thread, time::Duration};
+use std::{error::Error, f64::consts::PI, thread, time::Duration};
+use tokio::sync::mpsc;
 use vectors::Vec2i;
 
 use crate::messenger::Message;
@@ -38,22 +39,22 @@ fn percent(val: f64, min: f64, max: f64) -> f64 {
 }
 
 fn pose_to_state(pose: &ArmPose) -> Vec2i {
-    println!(
-        "Y infos: top: {} range: {:?} wrap: {} pct: {} sz: {}",
-        pose.top_angle,
-        TOP_RANGE,
-        wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1),
-        percent(
-            wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1),
-            TOP_RANGE.0,
-            TOP_RANGE.1
-        ),
-        (percent(
-            wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1),
-            TOP_RANGE.0,
-            TOP_RANGE.1
-        ) * (STATE_SZ.y as f64)) as i32
-    );
+    // println!(
+    //     "Y infos: top: {} range: {:?} wrap: {} pct: {} sz: {}",
+    //     pose.top_angle,
+    //     TOP_RANGE,
+    //     wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1),
+    //     percent(
+    //         wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1),
+    //         TOP_RANGE.0,
+    //         TOP_RANGE.1
+    //     ),
+    //     (percent(
+    //         wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1),
+    //         TOP_RANGE.0,
+    //         TOP_RANGE.1
+    //     ) * (STATE_SZ.y as f64)) as i32
+    // );
 
     Vec2i {
         x: (percent(
@@ -69,65 +70,44 @@ fn pose_to_state(pose: &ArmPose) -> Vec2i {
     }
 }
 
-async fn handle_connection(grid: &grid::Grid2D) -> Result<(), std::io::Error> {
+// TODO: Move into messenger module somehow
+async fn messages_io(
+    recv_tx: &mut mpsc::Sender<Message>,
+    send_rx: &mut mpsc::Receiver<Message>,
+) -> Result<(), Box<dyn Error>> {
     let mut msg = messenger::MessengerClient::connect("localhost:5805", "Pathfinding").await?;
     msg.listen("Pathfinding:Calc").await?;
     println!("Connected");
 
     loop {
-        let m = msg.read_message().await?;
-        println!("Got: {:?}", m);
+        tokio::select! {
+            m_result = msg.read_message() => match m_result {
+                Ok(m) => {
+                    // println!("Got message: {}", m.name);
+                    recv_tx.send(m).await?;
+                },
+                Err(e) => return Err(Box::new(e))
+            },
 
-        match m.name.as_str() {
-            "Pathfinding:Calc" => {
-                let mut d = m.data;
-                let start_bot = d.get_f64();
-                let start_top = d.get_f64();
-                let goal_bot = d.get_f64();
-                let goal_top = d.get_f64();
-
-                let start = pose_to_state(&ArmPose {
-                    bottom_angle: start_bot,
-                    top_angle: start_top,
-                });
-                let goal_pose = ArmPose {
-                    bottom_angle: goal_bot,
-                    top_angle: goal_top,
-                };
-                let goal = pose_to_state(&goal_pose);
-
-                println!("Pathing from {:?} to {:?}", start, goal);
-
-                if let Some(start_pos) = dijkstra::find_nearest_passable(grid, start) {
-                    let data = match theta_star::find_path(grid, start_pos, goal) {
-                        Some(path) => {
-                            let mut buf = BytesMut::with_capacity(5 + 8 * path.len());
-                            buf.put_u8(1);
-                            buf.put_i32((path.len() + 1) as i32);
-                            for point in path {
-                                let pose = state_to_pose(point.x as f32, point.y as f32);
-                                buf.put_f64(pose.bottom_angle);
-                                buf.put_f64(pose.top_angle);
-                            }
-                            buf.put_f64(goal_pose.bottom_angle);
-                            buf.put_f64(goal_pose.top_angle);
-                            println!("Yes path");
-                            buf
-                        }
-                        None => {
-                            println!("No path");
-                            BytesMut::zeroed(1)
-                        }
-                    };
-
-                    msg.send_message(Message {
-                        name: "Pathfinding:Path".to_string(),
-                        data,
-                    })
-                    .await?;
+            to_send_opt = send_rx.recv() => match to_send_opt {
+                Some(to_send) => {
+                    // println!("Sending message: {}", to_send.name);
+                    msg.send_message(to_send).await?;
                 }
+                None => {}
             }
-            _ => {}
+        }
+    }
+}
+
+async fn messages_io_task(
+    mut recv_tx: mpsc::Sender<Message>,
+    mut send_rx: mpsc::Receiver<Message>,
+) {
+    loop {
+        if let Err(e) = messages_io(&mut recv_tx, &mut send_rx).await {
+            eprintln!("Connection error: {}", e);
+            thread::sleep(Duration::from_secs(1));
         }
     }
 }
@@ -155,10 +135,86 @@ pub async fn main() {
         }
     }
 
+    let mut start_pose = ArmPose {
+        bottom_angle: 0.0,
+        top_angle: 0.0,
+    };
+    let mut goal_pose = ArmPose {
+        bottom_angle: 0.0,
+        top_angle: 0.0,
+    };
+
+    let (send_tx, send_rx) = mpsc::channel(32);
+    let (recv_tx, mut recv_rx) = mpsc::channel(32);
+    tokio::spawn(messages_io_task(recv_tx, send_rx));
+
     loop {
-        if let Err(e) = handle_connection(&grid).await {
-            eprintln!("Lost connection: {}", e);
-            thread::sleep(Duration::from_secs(1));
+        let mut need_new_path = false;
+        loop {
+            match recv_rx.try_recv() {
+                Ok(msg) => match msg.name.as_str() {
+                    "Pathfinding:Calc" => {
+                        let mut d = msg.data;
+                        let start_bot = d.get_f64();
+                        let start_top = d.get_f64();
+                        let goal_bot = d.get_f64();
+                        let goal_top = d.get_f64();
+
+                        start_pose = ArmPose {
+                            bottom_angle: start_bot,
+                            top_angle: start_top,
+                        };
+                        goal_pose = ArmPose {
+                            bottom_angle: goal_bot,
+                            top_angle: goal_top,
+                        };
+                        need_new_path = true;
+                    }
+                    _ => {}
+                },
+                Err(_) => break,
+            }
         }
+        if !need_new_path {
+            continue;
+        }
+
+        let start = pose_to_state(&start_pose);
+        let goal = pose_to_state(&goal_pose);
+        // println!("Pathing from {:?} to {:?}", start, goal);
+
+        let data = if let Some(start_pos) = dijkstra::find_nearest_passable(&grid, start) {
+            match theta_star::find_path(&grid, start_pos, goal) {
+                Some(path) => {
+                    let mut buf = BytesMut::with_capacity(5 + 8 * path.len());
+                    buf.put_u8(1);
+                    buf.put_i32((path.len() + 1) as i32);
+                    for point in path {
+                        let pose = state_to_pose(point.x as f32, point.y as f32);
+                        buf.put_f64(pose.bottom_angle);
+                        buf.put_f64(pose.top_angle);
+                    }
+                    buf.put_f64(goal_pose.bottom_angle);
+                    buf.put_f64(goal_pose.top_angle);
+                    // println!("Yes path");
+                    buf
+                }
+                None => {
+                    // println!("No path");
+                    BytesMut::zeroed(1)
+                }
+            }
+        } else {
+            // println!("Bad goal");
+            BytesMut::zeroed(1)
+        };
+
+        send_tx
+            .send(Message {
+                name: "Pathfinding:Path".to_string(),
+                data,
+            })
+            .await
+            .unwrap();
     }
 }
