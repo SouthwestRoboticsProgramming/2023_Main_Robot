@@ -545,6 +545,11 @@ public final class Vec2d {
      */
     public Vec2d boxNormalize(Vec2d dest) {
         double max = Math.max(Math.abs(x), Math.abs(y));
+        if (max == 0) {
+            dest.x = 0;
+            dest.y = 0;
+            return dest;
+        }
         dest.x = x / max;
         dest.y = y / max;
         return dest;
