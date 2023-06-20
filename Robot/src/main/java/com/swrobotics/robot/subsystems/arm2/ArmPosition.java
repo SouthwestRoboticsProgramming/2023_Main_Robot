@@ -5,8 +5,6 @@ import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.subsystems.arm.ArmConstants;
 
-import java.util.Optional;
-
 public final class ArmPosition {
     // Position in meters of the wrist's axis of rotation along the right side plane
     public final Vec2d axisPos;
@@ -31,6 +29,8 @@ public final class ArmPosition {
         double targetX = axisPos.x;
         double targetY = axisPos.y;
 
+        double flip = targetX < 0 ? -1 : 1;
+
         double targetAngle = Math.atan2(-targetX, targetY) + Math.PI / 2;
         double len = Math.sqrt(targetX * targetX + targetY * targetY);
         if (len >= lengthA + lengthB) {
@@ -46,8 +46,8 @@ public final class ArmPosition {
                         (lengthA * lengthA + lengthB * lengthB - len * len)
                                 / (2 * lengthA * lengthB));
 
-        Angle angle1 = CCWAngle.rad(targetAngle + angleAL);
-        Angle angle2 = angle1.add(CCWAngle.rad(angleAB - Math.PI));
+        Angle angle1 = CCWAngle.rad(targetAngle + flip * angleAL);
+        Angle angle2 = angle1.ccw().add(CCWAngle.rad(flip * angleAB - Math.PI)).wrapDeg(-270, 90);
         Angle wrist = wristAngle.sub(angle2);
 
         return new ArmPose(angle1, angle2, wrist);
