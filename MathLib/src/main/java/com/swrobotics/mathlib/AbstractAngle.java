@@ -77,7 +77,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return sum
      */
     public T add(T o) {
-        return create(rad() + o.rad());
+        return create(rad + o.rad());
     }
 
     /**
@@ -87,7 +87,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return difference
      */
     public T sub(T o) {
-        return create(rad() - o.rad());
+        return create(rad - o.rad());
     }
 
     /**
@@ -97,7 +97,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return scaled angle
      */
     public T mul(double scalar) {
-        return create(rad() * scalar);
+        return create(rad * scalar);
     }
 
     /**
@@ -107,7 +107,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return scaled angle
      */
     public T div(double scalar) {
-        return create(rad() / scalar);
+        return create(rad / scalar);
     }
 
     /**
@@ -129,7 +129,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return wrapped angle
      */
     public T wrapRad(double min, double max) {
-        return create(MathUtil.wrap(rad(), min, max));
+        return create(MathUtil.wrap(rad, min, max));
     }
 
     /**
