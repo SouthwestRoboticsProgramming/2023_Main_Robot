@@ -21,13 +21,13 @@ const EXTENSION_LIMIT: f64 = 1.22;
 // Limitations from robot
 const FLOOR_HEIGHT: f64 = 9.62923832 / IN_PER_M; // Vertical distance from floor to bottom joint pivot axis
 const BUMPER_THICKNESS: f64 = 3.625 / IN_PER_M; // Thickness of bumper from frame edge to outer edge
-const FRAME_SIZE: f64 = 21.0 / IN_PER_M; // Size of drive base without bumpers
+pub const FRAME_SIZE: f64 = 21.0 / IN_PER_M; // Size of drive base without bumpers
 const BASE_SIZE: f64 = FRAME_SIZE + 2.0 * BUMPER_THICKNESS;
 const BASE_HEIGHT: f64 = 4.7522244 / IN_PER_M; // Distance from floor to top of drive base
 
 // TODO: Grid collision rectangles
 
-const COLLISION_RECTS: [Rectangle; 2] = [
+pub const COLLISION_RECTS: [Rectangle; 2] = [
     Rectangle {
         // Bounds of allowed region by rules and the existence of the floor
         position: Vec2f {

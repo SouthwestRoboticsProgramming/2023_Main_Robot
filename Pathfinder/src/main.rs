@@ -1,7 +1,14 @@
 use arm::ArmPose;
 use bytes::{Buf, BufMut, BytesMut};
+use graphics::GraphicsState;
 use lerp::Lerp;
-use std::{error::Error, f64::consts::PI, thread, time::Duration};
+use std::{
+    error::Error,
+    f64::consts::PI,
+    sync::{Arc, Mutex},
+    thread,
+    time::Duration,
+};
 use tokio::sync::mpsc;
 use vectors::Vec2i;
 
@@ -10,6 +17,7 @@ use crate::messenger::Message;
 pub mod arm;
 pub mod collision;
 pub mod dijkstra;
+mod graphics; // TODO: Only when feature is enabled
 pub mod grid;
 pub mod messenger;
 pub mod theta_star;
@@ -135,6 +143,8 @@ pub async fn main() {
         }
     }
 
+    let grid = Arc::new(grid);
+
     let mut start_pose = ArmPose {
         bottom_angle: 0.0,
         top_angle: 0.0,
@@ -143,6 +153,14 @@ pub async fn main() {
         bottom_angle: 0.0,
         top_angle: 0.0,
     };
+
+    let graphics_state = Arc::new(Mutex::new(GraphicsState {
+        start_state: pose_to_state(&start_pose),
+        path_start_state: pose_to_state(&start_pose),
+        goal_state: pose_to_state(&goal_pose),
+        path: None,
+    }));
+    graphics::show_graphics_window(grid.clone(), graphics_state.clone());
 
     let (send_tx, send_rx) = mpsc::channel(32);
     let (recv_tx, mut recv_rx) = mpsc::channel(32);
@@ -181,10 +199,21 @@ pub async fn main() {
 
         let start = pose_to_state(&start_pose);
         let goal = pose_to_state(&goal_pose);
+        {
+            let mut state = graphics_state.lock().unwrap();
+            state.start_state = start;
+            state.goal_state = goal;
+        }
         // println!("Pathing from {:?} to {:?}", start, goal);
 
         let data = if let Some(start_pos) = dijkstra::find_nearest_passable(&grid, start) {
-            match theta_star::find_path(&grid, start_pos, goal) {
+            {
+                graphics_state.lock().unwrap().path_start_state = start_pos;
+            }
+
+            let path = theta_star::find_path(&grid, start_pos, goal);
+
+            let data = match &path {
                 Some(path) => {
                     let mut buf = BytesMut::with_capacity(5 + 8 * path.len());
                     buf.put_u8(1);
@@ -203,7 +232,13 @@ pub async fn main() {
                     // println!("No path");
                     BytesMut::zeroed(1)
                 }
+            };
+
+            {
+                graphics_state.lock().unwrap().path = path;
             }
+
+            data
         } else {
             // println!("Bad goal");
             BytesMut::zeroed(1)
