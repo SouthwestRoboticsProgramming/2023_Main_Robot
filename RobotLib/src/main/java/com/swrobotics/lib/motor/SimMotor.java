@@ -10,58 +10,115 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import java.util.function.Supplier;
+
 // FIXME: Do a proper simulation and fully implement
-//        This is currently assuming no motor load with no inertia and missing PID control
+//        This is currently assuming no motor load with no inertia
 public final class SimMotor extends SubsystemBase implements FeedbackMotor {
     public static final class MotorCaps {
         public final Angle freeSpeed;
+        public final double sensorUnitsPerRot;
+        public final double sensorUnitsPerRPS;
+        public final double pidCalcInterval;
 
-        public MotorCaps(Angle freeSpeed) {
+        public MotorCaps(Angle freeSpeed, double sensorUnitsPerRot, double sensorUnitsPerRPS, double pidCalcInterval) {
             this.freeSpeed = freeSpeed;
+            this.sensorUnitsPerRot = sensorUnitsPerRot;
+            this.sensorUnitsPerRPS = sensorUnitsPerRPS;
+            this.pidCalcInterval = pidCalcInterval;
         }
     }
 
-    public static final MotorCaps TALON_FX = new MotorCaps(CCWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(6380)));
-    public static final MotorCaps NEO = new MotorCaps(CCWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(5676)));
-    public static final MotorCaps NEO550 = new MotorCaps(CCWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(11000)));
+    // TODO: TalonFX
+    public static final MotorCaps NEO = new MotorCaps(CCWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(5676)), 1, 1/60.0, 0.001);
+    public static final MotorCaps NEO550 = new MotorCaps(CCWAngle.rad(Units.rotationsPerMinuteToRadiansPerSecond(11000)), 1, 1/60.0, 0.001);
 
-    private final Angle freeSpeed;
+    private enum ControlMode {
+        PERCENT,
+        POSITION,
+        VELOCITY
+    }
+
+    private final MotorCaps caps;
     private final SimEncoder integratedEncoder;
     private Angle rawAngle;
 
     private double flip;
-    private double percentOut;
+    private ControlMode controlMode;
+    private Supplier<Double> controlModeFn;
+
+    // PIDF constant units:
+    // kP: output per error
+    // kI: (output per error) per period
+    // kD: output per (error per period)
+    // kF: output per setpoint
+    private double kP, kI, kD, kF;
+    private double integralAcc, prevError;
 
     public SimMotor(MotorCaps caps) {
         if (!RobotBase.isSimulation()) {
             DriverStation.reportError("SimMotor used on real robot!", true);
         }
 
-        this.freeSpeed = caps.freeSpeed;
+        this.caps = caps;
         rawAngle = Angle.ZERO;
         flip = 1;
         integratedEncoder = new SimEncoder(() -> rawAngle.mul(flip));
-        percentOut = 0;
+
+        kP = kI = kD = kF = 0;
+        integralAcc = prevError = 0;
+
+        stop();
     }
 
     @Override
     public void periodic() {
-        rawAngle = rawAngle.add(freeSpeed.mul(MathUtil.clamp(percentOut, -1, 1) * flip * 0.02));
+        rawAngle = rawAngle.add(caps.freeSpeed.mul(MathUtil.clamp(controlModeFn.get(), -1, 1) * flip * 0.02));
+    }
+
+    // Setpoint and measure are in native sensor units
+    private double calcPID(double measure, double setpoint) {
+        double error = setpoint - measure;
+        double p = error * kP;
+
+        // error = inc per 0.02s, equivalent to (inc per period) * (period per 0.02s)
+        integralAcc += error * kI;
+
+        // (error - prevError) = delta per 0.02s
+        // (error - prevError) / 0.02 = delta per 1s
+        // (error - prevError) / 0.02 * caps.pidCalcInterval = delta per interval
+        double d = (error - prevError) / 0.02 * caps.pidCalcInterval * kD;
+        prevError = error;
+
+        double f = setpoint * kF;
+
+        return MathUtil.clamp(p + integralAcc + d + f, -1, 1);
     }
 
     @Override
     public void setPercentOut(double percent) {
-        percentOut = percent;
+        controlMode = ControlMode.PERCENT;
+        controlModeFn = () -> percent;
     }
 
     @Override
     public void setPosition(Angle position) {
-        throw new AssertionError("Not yet implemented");
+        if (controlMode != ControlMode.POSITION)
+            resetIntegrator();
+        controlMode = ControlMode.POSITION;
+        controlModeFn = () -> calcPID(
+                integratedEncoder.getAngle().ccw().rot() * caps.sensorUnitsPerRot,
+                position.ccw().rot() * caps.sensorUnitsPerRot);
     }
 
     @Override
     public void setVelocity(Angle velocity) {
-        throw new AssertionError("Not yet implemented");
+        if (controlMode != ControlMode.VELOCITY)
+            resetIntegrator();
+        controlMode = ControlMode.VELOCITY;
+        controlModeFn = () -> calcPID(
+                integratedEncoder.getVelocity().ccw().rot() * caps.sensorUnitsPerRPS,
+                velocity.ccw().rot() * caps.sensorUnitsPerRPS);
     }
 
     /**
@@ -89,26 +146,27 @@ public final class SimMotor extends SubsystemBase implements FeedbackMotor {
 
     @Override
     public void resetIntegrator() {
-        throw new AssertionError("Not yet implemented");
+        integralAcc = 0;
+        prevError = 0;
     }
 
     @Override
     public void setP(double kP) {
-        throw new AssertionError("Not yet implemented");
+        this.kP = kP;
     }
 
     @Override
     public void setI(double kI) {
-        throw new AssertionError("Not yet implemented");
+        this.kI = kI;
     }
 
     @Override
     public void setD(double kD) {
-        throw new AssertionError("Not yet implemented");
+        this.kD = kD;
     }
 
     @Override
     public void setF(double kF) {
-        throw new AssertionError("Not yet implemented");
+        this.kF = kF;
     }
 }
