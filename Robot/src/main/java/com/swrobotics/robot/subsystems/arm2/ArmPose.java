@@ -2,7 +2,6 @@ package com.swrobotics.robot.subsystems.arm2;
 
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.Vec2d;
-import com.swrobotics.robot.subsystems.arm.ArmConstants;
 
 public final class ArmPose {
     // Angle of bottom segment relative to horizontal

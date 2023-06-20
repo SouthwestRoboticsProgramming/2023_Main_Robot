@@ -1,11 +1,26 @@
 package com.swrobotics.robot.subsystems.arm2;
 
+import com.swrobotics.lib.net.NTDoubleArray;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.Vec2d;
-import com.swrobotics.robot.subsystems.arm.ArmConstants;
 
 public final class ArmPosition {
+    public static final class NT extends NTDoubleArray {
+        public NT(String path, double defX, double defY, Angle defWrist) {
+            super(path, defX, defY, defWrist.ccw().deg());
+        }
+
+        public ArmPosition getPosition() {
+            double[] coords = get();
+            return new ArmPosition(new Vec2d(coords[0], coords[1]), CCWAngle.deg(coords[2]));
+        }
+
+        public void set(ArmPosition tx) {
+            set(new double[] {tx.axisPos.x, tx.axisPos.y, tx.wristAngle.ccw().deg()});
+        }
+    }
+
     // Position in meters of the wrist's axis of rotation along the right side plane
     public final Vec2d axisPos;
 

@@ -1,0 +1,186 @@
+package com.swrobotics.robot.subsystems.arm2;
+
+import com.swrobotics.lib.net.NTAngle;
+import com.swrobotics.lib.net.NTBoolean;
+import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTUtil;
+import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
+import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.CCWAngle;
+import com.swrobotics.mathlib.MathUtil;
+import com.swrobotics.mathlib.Vec2d;
+import com.swrobotics.messenger.client.MessengerClient;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+
+import java.util.List;
+
+import static com.swrobotics.robot.subsystems.arm2.ArmConstants.*;
+
+public final class ArmSubsystem extends SwitchableSubsystemBase {
+    private static final NTDouble MOVE_KP = new NTDouble("Arm/Move PID/kP", 8);
+    private static final NTDouble MOVE_KI = new NTDouble("Arm/Move PID/kI", 0);
+    private static final NTDouble MOVE_KD = new NTDouble("Arm/Move PID/kD", 0);
+    private static final NTDouble WRIST_KP = new NTDouble("Arm/Wrist PID/kP", 0);
+    private static final NTDouble WRIST_KI = new NTDouble("Arm/Wrist PID/kI", 0);
+    private static final NTDouble WRIST_KD = new NTDouble("Arm/Wrist PID/kD", 0);
+
+    private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 1.0);
+    private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 0.01);
+    private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 0.04);
+
+    private static final NTBoolean CALIBRATE_CANCODERS = new NTBoolean("Arm/Offsets/Calibrate", false);
+    private static final NTAngle BOTTOM_OFFSET = new NTAngle("Arm/Offsets/Bottom", Angle.ZERO, NTAngle.Mode.CCW_DEG);
+    private static final NTAngle TOP_OFFSET = new NTAngle("Arm/Offsets/Top", Angle.ZERO, NTAngle.Mode.CCW_DEG);
+
+    private static final ArmPosition.NT HOME_POSITION = new ArmPosition.NT("Arm/Home", 1, 1, Angle.ZERO);
+
+    private final ArmJoint bottom, top, wrist;
+    private final ArmPathfinder pathfinder;
+    private final PIDController movePid;
+    private ArmPose targetPose;
+    private boolean inToleranceHysteresis;
+
+    private final ArmVisualizer currentVisualizer, stepTargetVisualizer, targetVisualizer;
+
+    public ArmSubsystem(MessengerClient msg) {
+        bottom = new ArmJoint(BOTTOM_MOTOR_ID, BOTTOM_CANCODER_ID, JOINT_TO_CANCODER_RATIO, BOTTOM_GEAR_RATIO, BOTTOM_OFFSET, false);
+        top = new ArmJoint(TOP_MOTOR_ID, TOP_CANCODER_ID, JOINT_TO_CANCODER_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, true);
+        wrist = null; // TODO: Wrist is different
+
+        double size = (BOTTOM_LENGTH + TOP_LENGTH + WRIST_LENGTH) * 2;
+        Mechanism2d visualizer = new Mechanism2d(size, size);
+        targetVisualizer = new ArmVisualizer(size/2, size/2, visualizer, "Target", Color.kDarkRed, Color.kRed, Color.kOrangeRed);
+        stepTargetVisualizer = new ArmVisualizer(size/2, size/2, visualizer, "Step Target", Color.kDarkOrange, Color.kOrange, Color.kDarkGoldenrod);
+        currentVisualizer = new ArmVisualizer(size/2, size/2, visualizer, "Current", Color.kDarkGreen, Color.kGreen, Color.kLightGreen);
+        SmartDashboard.putData("Arm Visualizer", visualizer);
+
+        ArmPose home = HOME_POSITION.getPosition().toPose();
+        if (home == null)
+            throw new IllegalStateException("Home position must be valid!");
+        bottom.calibratePosition(home.bottomAngle);
+        top.calibratePosition(home.topAngle);
+        // wrist.calibratePosition(home.wristAngle);
+
+        pathfinder = new ArmPathfinder(msg);
+        movePid = NTUtil.tunablePID(MOVE_KP, MOVE_KI, MOVE_KD);
+        targetPose = home;
+    }
+
+    public ArmPose getCurrentPose() {
+        return new ArmPose(bottom.getCurrentAngle(), top.getCurrentAngle(), /*wrist.getCurrentAngle()*/Angle.ZERO);
+    }
+
+    // Converts each axis to motor rotation count
+    // This biases path following towards the route where each axis takes equal time
+    private Vec2d bias(ArmPathfinder.PathPoint point) {
+        return new Vec2d(
+                point.bottomAngle.ccw().rot() * ArmConstants.BOTTOM_GEAR_RATIO,
+                point.topAngle.ccw().rot() * ArmConstants.TOP_GEAR_RATIO);
+    }
+
+    int counter = 0;
+
+    @Override
+    public void periodic() {
+        if (CALIBRATE_CANCODERS.get()) {
+            CALIBRATE_CANCODERS.set(false);
+
+            // Assume arm is already at home position
+            bottom.calibrateCanCoder();
+            top.calibrateCanCoder();
+            // wrist.calibrateCanCoder();
+        }
+
+        if (counter++ == 100) {
+            counter = 0;
+
+            targetPose = new ArmPosition(new Vec2d(
+                    Math.random() * 2 - 1,
+                    Math.random() + 0.2
+            ), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
+        }
+
+        currentVisualizer.setPose(getCurrentPose());
+        targetVisualizer.setPose(targetPose);
+
+        ArmPose currentPose = getCurrentPose();
+        ArmPathfinder.PathPoint startPoint = ArmPathfinder.PathPoint.fromPose(currentPose);
+        ArmPathfinder.PathPoint targetPoint = ArmPathfinder.PathPoint.fromPose(targetPose);
+//        if (counter % 10 == 0) {
+            // FIXME: Send every periodic once pathfinding can handle more frequent messages
+            pathfinder.setEndpoints(startPoint, targetPoint);
+//        }
+        Vec2d biasedStart = bias(startPoint);
+        Vec2d biasedTarget = bias(targetPoint);
+
+        List<ArmPathfinder.PathPoint> path = pathfinder.getPath();
+        ArmPose currentTarget = null;
+        if (path == null || !pathfinder.isPathValid()) {
+            currentTarget = targetPose;
+        } else {
+            double minDist = Double.POSITIVE_INFINITY;
+            for (int i = path.size() - 1; i > 0; i--) {
+                ArmPathfinder.PathPoint pose = path.get(i);
+                Vec2d point = bias(pose);
+                Vec2d prev = bias(path.get(i - 1));
+
+                double dist = biasedStart.distanceToLineSegmentSq(point, prev);
+
+                if (dist < minDist) {
+                    currentTarget = new ArmPose(pose.bottomAngle, pose.topAngle, targetPose.wristAngle);
+                    minDist = dist;
+                }
+            }
+
+            // This should never happen
+            if (currentTarget == null) {
+                onDisable();
+                return;
+            }
+        }
+        stepTargetVisualizer.setPose(currentTarget);
+
+        double topAngle = MathUtil.wrap(currentTarget.topAngle.ccw().rad(), -1.5 * Math.PI, 0.5 * Math.PI);
+        Vec2d towardsTarget = new Vec2d(currentTarget.bottomAngle.ccw().rad(), topAngle)
+                .sub(currentPose.bottomAngle.ccw().rad(), currentPose.topAngle.ccw().rad());
+
+        // Tolerance hysteresis so the motor doesn't do the shaky shaky
+        double magSqToFinalTarget = new Vec2d(biasedTarget).sub(biasedStart).magnitudeSq();
+        System.out.println(Math.sqrt(magSqToFinalTarget));
+        boolean prevInTolerance = inToleranceHysteresis;
+
+        double startTol = START_TOL.get();
+        double stopTol = STOP_TOL.get();
+        if (magSqToFinalTarget > startTol * startTol) {
+            inToleranceHysteresis = false;
+        } else if (magSqToFinalTarget < stopTol * stopTol) {
+            inToleranceHysteresis = true;
+        }
+
+        if (prevInTolerance && !inToleranceHysteresis)
+            movePid.reset();
+
+        if (inToleranceHysteresis) {
+            // Already at target
+            onDisable();
+        } else {
+            double pidOut = -movePid.calculate(Math.sqrt(magSqToFinalTarget), 0);
+            pidOut = MathUtil.clamp(pidOut, 0, MAX_SPEED.get());
+
+            towardsTarget.mul(ArmConstants.BOTTOM_GEAR_RATIO, ArmConstants.TOP_GEAR_RATIO)
+                    .boxNormalize().mul(pidOut);
+
+            bottom.setMotorOutput(towardsTarget.x);
+            top.setMotorOutput(towardsTarget.y);
+        }
+    }
+
+    @Override
+    protected void onDisable() {
+        bottom.setMotorOutput(0);
+        top.setMotorOutput(0);
+    }
+}

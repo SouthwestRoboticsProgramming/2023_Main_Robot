@@ -31,10 +31,14 @@ public final class NTAngle extends NTEntry<Angle> {
         super(path, defaultVal);
         this.mode = mode;
         defaultValMeasure = mode.to.apply(defaultVal);
+        if (!entry.exists()) set(defaultVal);
     }
 
     @Override
     public void set(Angle value) {
+        if (mode == null)
+            return;
+
         entry.setDouble(mode.to.apply(value));
     }
 

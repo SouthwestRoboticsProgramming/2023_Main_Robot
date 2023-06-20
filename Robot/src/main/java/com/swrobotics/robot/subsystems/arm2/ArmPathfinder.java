@@ -7,7 +7,6 @@ import com.swrobotics.messenger.client.MessengerClient;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public final class ArmPathfinder {
     // This is different from ArmPose since the pathfinder does not care

@@ -2,10 +2,13 @@ package com.swrobotics.robot.subsystems.arm2;
 
 import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
+import com.swrobotics.lib.encoder.SimEncoder;
 import com.swrobotics.lib.motor.FeedbackMotor;
+import com.swrobotics.lib.motor.SimMotor;
 import com.swrobotics.lib.motor.rev.NEOMotor;
 import com.swrobotics.lib.net.NTAngle;
 import com.swrobotics.mathlib.Angle;
+import edu.wpi.first.wpilibj.RobotBase;
 
 // Note: "Horizontal" as a reference point here refers to true horizontal for
 //       the two segments and facing forward parallel to the top segment for the wrist
@@ -30,9 +33,17 @@ public final class ArmJoint {
      *               motor output shaft corresponds to cw rotation of the arm
      */
     public ArmJoint(int motorId, int canCoderId, double canCoderToArmRatio, double motorToArmRatio, NTAngle absEncoderOffset, boolean invert) {
-        motor = new NEOMotor(motorId);
-        motorEncoder = motor.getIntegratedEncoder();
-        absoluteEncoder = new CanCoder(canCoderId).getAbsolute();
+        if (RobotBase.isReal()) {
+            motor = new NEOMotor(motorId);
+            motorEncoder = motor.getIntegratedEncoder();
+            absoluteEncoder = new CanCoder(canCoderId).getAbsolute();
+        } else {
+            motor = new SimMotor(SimMotor.NEO);
+            motorEncoder = motor.getIntegratedEncoder();
+            absoluteEncoder = new SimEncoder(() ->
+                    ((SimEncoder) motorEncoder).getRawAngle().mul(canCoderToArmRatio / motorToArmRatio)
+            );
+        }
         this.absEncoderOffset = absEncoderOffset;
 
         this.canCoderToArmRatio = canCoderToArmRatio;

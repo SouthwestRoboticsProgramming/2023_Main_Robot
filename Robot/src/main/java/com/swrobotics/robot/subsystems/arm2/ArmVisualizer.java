@@ -1,4 +1,4 @@
-package com.swrobotics.robot.subsystems.arm;
+package com.swrobotics.robot.subsystems.arm2;
 
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -29,15 +29,16 @@ public final class ArmVisualizer {
                 new MechanismLigament2d(
                         "Top Arm", ArmConstants.TOP_LENGTH, 0, 6, new Color8Bit(topColor)));
         wrist = top.append(
-                new MechanismLigament2d("Wrist", ArmConstants.WRIST_LENGTH / 2, 70, 6, new Color8Bit(wristColor)));
+                new MechanismLigament2d("Wrist", ArmConstants.WRIST_LENGTH / 2, 0, 6, new Color8Bit(wristColor)));
     }
 
     public void setPose(ArmPose pose) {
-        bottom.setAngle(Math.toDegrees(pose.bottomAngle));
+        bottom.setAngle(pose.bottomAngle.ccw().deg());
 
         // Visualization is relative, pose is absolute
-        top.setAngle(Math.toDegrees(pose.topAngle - pose.bottomAngle));
+        top.setAngle(pose.topAngle.ccw().sub(pose.bottomAngle.ccw()).deg());
 
-        wrist.setAngle(pose.wristAngle);
+        // Wrist is relative to top segment
+        wrist.setAngle(pose.wristAngle.ccw().deg());
     }
 }
