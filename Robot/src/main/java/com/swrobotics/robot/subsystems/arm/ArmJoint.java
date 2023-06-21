@@ -28,6 +28,8 @@ public class ArmJoint {
      *
      * @param motorId CAN id of the motor Spark MAX
      * @param canCoderId CAN id of the CanCoder
+     * @param canCoderToArmRatio gear reduction from the CanCoder axis to the arm axis
+     * @param motorToArmRatio gear reduction from the motor shaft to the arm axis
      * @param absEncoderOffset NTAngle to store CanCoder offset into
      * @param invert whether to invert output. This should be true if a ccw rotation of the
      *               motor output shaft corresponds to cw rotation of the arm
@@ -81,6 +83,7 @@ public class ArmJoint {
      * currently at the home angle physically.
      */
     public void calibrateCanCoder() {
+        // Set offset such that the current position is considered 0
         absEncoderOffset.set(absoluteEncoder.getAngle().negate());
     }
 

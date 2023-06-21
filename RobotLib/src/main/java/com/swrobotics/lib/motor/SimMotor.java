@@ -127,7 +127,7 @@ public final class SimMotor extends SubsystemBase implements FeedbackMotor {
      * @return integrated encoder. Guaranteed to be a SimEncoder
      */
     @Override
-    public Encoder getIntegratedEncoder() {
+    public SimEncoder getIntegratedEncoder() {
         return integratedEncoder;
     }
 
