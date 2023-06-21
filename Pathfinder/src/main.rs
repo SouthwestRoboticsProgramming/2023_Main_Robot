@@ -1,6 +1,6 @@
 use arm::ArmPose;
 use bytes::{Buf, BufMut, BytesMut};
-use graphics::GraphicsState;
+use cfg_if::cfg_if;
 use lerp::Lerp;
 use std::{
     error::Error,
@@ -17,11 +17,17 @@ use crate::messenger::Message;
 pub mod arm;
 pub mod collision;
 pub mod dijkstra;
-mod graphics; // TODO: Only when feature is enabled
 pub mod grid;
 pub mod messenger;
 pub mod theta_star;
 pub mod vectors;
+
+cfg_if! {
+    if #[cfg(feature = "graphics")] {
+        mod graphics;
+        use graphics::GraphicsState;
+    }
+}
 
 pub const STATE_SZ: Vec2i = Vec2i { x: 128, y: 128 };
 pub const BOTTOM_RANGE: (f64, f64) = (0.0, PI);
@@ -154,12 +160,14 @@ pub async fn main() {
         top_angle: 0.0,
     };
 
+    #[cfg(feature = "graphics")]
     let graphics_state = Arc::new(Mutex::new(GraphicsState {
         start_state: pose_to_state(&start_pose),
         path_start_state: pose_to_state(&start_pose),
         goal_state: pose_to_state(&goal_pose),
         path: None,
     }));
+    #[cfg(feature = "graphics")]
     graphics::show_graphics_window(grid.clone(), graphics_state.clone());
 
     let (send_tx, send_rx) = mpsc::channel(32);
@@ -199,6 +207,7 @@ pub async fn main() {
 
         let start = pose_to_state(&start_pose);
         let goal = pose_to_state(&goal_pose);
+        #[cfg(feature = "graphics")]
         {
             let mut state = graphics_state.lock().unwrap();
             state.start_state = start;
@@ -207,6 +216,7 @@ pub async fn main() {
         // println!("Pathing from {:?} to {:?}", start, goal);
 
         let data = if let Some(start_pos) = dijkstra::find_nearest_passable(&grid, start) {
+            #[cfg(feature = "graphics")]
             {
                 graphics_state.lock().unwrap().path_start_state = start_pos;
             }
@@ -234,6 +244,7 @@ pub async fn main() {
                 }
             };
 
+            #[cfg(feature = "graphics")]
             {
                 graphics_state.lock().unwrap().path = path;
             }
