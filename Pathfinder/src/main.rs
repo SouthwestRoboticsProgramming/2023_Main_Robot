@@ -221,10 +221,14 @@ pub async fn main() {
                 graphics_state.lock().unwrap().path_start_state = start_pos;
             }
 
-            let path = theta_star::find_path(&grid, start_pos, goal);
+            let mut path = theta_star::find_path(&grid, start_pos, goal);
 
-            let data = match &path {
+            let data = match &mut path {
                 Some(path) => {
+                    if start != start_pos {
+                        path.insert(0, start);
+                    }
+
                     let mut buf = BytesMut::with_capacity(5 + 8 * path.len());
                     buf.put_u8(1);
                     buf.put_i32((path.len() + 1) as i32);
