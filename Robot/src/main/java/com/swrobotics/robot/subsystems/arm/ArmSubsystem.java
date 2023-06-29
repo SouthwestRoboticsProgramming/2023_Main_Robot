@@ -79,6 +79,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         return new ArmPose(bottomAngle, topAngle, wristAngle);
     }
 
+    public ArmPose getTargetPose() {
+        return targetPose;
+    }
+
     // Converts each axis to motor rotation count
     // This biases path following towards the route where each axis takes equal time
     private Vec2d bias(ArmPathfinder.PathPoint point) {

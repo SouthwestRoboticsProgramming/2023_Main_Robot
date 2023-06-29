@@ -1,9 +1,7 @@
-use lerp::Lerp;
 use macroquad::{prelude::*, Window};
 use std::{
     sync::{Arc, Mutex},
     thread,
-    time::Instant,
 };
 
 use crate::{
@@ -159,7 +157,6 @@ fn draw_state_preview(state_x: f32, state_y: f32) {
 }
 
 async fn draw(grid: Arc<Grid2D>, state: Arc<Mutex<GraphicsState>>) {
-    let begin_time = Instant::now();
     loop {
         clear_background(LIGHTGRAY);
         draw_state_space_grid(&grid);
@@ -209,41 +206,6 @@ async fn draw(grid: Arc<Grid2D>, state: Arc<Mutex<GraphicsState>>) {
 
                 if !show_preview {
                     draw_state_preview(state.start_state.x as f32, state.start_state.y as f32);
-                    // let secs_passed = begin_time.elapsed().as_secs_f64();
-
-                    // let mut total_len = 0.0;
-                    // for i in 1..path.len() {
-                    //     let prev = path[i - 1];
-                    //     let curr = path[i];
-                    //     total_len += (prev - curr).mag();
-                    // }
-
-                    // let len_per_sec = 35.0;
-                    // let total_time = total_len / len_per_sec;
-
-                    // let progress = (secs_passed % total_time) / total_time * total_len;
-                    // println!("Progress: {}, {}", progress, total_len);
-                    // let mut len_so_far = 0.0;
-                    // for i in 1..path.len() {
-                    //     let prev = path[i - 1];
-                    //     let curr = path[i];
-
-                    //     let diff_vec = prev - curr;
-                    //     let mag = diff_vec.mag();
-
-                    //     let diff_prog = progress - len_so_far;
-                    //     if diff_prog > mag {
-                    //         len_so_far += mag;
-                    //         continue;
-                    //     }
-
-                    //     let f = (diff_prog / mag) as f32;
-                    //     let x = (prev.x as f32).lerp(curr.x as f32, f);
-                    //     let y = (prev.y as f32).lerp(curr.y as f32, f);
-
-                    //     draw_state_preview(x, y);
-                    //     break;
-                    // }
                 }
             }
             None => {}

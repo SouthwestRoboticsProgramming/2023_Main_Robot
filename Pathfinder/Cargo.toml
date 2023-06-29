@@ -20,3 +20,6 @@ cfg-if = "1"
 
 [features]
 graphics = ["dep:macroquad"]
+
+[target.armv7-unknown-linux-gnueabihf]
+linker = "arm-linux-gnueabihf-gcc"

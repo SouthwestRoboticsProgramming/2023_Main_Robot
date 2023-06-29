@@ -2,14 +2,8 @@ use arm::ArmPose;
 use bytes::{Buf, BufMut, BytesMut};
 use cfg_if::cfg_if;
 use lerp::Lerp;
-use std::{
-    error::Error,
-    f64::consts::PI,
-    sync::{Arc, Mutex},
-    thread,
-    time::Duration,
-};
-use tokio::sync::mpsc;
+use std::{error::Error, f64::consts::PI, thread, time::Duration};
+use tokio::{sync::mpsc, time::Instant};
 use vectors::Vec2i;
 
 use crate::messenger::Message;
@@ -26,6 +20,7 @@ cfg_if! {
     if #[cfg(feature = "graphics")] {
         mod graphics;
         use graphics::GraphicsState;
+        use std::sync::{Arc, Mutex};
     }
 }
 
@@ -149,6 +144,7 @@ pub async fn main() {
         }
     }
 
+    #[cfg(feature = "graphics")]
     let grid = Arc::new(grid);
 
     let mut start_pose = ArmPose {
@@ -221,7 +217,14 @@ pub async fn main() {
                 graphics_state.lock().unwrap().path_start_state = start_pos;
             }
 
+            let start_time = Instant::now();
             let mut path = theta_star::find_path(&grid, start_pos, goal);
+            let end_time = Instant::now();
+            println!(
+                "Solve took {} secs; found: {}",
+                end_time.duration_since(start_time).as_secs_f32(),
+                path.is_some()
+            );
 
             let data = match &mut path {
                 Some(path) => {
