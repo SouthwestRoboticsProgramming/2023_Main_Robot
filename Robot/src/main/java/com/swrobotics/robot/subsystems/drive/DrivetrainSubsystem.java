@@ -41,8 +41,10 @@ public final class DrivetrainSubsystem extends SwerveDrive {
         FeedbackMotor turnMotor = new TalonFXMotor(info.turnMotorID);
         Encoder encoder = new CanCoder(info.encoderID).getAbsolute();
 
+        // MK4i is inverted
         driveMotor.setInverted(true);
         turnMotor.setInverted(true);
+
         turnMotor.setPID(TURN_KP, TURN_KI, TURN_KD);
 
         return new SwerveModule(
