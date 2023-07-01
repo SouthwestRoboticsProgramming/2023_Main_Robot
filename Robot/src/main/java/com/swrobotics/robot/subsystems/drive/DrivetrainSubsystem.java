@@ -36,16 +36,17 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     private final FieldObject2d ppPose = field.getObject("PathPlanner pose");
     private final StateVisualizer stateVisualizer;
 
-    // FIXME: Update for MK4i
     private static SwerveModule makeModule(SwerveModuleInfo info, Translation2d pos) {
         FeedbackMotor driveMotor = new TalonFXMotor(info.driveMotorID);
         FeedbackMotor turnMotor = new TalonFXMotor(info.turnMotorID);
         Encoder encoder = new CanCoder(info.encoderID).getAbsolute();
 
+        driveMotor.setInverted(true);
+        turnMotor.setInverted(true);
         turnMotor.setPID(TURN_KP, TURN_KI, TURN_KD);
 
         return new SwerveModule(
-                SwerveModuleAttributes.SDS_MK4_L4, driveMotor, turnMotor, encoder, pos, info.offset);
+                SwerveModuleAttributes.SDS_MK4I_L3, driveMotor, turnMotor, encoder, pos, info.offset);
     }
 
     public DrivetrainSubsystem(NavXGyroscope gyro) {
