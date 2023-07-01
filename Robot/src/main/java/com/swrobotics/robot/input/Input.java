@@ -149,7 +149,7 @@ public final class Input extends SubsystemBase {
 
     // ---- Manipulator controls ----
 
-    private ArmPositions.PositionInfo inferDirection(ArmPositions.FrontBackPair pair, Angle currentAngle, Angle relativeForward) {
+    private ArmPosition.NT inferDirection(ArmPositions.FrontBackPair pair, Angle currentAngle, Angle relativeForward) {
         Vec2d currentAngleVec = new Vec2d(currentAngle, 1);
         Vec2d relativeForwardVec = new Vec2d(relativeForward, 1);
 
@@ -178,7 +178,7 @@ public final class Input extends SubsystemBase {
         if (manipulator.rightTrigger.get() > TRIGGER_DEADBAND)
             intakeMode = IntakeSubsystem.Mode.EJECT;
 
-        ArmPositions.PositionInfo ntArmTarget = null;
+        ArmPosition.NT ntArmTarget = null;
         ArmPositions.PositionSet gamePieceSet = gamePiece == GamePiece.CONE ? ArmPositions.CONE : ArmPositions.CUBE;
 
         if (manipulator.a.isPressed()) {
@@ -224,19 +224,19 @@ public final class Input extends SubsystemBase {
             defaultArmNudgeAngle = defaultArmNudgeAngle.add(wristNudge);
 
             ntArmTarget = ArmPositions.DEFAULT;
-            ArmPosition def = ntArmTarget.position.getPosition();
+            ArmPosition def = ntArmTarget.getPosition();
             armTarget = new ArmPosition(def.axisPos.add(defaultArmNudgePosition), def.wristAngle.add(defaultArmNudgeAngle));
         } else {
             defaultArmNudgePosition.set(0, 0);
             defaultArmNudgeAngle = Angle.ZERO;
 
-            ArmPosition raw = ntArmTarget.position.getPosition();
+            ArmPosition raw = ntArmTarget.getPosition();
             armTarget = new ArmPosition(raw.axisPos.add(translationNudge), raw.wristAngle.add(wristNudge));
-            ntArmTarget.position.set(armTarget);
+            ntArmTarget.set(armTarget);
         }
 
         robot.arm.setTargetPosition(armTarget);
-        robot.intake.set(intakeMode, effectiveGamePiece, ntArmTarget.flipIntake.get());
+        robot.intake.set(intakeMode, effectiveGamePiece);
     }
 
     @Override

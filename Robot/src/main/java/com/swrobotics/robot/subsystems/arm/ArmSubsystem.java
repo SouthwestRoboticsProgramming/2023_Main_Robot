@@ -36,8 +36,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTAngle TOP_OFFSET = new NTAngle("Arm/Offsets/Top", Angle.ZERO, NTAngle.Mode.CCW_DEG);
     private static final NTAngle WRIST_OFFSET = new NTAngle("Arm/Offsets/Wrist", Angle.ZERO, NTAngle.Mode.CCW_DEG);
 
-    private static final ArmPosition.NT HOME_POSITION = new ArmPosition.NT("Arm/Home", 1, 1, Angle.ZERO);
-
     private final ArmJoint bottom, top;
     private final WristJoint wrist;
     private final ArmPathfinder pathfinder;
@@ -60,11 +58,12 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         currentVisualizer = new ArmVisualizer(size/2, size/2, visualizer, "Current", Color.kDarkGreen, Color.kGreen, Color.kLightGreen);
         SmartDashboard.putData("Arm Visualizer", visualizer);
 
-        ArmPose home = HOME_POSITION.getPosition().toPose();
+        ArmPose home = ArmPositions.DEFAULT.getPosition().toPose();
+        System.out.println("Home pose: " + home);
         if (home == null)
             throw new IllegalStateException("Home position must be valid!");
         bottom.calibratePosition(home.bottomAngle);
-        top.calibratePosition(home.topAngle);
+        top.calibratePosition(home.topAngle.ccw().wrapDeg(-270, 90));
         wrist.calibratePosition(home.wristAngle);
 
         pathfinder = new ArmPathfinder(msg);
@@ -91,8 +90,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
                 point.topAngle.ccw().rot() * ArmConstants.TOP_GEAR_RATIO);
     }
 
-    int counter = 0;
-
     @Override
     public void periodic() {
         if (CALIBRATE_CANCODERS.get()) {
@@ -102,16 +99,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             bottom.calibrateCanCoder();
             top.calibrateCanCoder();
             wrist.calibrateCanCoder();
-        }
-
-        // Test: Sets a random target every 2 seconds
-        if (counter++ == 100) {
-            counter = 0;
-
-            targetPose = new ArmPosition(new Vec2d(
-                    Math.random() * 2 - 1,
-                    Math.random() + 0.2
-            ), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
         }
 
         currentVisualizer.setPose(getCurrentPose());

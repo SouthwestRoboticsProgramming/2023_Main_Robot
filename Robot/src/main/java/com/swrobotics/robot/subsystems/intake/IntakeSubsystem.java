@@ -20,7 +20,7 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
         motor = new PWMSparkMaxMotor(RIOPorts.INTAKE_PWM);
     }
 
-    public void set(Mode mode, GamePiece gamePiece, boolean invert) {
+    public void set(Mode mode, GamePiece gamePiece) {
         if (!isEnabled())
             return;
 
@@ -36,9 +36,6 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
                 out = gamePiece.getHoldOutput();
                 break;
         }
-
-        if (invert)
-            out = -out;
 
         motor.setPercentOut(out);
     }

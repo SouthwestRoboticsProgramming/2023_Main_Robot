@@ -11,6 +11,10 @@ public final class ArmPosition {
             super(path, defX, defY, defWrist.ccw().deg());
         }
 
+        public NT(String path, ArmPosition defPos) {
+            this(path, defPos.axisPos.x, defPos.axisPos.y, defPos.wristAngle);
+        }
+
         public ArmPosition getPosition() {
             double[] coords = get();
             return new ArmPosition(new Vec2d(coords[0], coords[1]), CCWAngle.deg(coords[2]));
