@@ -13,6 +13,7 @@ import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.positions.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
+import com.swrobotics.robot.subsystems.drive.AngledNavxGyroscope;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
@@ -81,7 +82,7 @@ public class RobotContainer {
         arm = new ArmSubsystem(messenger);
         intake = new IntakeSubsystem();
 
-        swerveDrive = new DrivetrainSubsystem(new NavXGyroscope(SPI.Port.kMXP));
+        swerveDrive = new DrivetrainSubsystem(new AngledNavxGyroscope(SPI.Port.kMXP));
         input = new Input(this);
         swerveDrive.setDefaultCommand(new DefaultDriveCommand(swerveDrive, input));
 
