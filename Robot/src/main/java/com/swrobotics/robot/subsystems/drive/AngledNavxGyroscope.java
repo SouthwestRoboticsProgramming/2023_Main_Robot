@@ -11,23 +11,38 @@ import edu.wpi.first.wpilibj.SPI.Port;
 
 public class AngledNavxGyroscope extends NavXGyroscope {
 
-    private static final double GYRO_ROLL_DEGREES = 50.0; // FIXME: Measure
+    private static final double GYRO_ROLL_DEGREES = 40.25;//57.12660124; // FIXME: Measure
+    private static final Rotation3d ACTUAL_ROTATION = new Rotation3d(Math.toRadians(-GYRO_ROLL_DEGREES), 0, 0);
     
     public AngledNavxGyroscope(Port port) {
         super(port);
     }
 
     @Override
+    public double getPitch() {
+        return getRotation3d().getZ();
+    }
+
+    @Override
+    public double getRoll() {
+        double angle = -super.getRoll() - GYRO_ROLL_DEGREES;
+        // Logger.getInstance().recordOutput("GyroTest/OutputRoll", angle);
+        return angle;
+    }
+
+    @Override
     protected Angle getRawAngle() {
-        Logger.getInstance().recordOutput("GyroTest/RawPitch", getPitch());
+        return CWAngle.deg(getRotation3d().getY());
+    }
+
+    private Rotation3d getRotation3d() {
+        Logger.getInstance().recordOutput("GyroTest/RawPitch", super.getPitch());
         Logger.getInstance().recordOutput("GyroTest/RawYaw", super.getRawAngle().cw().deg());
-        Logger.getInstance().recordOutput("GyroTest/RawRoll", getRoll());
-        Rotation3d rotation = new Rotation3d(getRoll(), getPitch(), super.getRawAngle().cw().deg());
-        rotation.rotateBy(new Rotation3d(-GYRO_ROLL_DEGREES, 0, 0));
-        Logger.getInstance().recordOutput("GyroTest/OutputX", rotation.getX());
-        Logger.getInstance().recordOutput("GyroTest/OutputY", rotation.getY());
-        Logger.getInstance().recordOutput("GyroTest/OutputZ", rotation.getZ());
-        
-        return CWAngle.deg(rotation.getY());
+        Logger.getInstance().recordOutput("GyroTest/RawRoll", super.getRoll());
+        Rotation3d rotation = new Rotation3d(getRoll(), Math.toRadians(super.getPitch()), super.getRawAngle().ccw().rad()).rotateBy(ACTUAL_ROTATION);
+        Logger.getInstance().recordOutput("GyroTest/OutputRoll", Math.toDegrees(rotation.getX()));
+        Logger.getInstance().recordOutput("GyroTest/OutputPitch", Math.toDegrees(rotation.getY()));
+        Logger.getInstance().recordOutput("GyroTest/OutputYaw", Math.toDegrees(rotation.getZ()));
+        return rotation;
     }
 }
