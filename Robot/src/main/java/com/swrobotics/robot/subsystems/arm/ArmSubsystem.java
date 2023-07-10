@@ -1,9 +1,6 @@
 package com.swrobotics.robot.subsystems.arm;
 
-import com.swrobotics.lib.net.NTAngle;
-import com.swrobotics.lib.net.NTBoolean;
-import com.swrobotics.lib.net.NTDouble;
-import com.swrobotics.lib.net.NTUtil;
+import com.swrobotics.lib.net.*;
 import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
@@ -35,6 +32,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTAngle BOTTOM_OFFSET = new NTAngle("Arm/Offsets/Bottom", Angle.ZERO, NTAngle.Mode.CCW_DEG);
     private static final NTAngle TOP_OFFSET = new NTAngle("Arm/Offsets/Top", Angle.ZERO, NTAngle.Mode.CCW_DEG);
     private static final NTAngle WRIST_OFFSET = new NTAngle("Arm/Offsets/Wrist", Angle.ZERO, NTAngle.Mode.CCW_DEG);
+
+    // FIXME: These defaults are completely arbitrary
+    private static final NTVec2d FOLD_ZONE = new NTVec2d("Arm/Fold Zone", 0.5, 0.25);
+    private static final NTAngle FOLD_ANGLE = new NTAngle("Arm/Fold Angle", Angle.ZERO, NTAngle.Mode.CCW_DEG);
 
     private final ArmJoint bottom, top;
     private final WristJoint wrist;
@@ -193,9 +194,19 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             top.setMotorOutput(towardsTarget.y);
         }
 
-        // TODO: When inside frame perimeter with a game piece, the wrist needs to prevent it from colliding
-        Angle wristRef = currentPose.topAngle;
-        wrist.setTargetAngle(targetPose.wristAngle.sub(wristRef));
+        // Always fold regardless of having a game piece, since we can't
+        // reliably determine if we have one. This is fine without game
+        // piece since the intake fits over the drive base at all angles.
+        Vec2d axisPos = currentPose.getAxisPos().absolute();
+        Vec2d foldZone = FOLD_ZONE.getVec();
+        if (axisPos.x <= foldZone.x && axisPos.y <= foldZone.y) {
+            // Set wrist to fold angle
+            wrist.setTargetAngle(FOLD_ANGLE.get());
+        } else {
+            // Set wrist to final target angle
+            Angle wristRef = currentPose.topAngle;
+            wrist.setTargetAngle(targetPose.wristAngle.sub(wristRef));
+        }
     }
 
     public void setTargetPose(ArmPose targetPose) {
