@@ -43,7 +43,7 @@ public final class MessageReader {
      */
     public String readString() {
         try {
-            return in.readUTF();
+            return MessengerClient.readStringUtf8(in);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read String", e);
         }

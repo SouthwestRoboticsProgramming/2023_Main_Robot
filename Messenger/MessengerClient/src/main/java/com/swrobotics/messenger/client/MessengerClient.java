@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,6 +28,19 @@ public final class MessengerClient {
     private static final String DISCONNECT = "_Disconnect";
 
     private static final long TIMEOUT = 4000L;
+
+    static String readStringUtf8(DataInputStream in) throws IOException {
+        int len = in.readUnsignedShort();
+        byte[] utf8 = new byte[len];
+        in.readFully(utf8);
+        return new String(utf8, StandardCharsets.UTF_8);
+    }
+
+    static void writeStringUtf8(DataOutputStream out, String str) throws IOException {
+        byte[] utf8 = str.getBytes(StandardCharsets.UTF_8);
+        out.writeShort(utf8.length);
+        out.write(utf8);
+    }
 
     private String host;
     private int port;
@@ -128,7 +142,7 @@ public final class MessengerClient {
                                     socket.connect(new InetSocketAddress(host, port), 1000);
                                     in = new DataInputStream(socket.getInputStream());
                                     out = new DataOutputStream(socket.getOutputStream());
-                                    out.writeUTF(name);
+                                    writeStringUtf8(out, name);
 
                                     connected.set(true);
                                     System.out.println("Messenger connection established");
@@ -240,7 +254,7 @@ public final class MessengerClient {
 
         try {
             while (in.available() > 0) {
-                String type = in.readUTF();
+                String type = readStringUtf8(in);
                 int dataSize = in.readInt();
                 byte[] data = new byte[dataSize];
                 in.readFully(data);
@@ -352,7 +366,7 @@ public final class MessengerClient {
 
         synchronized (out) {
             try {
-                out.writeUTF(type);
+                writeStringUtf8(out, type);
                 out.writeInt(data.length);
                 out.write(data);
             } catch (IOException e) {
