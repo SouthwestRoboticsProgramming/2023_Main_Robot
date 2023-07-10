@@ -1,9 +1,9 @@
 package com.swrobotics.robot.subsystems.arm.joint;
 
-import com.ctre.phoenix.sensors.*;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
-import com.revrobotics.RelativeEncoder;
+import com.swrobotics.lib.encoder.CanCoder;
+import com.swrobotics.lib.encoder.Encoder;
+import com.swrobotics.lib.motor.rev.NEOMotor;
+import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.MathUtil;
@@ -17,10 +17,13 @@ import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 //   Assume arm is within 60 degrees of home so CANCoders work
 //   Set encoder to scaled current angle of home position + encoder angle
 
+// TODO: Check if encoder directions are correct
 public final class PhysicalJoint implements ArmJoint {
-    private final CANSparkMax motor;
-    private final RelativeEncoder encoder;
-    private final CANCoder canCoder;
+    private static final NTBoolean BRAKE_MODE = new NTBoolean("Arm/Brake Mode", true);
+
+    private final NEOMotor motor;
+    private final Encoder encoder;
+    private final Encoder canCoder;
 
     private final double gearRatio;
     private final double flip;
@@ -28,36 +31,29 @@ public final class PhysicalJoint implements ArmJoint {
     private double encoderOffset;
     private final NTDouble canCoderOffset;
 
+    private NTEntry<Double> canCoderLogTest;
+
     public PhysicalJoint(
             int motorId,
             int canCoderId,
             double gearRatio,
             NTDouble canCoderOffset,
             boolean inverted) {
-        motor = new CANSparkMax(motorId, CANSparkMaxLowLevel.MotorType.kBrushless);
-        motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        encoder = motor.getEncoder();
+        motor = new NEOMotor(motorId);
+        BRAKE_MODE.nowAndOnChange(() -> motor.setBrakeMode(BRAKE_MODE.get()));
+        encoder = motor.getIntegratedEncoder();
 
         this.gearRatio = gearRatio;
         this.flip = inverted ? -1 : 1;
 
-        // Make encoder position be in rotations
-        encoder.setPositionConversionFactor(1);
-
-        canCoder = new CANCoder(canCoderId);
-        CANCoderConfiguration config = new CANCoderConfiguration();
-        config.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
-        config.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180;
-        config.sensorTimeBase = SensorTimeBase.PerSecond;
-        canCoder.configAllSettings(config);
-
+        canCoder = new CanCoder(canCoderId).getAbsolute();
         this.canCoderOffset = canCoderOffset;
 
-        test = new NTDouble("Log/Arm/CanCoder " + canCoderId, -123).setTemporary();
+        canCoderLogTest = new NTDouble("Log/Arm/CANCoder " + canCoderId + " (cw deg)", 12345).setTemporary();
     }
 
     private double getRawEncoderPos() {
-        return flip * encoder.getPosition();
+        return flip * encoder.getAngle().ccw().rot();
     }
 
     private double getEncoderPos() {
@@ -65,7 +61,7 @@ public final class PhysicalJoint implements ArmJoint {
     }
 
     private double getRawCanCoderPos() {
-        return -flip * canCoder.getAbsolutePosition();
+        return -flip * canCoder.getAngle().ccw().deg();
     }
 
     private double getCanCoderPos() {
@@ -94,11 +90,9 @@ public final class PhysicalJoint implements ArmJoint {
         encoderOffset = expectedPos - actualPos;
     }
 
-    private final NTEntry<Double> test;
-
     @Override
     public void setMotorOutput(double out) {
-        test.set(getCanCoderPos());
-        motor.set(out * flip);
+        motor.setPercentOut(out * flip);
+        canCoderLogTest.set(canCoder.getAngle().cw().deg());
     }
 }

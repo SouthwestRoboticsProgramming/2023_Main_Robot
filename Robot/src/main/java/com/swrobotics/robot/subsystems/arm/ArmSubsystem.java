@@ -1,21 +1,20 @@
 package com.swrobotics.robot.subsystems.arm;
 
+import static com.swrobotics.robot.subsystems.arm.ArmConstants.*;
 import static com.swrobotics.robot.subsystems.arm.ArmPathfinder.toStateSpaceVec;
-import static com.swrobotics.shared.arm.ArmConstants.*;
 
 import org.littletonrobotics.junction.Logger;
 
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTEntry;
+import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
-import com.swrobotics.robot.subsystems.SwitchableSubsystemBase;
 import com.swrobotics.robot.subsystems.arm.joint.ArmJoint;
 import com.swrobotics.robot.subsystems.arm.joint.PhysicalJoint;
 import com.swrobotics.robot.subsystems.arm.joint.SimJoint;
-import com.swrobotics.shared.arm.ArmPose;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -26,6 +25,8 @@ import edu.wpi.first.wpilibj.util.Color;
 
 // All arm kinematics is treated as a 2d coordinate system, with
 // the X axis representing forward, and the Y axis representing up
+// FIXME: Wrist is currently not functional
+// TODO: Redo pretty much all of this
 public final class ArmSubsystem extends SwitchableSubsystemBase {
     // Info relating to each physical arm, since they aren't identical
     private static final NTBoolean OFFSET_CALIBRATE = new NTBoolean("Arm/Calibrate Offsets", false);
@@ -119,7 +120,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
         // finder = new ArmPathfinder(msg);
 
-        ArmPose home = new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get());
+        ArmPose home = new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get(), 0);
         calibrateHome(home);
         targetPose = home;
         inToleranceHysteresis = false;
@@ -144,11 +145,11 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     }
 
     public ArmPose getCurrentPose() {
-        return new ArmPose(bottomJoint.getCurrentAngle(), topJoint.getCurrentAngle());
+        return new ArmPose(bottomJoint.getCurrentAngle(), topJoint.getCurrentAngle(), 0);
     }
 
     public Translation2d getHomeTarget() {
-        return new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get()).getEndPosition();
+        return new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get(), 0).getEndPosition();
     }
 
     private void idle() {
@@ -256,7 +257,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     public void setTargetPosition(Translation2d position) {
         L_TARGET_X.set(position.getX());
         L_TARGET_Y.set(position.getY());
-        targetPose = ArmPose.fromEndPosition(position);
+        targetPose = ArmPose.fromEndPosition(position, 0);
         inToleranceHysteresis = false;
     }
 
