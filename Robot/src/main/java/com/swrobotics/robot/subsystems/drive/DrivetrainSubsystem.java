@@ -7,7 +7,7 @@ import com.swrobotics.lib.drive.swerve.SwerveModuleAttributes;
 import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.field.FieldInfo;
-import com.swrobotics.lib.gyro.NavXGyroscope;
+import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
@@ -30,7 +30,7 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     private static final NTDouble TURN_KI = new NTDouble("Swerve/Modules/Turn kI", 0.0);
     private static final NTDouble TURN_KD = new NTDouble("Swerve/Modules/Turn kD", 0.1);
 
-    private final NavXGyroscope gyro;
+    private final PigeonGyroscope gyro;
 
     private final Field2d field = new Field2d();
     private final FieldObject2d ppPose = field.getObject("PathPlanner pose");
@@ -51,7 +51,7 @@ public final class DrivetrainSubsystem extends SwerveDrive {
                 SwerveModuleAttributes.SDS_MK4I_L3, driveMotor, turnMotor, encoder, pos, info.offset);
     }
 
-    public DrivetrainSubsystem(NavXGyroscope gyro) {
+    public DrivetrainSubsystem(PigeonGyroscope gyro) {
         super(
                 FIELD,
                 gyro,
@@ -70,13 +70,14 @@ public final class DrivetrainSubsystem extends SwerveDrive {
 
     // FIXME: Correct for weird gyro mounting
     // FIXME: This should probably be based on the up vector rather than raw angles
+    // FIXME: Not zero
     public Translation2d getTiltAsTranslation() {
-        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
+        return new Translation2d(0, 0);
+//        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
     }
 
     @Override
     public void periodic() {
-        // FIXME: Bring back coast mode (this should be in lib)
         setBrakeMode(getStopPosition() != StopPosition.COAST);
 
         super.periodic();
@@ -87,9 +88,9 @@ public final class DrivetrainSubsystem extends SwerveDrive {
         }
 
         // Log gyro data
-        Logger.getInstance().recordOutput("Gyro/RawPitch", gyro.getPitch());
+//        Logger.getInstance().recordOutput("Gyro/RawPitch", gyro.getPitch());
         Logger.getInstance().recordOutput("Gyro/Angle", gyro.getAngle().ccw().deg());
-        Logger.getInstance().recordOutput("Gyro/RawRoll", gyro.getRoll());
+//        Logger.getInstance().recordOutput("Gyro/RawRoll", gyro.getRoll());
 //        Logger.getInstance().recordOutput("Gyro/OffsetAmountDeg", gyroOffset.getDegrees());
 
         Logger.getInstance().recordOutput("SwerveStates/Setpoints", getModuleTargetStates());

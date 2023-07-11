@@ -66,6 +66,11 @@ public class SwerveDrive extends Drivetrain {
 
     @Override
     protected void drive(ChassisSpeeds speeds) {
+        if (speeds.vxMetersPerSecond == 0 && speeds.vyMetersPerSecond == 0 && speeds.omegaRadiansPerSecond == 0) {
+            stop();
+            return;
+        }
+
         final double periodicTime = 0.02;
 
         // "Borrowed" from team 254
