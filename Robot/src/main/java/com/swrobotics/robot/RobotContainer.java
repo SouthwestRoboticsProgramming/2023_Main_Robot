@@ -4,8 +4,10 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
+import com.swrobotics.lib.drive.swerve.StopPosition;
 import com.swrobotics.lib.drive.swerve.commands.DriveBlindCommand;
 import com.swrobotics.lib.gyro.NavXGyroscope;
+import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
@@ -50,6 +52,8 @@ public class RobotContainer {
     private static final int MESSENGER_PORT = 5805;
     private static final String MESSENGER_NAME = "Robot";
 
+    private static final int PIGEON_CAN_ID = 20;
+
     // Create a way to choose between autonomous sequences
     private final SendableChooser<Supplier<Command>> autoSelector;
 
@@ -81,7 +85,7 @@ public class RobotContainer {
         arm = new ArmSubsystem(messenger);
         intake = new IntakeSubsystem();
 
-        swerveDrive = new DrivetrainSubsystem(new NavXGyroscope(SPI.Port.kMXP));
+        swerveDrive = new DrivetrainSubsystem(new PigeonGyroscope(PIGEON_CAN_ID));
         input = new Input(this);
         swerveDrive.setDefaultCommand(new DefaultDriveCommand(swerveDrive, input));
 

@@ -50,7 +50,7 @@ public final class MessageBuilder {
      */
     public MessageBuilder addString(String s) {
         try {
-            out.writeUTF(s);
+            MessengerClient.writeStringUtf8(out, s);
         } catch (IOException e) {
             throw new RuntimeException("Failed to write String", e);
         }

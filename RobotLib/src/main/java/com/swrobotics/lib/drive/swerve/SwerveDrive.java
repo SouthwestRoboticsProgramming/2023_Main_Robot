@@ -89,6 +89,11 @@ public class SwerveDrive extends Drivetrain {
         double omega = speeds.omegaRadiansPerSecond;
 
         if (vx == 0 && vy == 0 && omega == 0) {
+            if (stopPosition == StopPosition.COAST) {
+                stop();
+                return;
+            }
+
             for (int i = 0; i < states.length; i++) {
                 states[i] =
                         new SwerveModuleState(0, stopPosition.getForModule(modules[i]));
