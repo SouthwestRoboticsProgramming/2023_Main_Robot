@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.BiConsumer;
 
+import com.swrobotics.lib.gyro.PigeonGyroscope;
+import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTEntry;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -118,7 +121,7 @@ public class Robot extends LoggedRobot {
             }
         }
     }
-
+    
     @Override
     public void robotPeriodic() {
         Threads.setCurrentThreadPriority(true, 99);
