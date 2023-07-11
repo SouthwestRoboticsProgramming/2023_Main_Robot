@@ -66,11 +66,6 @@ public class SwerveDrive extends Drivetrain {
 
     @Override
     protected void drive(ChassisSpeeds speeds) {
-        if (speeds.vxMetersPerSecond == 0 && speeds.vyMetersPerSecond == 0 && speeds.omegaRadiansPerSecond == 0) {
-            stop();
-            return;
-        }
-
         final double periodicTime = 0.02;
 
         // "Borrowed" from team 254
@@ -94,6 +89,11 @@ public class SwerveDrive extends Drivetrain {
         double omega = speeds.omegaRadiansPerSecond;
 
         if (vx == 0 && vy == 0 && omega == 0) {
+            if (stopPosition == StopPosition.COAST) {
+                stop();
+                return;
+            }
+
             for (int i = 0; i < states.length; i++) {
                 states[i] =
                         new SwerveModuleState(0, stopPosition.getForModule(modules[i]));

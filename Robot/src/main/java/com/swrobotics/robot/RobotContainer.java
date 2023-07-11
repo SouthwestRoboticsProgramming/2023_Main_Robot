@@ -4,6 +4,7 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
+import com.swrobotics.lib.drive.swerve.StopPosition;
 import com.swrobotics.lib.drive.swerve.commands.DriveBlindCommand;
 import com.swrobotics.lib.gyro.NavXGyroscope;
 import com.swrobotics.lib.gyro.PigeonGyroscope;
