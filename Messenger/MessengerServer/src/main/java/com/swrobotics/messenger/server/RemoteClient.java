@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Queue;
@@ -42,9 +43,22 @@ public final class RemoteClient implements Client, Runnable {
         lastHeartbeatTime = System.currentTimeMillis();
     }
 
+    public static String readStringUtf8(DataInputStream in) throws IOException {
+        int len = in.readUnsignedShort();
+        byte[] utf8 = new byte[len];
+        in.readFully(utf8);
+        return new String(utf8, StandardCharsets.UTF_8);
+    }
+
+    public static void writeStringUtf8(DataOutputStream out, String str) throws IOException {
+        byte[] utf8 = str.getBytes(StandardCharsets.UTF_8);
+        out.writeShort(utf8.length);
+        out.write(utf8);
+    }
+
     private void readMessage() throws IOException {
         //        System.out.println("Reading message type");
-        String type = in.readUTF();
+        String type = readStringUtf8(in);
 
         int dataSz = in.readInt();
         //        System.out.println("Type " + type + ", reading " + dataSz + " data bytes");
@@ -64,7 +78,7 @@ public final class RemoteClient implements Client, Runnable {
                 }
             case LISTEN:
                 {
-                    String listenType = in.readUTF();
+                    String listenType = readStringUtf8(in);
                     System.out.println("Client " + name + " listening to " + listenType);
                     MessengerServer.get().broadcastEvent("Listen", name, listenType);
                     if (listenType.charAt(listenType.length() - 1) == '*') {
@@ -76,7 +90,7 @@ public final class RemoteClient implements Client, Runnable {
                 }
             case UNLISTEN:
                 {
-                    String unlistenType = in.readUTF();
+                    String unlistenType = readStringUtf8(in);
                     System.out.println(
                             "Client " + name + " no longer listening to " + unlistenType);
                     MessengerServer.get().broadcastEvent("Unlisten", name, unlistenType);
@@ -100,7 +114,7 @@ public final class RemoteClient implements Client, Runnable {
     }
 
     private void writeMessage(Message msg) throws IOException {
-        out.writeUTF(msg.getType());
+        writeStringUtf8(out, msg.getType());
 
         byte[] data = msg.getData();
         out.writeInt(data.length);
@@ -131,7 +145,7 @@ public final class RemoteClient implements Client, Runnable {
                             break main;
                         }
                     } else {
-                        name = in.readUTF();
+                        name = readStringUtf8(in);
                         identified = true;
 
                         MessengerServer.get().broadcastEvent("Connect", name, "");

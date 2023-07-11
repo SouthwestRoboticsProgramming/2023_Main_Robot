@@ -7,7 +7,7 @@ All data in this protocol is big-endian (most significant byte sent first). The 
 | Type      | Size (bytes) | Format |
 | --------- | ------------ | ------ |
 | `boolean` | 1            | 1 if true, 0 if false |
-| `String`  | len + 2      | First 2 bytes are unsigned 16-bit integer indicating `length`, remaining `length` bytes are [Modified UTF-8](https://docs.oracle.com/javase/6/docs/api/java/io/DataInput.html#modified-utf-8) |
+| `String`  | len + 2      | First 2 bytes are unsigned 16-bit integer indicating `length`, remaining `length` bytes are UTF-8 |
 | `char`    | 2            | One UTF-16 codepoint |
 | `byte`    | 1            | Signed 8-bit integer |
 | `short`   | 2            | Signed 16-bit integer |

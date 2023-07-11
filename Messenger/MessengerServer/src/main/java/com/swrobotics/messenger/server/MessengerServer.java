@@ -44,9 +44,9 @@ public final class MessengerServer {
             ByteArrayOutputStream b = new ByteArrayOutputStream();
             DataOutputStream out = new DataOutputStream(b);
 
-            out.writeUTF(type);
-            out.writeUTF(name);
-            out.writeUTF(descriptor);
+            RemoteClient.writeStringUtf8(out, type);
+            RemoteClient.writeStringUtf8(out, name);
+            RemoteClient.writeStringUtf8(out, descriptor);
 
             data = b.toByteArray();
         } catch (IOException e) {
@@ -66,7 +66,7 @@ public final class MessengerServer {
 
                 d.writeInt(clients.size());
                 for (Client client : clients) {
-                    d.writeUTF(client.getName());
+                    RemoteClient.writeStringUtf8(d, client.getName());
                 }
 
                 dispatchMessage(new Message(MSG_CLIENTS, b.toByteArray()));
