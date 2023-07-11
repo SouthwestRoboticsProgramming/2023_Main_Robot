@@ -92,7 +92,8 @@ public final class PhysicalJoint implements ArmJoint {
 
     @Override
     public void setMotorOutput(double out) {
-        motor.setPercentOut(out * flip);
+        motor.setPercentOut(0);
+//        motor.setPercentOut(out * flip);
         canCoderLogTest.set(canCoder.getAngle().cw().deg());
     }
 }

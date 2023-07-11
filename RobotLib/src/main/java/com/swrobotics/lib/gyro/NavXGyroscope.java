@@ -7,7 +7,7 @@ import com.swrobotics.mathlib.CCWAngle;
 import edu.wpi.first.wpilibj.SPI;
 
 /** Gyroscope implementation for the NavX2 IMU from Kauai Labs. */
-public final class NavXGyroscope extends Gyroscope {
+public class NavXGyroscope extends Gyroscope {
     private final AHRS navx;
 
     /**

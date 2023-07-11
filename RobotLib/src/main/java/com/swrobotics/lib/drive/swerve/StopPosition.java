@@ -13,7 +13,7 @@ public enum StopPosition {
   COAST {
     @Override
     public Rotation2d getForModule(SwerveModule module) {
-      return module.getAngle();
+      return null; // This is never called
     }
   },
 

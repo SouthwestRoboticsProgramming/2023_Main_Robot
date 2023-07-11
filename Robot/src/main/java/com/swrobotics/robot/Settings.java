@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 
 public class Settings {
 
-    public static final RobotType robot = RobotType.SIMULATION;
+    public static final RobotType robot = RobotType.COMPETITION;
 
     public static Mode getMode() {
         switch (robot) {
@@ -19,7 +19,7 @@ public class Settings {
         }
     }
 
-    public static final Map<RobotType, String> logFolders = Map.of(RobotType.COMPETITION, "/media/sda2");
+    public static final Map<RobotType, String> logFolders = Map.of(RobotType.COMPETITION, "/media/sda1/");
 
     public static enum RobotType {
         COMPETITION,
