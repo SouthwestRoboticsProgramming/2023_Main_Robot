@@ -215,7 +215,7 @@ public final class Input extends SubsystemBase {
             ntArmTarget = inferDirection(gamePieceSet.scoreMid, angle, towardsGridAngle());
         }
 
-        Vec2d translationNudge = deadbandVec(manipulator.getLeftStick()).mul(ARM_TRANSLATION_RATE.get());
+        Vec2d translationNudge = deadbandVec(manipulator.getLeftStick()).mul(ARM_TRANSLATION_RATE.get()).mul(1, -1);
         Angle wristNudge = WRIST_ROTATION_RATE.get().mul(deadband(manipulator.rightStickY.get()));
 
         // No shakey

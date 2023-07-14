@@ -110,6 +110,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         currentVisualizer.setPose(getCurrentPose());
         targetVisualizer.setPose(targetPose);
 
+        System.out.println(targetPose);
+
         // Send the desired path endpoints to the pathfinder
         ArmPose currentPose = getCurrentPose();
         ArmPathfinder.PathPoint startPoint = ArmPathfinder.PathPoint.fromPose(currentPose);

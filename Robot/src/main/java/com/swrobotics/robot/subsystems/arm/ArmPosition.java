@@ -43,6 +43,9 @@ public final class ArmPosition {
         this.wristAngle = wristAngle;
     }
 
+    private static final double MIN_BOTTOM_ANGLE = Math.toRadians(25);
+    private static final double MAX_BOTTOM_ANGLE = Math.toRadians(180 - 55);
+
     /**
      * Finds a pose that satisfies the constraints specified in this position.
      *
@@ -76,7 +79,11 @@ public final class ArmPosition {
                         (lengthA * lengthA + lengthB * lengthB - len * len)
                                 / (2 * lengthA * lengthB));
 
-        Angle angle1 = CCWAngle.rad(targetAngle + flip * angleAL);
+        double angle1Rad = targetAngle + flip * angleAL;
+        if (angle1Rad < MIN_BOTTOM_ANGLE || angle1Rad > MAX_BOTTOM_ANGLE)
+            return null;
+
+        Angle angle1 = CCWAngle.rad(angle1Rad);
         Angle angle2 = angle1.ccw().add(CCWAngle.rad(flip * angleAB - Math.PI)).wrapDeg(-270, 90);
 
         return new ArmPose(angle1, angle2, wristAngle);

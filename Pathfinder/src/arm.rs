@@ -24,6 +24,8 @@ const BUMPER_THICKNESS: f64 = 3.625 / IN_PER_M; // Thickness of bumper from fram
 pub const FRAME_SIZE: f64 = 21.0 / IN_PER_M; // Size of drive base without bumpers
 const BASE_SIZE: f64 = FRAME_SIZE + 2.0 * BUMPER_THICKNESS;
 const BASE_HEIGHT: f64 = 4.7522244 / IN_PER_M; // Distance from floor to top of drive base
+const MIN_BOTTOM_ANGLE: f64 = 25.0;
+const MAX_BOTTOM_ANGLE: f64 = 180.0 - 25.0;
 
 // TODO: Grid collision rectangles
 
@@ -74,6 +76,12 @@ impl ArmPose {
     }
 
     pub fn is_valid(&self) -> bool {
+        // Prevent collision with gearbox
+        let bottom_angle_deg = self.bottom_angle * 180.0 / std::f64::consts::PI;
+        if bottom_angle_deg < MIN_BOTTOM_ANGLE || bottom_angle_deg > MAX_BOTTOM_ANGLE {
+            return false;
+        }
+
         let midpoint = self.get_midpoint();
         let endpoint = self.get_endpoint();
 
