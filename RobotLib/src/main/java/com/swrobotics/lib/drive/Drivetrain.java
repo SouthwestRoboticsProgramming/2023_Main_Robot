@@ -62,7 +62,9 @@ public abstract class Drivetrain extends SwitchableSubsystemBase {
 
     /** Recalibrates the gyro to face forward relative to the driver station. */
     public void zeroGyroscope() {
-        gyro.setAngle(fieldInfo.getAllianceForwardAngle());
+        Angle a = fieldInfo.getAllianceForwardAngle();
+        gyro.setAngle(a);
+        setOdometryPose(new Pose2d(getOdometryPose().getTranslation(), a.ccw().rotation2d()));
     }
 
     /**

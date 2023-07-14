@@ -67,8 +67,18 @@ public class SwerveModule {
 
         positionalOffset = MathUtil.wrap(position.getAngle().getDegrees(), -180, 180);
 
-        setState(new SwerveModuleState());
+        // Wait to spread out CAN usage during initialization
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {}
+
         calibrateWithAbsoluteEncoder();
+        setState(new SwerveModuleState());
+
+        // Wait again
+        try {
+        Thread.sleep(500);
+        } catch (InterruptedException e) {}
     }
 
     /**
@@ -159,11 +169,15 @@ public class SwerveModule {
      */
     public Rotation2d getAbsoluteAngle() {
         return Rotation2d.fromDegrees(
-                encoder.getAngle().ccw().deg() - offset.get() - positionalOffset);
+                encoder.getAngle().ccw().deg() - offset.get() + positionalOffset);
     }
 
-    public double getCalibrationAngle() {
-        return encoder.getAngle().ccw().deg() - positionalOffset; // No offset applied
+    public void calibrateOffset() {
+        offset.set(encoder.getAngle().ccw().deg() + positionalOffset); // No offset applied
+    }
+
+    private void calibrateWithAbsoluteEncoder() {
+        turnEncoder.setAngle(toNativeTurnUnits(getAbsoluteAngle()));
     }
 
     /**
@@ -171,7 +185,7 @@ public class SwerveModule {
      * pointing forward when this is called.
      */
     public void calibrate() {
-        offset.set(getCalibrationAngle());
+        calibrateOffset();
         calibrateWithAbsoluteEncoder();
     }
 
@@ -195,10 +209,6 @@ public class SwerveModule {
         }
 
         return fromNativeDriveUnits(driveEncoder.getVelocity());
-    }
-
-    private void calibrateWithAbsoluteEncoder() {
-        turnEncoder.setAngle(toNativeTurnUnits(getAbsoluteAngle()));
     }
 
     private SwerveModuleState optimize(double velocity, double angleRad) {

@@ -37,6 +37,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTVec2d FOLD_ZONE = new NTVec2d("Arm/Fold Zone", 0.5, 0.25);
     private static final NTAngle FOLD_ANGLE = new NTAngle("Arm/Fold Angle", Angle.ZERO, NTAngle.Mode.CCW_DEG);
 
+    private static final NTBoolean BRAKE_MODE = new NTBoolean("Arm/Brake Mode", true);
+
     private final ArmJoint bottom, top;
     private final WristJoint wrist;
     private final ArmPathfinder pathfinder;
@@ -70,6 +72,13 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         pathfinder = new ArmPathfinder(msg);
         movePid = NTUtil.tunablePID(MOVE_KP, MOVE_KI, MOVE_KD);
         targetPose = home;
+
+        BRAKE_MODE.nowAndOnChange(() -> {
+            boolean brake = BRAKE_MODE.get();
+            bottom.setBrakeMode(brake);
+            top.setBrakeMode(brake);
+            wrist.setBrakeMode(brake);
+        });
     }
 
     public ArmPose getCurrentPose() {

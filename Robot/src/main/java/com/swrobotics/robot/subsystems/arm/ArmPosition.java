@@ -7,8 +7,11 @@ import com.swrobotics.mathlib.Vec2d;
 
 public final class ArmPosition {
     public static final class NT extends NTDoubleArray {
+        private final ArmPosition defPos;
+
         public NT(String path, double defX, double defY, Angle defWrist) {
             super(path, defX, defY, defWrist.ccw().deg());
+            defPos = new ArmPosition(new Vec2d(defX, defY), defWrist);
         }
 
         public NT(String path, ArmPosition defPos) {
@@ -17,6 +20,9 @@ public final class ArmPosition {
 
         public ArmPosition getPosition() {
             double[] coords = get();
+            if (coords.length < 3) {
+                set(defPos);
+            }
             return new ArmPosition(new Vec2d(coords[0], coords[1]), CCWAngle.deg(coords[2]));
         }
 

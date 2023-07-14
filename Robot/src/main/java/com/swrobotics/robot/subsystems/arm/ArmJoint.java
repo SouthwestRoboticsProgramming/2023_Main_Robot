@@ -55,6 +55,10 @@ public class ArmJoint {
         absoluteEncoder.setInverted(invert);
     }
 
+    public void setBrakeMode(boolean brake) {
+        motor.setBrakeMode(brake);
+    }
+
     /**
      * Gets the current angle of this joint relative to horizontal.
      *
@@ -92,6 +96,7 @@ public class ArmJoint {
      * {@link #getCurrentAngle()}.
      */
     public void setMotorOutput(double percent) {
-        motor.setPercentOut(percent);
+        // FIXME: don't comment this
+        //motor.setPercentOut(percent);
     }
 }

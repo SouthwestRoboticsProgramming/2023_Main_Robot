@@ -32,6 +32,16 @@ public final class PigeonGyroscope extends Gyroscope {
         return CCWAngle.deg(pigeon.getYaw());
     }
 
+    // Rotation around Pigeon X axis
+    public Angle getPitch() {
+        return CCWAngle.deg(pigeon.getPitch());
+    }
+
+    // Rotation around Pigeon Y axis
+    public Angle getRoll() {
+        return CCWAngle.deg(pigeon.getRoll());
+    }
+
     // TODO: make it work
 //    /**
 //     * Gets the vector aligned with gravity (i.e. pointing straight down).

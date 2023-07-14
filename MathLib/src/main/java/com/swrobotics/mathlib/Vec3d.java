@@ -477,6 +477,10 @@ public final class Vec3d {
         return Math.sqrt(distanceToSq(o));
     }
 
+//    public Vec3d rotateX(Angle a) {
+//
+//    }
+
     // TODO
 //    public double distanceToLineSegmentSq(Vec3d a, Vec3d b) {
 //        double l2 = a.distanceToSq(b);

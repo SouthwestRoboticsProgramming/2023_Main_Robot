@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 
 public class Settings {
 
-    public static final RobotType robot = RobotType.COMPETITION;
+    public static final RobotType robot = RobotType.SIMULATION;
 
     public static Mode getMode() {
         switch (robot) {
