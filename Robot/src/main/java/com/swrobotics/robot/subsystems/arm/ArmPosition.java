@@ -3,6 +3,7 @@ package com.swrobotics.robot.subsystems.arm;
 import com.swrobotics.lib.net.NTDoubleArray;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
+import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 
 public final class ArmPosition {
@@ -58,8 +59,12 @@ public final class ArmPosition {
 
         double targetAngle = Math.atan2(-targetX, targetY) + Math.PI / 2;
         double len = Math.sqrt(targetX * targetX + targetY * targetY);
-        if (len >= lengthA + lengthB) {
+        if (len >= lengthA + lengthB - MathUtil.EPSILON) {
             // Target is too far away, it's impossible for the arm to reach
+            return null;
+        }
+        if (len < Math.abs(lengthA - lengthB)) {
+            // Target is too close, it's impossible to reach
             return null;
         }
 

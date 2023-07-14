@@ -31,7 +31,11 @@ public final class NTAngle extends NTEntry<Angle> {
         super(path, defaultVal);
         this.mode = mode;
         defaultValMeasure = mode.to.apply(defaultVal);
-        if (!entry.exists()) set(defaultVal);
+        if (!entry.exists()) {
+            set(defaultVal);
+        }
+        // Apparently this only works if the value exists, so we need to do it after initial creation
+        entry.setPersistent();
     }
 
     @Override

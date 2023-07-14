@@ -8,6 +8,7 @@ import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -37,8 +38,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTVec2d FOLD_ZONE = new NTVec2d("Arm/Fold Zone", 0.5, 0.25);
     private static final NTAngle FOLD_ANGLE = new NTAngle("Arm/Fold Angle", Angle.ZERO, NTAngle.Mode.CCW_DEG);
 
-    private static final NTBoolean BRAKE_MODE = new NTBoolean("Arm/Brake Mode", true);
-
     private final ArmJoint bottom, top;
     private final WristJoint wrist;
     private final ArmPathfinder pathfinder;
@@ -49,10 +48,9 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private final ArmVisualizer currentVisualizer, stepTargetVisualizer, targetVisualizer;
 
     public ArmSubsystem(MessengerClient msg) {
-        // FIXME: invert values might be incorrect
-        bottom = new ArmJoint(BOTTOM_MOTOR_ID, BOTTOM_CANCODER_ID, CANCODER_TO_ARM_RATIO, BOTTOM_GEAR_RATIO, BOTTOM_OFFSET, false);
-        top = new ArmJoint(TOP_MOTOR_ID, TOP_CANCODER_ID, CANCODER_TO_ARM_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, true);
-        wrist = new WristJoint(WRIST_MOTOR_ID, WRIST_CANCODER_ID, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, WRIST_OFFSET, false);
+        bottom = new ArmJoint(BOTTOM_MOTOR_ID, BOTTOM_CANCODER_ID, CANCODER_TO_ARM_RATIO, BOTTOM_GEAR_RATIO, BOTTOM_OFFSET, true);
+        top = new ArmJoint(TOP_MOTOR_ID, TOP_CANCODER_ID, CANCODER_TO_ARM_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, false);
+        wrist = new WristJoint(WRIST_MOTOR_ID, WRIST_CANCODER_ID, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, WRIST_OFFSET, false); // Invert may be wrong
 
         double size = (BOTTOM_LENGTH + TOP_LENGTH + WRIST_LENGTH) * 2;
         Mechanism2d visualizer = new Mechanism2d(size, size);
@@ -72,13 +70,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         pathfinder = new ArmPathfinder(msg);
         movePid = NTUtil.tunablePID(MOVE_KP, MOVE_KI, MOVE_KD);
         targetPose = home;
-
-        BRAKE_MODE.nowAndOnChange(() -> {
-            boolean brake = BRAKE_MODE.get();
-            bottom.setBrakeMode(brake);
-            top.setBrakeMode(brake);
-            wrist.setBrakeMode(brake);
-        });
     }
 
     public ArmPose getCurrentPose() {
@@ -102,6 +93,11 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
     @Override
     public void periodic() {
+        boolean brake = !DriverStation.isDisabled();
+        bottom.setBrakeMode(brake);
+        top.setBrakeMode(brake);
+        wrist.setBrakeMode(brake);
+
         if (CALIBRATE_CANCODERS.get()) {
             CALIBRATE_CANCODERS.set(false);
 
@@ -229,6 +225,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             return;
         }
         targetPose = pose;
+    }
+
+    public void moveNow() {
+        inToleranceHysteresis = false;
     }
 
     public boolean isInTolerance() {

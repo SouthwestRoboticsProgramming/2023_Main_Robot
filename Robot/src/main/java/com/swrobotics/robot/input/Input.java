@@ -215,8 +215,12 @@ public final class Input extends SubsystemBase {
             ntArmTarget = inferDirection(gamePieceSet.scoreMid, angle, towardsGridAngle());
         }
 
-        Vec2d translationNudge = manipulator.getLeftStick().mul(ARM_TRANSLATION_RATE.get());
-        Angle wristNudge = WRIST_ROTATION_RATE.get().mul(manipulator.rightStickY.get());
+        Vec2d translationNudge = deadbandVec(manipulator.getLeftStick()).mul(ARM_TRANSLATION_RATE.get());
+        Angle wristNudge = WRIST_ROTATION_RATE.get().mul(deadband(manipulator.rightStickY.get()));
+
+        // No shakey
+        if (translationNudge.magnitudeSq() > 0)
+            robot.arm.moveNow();
 
         ArmPosition armTarget;
         if (ntArmTarget == null) {
@@ -237,6 +241,11 @@ public final class Input extends SubsystemBase {
 
         robot.arm.setTargetPosition(armTarget);
         robot.intake.set(intakeMode, effectiveGamePiece);
+    }
+
+    private Vec2d deadbandVec(Vec2d v) {
+        double mag = deadband(v.magnitude());
+        return v.normalize().mul(mag);
     }
 
     @Override

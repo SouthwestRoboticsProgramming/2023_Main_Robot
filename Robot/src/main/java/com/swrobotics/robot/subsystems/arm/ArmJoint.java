@@ -74,7 +74,7 @@ public class ArmJoint {
      */
     public void calibratePosition(Angle home) {
         // Get CanCoder position: angle relative to home angle at the cancoder axis
-        Angle canCoderPos = absoluteEncoder.getAngle().sub(absEncoderOffset.get());
+        Angle canCoderPos = absoluteEncoder.getAngle().add(absEncoderOffset.get());
 
         // Arm position: position of arm relative to horizontal
         Angle armPos = home.add(canCoderPos.div(canCoderToArmRatio));
@@ -96,7 +96,6 @@ public class ArmJoint {
      * {@link #getCurrentAngle()}.
      */
     public void setMotorOutput(double percent) {
-        // FIXME: don't comment this
-        //motor.setPercentOut(percent);
+        motor.setPercentOut(percent);
     }
 }
