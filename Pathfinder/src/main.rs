@@ -24,8 +24,8 @@ cfg_if! {
     }
 }
 
-pub const STATE_SZ: Vec2i = Vec2i { x: 128, y: 128 };
-pub const BOTTOM_RANGE: (f64, f64) = (0.0, PI);
+pub const STATE_SZ: Vec2i = Vec2i { x: 128, y: 256 };
+pub const BOTTOM_RANGE: (f64, f64) = (0.4363, 2.1817);
 pub const TOP_RANGE: (f64, f64) = (-1.5 * PI, 0.5 * PI);
 
 fn state_to_pose(state_x: f32, state_y: f32) -> ArmPose {
