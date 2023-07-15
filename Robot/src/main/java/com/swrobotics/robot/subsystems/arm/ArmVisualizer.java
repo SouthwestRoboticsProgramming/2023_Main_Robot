@@ -1,6 +1,5 @@
 package com.swrobotics.robot.subsystems.arm;
 
-import com.swrobotics.mathlib.CCWAngle;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -30,7 +29,7 @@ public final class ArmVisualizer {
                 new MechanismLigament2d(
                         "Top Arm", ArmConstants.TOP_LENGTH, 0, 6, new Color8Bit(topColor)));
         wrist = top.append(
-                new MechanismLigament2d("Wrist", ArmConstants.WRIST_LENGTH / 2, 0, 6, new Color8Bit(wristColor)));
+                new MechanismLigament2d("Wrist", ArmConstants.WRIST_RAD / 2, 0, 6, new Color8Bit(wristColor)));
     }
 
     public void setPose(ArmPose pose) {

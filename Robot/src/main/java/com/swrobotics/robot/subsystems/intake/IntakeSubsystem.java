@@ -1,9 +1,8 @@
 package com.swrobotics.robot.subsystems.intake;
 
 import com.swrobotics.lib.motor.Motor;
-import com.swrobotics.lib.motor.rev.PWMSparkMaxMotor;
+import com.swrobotics.lib.motor.rev.NEOMotor;
 import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
-import com.swrobotics.robot.RIOPorts;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
     public enum Mode {
@@ -15,9 +14,7 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     private final Motor motor;
 
     public IntakeSubsystem() {
-        // TODO: If we're running CAN to the end of the arm, do we want to
-        //       switch this to CAN?
-        motor = new PWMSparkMaxMotor(RIOPorts.INTAKE_PWM);
+        motor = new NEOMotor(26);
     }
 
     public void set(Mode mode, GamePiece gamePiece) {

@@ -52,7 +52,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         top = new ArmJoint(TOP_MOTOR_ID, TOP_CANCODER_ID, CANCODER_TO_ARM_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, false);
         wrist = new WristJoint(WRIST_MOTOR_ID, WRIST_CANCODER_ID, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, WRIST_OFFSET, false); // Invert may be wrong
 
-        double size = (BOTTOM_LENGTH + TOP_LENGTH + WRIST_LENGTH) * 2;
+        double size = (BOTTOM_LENGTH + TOP_LENGTH + WRIST_RAD) * 2;
         Mechanism2d visualizer = new Mechanism2d(size, size);
         targetVisualizer = new ArmVisualizer(size/2, size/2, visualizer, "Target", Color.kDarkRed, Color.kRed, Color.kOrangeRed);
         stepTargetVisualizer = new ArmVisualizer(size/2, size/2, visualizer, "Step Target", Color.kDarkOrange, Color.kOrange, Color.kDarkGoldenrod);
@@ -91,12 +91,27 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
                 point.topAngle.ccw().rot() * ArmConstants.TOP_GEAR_RATIO);
     }
 
+//    int counter = 0;
     @Override
     public void periodic() {
         boolean brake = !DriverStation.isDisabled();
         bottom.setBrakeMode(brake);
         top.setBrakeMode(brake);
         wrist.setBrakeMode(brake);
+
+//        if (counter++ == 100) {
+//            counter = 0;
+//
+//            ArmPose pose = null;
+//            while (pose == null) {
+//                pose = new ArmPosition(new Vec2d(
+//                        Math.random() * 2 - 1,
+//                        Math.random() + 0.2
+//                ), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
+//            }
+//
+//            setTargetPose(pose);
+//        }
 
         if (CALIBRATE_CANCODERS.get()) {
             CALIBRATE_CANCODERS.set(false);
@@ -109,8 +124,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
         currentVisualizer.setPose(getCurrentPose());
         targetVisualizer.setPose(targetPose);
-
-        System.out.println(targetPose);
 
         // Send the desired path endpoints to the pathfinder
         ArmPose currentPose = getCurrentPose();
@@ -206,17 +219,18 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         // piece since the intake fits over the drive base at all angles.
         Vec2d axisPos = currentPose.getAxisPos().absolute();
         Vec2d foldZone = FOLD_ZONE.getVec();
+        Angle wristRef = currentPose.topAngle;
         if (axisPos.x <= foldZone.x && axisPos.y <= foldZone.y) {
             // Set wrist to fold angle
-            wrist.setTargetAngle(FOLD_ANGLE.get());
+            wrist.setTargetAngle(FOLD_ANGLE.get().sub(wristRef));
         } else {
             // Set wrist to final target angle
-            Angle wristRef = currentPose.topAngle;
             wrist.setTargetAngle(targetPose.wristAngle.sub(wristRef));
         }
     }
 
-    public void setTargetPose(ArmPose targetPose) {
+    // TODO: Don't have this, this allows the possibility of targeting invalid/unsafe positions
+    private void setTargetPose(ArmPose targetPose) {
         this.targetPose = targetPose;
     }
 
