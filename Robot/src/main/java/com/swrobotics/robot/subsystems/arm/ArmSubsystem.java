@@ -7,6 +7,7 @@ import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
+import com.swrobotics.robot.CANAllocation;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -48,9 +49,9 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private final ArmVisualizer currentVisualizer, stepTargetVisualizer, targetVisualizer;
 
     public ArmSubsystem(MessengerClient msg) {
-        bottom = new ArmJoint(BOTTOM_MOTOR_ID, BOTTOM_CANCODER_ID, CANCODER_TO_ARM_RATIO, BOTTOM_GEAR_RATIO, BOTTOM_OFFSET, true);
-        top = new ArmJoint(TOP_MOTOR_ID, TOP_CANCODER_ID, CANCODER_TO_ARM_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, false);
-        wrist = new WristJoint(WRIST_MOTOR_ID, WRIST_CANCODER_ID, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, WRIST_OFFSET, false); // Invert may be wrong
+        bottom = new ArmJoint(CANAllocation.ARM_BOTTOM_MOTOR, CANAllocation.ARM_BOTTOM_CANCODER, CANCODER_TO_ARM_RATIO, BOTTOM_GEAR_RATIO, BOTTOM_OFFSET, true);
+        top = new ArmJoint(CANAllocation.ARM_TOP_MOTOR, CANAllocation.ARM_TOP_CANCODER, CANCODER_TO_ARM_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, false);
+        wrist = new WristJoint(CANAllocation.ARM_WRIST_MOTOR, CANAllocation.ARM_WRIST_CANCODER, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, WRIST_OFFSET, false); // Invert may be wrong
 
         double size = (BOTTOM_LENGTH + TOP_LENGTH + WRIST_RAD) * 2;
         Mechanism2d visualizer = new Mechanism2d(size, size);

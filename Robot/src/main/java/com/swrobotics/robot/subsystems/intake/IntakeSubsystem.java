@@ -3,6 +3,7 @@ package com.swrobotics.robot.subsystems.intake;
 import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.lib.motor.rev.NEOMotor;
 import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
+import com.swrobotics.robot.CANAllocation;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
     public enum Mode {
@@ -14,7 +15,7 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     private final Motor motor;
 
     public IntakeSubsystem() {
-        motor = new NEOMotor(26);
+        motor = new NEOMotor(CANAllocation.INTAKE_MOTOR);
     }
 
     public void set(Mode mode, GamePiece gamePiece) {
