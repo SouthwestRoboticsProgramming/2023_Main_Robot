@@ -13,6 +13,7 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
     }
 
     private final Motor motor;
+    private GamePiece heldPiece;
 
     public IntakeSubsystem() {
         motor = new NEOMotor(CANAllocation.INTAKE_MOTOR);
@@ -26,6 +27,7 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
         switch (mode) {
             case INTAKE:
                 out = gamePiece.getIntakeOutput();
+                heldPiece = gamePiece;
                 break;
             case EJECT:
                 out = gamePiece.getOuttakeOutput();
@@ -36,6 +38,10 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
         }
 
         motor.setPercentOut(out);
+    }
+
+    public GamePiece getHeldPiece() {
+        return heldPiece;
     }
 
     @Override

@@ -8,6 +8,8 @@ import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.CANAllocation;
+import com.swrobotics.robot.subsystems.intake.GamePiece;
+import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -37,8 +39,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
     // FIXME: These defaults are completely arbitrary
     private static final NTVec2d FOLD_ZONE = new NTVec2d("Arm/Fold Zone", 0.5, 0.25);
-    private static final NTAngle FOLD_ANGLE = new NTAngle("Arm/Fold Angle", Angle.ZERO, NTAngle.Mode.CCW_DEG);
+    private static final NTAngle FOLD_ANGLE_CUBE = new NTAngle("Arm/Fold Angle/Cube", Angle.ZERO, NTAngle.Mode.CCW_DEG);
+    private static final NTAngle FOLD_ANGLE_CONE = new NTAngle("Arm/Fold Angle/Cone", Angle.ZERO, NTAngle.Mode.CCW_DEG);
 
+    private final IntakeSubsystem intake;
     private final ArmJoint bottom, top;
     private final WristJoint wrist;
     private final ArmPathfinder pathfinder;
@@ -48,7 +52,9 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
     private final ArmVisualizer currentVisualizer, stepTargetVisualizer, targetVisualizer;
 
-    public ArmSubsystem(MessengerClient msg) {
+    public ArmSubsystem(MessengerClient msg, IntakeSubsystem intake) {
+        this.intake = intake;
+
         bottom = new ArmJoint(CANAllocation.ARM_BOTTOM_MOTOR, CANAllocation.ARM_BOTTOM_CANCODER, CANCODER_TO_ARM_RATIO, BOTTOM_GEAR_RATIO, BOTTOM_OFFSET, true);
         top = new ArmJoint(CANAllocation.ARM_TOP_MOTOR, CANAllocation.ARM_TOP_CANCODER, CANCODER_TO_ARM_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, false);
         wrist = new WristJoint(CANAllocation.ARM_WRIST_MOTOR, CANAllocation.ARM_WRIST_CANCODER, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, WRIST_OFFSET, false);
@@ -231,7 +237,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         Angle wristRef = currentPose.topAngle;
         if (axisPos.x <= foldZone.x && axisPos.y <= foldZone.y) {
             // Set wrist to fold angle
-            wrist.setTargetAngle(FOLD_ANGLE.get().sub(wristRef));
+            NTAngle foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? FOLD_ANGLE_CUBE : FOLD_ANGLE_CONE;
+            wrist.setTargetAngle(foldAngle.get().sub(wristRef));
         } else {
             // Set wrist to final target angle
             wrist.setTargetAngle(targetPose.wristAngle.sub(wristRef));
