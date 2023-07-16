@@ -80,6 +80,11 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
     }
 
     @Override
+    public void setPositionArbFF(Angle position, double arbFF) {
+        pid.setReference(position.ccw().rot(), CANSparkMax.ControlType.kPosition, 0, arbFF * 12);
+    }
+
+    @Override
     public void setVelocity(Angle velocity) {
         pid.setReference(
                 Units.radiansPerSecondToRotationsPerMinute(velocity.ccw().rad()),

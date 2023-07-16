@@ -105,10 +105,15 @@ public final class SimMotor extends SubsystemBase implements FeedbackMotor {
 
     @Override
     public void setPosition(Angle position) {
+        setPositionArbFF(position, 0);
+    }
+
+    @Override
+    public void setPositionArbFF(Angle position, double arbFF) {
         if (controlMode != ControlMode.POSITION)
             resetIntegrator();
         controlMode = ControlMode.POSITION;
-        controlModeFn = () -> calcPID(
+        controlModeFn = () -> arbFF + calcPID(
                 integratedEncoder.getAngle().ccw().rot() * caps.sensorUnitsPerRot,
                 position.ccw().rot() * caps.sensorUnitsPerRot);
     }

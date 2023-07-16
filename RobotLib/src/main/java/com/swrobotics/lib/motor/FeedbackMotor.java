@@ -13,6 +13,14 @@ public interface FeedbackMotor extends Motor {
     void setPosition(Angle position);
 
     /**
+     * Sets the target position and adds an arbitrary feedforward percentage.
+     *
+     * @param position target position
+     * @param arbFF arbitrary added feedforward percentage (-1 to 1)
+     */
+    void setPositionArbFF(Angle position, double arbFF);
+
+    /**
      * Sets the target velocity in angle per second.
      *
      * @param velocity velocity in angle per second

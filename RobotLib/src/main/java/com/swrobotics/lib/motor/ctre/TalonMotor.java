@@ -1,10 +1,6 @@
 package com.swrobotics.lib.motor.ctre;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.Faults;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.InvertType;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.BaseTalon;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.CANCoder;
@@ -158,6 +154,14 @@ public abstract class TalonMotor implements FeedbackMotor {
         if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
 
         talon.set(ControlMode.Position, position.ccw().rot() * encoderTicksPerRotation);
+        testSensorPhase();
+    }
+
+    @Override
+    public void setPositionArbFF(Angle position, double arbFF) {
+        if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
+
+        talon.set(ControlMode.Position, position.ccw().rot() * encoderTicksPerRotation, DemandType.ArbitraryFeedForward, arbFF);
         testSensorPhase();
     }
 
