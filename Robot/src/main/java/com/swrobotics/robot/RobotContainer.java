@@ -82,8 +82,8 @@ public class RobotContainer {
 
         new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
 
-        arm = new ArmSubsystem(messenger);
         intake = new IntakeSubsystem();
+        arm = new ArmSubsystem(messenger, intake);
 
         swerveDrive = new DrivetrainSubsystem(new PigeonGyroscope(PIGEON_CAN_ID));
         input = new Input(this);

@@ -42,6 +42,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTAngle FOLD_ANGLE_CUBE = new NTAngle("Arm/Fold Angle/Cube", Angle.ZERO, NTAngle.Mode.CCW_DEG);
     private static final NTAngle FOLD_ANGLE_CONE = new NTAngle("Arm/Fold Angle/Cone", Angle.ZERO, NTAngle.Mode.CCW_DEG);
 
+    private static final NTDouble WRIST_FULL_HOLD = new NTDouble("Arm/Wrist Full Hold Pct", 0.09);
+
     private final IntakeSubsystem intake;
     private final ArmJoint bottom, top;
     private final WristJoint wrist;
@@ -235,14 +237,17 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         Vec2d axisPos = currentPose.getAxisPos().absolute();
         Vec2d foldZone = FOLD_ZONE.getVec();
         Angle wristRef = currentPose.topAngle;
+        Angle wristTarget = targetPose.wristAngle;
         if (axisPos.x <= foldZone.x && axisPos.y <= foldZone.y) {
             // Set wrist to fold angle
             NTAngle foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? FOLD_ANGLE_CUBE : FOLD_ANGLE_CONE;
-            wrist.setTargetAngle(foldAngle.get().sub(wristRef));
-        } else {
-            // Set wrist to final target angle
-            wrist.setTargetAngle(targetPose.wristAngle.sub(wristRef));
+            wristTarget = foldAngle.get();
         }
+
+        // Calculate the feedforward needed to counteract gravity on the wrist
+        double wristFF = wristTarget.ccw().sin() * WRIST_FULL_HOLD.get();
+
+        wrist.setTargetAngle(wristTarget, wristFF);
     }
 
     // TODO: Don't have this, this allows the possibility of targeting invalid/unsafe positions

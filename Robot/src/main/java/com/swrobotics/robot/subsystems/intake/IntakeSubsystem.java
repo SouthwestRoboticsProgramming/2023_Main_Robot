@@ -17,6 +17,9 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
 
     public IntakeSubsystem() {
         motor = new NEOMotor(CANAllocation.INTAKE_MOTOR);
+
+        // TODO-Mason: Can we assume we'll always start with a cube?
+        heldPiece = GamePiece.CUBE;
     }
 
     public void set(Mode mode, GamePiece gamePiece) {
