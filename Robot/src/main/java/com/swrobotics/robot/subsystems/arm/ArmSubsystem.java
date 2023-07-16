@@ -51,7 +51,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     public ArmSubsystem(MessengerClient msg) {
         bottom = new ArmJoint(CANAllocation.ARM_BOTTOM_MOTOR, CANAllocation.ARM_BOTTOM_CANCODER, CANCODER_TO_ARM_RATIO, BOTTOM_GEAR_RATIO, BOTTOM_OFFSET, true);
         top = new ArmJoint(CANAllocation.ARM_TOP_MOTOR, CANAllocation.ARM_TOP_CANCODER, CANCODER_TO_ARM_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, false);
-        wrist = new WristJoint(CANAllocation.ARM_WRIST_MOTOR, CANAllocation.ARM_WRIST_CANCODER, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, WRIST_OFFSET, false); // Invert may be wrong
+        wrist = new WristJoint(CANAllocation.ARM_WRIST_MOTOR, CANAllocation.ARM_WRIST_CANCODER, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, WRIST_OFFSET, false);
 
         double size = (BOTTOM_LENGTH + TOP_LENGTH + WRIST_RAD) * 2;
         Mechanism2d visualizer = new Mechanism2d(size, size);
@@ -166,11 +166,13 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             }
         }
         stepTargetVisualizer.setPose(currentTarget);
+        System.out.println("Current target: " + currentTarget);
 
         // Find a vector to the current intermediate step in non-biased state space
         double topAngle = MathUtil.wrap(currentTarget.topAngle.ccw().rad(), -1.5 * Math.PI, 0.5 * Math.PI);
         Vec2d towardsTarget = new Vec2d(currentTarget.bottomAngle.ccw().rad(), topAngle)
                 .sub(currentPose.bottomAngle.ccw().rad(), currentPose.topAngle.ccw().rad());
+        System.out.println("Towards target: " + towardsTarget);
 
         // Tolerance hysteresis so the motor doesn't do the shaky shaky
         double magSqToFinalTarget = new Vec2d(biasedTarget).sub(biasedStart).magnitudeSq();
@@ -202,6 +204,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             // Magnitude to final target is used so movement only slows down
             // upon reaching the final target, not at each intermediate position
             double pidOut = -movePid.calculate(Math.sqrt(magSqToFinalTarget), 0);
+            System.out.println("PID out: " + pidOut);
             pidOut = MathUtil.clamp(pidOut, 0, MAX_SPEED.get());
 
             // Apply bias to towardsTarget so that each axis takes equal time
@@ -209,6 +212,11 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             // a target travels in a straight line in state space
             towardsTarget.mul(ArmConstants.BOTTOM_GEAR_RATIO, ArmConstants.TOP_GEAR_RATIO)
                     .boxNormalize().mul(pidOut);
+            System.out.println("Move vector: " + towardsTarget);
+
+            if (Double.isNaN(towardsTarget.x) || Double.isNaN(towardsTarget.y)) {
+                throw new RuntimeException("Towards target vector is NaN somehow");
+            }
 
             // Set motor outputs to move towards the current target
             bottom.setMotorOutput(towardsTarget.x);
@@ -236,10 +244,16 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     }
 
     public void setTargetPosition(ArmPosition targetPosition) {
+        if (Double.isNaN(targetPosition.axisPos.x) || Double.isNaN(targetPosition.axisPos.y)) {
+            throw new RuntimeException("Target position is NaN somehow");
+        }
         ArmPose pose = targetPosition.toPose();
         if (pose == null) {
             System.err.println("Trying to set arm to invalid position");
             return;
+        }
+        if (Double.isNaN(pose.bottomAngle.ccw().deg()) || Double.isNaN(pose.topAngle.ccw().deg()) || Double.isNaN(pose.wristAngle.ccw().deg())) {
+            throw new RuntimeException("Target pose is NaN somehow");
         }
         targetPose = pose;
     }

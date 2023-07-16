@@ -244,7 +244,11 @@ public final class Input extends SubsystemBase {
     }
 
     private Vec2d deadbandVec(Vec2d v) {
-        double mag = deadband(v.magnitude());
+        double rawMag = v.magnitude();
+        if (rawMag == 0)
+            return new Vec2d(0, 0); // Avoid NaN from division by zero
+
+        double mag = deadband(rawMag);
         return v.normalize().mul(mag);
     }
 

@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 //       top segment, but what is the "direction" of the intake?
 public class ArmJoint {
     protected final FeedbackMotor motor;
-    private final Encoder motorEncoder;
+    protected final Encoder motorEncoder;
     private final Encoder absoluteEncoder;
 
     private final double canCoderToArmRatio;

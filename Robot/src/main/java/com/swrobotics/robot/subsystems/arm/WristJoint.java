@@ -2,6 +2,7 @@ package com.swrobotics.robot.subsystems.arm;
 
 import com.swrobotics.lib.net.NTAngle;
 import com.swrobotics.mathlib.Angle;
+import org.littletonrobotics.junction.Logger;
 
 public final class WristJoint extends ArmJoint {
     public WristJoint(int motorId, int canCoderId, double canCoderToArmRatio, double motorToArmRatio, NTAngle absEncoderOffset, boolean invert) {
@@ -11,5 +12,9 @@ public final class WristJoint extends ArmJoint {
 
     public void setTargetAngle(Angle angle) {
         motor.setPosition(angle.mul(motorToArmRatio));
+        Logger.getInstance().recordOutput("Wrist/Target ccw deg", angle.ccw().deg());
+        Logger.getInstance().recordOutput("Wrist/Current ccw deg", getCurrentAngle().ccw().deg());
+        Logger.getInstance().recordOutput("Wrist/Motor target ccw deg", angle.mul(motorToArmRatio).ccw().deg());
+        Logger.getInstance().recordOutput("Wrist/Motor current ccw deg", motorEncoder.getAngle().ccw().deg());
     }
 }
