@@ -74,7 +74,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             throw new IllegalStateException("Home position must be valid!");
         bottom.calibratePosition(home.bottomAngle);
         top.calibratePosition(home.topAngle.ccw().wrapDeg(-270, 90));
-        wrist.calibratePosition(home.wristAngle);
+        wrist.calibratePosition(home.wristAngle.sub(home.topAngle));
 
         pathfinder = new ArmPathfinder(msg);
         movePid = NTUtil.tunablePID(MOVE_KP, MOVE_KI, MOVE_KD);
@@ -243,6 +243,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             NTAngle foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? FOLD_ANGLE_CUBE : FOLD_ANGLE_CONE;
             wristTarget = foldAngle.get();
         }
+        wristTarget = wristTarget.sub(wristRef);
 
         // Calculate the feedforward needed to counteract gravity on the wrist
         double wristFF = wristTarget.ccw().sin() * WRIST_FULL_HOLD.get();
