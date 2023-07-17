@@ -34,7 +34,6 @@ public interface Encoder {
      *
      * @param inverted whether the output should be inverted
      */
-    // TODO: Can this be default implemented by all encoders?
     default void setInverted(boolean inverted) {
         throw new UnsupportedOperationException();
     }

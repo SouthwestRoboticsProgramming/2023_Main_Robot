@@ -19,7 +19,7 @@ public class Settings {
         }
     }
 
-    public static final Map<RobotType, String> logFolders = Map.of(RobotType.COMPETITION, "/media/sda2");
+    public static final Map<RobotType, String> logFolders = Map.of(RobotType.COMPETITION, "/media/sda1/");
 
     public static enum RobotType {
         COMPETITION,

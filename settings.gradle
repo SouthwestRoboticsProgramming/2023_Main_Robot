@@ -1,4 +1,4 @@
-rootProject.name = '2023_Main_Robot'
+rootProject.name = 'Monch'
 
 include 'MathLib'
 include 'Robot'

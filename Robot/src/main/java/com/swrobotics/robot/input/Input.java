@@ -1,16 +1,17 @@
 package com.swrobotics.robot.input;
 
-import com.swrobotics.lib.drive.swerve.commands.PathfindToPointCommand;
-import com.swrobotics.lib.drive.swerve.commands.TurnToAngleCommand;
 import com.swrobotics.lib.input.XboxController;
+import com.swrobotics.lib.net.NTAngle;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
-import com.swrobotics.lib.net.NTTranslation2d;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
-import com.swrobotics.robot.positions.ArmPositions;
+import com.swrobotics.robot.subsystems.arm.ArmPosition;
+import com.swrobotics.robot.subsystems.arm.ArmPositions;
+import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 
+import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -19,39 +20,34 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public final class Input extends SubsystemBase {
     /*
      * Manipulator:
-     *  left bumper:   set to cube
-     *  right bumper:  set to cone
-     *  left trigger:  eject
-     *  a:             floor pickup
-     *  b:             shelf pickup
-     *  dpad up:       top score
-     *  dpad down:     mid score
-     *  analog sticks: arm nudge
+     *.  Left bumper: set to cube mode
+     *.  Right bumper: set to cone mode
+     *  Left trigger: intake
+     *  Right trigger: eject
+     *.  Dpad up: score high
+     *.  Dpad down: score mid
+     *.  A: floor pickup front
+     *.  B: floor pickup back
+     *.  X: chute pickup
+     *.  Y: double substation pickup
+     *.  A+X: floor pickup downed cone front
+     *.  B+Y: floor pickup downed cone back
+     *.  Default: default
+     *  Left stick: arm	joint tune/manual control
+     *  Right stick Y: wrist tune/manual control
+     *    Tune modifies	stored position, except	default	doesn't	change
      *
      * Driver:
      *  left stick:    drive translation
      *  right stick:   drive rotation
      *  right bumper:  fast mode
-     *  left bumper:   snap
      *  start:         reset gyro
      *
-     * snap:
-     *   when at grid:
-     *     drive to scoring position
-     *     if cube node, turn to 180 degrees (aligned by apriltag)
-     *     if cone node, limelight aim towards pole when close to 180 degrees
-     *   when at substation:
-     *     no auto drive
-     *     limelight aim towards game piece when close to 0 degrees
      */
 
     private static final NTDouble SPEED_RATE_LIMIT = new NTDouble("Input/Speed Slew Limit", 20);
-
-    public enum IntakeMode {
-        INTAKE,
-        EJECT,
-        OFF
-    }
+    private static final NTDouble ARM_TRANSLATION_RATE = new NTDouble("Input/Arm/Nudge Translation Rate", 1);
+    private static final NTAngle WRIST_ROTATION_RATE = new NTAngle("Input/Arm/Nudge Wrist Rate", CCWAngle.deg(90), NTAngle.Mode.CCW_DEG);
 
     private static final int DRIVER_PORT = 0;
     private static final int MANIPULATOR_PORT = 1;
@@ -62,24 +58,19 @@ public final class Input extends SubsystemBase {
 
     private static final double DEFAULT_SPEED = 1.5; // Meters per second
     private static final double FAST_SPEED = 4.11; // Meters per second
-    private static final Angle MAX_ROTATION = AbsoluteAngle.rad(Math.PI);
-
-    private static final double NUDGE_PER_PERIODIC = 0.25 * 0.02;
+    private static final CWAngle MAX_ROTATION = CWAngle.rad(Math.PI);
 
     private static final NTBoolean L_IS_CONE = new NTBoolean("Is Cone", false);
 
     private final RobotContainer robot;
 
     private final XboxController driver;
-    private final XboxController manipulator;
-
     private SlewRateLimiter limiter;
 
-    private Translation2d prevArmTarget;
-    private boolean prevWasGrid;
-
+    private final XboxController manipulator;
     private GamePiece gamePiece;
-    private boolean shouldBeRobotRelative;
+    private Vec2d defaultArmNudgePosition;
+    private Angle defaultArmNudgeAngle;
 
     public Input(RobotContainer robot) {
         this.robot = robot;
@@ -104,12 +95,12 @@ public final class Input extends SubsystemBase {
                     L_IS_CONE.set(true);
                 });
 
-        prevWasGrid = false;
-        prevArmTarget = ArmPositions.DEFAULT.getTranslation();
         gamePiece = GamePiece.CUBE;
+        defaultArmNudgePosition = new Vec2d(0, 0);
+        defaultArmNudgeAngle = Angle.ZERO;
 
         /*
-         * The limiter acts to reduce sudden acceleration and decelleration when going into or dropping out of
+         * The limiter acts to reduce sudden acceleration and deceleration when going into or dropping out of
          * fast mode. It doesn't effect the sticks directly as that was not a problem that we faced. Instead,
          * it just effects fast mode ramping.
          */
@@ -149,132 +140,116 @@ public final class Input extends SubsystemBase {
     }
 
     public Angle getDriveRotation() {
-        return MAX_ROTATION.cw().mul(deadband(driver.rightStickX.get()));
+        return MAX_ROTATION.mul(deadband(driver.rightStickX.get()));
     }
 
     public boolean isRobotRelative() {
-        return driver.rightTrigger.get() >= TRIGGER_DEADBAND || shouldBeRobotRelative;
-    }
-
-    private void driverPeriodic() {
-        boolean driveInput =
-                Math.abs(driver.leftStickX.get()) > DEADBAND
-                        || Math.abs(driver.leftStickY.get()) > DEADBAND;
-        boolean turnInput = Math.abs(driver.rightStickX.get()) > DEADBAND;
-
-//        boolean rumble = (driveInput && snap.snapDrive) || (turnInput || snap.snapTurn);
-//        driver.setRumble(rumble ? 0.5 : 0);
+        return driver.rightTrigger.get() >= TRIGGER_DEADBAND;
     }
 
     // ---- Manipulator controls ----
 
-    private GamePiece getGamePiece() {
-        return gamePiece;
+    private ArmPosition.NT inferDirection(ArmPositions.FrontBackPair pair, Angle currentAngle, Angle relativeForward) {
+        Vec2d currentAngleVec = new Vec2d(currentAngle, 1);
+        Vec2d relativeForwardVec = new Vec2d(relativeForward, 1);
+
+        return currentAngleVec.dot(relativeForwardVec) >= 0 ? pair.front : pair.back;
     }
 
-    private boolean isEject() {
-        return manipulator.leftTrigger.get() > TRIGGER_DEADBAND;
+    private Angle towardsChuteAngle() {
+        return CCWAngle.deg(90); // Always on the top wall regardless of alliance
     }
 
-    public NTTranslation2d getArmTarget() {
-        if (manipulator.dpad.up.isPressed()) return getArmHigh();
-        if (manipulator.dpad.down.isPressed()) return getArmMid();
-        if (manipulator.b.isPressed()) return getSubstationPickup();
-        if (manipulator.a.isPressed()) {
-            return null; // Home target - position is retrieved from arm subsystem later
-        }
-
-        return ArmPositions.DEFAULT;
+    private Angle towardsSubstationAngle() {
+        return DrivetrainSubsystem.FIELD.getAllianceForwardAngle();
     }
 
-    private NTTranslation2d getArmHigh() {
-        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_UPPER;
-        return ArmPositions.CONE_UPPER;
-    }
-
-    private NTTranslation2d getArmMid() {
-        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_CENTER;
-        return ArmPositions.CONE_CENTER;
-    }
-
-    private NTTranslation2d getSubstationPickup() {
-        if (getGamePiece() == GamePiece.CUBE) return ArmPositions.CUBE_PICKUP;
-        return ArmPositions.CONE_PICKUP;
-    }
-
-    private IntakeMode getIntakeMode() {
-        if (isEject()) return IntakeMode.EJECT;
-
-        if (manipulator.a.isPressed()
-                || manipulator.b.isPressed()
-                || manipulator.rightTrigger.get() > TRIGGER_DEADBAND) return IntakeMode.INTAKE;
-
-        return IntakeMode.OFF;
+    private Angle towardsGridAngle() {
+        return DrivetrainSubsystem.FIELD.getAllianceReverseAngle();
     }
 
     private void manipulatorPeriodic() {
-        // if (getGamePiece() == GamePiece.CONE) robot.lights.set(Lights.Color.YELLOW); // TODO: Lights
-        // else robot.lights.set(Lights.Color.BLUE);
+        Angle angle = Angle.fromRotation2d(robot.swerveDrive.getPose().getRotation());
 
-        IntakeMode intakeMode = getIntakeMode();
-        switch (intakeMode) {
-            case INTAKE:
-                if (manipulator.a.isPressed()) {
-                    robot.intake.setExpectedPiece(GamePiece.CUBE);
-                } else {
-                    robot.intake.setExpectedPiece(getGamePiece());
-                }
-                robot.intake.run();
-                break;
-            case EJECT:
-                robot.intake.eject();
-                break;
-            case OFF:
-                robot.intake.stop();
-                break;
-        }
+        IntakeSubsystem.Mode intakeMode = IntakeSubsystem.Mode.OFF;
+        GamePiece effectiveGamePiece = gamePiece;
+        if (manipulator.leftTrigger.get() > TRIGGER_DEADBAND)
+            intakeMode = IntakeSubsystem.Mode.INTAKE;
+        if (manipulator.rightTrigger.get() > TRIGGER_DEADBAND)
+            intakeMode = IntakeSubsystem.Mode.EJECT;
 
-        // Update arm nudge
-        Translation2d armNudge =
-                new Translation2d(
-                        deadband(manipulator.rightStickX.get()) * NUDGE_PER_PERIODIC,
-                        deadband(-manipulator.rightStickY.get()) * NUDGE_PER_PERIODIC);
-        armNudge =
-                armNudge.plus(
-                        new Translation2d(
-                                deadband(manipulator.leftStickX.get()) * NUDGE_PER_PERIODIC,
-                                deadband(-manipulator.leftStickY.get()) * NUDGE_PER_PERIODIC));
+        ArmPosition.NT ntArmTarget = null;
+        ArmPositions.PositionSet gamePieceSet = gamePiece == GamePiece.CONE ? ArmPositions.CONE : ArmPositions.CUBE;
 
-        NTTranslation2d ntArmTarget = getArmTarget();
-        boolean isGrid =
-                ntArmTarget != null
-                        && ntArmTarget != ArmPositions.CUBE_PICKUP
-                        && ntArmTarget != ArmPositions.CONE_PICKUP
-                        && ntArmTarget != ArmPositions.DEFAULT;
-        Translation2d armTarget =
-                ntArmTarget == null ? robot.arm.getHomeTarget() : ntArmTarget.getTranslation();
-
-        // If it is moving to a new target
-        if (!armTarget.equals(prevArmTarget) && (isGrid || prevWasGrid)) {
-            armNudge = new Translation2d(0, 0);
-
-            // Move to an intermediate position first
-            robot.arm.setTargetPosition(
-                    new Translation2d(0.6, Math.max(armTarget.getY(), prevArmTarget.getY())));
-            if (!robot.arm.isInTolerance()) {
-                return; // Keep moving to the intermediate position
+        if (manipulator.a.isPressed()) {
+            if (manipulator.x.isPressed()) {
+                ntArmTarget = ArmPositions.DOWNED_CONE_FLOOR_PICKUP.front;
+                effectiveGamePiece = GamePiece.CONE;
+            } else {
+                ntArmTarget = gamePieceSet.floorPickup.front;
             }
+            intakeMode = IntakeSubsystem.Mode.INTAKE;
+        } else if (manipulator.x.isPressed()) {
+            ntArmTarget = inferDirection(gamePieceSet.chutePickup, angle, towardsChuteAngle());
+            intakeMode = IntakeSubsystem.Mode.INTAKE;
         }
-        prevArmTarget = armTarget;
-        prevWasGrid = isGrid;
 
-        armTarget = armTarget.plus(armNudge);
-        if (ntArmTarget != null && ntArmTarget != ArmPositions.DEFAULT) {
+        if (manipulator.b.isPressed()) {
+            if (manipulator.y.isPressed()) {
+                ntArmTarget = ArmPositions.DOWNED_CONE_FLOOR_PICKUP.back;
+                effectiveGamePiece = GamePiece.CONE;
+            } else {
+                ntArmTarget = gamePieceSet.floorPickup.back;
+            }
+            intakeMode = IntakeSubsystem.Mode.INTAKE;
+        } else if (manipulator.y.isPressed()) {
+            ntArmTarget = inferDirection(gamePieceSet.substationPickup, angle, towardsSubstationAngle());
+            intakeMode = IntakeSubsystem.Mode.INTAKE;
+        }
+
+        if (manipulator.dpad.up.isPressed()) {
+            // We can only do high on front
+            ntArmTarget = gamePieceSet.scoreHighFront;
+        }
+        if (manipulator.dpad.down.isPressed()) {
+            ntArmTarget = inferDirection(gamePieceSet.scoreMid, angle, towardsGridAngle());
+        }
+
+        Vec2d translationNudge = deadbandVec(manipulator.getLeftStick()).mul(ARM_TRANSLATION_RATE.get()).mul(1, -1);
+        Angle wristNudge = WRIST_ROTATION_RATE.get().mul(deadband(manipulator.rightStickY.get()));
+
+        // No shakey
+        if (translationNudge.magnitudeSq() > 0)
+            robot.arm.moveNow();
+
+        ArmPosition armTarget;
+        if (ntArmTarget == null) {
+            defaultArmNudgePosition.add(translationNudge);
+            defaultArmNudgeAngle = defaultArmNudgeAngle.add(wristNudge);
+
+            ntArmTarget = ArmPositions.DEFAULT;
+            ArmPosition def = ntArmTarget.getPosition();
+            armTarget = new ArmPosition(def.axisPos.add(defaultArmNudgePosition), def.wristAngle.add(defaultArmNudgeAngle));
+        } else {
+            defaultArmNudgePosition.set(0, 0);
+            defaultArmNudgeAngle = Angle.ZERO;
+
+            ArmPosition raw = ntArmTarget.getPosition();
+            armTarget = new ArmPosition(raw.axisPos.add(translationNudge), raw.wristAngle.add(wristNudge));
             ntArmTarget.set(armTarget);
-            prevArmTarget = armTarget;
         }
 
         robot.arm.setTargetPosition(armTarget);
+        robot.intake.set(intakeMode, effectiveGamePiece);
+    }
+
+    private Vec2d deadbandVec(Vec2d v) {
+        double rawMag = v.magnitude();
+        if (rawMag == 0)
+            return new Vec2d(0, 0); // Avoid NaN from division by zero
+
+        double mag = deadband(rawMag);
+        return v.normalize().mul(mag);
     }
 
     @Override

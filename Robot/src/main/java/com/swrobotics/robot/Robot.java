@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.BiConsumer;
 
+import com.swrobotics.lib.ThreadUtils;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -36,22 +37,22 @@ public class Robot extends LoggedRobot {
         Logger logger = Logger.getInstance();
 
         // Record metadata so that the logs have more to work off of
-        logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
-        logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
-        logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
-        logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
-        logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
-        switch (BuildConstants.DIRTY) {
-            case 0:
-                logger.recordMetadata("GitDirty", "All changes committed");
-                break;
-            case 1:
-                logger.recordMetadata("GitDirty", "Uncomitted changes");
-                break;
-            default:
-                logger.recordMetadata("GitDirty", "Unknown");
-                break;
-        }
+        // logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
+        // logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
+        // logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+        // logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
+        // logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+        // switch (BuildConstants.DIRTY) {
+        //     case 0:
+        //         logger.recordMetadata("GitDirty", "All changes committed");
+        //         break;
+        //     case 1:
+        //         logger.recordMetadata("GitDirty", "Uncomitted changes");
+        //         break;
+        //     default:
+        //         logger.recordMetadata("GitDirty", "Unknown");
+        //         break;
+        // }
 
         // Set up data receivers & replay source
         switch (Settings.getMode()) {
@@ -118,11 +119,13 @@ public class Robot extends LoggedRobot {
             }
         }
     }
-
+    
     @Override
     public void robotPeriodic() {
         Threads.setCurrentThreadPriority(true, 99);
 
+        robotContainer.messenger.readMessages();
+        ThreadUtils.runMainThreadOperations();
         CommandScheduler.getInstance().run(); // Leave this alone
     }
 

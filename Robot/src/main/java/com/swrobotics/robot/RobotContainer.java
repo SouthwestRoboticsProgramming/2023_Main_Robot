@@ -4,14 +4,16 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
+import com.swrobotics.lib.drive.swerve.StopPosition;
 import com.swrobotics.lib.drive.swerve.commands.DriveBlindCommand;
 import com.swrobotics.lib.gyro.NavXGyroscope;
+import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.input.Input;
-import com.swrobotics.robot.positions.ArmPositions;
+import com.swrobotics.robot.subsystems.arm.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
@@ -50,6 +52,8 @@ public class RobotContainer {
     private static final int MESSENGER_PORT = 5805;
     private static final String MESSENGER_NAME = "Robot";
 
+    private static final int PIGEON_CAN_ID = 20;
+
     // Create a way to choose between autonomous sequences
     private final SendableChooser<Supplier<Command>> autoSelector;
 
@@ -78,10 +82,10 @@ public class RobotContainer {
 
         new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
 
-        arm = new ArmSubsystem(messenger);
         intake = new IntakeSubsystem();
+        arm = new ArmSubsystem(messenger, intake);
 
-        swerveDrive = new DrivetrainSubsystem(new NavXGyroscope(SPI.Port.kMXP));
+        swerveDrive = new DrivetrainSubsystem(new PigeonGyroscope(PIGEON_CAN_ID));
         input = new Input(this);
         swerveDrive.setDefaultCommand(new DefaultDriveCommand(swerveDrive, input));
 
@@ -91,7 +95,7 @@ public class RobotContainer {
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
-        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getTranslation));
+        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getPosition));
         // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
 
         // Allow for easy creation of autos using PathPlanner

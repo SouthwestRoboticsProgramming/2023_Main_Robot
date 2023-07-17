@@ -1,29 +1,34 @@
 package com.swrobotics.mathlib;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 import java.util.Objects;
 
-/** Represents a two-dimensional vector of {@code double}s. */
-public final class Vec2d {
+/** Represents a three-dimensional vector of {@code double}s. */
+public final class Vec3d {
     public double x;
     public double y;
+    public double z;
 
-    /** Creates a new instance with both x and y set to zero. */
-    public Vec2d() {
+    /** Creates a new instance with x, y, and z set to zero. */
+    public Vec3d() {
         x = 0;
         y = 0;
+        z = 0;
     }
 
     /**
-     * Creates a new instance with given x and y components.
+     * Creates a new instance with given x, y, and z components.
      *
      * @param x x component
      * @param y y component
+     * @param z z component
      */
-    public Vec2d(double x, double y) {
+    public Vec3d(double x, double y, double z) {
         this.x = x;
         this.y = y;
+        this.z = z;
     }
 
     /**
@@ -31,25 +36,15 @@ public final class Vec2d {
      *
      * @param o other vector
      */
-    public Vec2d(Vec2d o) {
+    public Vec3d(Vec3d o) {
         x = o.x;
         y = o.y;
-    }
-
-    /**
-     * Creates a new instance in the direction of an angle with a specified magnitude.
-     *
-     * @param angle direction angle
-     * @param mag magnitude
-     */
-    public Vec2d(Angle angle, double mag) {
-        x = angle.ccw().cos() * mag;
-        y = angle.ccw().sin() * mag;
+        z = o.z;
     }
 
     /** Gets this vector as a Translation2d. */
-    public Translation2d translation2d() {
-        return new Translation2d(x, y);
+    public Translation3d translation3d() {
+        return new Translation3d(x, y, z);
     }
 
     /**
@@ -58,7 +53,7 @@ public final class Vec2d {
      * @param x x component
      * @return this
      */
-    public Vec2d setX(double x) {
+    public Vec3d setX(double x) {
         this.x = x;
         return this;
     }
@@ -69,21 +64,34 @@ public final class Vec2d {
      * @param y y component
      * @return this
      */
-    public Vec2d setY(double y) {
+    public Vec3d setY(double y) {
         this.y = y;
         return this;
     }
 
     /**
-     * Sets both the X and Y components of this vector.
+     * Sets the Z component of this vector.
+     *
+     * @param z z component
+     * @return this
+     */
+    public Vec3d setZ(double z) {
+        this.z = z;
+        return this;
+    }
+
+    /**
+     * Sets the X, Y, and Z components of this vector.
      *
      * @param x x component
      * @param y y component
+     * @param z z component
      * @return this
      */
-    public Vec2d set(double x, double y) {
+    public Vec3d set(double x, double y, double z) {
         this.x = x;
         this.y = y;
+        this.z = z;
         return this;
     }
 
@@ -93,9 +101,10 @@ public final class Vec2d {
      * @param o other vector
      * @return this
      */
-    public Vec2d set(Vec2d o) {
+    public Vec3d set(Vec3d o) {
         x = o.x;
         y = o.y;
+        z = o.z;
         return this;
     }
 
@@ -104,11 +113,13 @@ public final class Vec2d {
      *
      * @param x x component to add
      * @param y y component to add
+     * @param z z component to add
      * @return this
      */
-    public Vec2d add(double x, double y) {
+    public Vec3d add(double x, double y, double z) {
         this.x += x;
         this.y += y;
+        this.z += z;
         return this;
     }
 
@@ -118,12 +129,14 @@ public final class Vec2d {
      *
      * @param x x component to add
      * @param y y component to add
+     * @param z z component to add
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d add(double x, double y, Vec2d dest) {
+    public Vec3d add(double x, double y, double z, Vec3d dest) {
         dest.x = this.x + x;
         dest.y = this.y + y;
+        dest.z = this.z + z;
         return dest;
     }
 
@@ -133,9 +146,10 @@ public final class Vec2d {
      * @param o vector to add
      * @return this
      */
-    public Vec2d add(Vec2d o) {
+    public Vec3d add(Vec3d o) {
         x += o.x;
         y += o.y;
+        z += o.z;
         return this;
     }
 
@@ -146,9 +160,10 @@ public final class Vec2d {
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d add(Vec2d o, Vec2d dest) {
+    public Vec3d add(Vec3d o, Vec3d dest) {
         dest.x = x + o.x;
         dest.y = y + o.y;
+        dest.z = z + o.z;
         return dest;
     }
 
@@ -157,11 +172,13 @@ public final class Vec2d {
      *
      * @param x x component to subtract
      * @param y y component to subtract
+     * @param z z component to subtract
      * @return this
      */
-    public Vec2d sub(double x, double y) {
+    public Vec3d sub(double x, double y, double z) {
         this.x -= x;
         this.y -= y;
+        this.z -= z;
         return this;
     }
 
@@ -171,12 +188,14 @@ public final class Vec2d {
      *
      * @param x x component to subtract
      * @param y y component to subtract
+     * @param z z component to subtract
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d sub(double x, double y, Vec2d dest) {
+    public Vec3d sub(double x, double y, double z, Vec3d dest) {
         dest.x = this.x - x;
         dest.y = this.y - y;
+        dest.z = this.z - z;
         return dest;
     }
 
@@ -186,9 +205,10 @@ public final class Vec2d {
      * @param o vector to subtract
      * @return this
      */
-    public Vec2d sub(Vec2d o) {
+    public Vec3d sub(Vec3d o) {
         x -= o.x;
         y -= o.y;
+        z -= o.z;
         return this;
     }
 
@@ -199,9 +219,10 @@ public final class Vec2d {
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d sub(Vec2d o, Vec2d dest) {
+    public Vec3d sub(Vec3d o, Vec3d dest) {
         dest.x = x - o.x;
         dest.y = y - o.y;
+        dest.z = z - o.z;
         return dest;
     }
 
@@ -211,9 +232,10 @@ public final class Vec2d {
      * @param scalar scalar to multiply by
      * @return this
      */
-    public Vec2d mul(double scalar) {
+    public Vec3d mul(double scalar) {
         x *= scalar;
         y *= scalar;
+        z *= scalar;
         return this;
     }
 
@@ -224,9 +246,10 @@ public final class Vec2d {
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d mul(double scalar, Vec2d dest) {
+    public Vec3d mul(double scalar, Vec3d dest) {
         dest.x = x * scalar;
         dest.y = y * scalar;
+        dest.z = z * scalar;
         return dest;
     }
 
@@ -235,11 +258,13 @@ public final class Vec2d {
      *
      * @param x x component to multiply by
      * @param y y component to multiply by
+     * @param z z component to multiply by
      * @return this
      */
-    public Vec2d mul(double x, double y) {
+    public Vec3d mul(double x, double y, double z) {
         this.x *= x;
         this.y *= y;
+        this.z *= z;
         return this;
     }
 
@@ -249,12 +274,14 @@ public final class Vec2d {
      *
      * @param x x component to multiply by
      * @param y y component to multiply by
+     * @param z z component to multiply by
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d mul(double x, double y, Vec2d dest) {
+    public Vec3d mul(double x, double y, double z, Vec3d dest) {
         dest.x = this.x * x;
         dest.y = this.y * y;
+        dest.z = this.z * z;
         return dest;
     }
 
@@ -264,9 +291,10 @@ public final class Vec2d {
      * @param o vector to multiply by
      * @return this
      */
-    public Vec2d mul(Vec2d o) {
+    public Vec3d mul(Vec3d o) {
         x *= o.x;
         y *= o.y;
+        z *= o.z;
         return this;
     }
 
@@ -277,9 +305,10 @@ public final class Vec2d {
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d mul(Vec2d o, Vec2d dest) {
+    public Vec3d mul(Vec3d o, Vec3d dest) {
         dest.x = x * o.x;
         dest.y = y * o.y;
+        dest.z = z * o.z;
         return dest;
     }
 
@@ -289,9 +318,10 @@ public final class Vec2d {
      * @param scalar scalar to divide by
      * @return this
      */
-    public Vec2d div(double scalar) {
+    public Vec3d div(double scalar) {
         x /= scalar;
         y /= scalar;
+        z /= scalar;
         return this;
     }
 
@@ -302,9 +332,10 @@ public final class Vec2d {
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d div(double scalar, Vec2d dest) {
+    public Vec3d div(double scalar, Vec3d dest) {
         dest.x = x / scalar;
         dest.y = y / scalar;
+        dest.z = z / scalar;
         return dest;
     }
 
@@ -315,9 +346,10 @@ public final class Vec2d {
      * @param y y component to divide by
      * @return this
      */
-    public Vec2d div(double x, double y) {
+    public Vec3d div(double x, double y, double z) {
         this.x /= x;
         this.y /= y;
+        this.z /= z;
         return this;
     }
 
@@ -330,9 +362,10 @@ public final class Vec2d {
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d div(double x, double y, Vec2d dest) {
+    public Vec3d div(double x, double y, double z, Vec3d dest) {
         dest.x = this.x / x;
         dest.y = this.y / y;
+        dest.z = this.z / z;
         return dest;
     }
 
@@ -342,9 +375,10 @@ public final class Vec2d {
      * @param o vector to divide by
      * @return this
      */
-    public Vec2d div(Vec2d o) {
+    public Vec3d div(Vec3d o) {
         x /= o.x;
         y /= o.y;
+        z /= o.z;
         return this;
     }
 
@@ -355,10 +389,50 @@ public final class Vec2d {
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d div(Vec2d o, Vec2d dest) {
+    public Vec3d div(Vec3d o, Vec3d dest) {
         dest.x = x / o.x;
         dest.y = y / o.y;
+        dest.z = z / o.z;
         return dest;
+    }
+
+    public Vec3d rotateX(Angle angle) {
+        CCWAngle ccw = angle.ccw();
+        double sin = ccw.sin();
+        double cos = ccw.cos();
+
+        double ny = y * cos - z * sin;
+        double nz = y * sin + z * cos;
+        y = ny;
+        z = nz;
+
+        return this;
+    }
+
+    public Vec3d rotateY(Angle angle) {
+        CCWAngle ccw = angle.ccw();
+        double sin = ccw.sin();
+        double cos = ccw.cos();
+
+        double nx = x * cos + z * sin;
+        double nz = -x * sin + z * cos;
+        x = nx;
+        z = nz;
+
+        return this;
+    }
+
+    public Vec3d rotateZ(Angle angle) {
+        CCWAngle ccw = angle.ccw();
+        double sin = ccw.sin();
+        double cos = ccw.cos();
+
+        double nx = x * cos - y * sin;
+        double ny = x * sin + y * cos;
+        x = nx;
+        y = ny;
+
+        return this;
     }
 
     /**
@@ -369,7 +443,7 @@ public final class Vec2d {
      * @return magnitude squared
      */
     public double magnitudeSq() {
-        return x * x + y * y;
+        return x * x + y * y + z * z;
     }
 
     /**
@@ -388,27 +462,8 @@ public final class Vec2d {
      * @param o right hand side
      * @return dot product
      */
-    public double dot(Vec2d o) {
-        return x * o.x + y * o.y;
-    }
-
-    /**
-     * Gets the angle this vector is facing in.
-     *
-     * @return angle
-     */
-    public Angle angle() {
-        return CCWAngle.rad(Math.atan2(y, x));
-    }
-
-    /**
-     * Gets the angle from this vector to another vector.
-     *
-     * @param o vector to compare with
-     * @return angle between this vector and the other vector
-     */
-    public Angle angleTo(Vec2d o) {
-        return angle().ccw().sub(o.angle().ccw()).abs();
+    public double dot(Vec3d o) {
+        return x * o.x + y * o.y + z * o.z;
     }
 
     /**
@@ -419,10 +474,11 @@ public final class Vec2d {
      * @param y y component of other vector
      * @return distance squared
      */
-    public double distanceToSq(double x, double y) {
+    public double distanceToSq(double x, double y, double z) {
         double dx = this.x - x;
         double dy = this.y - y;
-        return dx * dx + dy * dy;
+        double dz = this.z - z;
+        return dx * dx + dy * dy + dz * dz;
     }
 
     /**
@@ -432,10 +488,11 @@ public final class Vec2d {
      * @param o other vector
      * @return distance squared
      */
-    public double distanceToSq(Vec2d o) {
+    public double distanceToSq(Vec3d o) {
         double dx = x - o.x;
         double dy = y - o.y;
-        return dx * dx + dy * dy;
+        double dz = z - o.z;
+        return dx * dx + dy * dy + dz * dz;
     }
 
     /**
@@ -445,8 +502,8 @@ public final class Vec2d {
      * @param y y component of other vector
      * @return distance
      */
-    public double distanceTo(double x, double y) {
-        return Math.sqrt(distanceToSq(x, y));
+    public double distanceTo(double x, double y, double z) {
+        return Math.sqrt(distanceToSq(x, y, z));
     }
 
     /**
@@ -455,60 +512,49 @@ public final class Vec2d {
      * @param o other vector
      * @return distance
      */
-    public double distanceTo(Vec2d o) {
+    public double distanceTo(Vec3d o) {
         return Math.sqrt(distanceToSq(o));
     }
 
-    public double distanceToLineSegmentSq(Vec2d a, Vec2d b) {
-        double l2 = a.distanceToSq(b);
-        if (l2 == 0) return distanceToSq(a);
-        double t = ((x - a.x) * (b.x - a.x) + (y - a.y) * (b.y - a.y)) / l2;
-        t = MathUtil.clamp(t, 0, 1);
-        return distanceToSq(new Vec2d(MathUtil.lerp(a.x, b.x, t), MathUtil.lerp(a.y, b.y, t)));
+    public double[] components() {
+        return new double[] {x, y, z};
     }
 
-    public double distanceToLineSegment(Vec2d a, Vec2d b) {
-        return Math.sqrt(distanceToLineSegmentSq(a, b));
-    }
+//    public Vec3d rotateX(Angle a) {
+//
+//    }
 
-    /**
-     * Rotates this vector by a given angle.
-     *
-     * @param angle angle to rotate by
-     * @return this
-     */
-    public Vec2d rotateBy(Angle angle) {
-        return rotateBy(angle, this);
-    }
-
-    /**
-     * Rotates this vector by a given angle and stores the result in another vector.
-     *
-     * @param angle angle to rotate by
-     * @param dest destination vector
-     * @return dest
-     */
-    public Vec2d rotateBy(Angle angle, Vec2d dest) {
-        double sin = angle.ccw().sin();
-        double cos = angle.ccw().cos();
-
-        double nx = x * cos - y * sin;
-        double ny = x * sin + y * cos;
-
-        dest.x = nx;
-        dest.y = ny;
-        return dest;
-    }
+    // TODO
+//    public double distanceToLineSegmentSq(Vec3d a, Vec3d b) {
+//        double l2 = a.distanceToSq(b);
+//        if (l2 == 0) return distanceToSq(a);
+//        double t = ((x - a.x) * (b.x - a.x) + (y - a.y) * (b.y - a.y)) / l2;
+//        t = MathUtil.clamp(t, 0, 1);
+//        return distanceToSq(new Vec3d(MathUtil.lerp(a.x, b.x, t), MathUtil.lerp(a.y, b.y, t)));
+//    }
+//
+//    public double distanceToLineSegment(Vec3d a, Vec3d b) {
+//        return Math.sqrt(distanceToLineSegmentSq(a, b));
+//    }
+//
+//    public Vec3d rotateAround(Vec3d axis, Angle angle) {
+//
+//    }
+//
+//    public Vec3d rotateAround(Vec3d axis, Angle angle, Vec3d dest) {
+//
+//    }
 
     /**
      * Normalizes this vector by making its magnitude 1, thus becoming a unit vector.
      *
      * @return this
      */
-    public Vec2d normalize() {
+    public Vec3d normalize() {
         double mag = magnitude();
         x /= mag;
         y /= mag;
+        z /= mag;
         return this;
     }
 
@@ -518,40 +564,37 @@ public final class Vec2d {
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d normalize(Vec2d dest) {
+    public Vec3d normalize(Vec3d dest) {
         double mag = magnitude();
         dest.x = x / mag;
         dest.y = y / mag;
+        dest.z = z / mag;
         return dest;
     }
 
     /**
      * Normalizes this vector by scaling it to be along the unit square. This guarantees that at
-     * least one of the components will be 1, unless this vector is (0, 0).
+     * least one of the components will be 1, unless this vector is (0, 0, 0).
      *
      * @return this, normalized to the unit square
      */
-    public Vec2d boxNormalize() {
+    public Vec3d boxNormalize() {
         return boxNormalize(this);
     }
 
     /**
      * Normalizes this vector by scaling it to be along the unit square and stores the result in
      * another vector. This guarantees that at least one of the components will be 1, unless this
-     * vector is (0, 0).
+     * vector is (0, 0, 0).
      *
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d boxNormalize(Vec2d dest) {
-        double max = Math.max(Math.abs(x), Math.abs(y));
-        if (max == 0) {
-            dest.x = 0;
-            dest.y = 0;
-            return dest;
-        }
+    public Vec3d boxNormalize(Vec3d dest) {
+        double max = Math.max(Math.max(Math.abs(x), Math.abs(y)), Math.abs(z));
         dest.x = x / max;
         dest.y = y / max;
+        dest.z = z / max;
         return dest;
     }
 
@@ -560,9 +603,10 @@ public final class Vec2d {
      *
      * @return this
      */
-    public Vec2d negate() {
+    public Vec3d negate() {
         x = -x;
         y = -y;
+        z = -z;
         return this;
     }
 
@@ -572,9 +616,10 @@ public final class Vec2d {
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d negate(Vec2d dest) {
+    public Vec3d negate(Vec3d dest) {
         dest.x = -x;
         dest.y = -y;
+        dest.z = -z;
         return dest;
     }
 
@@ -583,9 +628,10 @@ public final class Vec2d {
      *
      * @return this
      */
-    public Vec2d absolute() {
+    public Vec3d absolute() {
         x = Math.abs(x);
         y = Math.abs(y);
+        z = Math.abs(z);
         return this;
     }
 
@@ -596,9 +642,10 @@ public final class Vec2d {
      * @param dest destination vector
      * @return dest
      */
-    public Vec2d absolute(Vec2d dest) {
+    public Vec3d absolute(Vec3d dest) {
         dest.x = Math.abs(x);
         dest.y = Math.abs(y);
+        dest.z = Math.abs(z);
         return dest;
     }
 
@@ -606,17 +653,17 @@ public final class Vec2d {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Vec2d vec2d = (Vec2d) o;
-        return Double.compare(vec2d.x, x) == 0 && Double.compare(vec2d.y, y) == 0;
+        Vec3d vec3d = (Vec3d) o;
+        return Double.compare(vec3d.x, x) == 0 && Double.compare(vec3d.y, y) == 0 && Double.compare(vec3d.z, z) == 0;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(x, y);
+        return Objects.hash(x, y, z);
     }
 
     @Override
     public String toString() {
-        return String.format("(%.3f, %.3f)", x, y);
+        return String.format("(%.3f, %.3f, %.3f)", x, y, z);
     }
 }

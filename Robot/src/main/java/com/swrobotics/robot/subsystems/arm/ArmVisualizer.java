@@ -29,15 +29,15 @@ public final class ArmVisualizer {
                 new MechanismLigament2d(
                         "Top Arm", ArmConstants.TOP_LENGTH, 0, 6, new Color8Bit(topColor)));
         wrist = top.append(
-                new MechanismLigament2d("Wrist", ArmConstants.WRIST_LENGTH / 2, 70, 6, new Color8Bit(wristColor)));
+                new MechanismLigament2d("Wrist", ArmConstants.WRIST_RAD / 2, 0, 6, new Color8Bit(wristColor)));
     }
 
     public void setPose(ArmPose pose) {
-        bottom.setAngle(Math.toDegrees(pose.bottomAngle));
+        bottom.setAngle(pose.bottomAngle.ccw().deg());
 
         // Visualization is relative, pose is absolute
-        top.setAngle(Math.toDegrees(pose.topAngle - pose.bottomAngle));
+        top.setAngle(pose.topAngle.sub(pose.bottomAngle).ccw().deg());
 
-        wrist.setAngle(pose.wristAngle);
+        wrist.setAngle(pose.wristAngle.sub(pose.topAngle).ccw().deg());
     }
 }

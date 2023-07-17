@@ -27,6 +27,9 @@ public final class MathUtilTest {
         assertEquals(MathUtil.percent(0, 0, 1), 0, 0.0001);
         assertEquals(MathUtil.percent(4, 2, 6), 0.5, 0.0001);
         assertEquals(MathUtil.percent(5, 1, 2), 4, 0.0001);
+	assertEquals(MathUtil.percent(0, -5, 5), 0.5, 0.0001);
+	assertEquals(MathUtil.percent(-3, -4, -2), 0.5, 0.0001);
+	assertEquals(MathUtil.percent(-4, -4, -2), 0, 0.0001);
     }
 
     @Test
