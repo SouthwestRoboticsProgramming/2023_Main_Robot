@@ -177,7 +177,6 @@ async fn handle_client(
         tokio::select! {
             result = broadcast_rx.recv() => match result {
                 Ok(msg) => {
-                    println!("Received: {:?}", msg);
                     if handlers.is_listening(&msg.name) {
                         write_half.write_all(&msg.pack()).await?;
                     }
@@ -225,7 +224,7 @@ async fn handle_client(
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let listener = TcpListener::bind(("127.0.0.1", 5805)).await?;
+    let listener = TcpListener::bind(("0.0.0.0", 5805)).await?;
 
     let (broadcast_tx, mut broadcast_rx) = broadcast::channel(MAX_QUEUED_MESSAGES);
 
