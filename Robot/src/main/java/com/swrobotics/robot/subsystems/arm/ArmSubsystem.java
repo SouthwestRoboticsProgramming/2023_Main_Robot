@@ -175,13 +175,11 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             }
         }
         stepTargetVisualizer.setPose(currentTarget);
-        System.out.println("Current target: " + currentTarget);
 
         // Find a vector to the current intermediate step in non-biased state space
         double topAngle = MathUtil.wrap(currentTarget.topAngle.ccw().rad(), -1.5 * Math.PI, 0.5 * Math.PI);
         Vec2d towardsTarget = new Vec2d(currentTarget.bottomAngle.ccw().rad(), topAngle)
                 .sub(currentPose.bottomAngle.ccw().rad(), currentPose.topAngle.ccw().rad());
-        System.out.println("Towards target: " + towardsTarget);
 
         // Tolerance hysteresis so the motor doesn't do the shaky shaky
         double magSqToFinalTarget = new Vec2d(biasedTarget).sub(biasedStart).magnitudeSq();
@@ -213,7 +211,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             // Magnitude to final target is used so movement only slows down
             // upon reaching the final target, not at each intermediate position
             double pidOut = -movePid.calculate(Math.sqrt(magSqToFinalTarget), 0);
-            System.out.println("PID out: " + pidOut);
             pidOut = MathUtil.clamp(pidOut, 0, MAX_SPEED.get());
 
             // Apply bias to towardsTarget so that each axis takes equal time
@@ -221,7 +218,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             // a target travels in a straight line in state space
             towardsTarget.mul(ArmConstants.BOTTOM_GEAR_RATIO, ArmConstants.TOP_GEAR_RATIO)
                     .boxNormalize().mul(pidOut);
-            System.out.println("Move vector: " + towardsTarget);
 
             if (Double.isNaN(towardsTarget.x) || Double.isNaN(towardsTarget.y)) {
                 throw new RuntimeException("Towards target vector is NaN somehow");
