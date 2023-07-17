@@ -4,6 +4,7 @@ import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.lib.motor.rev.NEOMotor;
 import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import com.swrobotics.robot.CANAllocation;
+import org.littletonrobotics.junction.Logger;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
     public enum Mode {
@@ -26,6 +27,10 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
         if (!isEnabled())
             return;
 
+        Logger.getInstance().recordOutput("Intake/Mode", mode.toString());
+        Logger.getInstance().recordOutput("Intake/Game Piece", gamePiece.toString());
+        Logger.getInstance().recordOutput("Intake/Held Piece", heldPiece.toString());
+
         double out = 0;
         switch (mode) {
             case INTAKE:
@@ -39,6 +44,7 @@ public final class IntakeSubsystem extends SwitchableSubsystemBase {
                 out = gamePiece.getHoldOutput();
                 break;
         }
+        Logger.getInstance().recordOutput("Intake/Output", out);
 
         motor.setPercentOut(out);
     }

@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
+import org.littletonrobotics.junction.Logger;
 
 import java.util.List;
 
@@ -103,7 +104,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 //    int counter = 0;
     @Override
     public void periodic() {
-        boolean brake = !DriverStation.isDisabled();
+        boolean brake = true;
         bottom.setBrakeMode(brake);
         top.setBrakeMode(brake);
         wrist.setBrakeMode(brake);
@@ -243,11 +244,13 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             NTAngle foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? FOLD_ANGLE_CUBE : FOLD_ANGLE_CONE;
             wristTarget = foldAngle.get();
         }
-        wristTarget = wristTarget.sub(wristRef);
+        Logger.getInstance().recordOutput("Wrist/Abs Target (ccw deg)", wristTarget.ccw().deg());
+        Logger.getInstance().recordOutput("Wrist/Abs Current (ccw deg)", currentPose.wristAngle.ccw().deg());
 
         // Calculate the feedforward needed to counteract gravity on the wrist
         double wristFF = wristTarget.ccw().sin() * WRIST_FULL_HOLD.get();
 
+        wristTarget = wristTarget.sub(wristRef).ccw().wrapDeg(-180, 180);
         wrist.setTargetAngle(wristTarget, wristFF);
     }
 

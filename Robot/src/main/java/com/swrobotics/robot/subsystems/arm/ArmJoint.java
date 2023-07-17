@@ -66,18 +66,20 @@ public class ArmJoint {
         return motorEncoder.getAngle().div(motorToArmRatio);
     }
 
+    protected Angle getCalibrationAngle(Angle home) {
+        // Get CanCoder position: angle relative to home angle at the cancoder axis
+        Angle canCoderPos = absoluteEncoder.getAngle().add(absEncoderOffset.get());
+
+        // Arm position: position of arm relative to horizontal
+        return home.add(canCoderPos.div(canCoderToArmRatio));
+    }
+
     /**
      * Calibrates the motor encoder using the absolute encoder's reading. This is
      * called on startup so the arm can start in any position.
      */
     public void calibratePosition(Angle home) {
-        // Get CanCoder position: angle relative to home angle at the cancoder axis
-        Angle canCoderPos = absoluteEncoder.getAngle().add(absEncoderOffset.get());
-
-        // Arm position: position of arm relative to horizontal
-        Angle armPos = home.add(canCoderPos.div(canCoderToArmRatio));
-
-        motorEncoder.setAngle(armPos.mul(motorToArmRatio));
+        motorEncoder.setAngle(getCalibrationAngle(home).mul(motorToArmRatio));
     }
 
     /**

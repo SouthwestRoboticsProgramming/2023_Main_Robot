@@ -12,11 +12,17 @@ public final class WristJoint extends ArmJoint {
         motor.setPID(ArmSubsystem.WRIST_KP, ArmSubsystem.WRIST_KI, ArmSubsystem.WRIST_KD);
     }
 
+    @Override
+    protected Angle getCalibrationAngle(Angle home) {
+        return super.getCalibrationAngle(home).ccw().wrapDeg(-180, 180);
+    }
+
     public void setTargetAngle(Angle angle, double ff) {
         motor.setPositionArbFF(angle.mul(motorToArmRatio), ff);
         Logger.getInstance().recordOutput("Wrist/Target ccw deg", angle.ccw().deg());
         Logger.getInstance().recordOutput("Wrist/Current ccw deg", getCurrentAngle().ccw().deg());
         Logger.getInstance().recordOutput("Wrist/Motor target ccw deg", angle.mul(motorToArmRatio).ccw().deg());
         Logger.getInstance().recordOutput("Wrist/Motor current ccw deg", motorEncoder.getAngle().ccw().deg());
+        Logger.getInstance().recordOutput("Wrist/Arb FF", ff);
     }
 }

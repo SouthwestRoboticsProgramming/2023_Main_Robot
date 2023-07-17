@@ -88,9 +88,10 @@ public final class DrivetrainSubsystem extends SwerveDrive {
         }
 
         // Log gyro data
-//        Logger.getInstance().recordOutput("Gyro/RawPitch", gyro.getPitch());
+        Logger.getInstance().recordOutput("Gyro/RawPitch", gyro.getPitch().ccw().deg());
         Logger.getInstance().recordOutput("Gyro/Angle", gyro.getAngle().ccw().deg());
-//        Logger.getInstance().recordOutput("Gyro/RawRoll", gyro.getRoll());
+        Logger.getInstance().recordOutput("Gyro/RawRoll", gyro.getRoll().ccw().deg());
+        Logger.getInstance().recordOutput("Gyro/Up Vector", gyro.getUpVector().components());
 //        Logger.getInstance().recordOutput("Gyro/OffsetAmountDeg", gyroOffset.getDegrees());
 
         Logger.getInstance().recordOutput("SwerveStates/Setpoints", getModuleTargetStates());
