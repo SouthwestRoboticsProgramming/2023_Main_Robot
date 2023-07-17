@@ -4,9 +4,7 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
-import com.swrobotics.lib.drive.swerve.StopPosition;
 import com.swrobotics.lib.drive.swerve.commands.DriveBlindCommand;
-import com.swrobotics.lib.gyro.NavXGyroscope;
 import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
@@ -75,10 +73,9 @@ public class RobotContainer {
         DriverStation.silenceJoystickConnectionWarning(Settings.getMode() == Settings.Mode.REAL);
 
         // Initialize Messenger
-        messenger = new MessengerClient(
-                RobotBase.isSimulation() ? MESSENGER_HOST_SIM : MESSENGER_HOST_ROBOT,
-                MESSENGER_PORT,
-                MESSENGER_NAME);
+//        String host = RobotBase.isSimulation() ? MESSENGER_HOST_SIM : MESSENGER_HOST_ROBOT;
+        String host = MESSENGER_HOST_ROBOT;
+        messenger = new MessengerClient(host, MESSENGER_PORT, MESSENGER_NAME);
 
         new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
 

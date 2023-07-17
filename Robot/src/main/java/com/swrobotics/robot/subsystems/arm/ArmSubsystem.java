@@ -233,12 +233,13 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         // piece since the intake fits over the drive base at all angles.
         Vec2d axisPos = currentPose.getAxisPos().absolute();
         Vec2d foldZone = FOLD_ZONE.getVec();
-        Angle wristRef = currentPose.topAngle;
         Angle wristTarget = targetPose.wristAngle;
+        Angle wristRef = targetPose.topAngle;
         if (axisPos.x <= foldZone.x && axisPos.y <= foldZone.y) {
             // Set wrist to fold angle
             NTAngle foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? FOLD_ANGLE_CUBE : FOLD_ANGLE_CONE;
             wristTarget = foldAngle.get();
+            wristRef = currentPose.topAngle;
         }
         Logger.getInstance().recordOutput("Wrist/Abs Target (ccw deg)", wristTarget.ccw().deg());
         Logger.getInstance().recordOutput("Wrist/Abs Current (ccw deg)", currentPose.wristAngle.ccw().deg());
