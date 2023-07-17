@@ -4,6 +4,7 @@ import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
+import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.mathlib.Vec3d;
 
 /**
@@ -40,6 +41,14 @@ public final class PigeonGyroscope extends Gyroscope {
     // Rotation around Pigeon Y axis
     public Angle getRoll() {
         return CCWAngle.deg(pigeon.getRoll());
+    }
+
+    public Vec3d getUpVector() {
+        Vec3d up = new Vec3d(0, 0, 1);
+        up.rotateY(getRoll());
+        up.rotateX(getPitch());
+        up.rotateZ(getAngle());
+        return up;
     }
 
     // TODO: make it work

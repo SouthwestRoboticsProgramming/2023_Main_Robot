@@ -396,6 +396,45 @@ public final class Vec3d {
         return dest;
     }
 
+    public Vec3d rotateX(Angle angle) {
+        CCWAngle ccw = angle.ccw();
+        double sin = ccw.sin();
+        double cos = ccw.cos();
+
+        double ny = y * cos - z * sin;
+        double nz = y * sin + z * cos;
+        y = ny;
+        z = nz;
+
+        return this;
+    }
+
+    public Vec3d rotateY(Angle angle) {
+        CCWAngle ccw = angle.ccw();
+        double sin = ccw.sin();
+        double cos = ccw.cos();
+
+        double nx = x * cos + z * sin;
+        double nz = -x * sin + z * cos;
+        x = nx;
+        z = nz;
+
+        return this;
+    }
+
+    public Vec3d rotateZ(Angle angle) {
+        CCWAngle ccw = angle.ccw();
+        double sin = ccw.sin();
+        double cos = ccw.cos();
+
+        double nx = x * cos - y * sin;
+        double ny = x * sin + y * cos;
+        x = nx;
+        y = ny;
+
+        return this;
+    }
+
     /**
      * Computes the magnitude of this vector, squared. This is more efficient than computing the
      * actual magnitude, so prefer this function if you only need to compare the magnitudes of
@@ -475,6 +514,10 @@ public final class Vec3d {
      */
     public double distanceTo(Vec3d o) {
         return Math.sqrt(distanceToSq(o));
+    }
+
+    public double[] components() {
+        return new double[] {x, y, z};
     }
 
 //    public Vec3d rotateX(Angle a) {
