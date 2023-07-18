@@ -1,5 +1,6 @@
 package com.swrobotics.robot.input;
 
+import com.swrobotics.lib.drive.swerve.SwerveModuleAttributes;
 import com.swrobotics.lib.input.XboxController;
 import com.swrobotics.lib.net.NTAngle;
 import com.swrobotics.lib.net.NTBoolean;
@@ -41,6 +42,7 @@ public final class Input extends SubsystemBase {
      *  left stick:    drive translation
      *  right stick:   drive rotation
      *  right bumper:  fast mode
+     *  L+R bumpers:   really fast mode
      *  start:         reset gyro
      *
      */
@@ -58,6 +60,7 @@ public final class Input extends SubsystemBase {
 
     private static final double DEFAULT_SPEED = 1.5; // Meters per second
     private static final double FAST_SPEED = 4.11; // Meters per second
+    private static final double REALLY_FAST_SPEED = SwerveModuleAttributes.SDS_MK4I_L3.getMaxVelocity();
     private static final CWAngle MAX_ROTATION = CWAngle.rad(Math.PI);
 
     private static final NTBoolean L_IS_CONE = new NTBoolean("Is Cone", false);
@@ -124,11 +127,9 @@ public final class Input extends SubsystemBase {
     // ---- Driver controls ----
 
     public Vec2d getDriveTranslation() {
-        boolean fastMode = driver.rightBumper.isPressed();
-
         double speed = DEFAULT_SPEED;
-        if (fastMode) {
-            speed = FAST_SPEED;
+        if (driver.rightBumper.isPressed()) {
+            speed = driver.leftBumper.isPressed() ? REALLY_FAST_SPEED : FAST_SPEED;
         }
 
         speed = limiter.calculate(speed);
