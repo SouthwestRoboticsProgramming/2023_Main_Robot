@@ -1,6 +1,5 @@
 use arm::ArmPose;
 use bytes::{Buf, BufMut, BytesMut};
-use cfg_if::cfg_if;
 use lerp::Lerp;
 use std::{error::Error, f64::consts::PI, thread, time::Duration};
 use tokio::{sync::mpsc, time::Instant};
@@ -15,14 +14,6 @@ pub mod grid;
 pub mod messenger;
 pub mod theta_star;
 pub mod vectors;
-
-cfg_if! {
-    if #[cfg(feature = "graphics")] {
-        mod graphics;
-        use graphics::GraphicsState;
-        use std::sync::{Arc, Mutex};
-    }
-}
 
 pub const STATE_SZ: Vec2i = Vec2i { x: 128, y: 256 };
 pub const BOTTOM_RANGE: (f64, f64) = (0.4363, 2.1817);
@@ -126,9 +117,6 @@ pub async fn main() {
         }
     }
 
-    #[cfg(feature = "graphics")]
-    let grid = Arc::new(grid);
-
     let mut start_pose = ArmPose {
         bottom_angle: 0.0,
         top_angle: 0.0,
@@ -137,16 +125,6 @@ pub async fn main() {
         bottom_angle: 0.0,
         top_angle: 0.0,
     };
-
-    #[cfg(feature = "graphics")]
-    let graphics_state = Arc::new(Mutex::new(GraphicsState {
-        start_state: pose_to_state(&start_pose),
-        path_start_state: pose_to_state(&start_pose),
-        goal_state: pose_to_state(&goal_pose),
-        path: None,
-    }));
-    #[cfg(feature = "graphics")]
-    graphics::show_graphics_window(grid.clone(), graphics_state.clone());
 
     let (send_tx, send_rx) = mpsc::channel(32);
     let (recv_tx, mut recv_rx) = mpsc::channel(32);
@@ -221,20 +199,9 @@ pub async fn main() {
 
         let start = pose_to_state(&start_pose);
         let goal = pose_to_state(&goal_pose);
-        #[cfg(feature = "graphics")]
-        {
-            let mut state = graphics_state.lock().unwrap();
-            state.start_state = start;
-            state.goal_state = goal;
-        }
         // println!("Pathing from {:?} to {:?}", start, goal);
 
         let data = if let Some(start_pos) = dijkstra::find_nearest_passable(&grid, start) {
-            #[cfg(feature = "graphics")]
-            {
-                graphics_state.lock().unwrap().path_start_state = start_pos;
-            }
-
             let start_time = Instant::now();
             let mut path = theta_star::find_path(&grid, start_pos, goal);
             let end_time = Instant::now();
@@ -268,11 +235,6 @@ pub async fn main() {
                     BytesMut::zeroed(1)
                 }
             };
-
-            #[cfg(feature = "graphics")]
-            {
-                graphics_state.lock().unwrap().path = path;
-            }
 
             data
         } else {

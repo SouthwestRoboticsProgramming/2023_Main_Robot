@@ -15,11 +15,3 @@ bytes = "1.4.0"
 rsevents = "0.3.1"
 tokio-util = {version = "0.7.8", features = ["codec"] }
 tokio-stream = {version = "0.1.14", features = [] }
-macroquad = {version = "0.3.25", optional = true }
-cfg-if = "1"
-
-[features]
-graphics = ["dep:macroquad"]
-
-[target.armv7-unknown-linux-gnueabihf]
-linker = "arm-linux-gnueabihf-gcc"
