@@ -132,9 +132,10 @@ pub async fn main() {
 
     loop {
         let mut need_new_path = false;
+        let mut msg_opt = recv_rx.recv().await;
         loop {
-            match recv_rx.try_recv() {
-                Ok(msg) => match msg.name.as_str() {
+            match msg_opt {
+                Some(msg) => match msg.name.as_str() {
                     "Pathfinding:Calc" => {
                         let mut d = msg.data;
                         let start_bot = d.get_f64();
@@ -190,8 +191,10 @@ pub async fn main() {
                     }
                     _ => {}
                 },
-                Err(_) => break,
+                None => break,
             }
+
+            msg_opt = recv_rx.try_recv().ok();
         }
         if !need_new_path {
             continue;
