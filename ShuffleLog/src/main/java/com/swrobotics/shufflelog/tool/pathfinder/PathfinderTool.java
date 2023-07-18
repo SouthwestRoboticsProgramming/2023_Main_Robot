@@ -28,6 +28,9 @@ public final class PathfinderTool extends ViewportTool {
     private static final float BOTTOM_LEN = (float) Units.inchesToMeters(35.0);
     private static final float TOP_LEN = (float) Units.inchesToMeters(29.95824774);
 
+    private static final float INTAKE_RAD = (float) Units.inchesToMeters(6.49785148 + 1.125);
+    private static final float MIDPOINT_RAD = (float) Units.inchesToMeters(3.3);
+
     private static final class Rectangle {
         double x, y, width, height;
         double rotation;
@@ -191,7 +194,7 @@ public final class PathfinderTool extends ViewportTool {
 
         g.translate((info.width + g.width) / 2f, g.height / 2f);
         int minDim = Math.min(g.width - info.width, g.height);
-        float scale = minDim / 2f;
+        float scale = minDim / 3f;
         float strokeMul = 1 / scale;
         g.scale(scale, -scale);
         g.translate(0, -0.75f);
@@ -217,5 +220,28 @@ public final class PathfinderTool extends ViewportTool {
         g.strokeWeight(6 * strokeMul);
         g.line(0, 0, midX, midY);
         g.line(midX, midY, axisX, axisY);
+
+        g.noFill();
+        g.stroke(255, 128, 0);
+        g.strokeWeight(4 * strokeMul);
+        for (Rectangle rect : info.collisionRects) {
+            g.pushMatrix();
+            g.translate((float) rect.x, (float) rect.y);
+            g.rotate((float) rect.rotation);
+            g.rect((float) -rect.width/2, (float) -rect.height / 2, (float) rect.width, (float) rect.height);
+            g.popMatrix();
+        }
+
+        g.stroke(255, 255, 0);
+        g.strokeWeight(3 * strokeMul);
+        g.line((float) -info.frameSize/2, -1000, (float) -info.frameSize/2, 1000);
+        g.line((float) info.frameSize/2, -1000, (float) info.frameSize/2, 1000);
+
+        g.stroke(255, 0, 0);
+        g.strokeWeight(3 * strokeMul);
+        g.noFill();
+        g.ellipseMode(PConstants.CENTER);
+        g.ellipse(axisX, axisY, INTAKE_RAD*2, INTAKE_RAD*2);
+        g.ellipse(midX, midY, MIDPOINT_RAD*2, MIDPOINT_RAD*2);
     }
 }
