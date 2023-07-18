@@ -8,7 +8,7 @@ use futures_util::StreamExt;
 use protocol::Message;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
-    net::{TcpListener, TcpStream},
+    net::{tcp::OwnedReadHalf, TcpListener, TcpStream},
     sync::broadcast,
 };
 use tokio_util::codec;
@@ -160,6 +160,16 @@ impl HandlerSet {
     }
 }
 
+async fn read_name(read_half: &mut OwnedReadHalf) -> Result<String, Box<dyn Error>> {
+    let mut name_len_buf = [0u8; 2];
+    read_half.read_exact(&mut name_len_buf).await?;
+
+    let mut name_buf = vec![0u8; u16::from_be_bytes(name_len_buf) as usize];
+    read_half.read_exact(&mut name_buf).await?;
+
+    Ok(String::from_utf8(name_buf)?)
+}
+
 // TODO: Figure out how to include client name in error
 async fn handle_client(
     stream: TcpStream,
@@ -168,23 +178,18 @@ async fn handle_client(
 ) -> Result<(), Box<dyn Error>> {
     let (mut read_half, mut write_half) = stream.into_split();
 
-    let mut name_len_buf = [0u8; 2];
-    read_half.read_exact(&mut name_len_buf).await?;
-    let mut name_buf = vec![0u8; u16::from_be_bytes(name_len_buf) as usize];
-    read_half.read_exact(&mut name_buf).await?;
-    let client_name = String::from_utf8(name_buf)?;
-    println!("Got name: {}", client_name);
-
     let packed_heartbeat = Message {
         name: "_Heartbeat".to_string(),
         data: Bytes::new(),
     }
     .pack();
 
+    let client_name = read_name(&mut read_half).await?;
+    println!("Got name: {}", client_name);
+
     let mut message_read = codec::FramedRead::new(read_half, protocol::MessageDecoder);
     let mut handlers = HandlerSet::new();
 
-    // TODO: Time out if it's been too long
     loop {
         tokio::select! {
             result = broadcast_rx.recv() => match result {
@@ -239,13 +244,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("Opening port 5805 for Messenger");
     let listener = TcpListener::bind(("0.0.0.0", 5805)).await?;
 
-    let (broadcast_tx, mut broadcast_rx) = broadcast::channel(MAX_QUEUED_MESSAGES);
+    let (broadcast_tx, mut _broadcast_rx) = broadcast::channel(MAX_QUEUED_MESSAGES);
 
-    tokio::spawn(async move {
-        loop {
-            println!("Message: {:?}", broadcast_rx.recv().await);
-        }
-    });
+    // tokio::spawn(async move {
+    //     loop {
+    //         println!("Message: {:?}", broadcast_rx.recv().await);
+    //     }
+    // });
+
+    // TODO: Respond to Messenger:GetClients
 
     println!("Listening for incoming connections");
 
