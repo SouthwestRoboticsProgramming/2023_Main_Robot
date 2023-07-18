@@ -3,6 +3,7 @@ package com.swrobotics.mathlib;
 import edu.wpi.first.math.geometry.Translation2d;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 /** Represents a two-dimensional vector of {@code double}s. */
 public final class Vec2d {
@@ -358,6 +359,13 @@ public final class Vec2d {
     public Vec2d div(Vec2d o, Vec2d dest) {
         dest.x = x / o.x;
         dest.y = y / o.y;
+        return dest;
+    }
+
+    public Vec2d componentMap(Function<Double, Double> mapFn) { return componentMap(mapFn, this); }
+    public Vec2d componentMap(Function<Double, Double> mapFn, Vec2d dest) {
+        dest.x = mapFn.apply(x);
+        dest.y = mapFn.apply(y);
         return dest;
     }
 
