@@ -1,7 +1,11 @@
+// TODO: Event logging (to messages and file)
+// TODO: Clean up
+
 use std::{collections::HashSet, error::Error, io::ErrorKind, time::Duration};
 
-use bytes::{Buf, BufMut, Bytes, BytesMut};
+use bytes::Bytes;
 use futures_util::StreamExt;
+use protocol::Message;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},
@@ -9,85 +13,114 @@ use tokio::{
 };
 use tokio_util::codec;
 
+mod protocol {
+    use bytes::{Buf, BufMut, Bytes, BytesMut};
+    use tokio_util::codec;
+
+    // Assumes buf has enough space to store the string and length prefix
+    pub fn pack_str(string: &str, buf: &mut BytesMut) {
+        buf.put_u16(string.len() as u16);
+        buf.put(string.as_bytes());
+    }
+
+    // TODO: Proper error handling
+    pub fn unpack_string(data: &[u8]) -> Option<String> {
+        if data.len() < 2 {
+            // Don't have length prefix
+            return None;
+        }
+
+        let mut len_buf = [0u8; 2];
+        len_buf.copy_from_slice(&data[0..2]);
+        let len = u16::from_be_bytes(len_buf) as usize;
+        if data.len() < 2 + len {
+            return None;
+        }
+
+        let utf8_data = data[2..(2 + len)].to_vec();
+        match String::from_utf8(utf8_data) {
+            Ok(str) => Some(str),
+            Err(_) => None,
+        }
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct Message {
+        pub name: String,
+        pub data: Bytes,
+    }
+
+    impl Message {
+        pub fn pack(mut self) -> BytesMut {
+            let mut buf = BytesMut::with_capacity(6 + self.name.len() + self.data.len());
+            pack_str(&self.name, &mut buf);
+            buf.put_i32(self.data.len() as i32);
+            buf.put(&mut self.data);
+            buf
+        }
+    }
+
+    pub struct MessageDecoder;
+
+    impl codec::Decoder for MessageDecoder {
+        type Item = Message;
+        type Error = std::io::Error;
+
+        fn decode(&mut self, src: &mut bytes::BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+            if src.len() < 2 {
+                // Have not received type length prefix yet
+                return Ok(None);
+            }
+
+            let mut name_len_bytes = [0u8; 2];
+            name_len_bytes.copy_from_slice(&src[..2]);
+            let name_len = u16::from_be_bytes(name_len_bytes) as usize;
+
+            if src.len() < 2 + name_len + 4 {
+                // Have not received name and data length yet
+                src.reserve(2 + name_len + 4 - src.len());
+                return Ok(None);
+            }
+
+            let mut data_len_bytes = [0u8; 4];
+            data_len_bytes.copy_from_slice(&src[(2 + name_len)..(6 + name_len)]);
+            let data_len = i32::from_be_bytes(data_len_bytes) as usize;
+
+            if src.len() < 6 + name_len + data_len {
+                // Have not received data yet
+                src.reserve(6 + name_len + data_len - src.len());
+                return Ok(None);
+            }
+
+            // If we reach here, we have the full message data
+
+            let name_data = src[2..2 + name_len].to_vec();
+            let data = BytesMut::from(&src[6 + name_len..6 + name_len + data_len]);
+            src.advance(6 + name_len + data_len);
+
+            let name = match String::from_utf8(name_data) {
+                Ok(string) => Ok(string),
+                Err(decode_err) => Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    decode_err,
+                )),
+            }?;
+
+            Ok(Some(Message {
+                name,
+                data: data.into(),
+            }))
+        }
+    }
+}
+
 const MAX_QUEUED_MESSAGES: usize = 256;
-
-// Assumes buf has enough space to store the string and length prefix
-fn pack_str(string: &str, buf: &mut BytesMut) {
-    buf.put_u16(string.len() as u16);
-    buf.put(string.as_bytes());
-}
-
-#[derive(Clone, Debug)]
-struct Message {
-    name: String,
-    data: Bytes,
-}
-impl Message {
-    fn pack(mut self) -> BytesMut {
-        let mut buf = BytesMut::with_capacity(6 + self.name.len() + self.data.len());
-        pack_str(&self.name, &mut buf);
-        buf.put_i32(self.data.len() as i32);
-        buf.put(&mut self.data);
-        buf
-    }
-}
-
-struct MessageDecoder;
-impl codec::Decoder for MessageDecoder {
-    type Item = Message;
-    type Error = std::io::Error;
-
-    fn decode(&mut self, src: &mut bytes::BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        if src.len() < 2 {
-            // Have not received type length prefix yet
-            return Ok(None);
-        }
-
-        let mut name_len_bytes = [0u8; 2];
-        name_len_bytes.copy_from_slice(&src[..2]);
-        let name_len = u16::from_be_bytes(name_len_bytes) as usize;
-
-        if src.len() < 2 + name_len + 4 {
-            // Have not received name and data length yet
-            src.reserve(2 + name_len + 4 - src.len());
-            return Ok(None);
-        }
-
-        let mut data_len_bytes = [0u8; 4];
-        data_len_bytes.copy_from_slice(&src[(2 + name_len)..(6 + name_len)]);
-        let data_len = i32::from_be_bytes(data_len_bytes) as usize;
-
-        if src.len() < 6 + name_len + data_len {
-            // Have not received data yet
-            src.reserve(6 + name_len + data_len - src.len());
-            return Ok(None);
-        }
-
-        // If we reach here, we have the full message data
-
-        let name_data = src[2..2 + name_len].to_vec();
-        let data = BytesMut::from(&src[6 + name_len..6 + name_len + data_len]);
-        src.advance(6 + name_len + data_len);
-
-        let name = match String::from_utf8(name_data) {
-            Ok(string) => Ok(string),
-            Err(decode_err) => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                decode_err,
-            )),
-        }?;
-
-        Ok(Some(Message {
-            name,
-            data: data.into(),
-        }))
-    }
-}
 
 struct HandlerSet {
     exact_names: HashSet<String>,
     prefix: HashSet<String>,
 }
+
 impl HandlerSet {
     fn new() -> Self {
         Self {
@@ -127,27 +160,6 @@ impl HandlerSet {
     }
 }
 
-// TODO: Proper error handling
-fn unpack_string(data: &[u8]) -> Option<String> {
-    if data.len() < 2 {
-        // Don't have length prefix
-        return None;
-    }
-
-    let mut len_buf = [0u8; 2];
-    len_buf.copy_from_slice(&data[0..2]);
-    let len = u16::from_be_bytes(len_buf) as usize;
-    if data.len() < 2 + len {
-        return None;
-    }
-
-    let utf8_data = data[2..(2 + len)].to_vec();
-    match String::from_utf8(utf8_data) {
-        Ok(str) => Some(str),
-        Err(_) => None,
-    }
-}
-
 // TODO: Figure out how to include client name in error
 async fn handle_client(
     stream: TcpStream,
@@ -169,7 +181,7 @@ async fn handle_client(
     }
     .pack();
 
-    let mut message_read = codec::FramedRead::new(read_half, MessageDecoder);
+    let mut message_read = codec::FramedRead::new(read_half, protocol::MessageDecoder);
     let mut handlers = HandlerSet::new();
 
     // TODO: Time out if it's been too long
@@ -198,11 +210,11 @@ async fn handle_client(
                             // Respond with matching heartbeat
                             write_half.write_all(&packed_heartbeat).await?;
                         }
-                        "_Listen" => if let Some(name) = unpack_string(&msg.data) {
+                        "_Listen" => if let Some(name) = protocol::unpack_string(&msg.data) {
                             println!("Client {} listening to {}", client_name, name);
                             handlers.listen(name);
                         }
-                        "_Unlisten" => if let Some(name) = unpack_string(&msg.data) {
+                        "_Unlisten" => if let Some(name) = protocol::unpack_string(&msg.data) {
                             println!("Client {} no longer listening to {}", client_name, name);
                             handlers.unlisten(name);
                         }
@@ -224,13 +236,12 @@ async fn handle_client(
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    println!("Opening port 5805 for Messenger");
     let listener = TcpListener::bind(("0.0.0.0", 5805)).await?;
 
     let (broadcast_tx, mut broadcast_rx) = broadcast::channel(MAX_QUEUED_MESSAGES);
 
-    // For debugging, log all messages to console
     tokio::spawn(async move {
-        println!("Messages are logged");
         loop {
             println!("Message: {:?}", broadcast_rx.recv().await);
         }
