@@ -48,23 +48,6 @@ fn percent(val: f64, min: f64, max: f64) -> f64 {
 }
 
 fn pose_to_state(pose: &ArmPose) -> Vec2i {
-    // println!(
-    //     "Y infos: top: {} range: {:?} wrap: {} pct: {} sz: {}",
-    //     pose.top_angle,
-    //     TOP_RANGE,
-    //     wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1),
-    //     percent(
-    //         wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1),
-    //         TOP_RANGE.0,
-    //         TOP_RANGE.1
-    //     ),
-    //     (percent(
-    //         wrap(pose.top_angle, TOP_RANGE.0, TOP_RANGE.1),
-    //         TOP_RANGE.0,
-    //         TOP_RANGE.1
-    //     ) * (STATE_SZ.y as f64)) as i32
-    // );
-
     Vec2i {
         x: (percent(
             wrap(pose.bottom_angle, BOTTOM_RANGE.0, BOTTOM_RANGE.1),
@@ -86,13 +69,13 @@ async fn messages_io(
 ) -> Result<(), Box<dyn Error>> {
     let mut msg = messenger::MessengerClient::connect("localhost:5805", "Pathfinding").await?;
     msg.listen("Pathfinding:Calc").await?;
+    msg.listen("Pathfinding:GetInfo").await?;
     println!("Connected");
 
     loop {
         tokio::select! {
             m_result = msg.read_message() => match m_result {
                 Ok(m) => {
-                    // println!("Got message: {}", m.name);
                     recv_tx.send(m).await?;
                 },
                 Err(e) => return Err(Box::new(e))
@@ -100,7 +83,6 @@ async fn messages_io(
 
             to_send_opt = send_rx.recv() => match to_send_opt {
                 Some(to_send) => {
-                    // println!("Sending message: {}", to_send.name);
                     msg.send_message(to_send).await?;
                 }
                 None => {}
@@ -191,6 +173,42 @@ pub async fn main() {
                             top_angle: goal_top,
                         };
                         need_new_path = true;
+                    }
+                    "Pathfinding:GetInfo" => {
+                        println!("Get info requested");
+                        let mut out = BytesMut::new();
+                        out.put_i32(STATE_SZ.x);
+                        out.put_i32(STATE_SZ.y);
+                        out.put_f64(BOTTOM_RANGE.0);
+                        out.put_f64(BOTTOM_RANGE.1);
+                        out.put_f64(TOP_RANGE.0);
+                        out.put_f64(TOP_RANGE.1);
+                        out.put_f64(arm::FRAME_SIZE);
+
+                        out.put_i32(arm::COLLISION_RECTS.len() as i32);
+                        for rect in arm::COLLISION_RECTS {
+                            out.put_f64(rect.position.x);
+                            out.put_f64(rect.position.y);
+                            out.put_f64(rect.size.x);
+                            out.put_f64(rect.size.y);
+                            out.put_f64(rect.rotation);
+                            out.put_u8(if rect.inverted { 1 } else { 0 });
+                        }
+
+                        for y in 0..STATE_SZ.y {
+                            for x in 0..STATE_SZ.x {
+                                out.put_u8(if grid.can_pass(x, y) { 1 } else { 0 });
+                            }
+                        }
+
+                        send_tx
+                            .send(Message {
+                                name: "Pathfinding:Info".to_string(),
+                                data: out,
+                            })
+                            .await
+                            .unwrap();
+                        println!("Sent info");
                     }
                     _ => {}
                 },
