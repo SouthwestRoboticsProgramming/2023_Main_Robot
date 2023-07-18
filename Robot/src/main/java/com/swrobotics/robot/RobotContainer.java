@@ -73,8 +73,8 @@ public class RobotContainer {
         DriverStation.silenceJoystickConnectionWarning(Settings.getMode() == Settings.Mode.REAL);
 
         // Initialize Messenger
-//        String host = RobotBase.isSimulation() ? MESSENGER_HOST_SIM : MESSENGER_HOST_ROBOT;
-        String host = MESSENGER_HOST_ROBOT;
+        String host = RobotBase.isSimulation() ? MESSENGER_HOST_SIM : MESSENGER_HOST_ROBOT;
+//        String host = MESSENGER_HOST_ROBOT;
         messenger = new MessengerClient(host, MESSENGER_PORT, MESSENGER_NAME);
 
         new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
