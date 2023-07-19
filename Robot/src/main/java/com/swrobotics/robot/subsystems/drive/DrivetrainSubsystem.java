@@ -11,7 +11,7 @@ import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
-import com.swrobotics.lib.net.NTEntry;
+import com.swrobotics.lib.net.NTPrimitive;
 import com.swrobotics.robot.config.NTData;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,7 +25,7 @@ import static com.swrobotics.robot.subsystems.drive.DrivetrainConstants.*;
 public final class DrivetrainSubsystem extends SwerveDrive {
     public static final FieldInfo FIELD = FieldInfo.CHARGED_UP_2023;
 
-    private static final NTEntry<Boolean> CALIBRATE = new NTBoolean("Swerve/Calibrate", false);
+    private static final NTPrimitive<Boolean> CALIBRATE = new NTBoolean("Swerve/Calibrate", false);
 
     private final PigeonGyroscope gyro;
 

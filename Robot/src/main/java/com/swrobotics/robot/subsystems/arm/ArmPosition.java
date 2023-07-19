@@ -1,17 +1,20 @@
 package com.swrobotics.robot.subsystems.arm;
 
 import com.swrobotics.lib.net.NTDoubleArray;
+import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 
 public final class ArmPosition {
-    public static final class NT extends NTDoubleArray {
+    public static final class NT extends NTEntry<ArmPosition> {
+        private final NTEntry<double[]> value;
         private final ArmPosition defPos;
 
         public NT(String path, double defX, double defY, Angle defWrist) {
-            super(path, defX, defY, defWrist.ccw().deg());
+            value = new NTDoubleArray(path, defX, defY, defWrist.ccw().deg());
+//            super(path, defX, defY, defWrist.ccw().deg());
             defPos = new ArmPosition(new Vec2d(defX, defY), defWrist);
         }
 
@@ -19,8 +22,9 @@ public final class ArmPosition {
             this(path, defPos.axisPos.x, defPos.axisPos.y, defPos.wristAngle);
         }
 
-        public ArmPosition getPosition() {
-            double[] coords = get();
+        @Override
+        public ArmPosition get() {
+            double[] coords = value.get();
             if (coords.length < 3) {
                 set(defPos);
             }
@@ -28,7 +32,18 @@ public final class ArmPosition {
         }
 
         public void set(ArmPosition tx) {
-            set(new double[] {tx.axisPos.x, tx.axisPos.y, tx.wristAngle.ccw().deg()});
+            value.set(new double[] {tx.axisPos.x, tx.axisPos.y, tx.wristAngle.ccw().deg()});
+        }
+
+        @Override
+        public NTEntry<ArmPosition> setPersistent() {
+            value.setPersistent();
+            return this;
+        }
+
+        @Override
+        public void registerChangeListeners(Runnable fireFn) {
+            value.registerChangeListeners(fireFn);
         }
     }
 

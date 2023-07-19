@@ -2,6 +2,7 @@ package com.swrobotics.robot.config;
 
 import com.swrobotics.lib.net.*;
 import com.swrobotics.mathlib.Angle;
+import com.swrobotics.mathlib.Vec2d;
 
 /**
  * Class to store all tunable NetworkTables values in one place, to make it
@@ -39,7 +40,7 @@ public final class NTData {
     public static final NTEntry<Angle> ARM_TOP_OFFSET = new NTAngle("Arm/Offsets/Top", 0, NTAngle.Mode.CCW_DEG).setPersistent();
     public static final NTEntry<Angle> ARM_WRIST_OFFSET = new NTAngle("Arm/Offsets/Wrist", 0, NTAngle.Mode.CCW_DEG).setPersistent();
 
-    public static final NTVec2d ARM_FOLD_ZONE = (NTVec2d) new NTVec2d("Arm/Fold Zone", 0.5, 0.25).setPersistent();
+    public static final NTEntry<Vec2d> ARM_FOLD_ZONE = new NTVec2d("Arm/Fold Zone", 0.5, 0.25).setPersistent();
     public static final NTEntry<Angle> ARM_FOLD_ANGLE_CUBE = new NTAngle("Arm/Fold Angle/Cube", 0, NTAngle.Mode.CCW_DEG).setPersistent();
     public static final NTEntry<Angle> ARM_FOLD_ANGLE_CONE = new NTAngle("Arm/Fold Angle/Cone", 0, NTAngle.Mode.CCW_DEG).setPersistent();
 

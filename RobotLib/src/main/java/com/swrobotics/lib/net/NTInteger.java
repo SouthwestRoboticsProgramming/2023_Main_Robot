@@ -1,7 +1,7 @@
 package com.swrobotics.lib.net;
 
 /** Represents a {@code int} value stored in NetworkTables. */
-public final class NTInteger extends NTEntry<Integer> {
+public final class NTInteger extends NTPrimitive<Integer> {
     private final int defaultVal;
 
     /**

@@ -7,7 +7,6 @@ import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.config.CANAllocation;
-import com.swrobotics.robot.config.NTData;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import edu.wpi.first.math.controller.PIDController;
@@ -30,7 +29,7 @@ import static com.swrobotics.robot.config.NTData.*;
 // 6. Set Arm/Brake Mode to true
 // 6. Restart robot code to use the new offsets
 public final class ArmSubsystem extends SwitchableSubsystemBase {
-    private static final NTEntry<Boolean> CALIBRATE_CANCODERS = new NTBoolean("Arm/Offsets/Calibrate", false);
+    private static final NTPrimitive<Boolean> CALIBRATE_CANCODERS = new NTBoolean("Arm/Offsets/Calibrate", false);
 
     private final IntakeSubsystem intake;
     private final ArmJoint bottom, top;
@@ -56,7 +55,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         currentVisualizer = new ArmVisualizer(size/2, size/2, visualizer, "Current", Color.kDarkGreen, Color.kGreen, Color.kLightGreen);
         SmartDashboard.putData("Arm Visualizer", visualizer);
 
-        ArmPose home = ArmPositions.DEFAULT.getPosition().toPose();
+        ArmPose home = ArmPositions.DEFAULT.get().toPose();
         System.out.println("Home pose: " + home);
         if (home == null)
             throw new IllegalStateException("Home position must be valid!");
@@ -205,7 +204,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         // reliably determine if we have one. This is fine without game
         // piece since the intake fits over the drive base at all angles.
         Vec2d axisPos = currentPose.getAxisPos().absolute();
-        Vec2d foldZone = ARM_FOLD_ZONE.getVec();
+        Vec2d foldZone = ARM_FOLD_ZONE.get();
         Angle wristTarget = targetPose.wristAngle;
         Angle wristRef = targetPose.topAngle;
         if (axisPos.x <= foldZone.x && axisPos.y <= foldZone.y) {

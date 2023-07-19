@@ -230,13 +230,13 @@ public final class Input extends SubsystemBase {
             defaultArmNudgeAngle = defaultArmNudgeAngle.add(wristNudge);
 
             ntArmTarget = ArmPositions.DEFAULT;
-            ArmPosition def = ntArmTarget.getPosition();
+            ArmPosition def = ntArmTarget.get();
             armTarget = new ArmPosition(def.axisPos.add(defaultArmNudgePosition), def.wristAngle.add(defaultArmNudgeAngle));
         } else {
             defaultArmNudgePosition.set(0, 0);
             defaultArmNudgeAngle = Angle.ZERO;
 
-            ArmPosition raw = ntArmTarget.getPosition();
+            ArmPosition raw = ntArmTarget.get();
             armTarget = new ArmPosition(raw.axisPos.add(translationNudge), raw.wristAngle.add(wristNudge));
             ntArmTarget.set(armTarget);
         }

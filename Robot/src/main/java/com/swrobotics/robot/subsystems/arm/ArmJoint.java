@@ -7,6 +7,7 @@ import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.SimMotor;
 import com.swrobotics.lib.motor.rev.NEOMotor;
 import com.swrobotics.lib.net.NTEntry;
+import com.swrobotics.lib.net.NTPrimitive;
 import com.swrobotics.mathlib.Angle;
 import edu.wpi.first.wpilibj.RobotBase;
 

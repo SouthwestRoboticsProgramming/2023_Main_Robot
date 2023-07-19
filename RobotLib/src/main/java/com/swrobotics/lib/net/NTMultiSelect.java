@@ -9,7 +9,7 @@ import java.util.List;
  * Represents a multiple choice value stored in NetworkTables. This is shown as a dropdown menu in
  * ShuffleLog with the available options. The actual value is stored as a {@code String}.
  */
-public abstract class NTMultiSelect<T> extends NTEntry<T> {
+public abstract class NTMultiSelect<T> extends NTPrimitive<T> {
     private final T defaultVal;
     private final String defaultName;
     private final NTStringArray metadata;

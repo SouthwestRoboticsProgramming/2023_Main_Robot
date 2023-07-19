@@ -93,7 +93,7 @@ public class RobotContainer {
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
-        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getPosition));
+        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::get));
         // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
 
         // Allow for easy creation of autos using PathPlanner

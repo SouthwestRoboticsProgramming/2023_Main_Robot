@@ -1,7 +1,7 @@
 package com.swrobotics.lib.net;
 
 /** Represents a {@code boolean} value stored in NetworkTables. */
-public class NTBoolean extends NTEntry<Boolean> {
+public class NTBoolean extends NTPrimitive<Boolean> {
     public enum Mode {
         /** Shows this entry as a checkbox in ShuffleLog. */
         TOGGLE(0),

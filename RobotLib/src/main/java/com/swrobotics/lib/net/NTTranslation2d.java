@@ -2,13 +2,27 @@ package com.swrobotics.lib.net;
 
 import edu.wpi.first.math.geometry.Translation2d;
 
-public final class NTTranslation2d extends NTDoubleArray {
+public final class NTTranslation2d extends NTEntry<Translation2d> {
+    private final NTEntry<double[]> value;
+
     public NTTranslation2d(String path, double defX, double defY) {
-        super(path, defX, defY);
+        value = new NTDoubleArray(path, defX, defY);
     }
 
-    public Translation2d getTranslation() {
-        double[] coords = get();
+    @Override
+    public NTEntry<Translation2d> setPersistent() {
+        value.setPersistent();
+        return this;
+    }
+
+    @Override
+    public void registerChangeListeners(Runnable fireFn) {
+        value.registerChangeListeners(fireFn);
+    }
+
+    @Override
+    public Translation2d get() {
+        double[] coords = value.get();
         return new Translation2d(coords[0], coords[1]);
     }
 
@@ -17,6 +31,6 @@ public final class NTTranslation2d extends NTDoubleArray {
     }
 
     public void set(double x, double y) {
-        set(new double[] {x, y});
+        value.set(new double[] {x, y});
     }
 }

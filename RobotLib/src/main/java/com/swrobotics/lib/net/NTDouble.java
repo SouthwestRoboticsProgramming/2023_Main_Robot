@@ -1,7 +1,7 @@
 package com.swrobotics.lib.net;
 
 /** Represents a {@code double} value stored in NetworkTables. */
-public final class NTDouble extends NTEntry<Double> {
+public final class NTDouble extends NTPrimitive<Double> {
     private final double defaultVal;
 
     /**

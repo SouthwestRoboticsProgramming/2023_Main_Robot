@@ -1,6 +1,7 @@
 package com.swrobotics.robot.subsystems.drive;
 
 import com.swrobotics.lib.net.NTEntry;
+import com.swrobotics.lib.net.NTPrimitive;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.robot.config.CANAllocation;
 
