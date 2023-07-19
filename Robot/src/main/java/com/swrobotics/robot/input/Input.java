@@ -5,6 +5,9 @@ import com.swrobotics.lib.input.XboxController;
 import com.swrobotics.lib.net.NTAngle;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.time.Duration;
+import com.swrobotics.lib.time.TimeUnit;
+import com.swrobotics.lib.util.ValueDebouncer;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
 import com.swrobotics.robot.subsystems.arm.ArmPosition;
@@ -74,6 +77,7 @@ public final class Input extends SubsystemBase {
     private GamePiece gamePiece;
     private Vec2d defaultArmNudgePosition;
     private Angle defaultArmNudgeAngle;
+    private ValueDebouncer<ArmPosition.NT> armPositionDebounce;
 
     public Input(RobotContainer robot) {
         this.robot = robot;
@@ -101,6 +105,7 @@ public final class Input extends SubsystemBase {
         gamePiece = GamePiece.CUBE;
         defaultArmNudgePosition = new Vec2d(0, 0);
         defaultArmNudgeAngle = Angle.ZERO;
+        armPositionDebounce = new ValueDebouncer<>(new Duration(0.05, TimeUnit.SECONDS), ArmPositions.DEFAULT);
 
         /*
          * The limiter acts to reduce sudden acceleration and deceleration when going into or dropping out of
@@ -222,6 +227,8 @@ public final class Input extends SubsystemBase {
         // No shakey
         if (translationNudge.magnitudeSq() > 0)
             robot.arm.moveNow();
+
+        ntArmTarget = armPositionDebounce.debounce(ntArmTarget);
 
         ArmPosition armTarget;
         if (ntArmTarget == null) {
