@@ -2,6 +2,7 @@ package com.swrobotics.robot.subsystems.arm;
 
 import com.swrobotics.lib.net.NTAngle;
 import com.swrobotics.mathlib.Angle;
+import com.swrobotics.robot.config.NTData;
 import org.littletonrobotics.junction.Logger;
 
 // Angle 0 on the wrist is the angle it naturally sits at when the robot is off
@@ -9,7 +10,7 @@ import org.littletonrobotics.junction.Logger;
 public final class WristJoint extends ArmJoint {
     public WristJoint(int motorId, int canCoderId, double canCoderToArmRatio, double motorToArmRatio, NTAngle absEncoderOffset, boolean invert) {
         super(motorId, canCoderId, canCoderToArmRatio, motorToArmRatio, absEncoderOffset, invert);
-        motor.setPID(ArmSubsystem.WRIST_KP, ArmSubsystem.WRIST_KI, ArmSubsystem.WRIST_KD);
+        motor.setPID(NTData.ARM_WRIST_KP, NTData.ARM_WRIST_KI, NTData.ARM_WRIST_KD);
     }
 
     @Override

@@ -2,10 +2,9 @@ package com.swrobotics.lib.drive.swerve;
 
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.motor.FeedbackMotor;
-import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTAngle;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
-import com.swrobotics.mathlib.CWAngle;
 import com.swrobotics.mathlib.MathUtil;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,7 +24,7 @@ public class SwerveModule {
     private final Encoder turnEncoder;
     private final Encoder driveEncoder;
 
-    private final NTDouble offset;
+    private final NTAngle offset;
     public final Translation2d position;
     private final double positionalOffset;
 
@@ -54,7 +53,7 @@ public class SwerveModule {
             FeedbackMotor turnMotor,
             Encoder encoder,
             Translation2d position,
-            NTDouble offset) {
+            NTAngle offset) {
         this.attribs = attribs;
         this.drive = driveMotor;
         this.turn = turnMotor;
@@ -169,11 +168,11 @@ public class SwerveModule {
      */
     public Rotation2d getAbsoluteAngle() {
         return Rotation2d.fromDegrees(
-                encoder.getAngle().ccw().deg() - offset.get() + positionalOffset);
+                encoder.getAngle().ccw().deg() - offset.get().ccw().deg() + positionalOffset);
     }
 
     public void calibrateOffset() {
-        offset.set(encoder.getAngle().ccw().deg() + positionalOffset); // No offset applied
+        offset.set(CCWAngle.deg(encoder.getAngle().ccw().deg() + positionalOffset)); // No offset applied
     }
 
     private void calibrateWithAbsoluteEncoder() {

@@ -3,15 +3,13 @@ package com.swrobotics.robot.subsystems.arm;
 import com.swrobotics.lib.net.*;
 import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
 import com.swrobotics.mathlib.Angle;
-import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
-import com.swrobotics.robot.CANAllocation;
+import com.swrobotics.robot.config.CANAllocation;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -20,30 +18,10 @@ import org.littletonrobotics.junction.Logger;
 import java.util.List;
 
 import static com.swrobotics.robot.subsystems.arm.ArmConstants.*;
+import static com.swrobotics.robot.config.NTData.*;
 
 public final class ArmSubsystem extends SwitchableSubsystemBase {
-    private static final NTDouble MOVE_KP = new NTDouble("Arm/Move PID/kP", 8);
-    private static final NTDouble MOVE_KI = new NTDouble("Arm/Move PID/kI", 0);
-    private static final NTDouble MOVE_KD = new NTDouble("Arm/Move PID/kD", 0);
-    public static final NTDouble WRIST_KP = new NTDouble("Arm/Wrist PID/kP", 0.1);
-    public static final NTDouble WRIST_KI = new NTDouble("Arm/Wrist PID/kI", 0);
-    public static final NTDouble WRIST_KD = new NTDouble("Arm/Wrist PID/kD", 0);
-
-    private static final NTDouble MAX_SPEED = new NTDouble("Arm/Max Speed", 1.0);
-    private static final NTDouble STOP_TOL = new NTDouble("Arm/Stop Tolerance", 1.5);
-    private static final NTDouble START_TOL = new NTDouble("Arm/Start Tolerance", 2.5);
-
-    private static final NTBoolean CALIBRATE_CANCODERS = new NTBoolean("Arm/Offsets/Calibrate", false);
-    private static final NTAngle BOTTOM_OFFSET = new NTAngle("Arm/Offsets/Bottom", Angle.ZERO, NTAngle.Mode.CCW_DEG);
-    private static final NTAngle TOP_OFFSET = new NTAngle("Arm/Offsets/Top", Angle.ZERO, NTAngle.Mode.CCW_DEG);
-    private static final NTAngle WRIST_OFFSET = new NTAngle("Arm/Offsets/Wrist", Angle.ZERO, NTAngle.Mode.CCW_DEG);
-
-    // FIXME: These defaults are completely arbitrary
-    private static final NTVec2d FOLD_ZONE = new NTVec2d("Arm/Fold Zone", 0.5, 0.25);
-    private static final NTAngle FOLD_ANGLE_CUBE = new NTAngle("Arm/Fold Angle/Cube", Angle.ZERO, NTAngle.Mode.CCW_DEG);
-    private static final NTAngle FOLD_ANGLE_CONE = new NTAngle("Arm/Fold Angle/Cone", Angle.ZERO, NTAngle.Mode.CCW_DEG);
-
-    private static final NTDouble WRIST_FULL_HOLD = new NTDouble("Arm/Wrist Full Hold Pct", 0.09);
+    private static final NTEntry<Boolean> CALIBRATE_CANCODERS = new NTBoolean("Arm/Offsets/Calibrate", false).setTemporary();
 
     private final IntakeSubsystem intake;
     private final ArmJoint bottom, top;
@@ -58,9 +36,9 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     public ArmSubsystem(MessengerClient msg, IntakeSubsystem intake) {
         this.intake = intake;
 
-        bottom = new ArmJoint(CANAllocation.ARM_BOTTOM_MOTOR, CANAllocation.ARM_BOTTOM_CANCODER, CANCODER_TO_ARM_RATIO, BOTTOM_GEAR_RATIO, BOTTOM_OFFSET, true);
-        top = new ArmJoint(CANAllocation.ARM_TOP_MOTOR, CANAllocation.ARM_TOP_CANCODER, CANCODER_TO_ARM_RATIO, TOP_GEAR_RATIO, TOP_OFFSET, false);
-        wrist = new WristJoint(CANAllocation.ARM_WRIST_MOTOR, CANAllocation.ARM_WRIST_CANCODER, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, WRIST_OFFSET, false);
+        bottom = new ArmJoint(CANAllocation.ARM_BOTTOM_MOTOR, CANAllocation.ARM_BOTTOM_CANCODER, CANCODER_TO_ARM_RATIO, BOTTOM_GEAR_RATIO, ARM_BOTTOM_OFFSET, true);
+        top = new ArmJoint(CANAllocation.ARM_TOP_MOTOR, CANAllocation.ARM_TOP_CANCODER, CANCODER_TO_ARM_RATIO, TOP_GEAR_RATIO, ARM_TOP_OFFSET, false);
+        wrist = new WristJoint(CANAllocation.ARM_WRIST_MOTOR, CANAllocation.ARM_WRIST_CANCODER, WRIST_CANCODER_TO_ARM_RATIO, WRIST_GEAR_RATIO, ARM_WRIST_OFFSET, false);
 
         double size = (BOTTOM_LENGTH + TOP_LENGTH + WRIST_RAD) * 2;
         Mechanism2d visualizer = new Mechanism2d(size, size);
@@ -78,7 +56,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         wrist.calibratePosition(home.wristAngle.sub(home.topAngle));
 
         pathfinder = new ArmPathfinder(msg);
-        movePid = NTUtil.tunablePID(MOVE_KP, MOVE_KI, MOVE_KD);
+        movePid = NTUtil.tunablePID(ARM_MOVE_KP, ARM_MOVE_KI, ARM_MOVE_KD);
         targetPose = home;
     }
 
@@ -108,20 +86,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         bottom.setBrakeMode(brake);
         top.setBrakeMode(brake);
         wrist.setBrakeMode(brake);
-
-//        if (counter++ == 100) {
-//            counter = 0;
-//
-//            ArmPose pose = null;
-//            while (pose == null) {
-//                pose = new ArmPosition(new Vec2d(
-//                        Math.random() * 2 - 1,
-//                        Math.random() + 0.2
-//                ), CCWAngle.deg(Math.random() * 180 - 90)).toPose();
-//            }
-//
-//            setTargetPose(pose);
-//        }
 
         if (CALIBRATE_CANCODERS.get()) {
             CALIBRATE_CANCODERS.set(false);
@@ -188,8 +152,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         // If within stop tolerance, stop moving
         // If outside start tolerance, start moving
         // Otherwise, continue doing what we were doing the previous periodic
-        double startTol = START_TOL.get();
-        double stopTol = STOP_TOL.get();
+        double startTol = ARM_START_TOL.get();
+        double stopTol = ARM_STOP_TOL.get();
         if (magSqToFinalTarget > startTol * startTol) {
             inToleranceHysteresis = false;
         } else if (magSqToFinalTarget < stopTol * stopTol) {
@@ -211,7 +175,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             // Magnitude to final target is used so movement only slows down
             // upon reaching the final target, not at each intermediate position
             double pidOut = -movePid.calculate(Math.sqrt(magSqToFinalTarget), 0);
-            pidOut = MathUtil.clamp(pidOut, 0, MAX_SPEED.get());
+            pidOut = MathUtil.clamp(pidOut, 0, ARM_MAX_SPEED.get());
 
             // Apply bias to towardsTarget so that each axis takes equal time
             // This allows the assumption in the pathfinder that moving towards
@@ -232,12 +196,12 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         // reliably determine if we have one. This is fine without game
         // piece since the intake fits over the drive base at all angles.
         Vec2d axisPos = currentPose.getAxisPos().absolute();
-        Vec2d foldZone = FOLD_ZONE.getVec();
+        Vec2d foldZone = ARM_FOLD_ZONE.getVec();
         Angle wristTarget = targetPose.wristAngle;
         Angle wristRef = targetPose.topAngle;
         if (axisPos.x <= foldZone.x && axisPos.y <= foldZone.y) {
             // Set wrist to fold angle
-            NTAngle foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? FOLD_ANGLE_CUBE : FOLD_ANGLE_CONE;
+            NTAngle foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? ARM_FOLD_ANGLE_CUBE : ARM_FOLD_ANGLE_CONE;
             wristTarget = foldAngle.get();
             wristRef = currentPose.topAngle;
         }
@@ -245,7 +209,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         Logger.getInstance().recordOutput("Wrist/Abs Current (ccw deg)", currentPose.wristAngle.ccw().deg());
 
         // Calculate the feedforward needed to counteract gravity on the wrist
-        double wristFF = wristTarget.ccw().sin() * WRIST_FULL_HOLD.get();
+        double wristFF = wristTarget.ccw().sin() * ARM_WRIST_FULL_HOLD.get();
 
         wristTarget = wristTarget.sub(wristRef).ccw().wrapDeg(-180, 180);
         wrist.setTargetAngle(wristTarget, wristFF);

@@ -1,4 +1,4 @@
-package com.swrobotics.robot;
+package com.swrobotics.robot.config;
 
 /**
  * Class to define all CAN IDs in one place, so it is easy to verify all the

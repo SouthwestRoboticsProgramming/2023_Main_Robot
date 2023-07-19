@@ -3,7 +3,7 @@ package com.swrobotics.robot.subsystems.intake;
 import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.lib.motor.rev.NEOMotor;
 import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
-import com.swrobotics.robot.CANAllocation;
+import com.swrobotics.robot.config.CANAllocation;
 import org.littletonrobotics.junction.Logger;
 
 public final class IntakeSubsystem extends SwitchableSubsystemBase {

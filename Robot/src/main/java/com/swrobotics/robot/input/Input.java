@@ -10,6 +10,7 @@ import com.swrobotics.lib.time.TimeUnit;
 import com.swrobotics.lib.util.ValueDebouncer;
 import com.swrobotics.mathlib.*;
 import com.swrobotics.robot.RobotContainer;
+import com.swrobotics.robot.config.NTData;
 import com.swrobotics.robot.subsystems.arm.ArmPosition;
 import com.swrobotics.robot.subsystems.arm.ArmPositions;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
@@ -50,10 +51,6 @@ public final class Input extends SubsystemBase {
      *
      */
 
-    private static final NTDouble SPEED_RATE_LIMIT = new NTDouble("Input/Speed Slew Limit", 20);
-    private static final NTDouble ARM_TRANSLATION_RATE = new NTDouble("Input/Arm/Nudge Translation Rate", 1);
-    private static final NTAngle WRIST_ROTATION_RATE = new NTAngle("Input/Arm/Nudge Wrist Rate", CCWAngle.deg(90), NTAngle.Mode.CCW_DEG);
-
     private static final int DRIVER_PORT = 0;
     private static final int MANIPULATOR_PORT = 1;
 
@@ -75,9 +72,9 @@ public final class Input extends SubsystemBase {
 
     private final XboxController manipulator;
     private GamePiece gamePiece;
-    private Vec2d defaultArmNudgePosition;
+    private final Vec2d defaultArmNudgePosition;
     private Angle defaultArmNudgeAngle;
-    private ValueDebouncer<ArmPosition.NT> armPositionDebounce;
+    private final ValueDebouncer<ArmPosition.NT> armPositionDebounce;
 
     public Input(RobotContainer robot) {
         this.robot = robot;
@@ -112,9 +109,9 @@ public final class Input extends SubsystemBase {
          * fast mode. It doesn't effect the sticks directly as that was not a problem that we faced. Instead,
          * it just effects fast mode ramping.
          */
-        SPEED_RATE_LIMIT.nowAndOnChange(
+        NTData.INPUT_SPEED_RATE_LIMIT.nowAndOnChange(
                 () -> {
-                    double newRate = SPEED_RATE_LIMIT.get();
+                    double newRate = NTData.INPUT_SPEED_RATE_LIMIT.get();
                     limiter = new SlewRateLimiter(newRate, -newRate, 0);
                 });
     }
@@ -221,8 +218,8 @@ public final class Input extends SubsystemBase {
             ntArmTarget = inferDirection(gamePieceSet.scoreMid, angle, towardsGridAngle());
         }
 
-        Vec2d translationNudge = deadbandVec(manipulator.getLeftStick()).mul(ARM_TRANSLATION_RATE.get()).mul(1, -1);
-        Angle wristNudge = WRIST_ROTATION_RATE.get().mul(deadband(manipulator.rightStickY.get()));
+        Vec2d translationNudge = deadbandVec(manipulator.getLeftStick()).mul(NTData.INPUT_ARM_TRANSLATION_RATE.get()).mul(1, -1);
+        Angle wristNudge = NTData.INPUT_WRIST_ROTATION_RATE.get().mul(deadband(manipulator.rightStickY.get()));
 
         // No shakey
         if (translationNudge.magnitudeSq() > 0)

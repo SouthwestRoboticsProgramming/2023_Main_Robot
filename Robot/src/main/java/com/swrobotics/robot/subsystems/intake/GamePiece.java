@@ -1,16 +1,17 @@
 package com.swrobotics.robot.subsystems.intake;
 
 import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.robot.config.NTData;
 
 public enum GamePiece {
     CONE(
-            new NTDouble("Intake/Cone Intake Speed", 1),
-            new NTDouble("Intake/Cone Outtake Speed", 0.4),
-            new NTDouble("Intake/Cone Hold", 0.1)),
+            NTData.INTAKE_CONE_IN_SPEED,
+            NTData.INTAKE_CONE_OUT_SPEED,
+            NTData.INTAKE_CONE_HOLD),
     CUBE(
-            new NTDouble("Intake/Cube Intake Speed", -0.6),
-            new NTDouble("Intake/Cube Outtake Speed", -0.4),
-            new NTDouble("Intake/Cube Hold", -0.1));
+            NTData.INTAKE_CUBE_IN_SPEED,
+            NTData.INTAKE_CUBE_OUT_SPEED,
+            NTData.INTAKE_CUBE_HOLD);
 
     private final NTDouble intakeSpeed;
     private final NTDouble outtakeSpeed;

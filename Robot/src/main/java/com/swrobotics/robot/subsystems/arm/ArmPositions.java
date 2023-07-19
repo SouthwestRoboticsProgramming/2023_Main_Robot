@@ -3,6 +3,7 @@ package com.swrobotics.robot.subsystems.arm;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 
+// TODO: Merge with NTData?
 public final class ArmPositions {
     // TODO: All of these need proper defaults
     private static final ArmPosition UNSET_DEFAULT = new ArmPose(CCWAngle.deg(90), CCWAngle.deg(-80), Angle.ZERO).toPosition();

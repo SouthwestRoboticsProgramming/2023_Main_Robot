@@ -1,7 +1,5 @@
 package com.swrobotics.robot.commands;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.robot.input.Input;

@@ -10,6 +10,7 @@ import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
+import com.swrobotics.robot.config.Settings;
 import com.swrobotics.robot.input.Input;
 import com.swrobotics.robot.subsystems.arm.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
