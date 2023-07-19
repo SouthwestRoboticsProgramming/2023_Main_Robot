@@ -25,14 +25,14 @@ public final class NTAngle extends NTEntry<Angle> {
     }
 
     private final Mode mode;
-    private final double defaultValMeasure;
+    private final double defaultMeasure;
 
-    public NTAngle(String path, Angle defaultVal, Mode mode) {
-        super(path, defaultVal);
+    public NTAngle(String path, double defaultMeasure, Mode mode) {
+        super(path, null);
         this.mode = mode;
-        defaultValMeasure = mode.to.apply(defaultVal);
+        this.defaultMeasure = defaultMeasure;
         if (!entry.exists()) {
-            set(defaultVal);
+            entry.setDouble(defaultMeasure);
         }
         // Apparently this only works if the value exists, so we need to do it after initial creation
         entry.setPersistent();
@@ -48,6 +48,6 @@ public final class NTAngle extends NTEntry<Angle> {
 
     @Override
     public Angle get() {
-        return mode.from.apply(entry.getDouble(defaultValMeasure));
+        return mode.from.apply(entry.getDouble(defaultMeasure));
     }
 }
