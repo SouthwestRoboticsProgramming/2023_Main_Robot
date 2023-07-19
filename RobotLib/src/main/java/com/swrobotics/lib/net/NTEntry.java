@@ -9,6 +9,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -17,7 +18,7 @@ import java.util.function.Supplier;
  * @param <T> data type
  */
 public abstract class NTEntry<T> implements Supplier<T> {
-    private final ArrayList<Runnable> changeListeners;
+    private final ArrayList<Consumer<T>> changeListeners;
     protected final NetworkTableEntry entry;
     private boolean hasSetChangeListener;
 
@@ -53,7 +54,7 @@ public abstract class NTEntry<T> implements Supplier<T> {
         return this;
     }
 
-    public void onChange(Runnable listener) {
+    public void onChange(Consumer<T> listener) {
         if (!hasSetChangeListener) {
             NetworkTableInstance.getDefault()
                     .addListener(
@@ -68,14 +69,14 @@ public abstract class NTEntry<T> implements Supplier<T> {
         changeListeners.add(listener);
     }
 
-    public void nowAndOnChange(Runnable listener) {
-        listener.run();
+    public void nowAndOnChange(Consumer<T> listener) {
+        listener.accept(get());
         onChange(listener);
     }
 
     private void fireOnChanged() {
-        for (Runnable listener : changeListeners) {
-            ThreadUtils.runOnMainThread(listener);
+        for (Consumer<T> listener : changeListeners) {
+            ThreadUtils.runOnMainThread(() -> listener.accept(get()));
         }
     }
 }

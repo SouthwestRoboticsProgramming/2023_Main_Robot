@@ -108,8 +108,7 @@ public final class Input extends SubsystemBase {
          * it just effects fast mode ramping.
          */
         NTData.INPUT_SPEED_RATE_LIMIT.nowAndOnChange(
-                () -> {
-                    double newRate = NTData.INPUT_SPEED_RATE_LIMIT.get();
+                (newRate) -> {
                     limiter = new SlewRateLimiter(newRate, -newRate, 0);
                 });
     }

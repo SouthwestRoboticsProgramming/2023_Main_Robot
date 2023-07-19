@@ -51,9 +51,9 @@ public interface FeedbackMotor extends Motor {
     }
 
     default void setPID(NTEntry<Double> kP, NTEntry<Double> kI, NTEntry<Double> kD) {
-        kP.nowAndOnChange(() -> setP(kP.get()));
-        kI.nowAndOnChange(() -> setI(kI.get()));
-        kD.nowAndOnChange(() -> setD(kD.get()));
+        kP.nowAndOnChange(this::setP);
+        kI.nowAndOnChange(this::setI);
+        kD.nowAndOnChange(this::setD);
         setF(0);
     }
 
@@ -66,6 +66,6 @@ public interface FeedbackMotor extends Motor {
 
     default void setPIDF(NTEntry<Double> kP, NTEntry<Double> kI, NTEntry<Double> kD, NTEntry<Double> kF) {
         setPID(kP, kI, kD);
-        kF.nowAndOnChange(() -> setF(kF.get()));
+        kF.nowAndOnChange(this::setF);
     }
 }
