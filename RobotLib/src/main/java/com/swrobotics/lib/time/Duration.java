@@ -65,6 +65,10 @@ public final class Duration {
         return getCountInUnit(TimeUnit.NANOSECONDS);
     }
 
+    public boolean isLongerThan(Duration o) {
+        return getDurationNanos() > o.getDurationNanos();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null) return false;
