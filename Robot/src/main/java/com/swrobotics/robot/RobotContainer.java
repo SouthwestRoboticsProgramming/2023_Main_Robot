@@ -184,22 +184,4 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         return autoSelector.getSelected().get();
     }
-
-    private static List<PathPlannerTrajectory> getPath(String name) {
-        List<PathPlannerTrajectory> path = PathPlanner.loadPathGroup(name, new PathConstraints(2.0, 1.0));
-        if (path != null) {
-            return path;
-        }
-
-        System.out.println("Could not find that path, using default path instead");
-
-        List<PathPoint> defaultPath = new ArrayList<>();
-        defaultPath.add(new PathPoint(new Translation2d(), new Rotation2d()));
-        defaultPath.add(new PathPoint(new Translation2d(1.0, 0), new Rotation2d()));
-
-        // Generate a blank path
-        path = new ArrayList<>();
-        path.add(PathPlanner.generatePath(new PathConstraints(1.0, 1.0), defaultPath));
-        return path;
-    }
 }

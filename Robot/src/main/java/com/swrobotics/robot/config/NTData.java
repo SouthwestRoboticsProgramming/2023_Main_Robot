@@ -1,11 +1,8 @@
 package com.swrobotics.robot.config;
 
 import com.swrobotics.lib.net.NTAngle;
-import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTVec2d;
-import com.swrobotics.mathlib.Angle;
-import com.swrobotics.mathlib.CCWAngle;
 
 /**
  * Class to store all tunable NetworkTables values in one place, to make it
