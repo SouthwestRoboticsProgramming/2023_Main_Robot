@@ -3,6 +3,7 @@ package com.swrobotics.robot.commands;
 import com.swrobotics.lib.drive.swerve.commands.DriveBlindCommand;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.robot.RobotContainer;
+import com.swrobotics.robot.config.NTData;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -17,9 +18,10 @@ public class BalanceSequenceCommand extends SequentialCommandGroup {
             angle = DrivetrainSubsystem.FIELD::getAllianceReverseAngle;
         }
 
+        double blindSpeed = NTData.BALANCE_BLIND_SPEED.get();
         addCommands(
-                new StartBalanceCommand(robot, angle, -1.5, false).withTimeout(3),
-                new DriveBlindCommand(robot.swerveDrive, angle, -1.5, false)
+                new StartBalanceCommand(robot, angle, blindSpeed, false).withTimeout(3),
+                new DriveBlindCommand(robot.swerveDrive, angle, blindSpeed, false)
                         .withTimeout(1.25), // Keep driving for 1 second
                 new AutoBalanceCommand(robot));
     }

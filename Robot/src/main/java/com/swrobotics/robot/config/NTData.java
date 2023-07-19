@@ -12,6 +12,7 @@ import com.swrobotics.mathlib.Angle;
  *
  * Temporary values should not be here, this class is only for persistent data.
  */
+// TODO: Set all the defaults
 public final class NTData {
     public static final NTEntry<Double> INPUT_SPEED_RATE_LIMIT = new NTDouble("Input/Speed Slew Limit", 20).setPersistent();
     public static final NTEntry<Double> INPUT_ARM_TRANSLATION_RATE = new NTDouble("Input/Arm/Nudge Translation Rate", 1).setPersistent();
@@ -54,4 +55,9 @@ public final class NTData {
     public static final NTEntry<Double> INTAKE_CUBE_IN_SPEED = new NTDouble("Intake/Cube Intake Speed", 0).setPersistent();
     public static final NTEntry<Double> INTAKE_CUBE_OUT_SPEED = new NTDouble("Intake/Cube Outtake Speed", 0).setPersistent();
     public static final NTEntry<Double> INTAKE_CUBE_HOLD = new NTDouble("Intake/Cube Hold", 0).setPersistent();
+
+    public static final NTEntry<Double> BALANCE_STOP_TOL = new NTDouble("Balance/Stop Tolerance", 0).setPersistent(); // FIXME: Tune
+    public static final NTEntry<Double> BALANCE_ADJUST_AMT = new NTDouble("Balance/Adjust Amount", 0.385).setPersistent();
+    public static final NTEntry<Double> BALANCE_START_END_TOL = new NTDouble("Balance/Start End Tolerance", 0).setPersistent(); // FIXME: Tune
+    public static final NTEntry<Double> BALANCE_BLIND_SPEED = new NTDouble("Balance/Blind Speed", -1.5).setPersistent();
 }
