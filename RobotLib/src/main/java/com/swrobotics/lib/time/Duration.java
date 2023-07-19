@@ -19,41 +19,13 @@ public final class Duration {
     }
 
     /**
-     * Gets the amount of time in the unit given by {@link #getUnit()}.
-     *
-     * @return amount of time
-     */
-    public double getCount() {
-        return count;
-    }
-
-    /**
-     * Gets the unit the amount is specified in.
-     *
-     * @return unit
-     */
-    public TimeUnit getUnit() {
-        return unit;
-    }
-
-    /**
-     * Gets the amount of time represented in a different unit.
+     * Gets the amount of time represented in a specified unit.
      *
      * @param unit unit to get time in
      * @return amount of time
      */
-    public double getCountInUnit(TimeUnit unit) {
+    public double getCount(TimeUnit unit) {
         return count * this.unit.getDurationNanos() / unit.getDurationNanos();
-    }
-
-    /**
-     * Converts this amount of time to a different unit.
-     *
-     * @param newUnit unit to convert to
-     * @return converted duration
-     */
-    public Duration convertUnit(TimeUnit newUnit) {
-        return new Duration(getCountInUnit(newUnit), newUnit);
     }
 
     /**
@@ -62,7 +34,7 @@ public final class Duration {
      * @return time in nanoseconds
      */
     public double getDurationNanos() {
-        return getCountInUnit(TimeUnit.NANOSECONDS);
+        return getCount(TimeUnit.NANOSECONDS);
     }
 
     public boolean isLongerThan(Duration o) {
