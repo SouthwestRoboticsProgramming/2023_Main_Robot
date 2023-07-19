@@ -29,7 +29,7 @@ public class AutoBalanceCommand extends CommandBase {
     public void execute() {
         var tilt = drive.getTiltAsTranslation().times(-1);
         double magnitude = tilt.getNorm();
-        if (Math.abs(magnitude) < 1.5) {
+        if (Math.abs(magnitude) < 1.5) { // FIXME: wrong number
             return;
         }
 

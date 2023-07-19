@@ -2,7 +2,7 @@ package com.swrobotics.lib.drive.swerve;
 
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.motor.FeedbackMotor;
-import com.swrobotics.lib.net.NTAngle;
+import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.MathUtil;
@@ -24,7 +24,7 @@ public class SwerveModule {
     private final Encoder turnEncoder;
     private final Encoder driveEncoder;
 
-    private final NTAngle offset;
+    private final NTEntry<Angle> offset;
     public final Translation2d position;
     private final double positionalOffset;
 
@@ -53,7 +53,7 @@ public class SwerveModule {
             FeedbackMotor turnMotor,
             Encoder encoder,
             Translation2d position,
-            NTAngle offset) {
+            NTEntry<Angle> offset) {
         this.attribs = attribs;
         this.drive = driveMotor;
         this.turn = turnMotor;

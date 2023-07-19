@@ -1,6 +1,6 @@
 package com.swrobotics.robot.subsystems.intake;
 
-import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.robot.config.NTData;
 
 public enum GamePiece {
@@ -13,12 +13,12 @@ public enum GamePiece {
             NTData.INTAKE_CUBE_OUT_SPEED,
             NTData.INTAKE_CUBE_HOLD);
 
-    private final NTDouble intakeSpeed;
-    private final NTDouble outtakeSpeed;
-    private final NTDouble holdSpeed;
+    private final NTEntry<Double> intakeSpeed;
+    private final NTEntry<Double> outtakeSpeed;
+    private final NTEntry<Double> holdSpeed;
 
     // Direction should be 1 (forward) or -1 (backward)
-    GamePiece(NTDouble intakeSpeed, NTDouble outtakeSpeed, NTDouble holdSpeed) {
+    GamePiece(NTEntry<Double> intakeSpeed, NTEntry<Double> outtakeSpeed, NTEntry<Double> holdSpeed) {
         this.intakeSpeed = intakeSpeed;
         this.outtakeSpeed = outtakeSpeed;
         this.holdSpeed = holdSpeed;

@@ -6,7 +6,7 @@ import com.swrobotics.lib.encoder.SimEncoder;
 import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.SimMotor;
 import com.swrobotics.lib.motor.rev.NEOMotor;
-import com.swrobotics.lib.net.NTAngle;
+import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.Angle;
 import edu.wpi.first.wpilibj.RobotBase;
 
@@ -19,7 +19,7 @@ public class ArmJoint {
 
     private final double canCoderToArmRatio;
     protected final double motorToArmRatio;
-    private final NTAngle absEncoderOffset;
+    private final NTEntry<Angle> absEncoderOffset;
 
     /**
      * Creates a new arm joint
@@ -32,7 +32,7 @@ public class ArmJoint {
      * @param invert whether to invert output. This should be true if a ccw rotation of the
      *               motor output shaft corresponds to cw rotation of the arm
      */
-    public ArmJoint(int motorId, int canCoderId, double canCoderToArmRatio, double motorToArmRatio, NTAngle absEncoderOffset, boolean invert) {
+    public ArmJoint(int motorId, int canCoderId, double canCoderToArmRatio, double motorToArmRatio, NTEntry<Angle> absEncoderOffset, boolean invert) {
         if (RobotBase.isReal()) {
             motor = new NEOMotor(motorId);
             motorEncoder = motor.getIntegratedEncoder();

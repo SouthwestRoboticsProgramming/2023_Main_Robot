@@ -21,7 +21,7 @@ import static com.swrobotics.robot.subsystems.arm.ArmConstants.*;
 import static com.swrobotics.robot.config.NTData.*;
 
 public final class ArmSubsystem extends SwitchableSubsystemBase {
-    private static final NTEntry<Boolean> CALIBRATE_CANCODERS = new NTBoolean("Arm/Offsets/Calibrate", false).setTemporary();
+    private static final NTEntry<Boolean> CALIBRATE_CANCODERS = new NTBoolean("Arm/Offsets/Calibrate", false);
 
     private final IntakeSubsystem intake;
     private final ArmJoint bottom, top;
@@ -201,7 +201,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         Angle wristRef = targetPose.topAngle;
         if (axisPos.x <= foldZone.x && axisPos.y <= foldZone.y) {
             // Set wrist to fold angle
-            NTAngle foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? ARM_FOLD_ANGLE_CUBE : ARM_FOLD_ANGLE_CONE;
+            NTEntry<Angle> foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? ARM_FOLD_ANGLE_CUBE : ARM_FOLD_ANGLE_CONE;
             wristTarget = foldAngle.get();
             wristRef = currentPose.topAngle;
         }

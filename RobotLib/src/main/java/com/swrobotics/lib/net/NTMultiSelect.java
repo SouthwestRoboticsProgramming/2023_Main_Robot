@@ -20,7 +20,6 @@ public abstract class NTMultiSelect<T> extends NTEntry<T> {
         defaultName = nameOf(defaultVal);
 
         metadata = new NTStringArray(ShuffleLog.METADATA_TABLE + path);
-        metadata.setTemporary();
     }
 
     // May throw IllegalArgumentException

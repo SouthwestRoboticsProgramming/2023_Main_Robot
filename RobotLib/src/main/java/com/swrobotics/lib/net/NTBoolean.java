@@ -34,7 +34,6 @@ public class NTBoolean extends NTEntry<Boolean> {
 
         int modeId = mode.metaId;
         NTInteger metadata = new NTInteger(ShuffleLog.METADATA_TABLE + path, modeId);
-        metadata.setTemporary();
         metadata.set(modeId);
     }
 

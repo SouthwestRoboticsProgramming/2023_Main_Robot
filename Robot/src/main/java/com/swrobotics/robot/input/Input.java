@@ -79,8 +79,6 @@ public final class Input extends SubsystemBase {
     public Input(RobotContainer robot) {
         this.robot = robot;
 
-        L_IS_CONE.setTemporary();
-
         driver = new XboxController(DRIVER_PORT);
         manipulator = new XboxController(MANIPULATOR_PORT);
 

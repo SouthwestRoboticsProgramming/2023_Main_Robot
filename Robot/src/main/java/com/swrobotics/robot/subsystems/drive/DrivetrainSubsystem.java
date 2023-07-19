@@ -11,10 +11,7 @@ import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
-import com.swrobotics.lib.net.NTDouble;
 import com.swrobotics.lib.net.NTEntry;
-import com.swrobotics.mathlib.Vec2d;
-import com.swrobotics.mathlib.Vec3d;
 import com.swrobotics.robot.config.NTData;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -28,7 +25,7 @@ import static com.swrobotics.robot.subsystems.drive.DrivetrainConstants.*;
 public final class DrivetrainSubsystem extends SwerveDrive {
     public static final FieldInfo FIELD = FieldInfo.CHARGED_UP_2023;
 
-    private static final NTEntry<Boolean> CALIBRATE = new NTBoolean("Swerve/Calibrate", false).setTemporary();
+    private static final NTEntry<Boolean> CALIBRATE = new NTBoolean("Swerve/Calibrate", false);
 
     private final PigeonGyroscope gyro;
 
@@ -69,10 +66,7 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     }
 
     public Translation2d getTiltAsTranslation() {
-        Vec3d up = gyro.getUpVector();
-        Vec2d tx = new Vec2d();//up.xy();
-        return tx.translation2d();
-//        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
+        return gyro.getUpVector().xy().translation2d();
     }
 
     @Override

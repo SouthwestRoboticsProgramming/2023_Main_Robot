@@ -43,15 +43,13 @@ public abstract class NTEntry<T> implements Supplier<T> {
         // Ensure entry actually exists so it is editable
         if (!entry.exists()) set(defaultVal);
 
-        entry.setPersistent();
-
         hasSetChangeListener = false;
     }
 
     public abstract void set(T value);
 
-    public NTEntry<T> setTemporary() {
-        entry.clearPersistent();
+    public NTEntry<T> setPersistent() {
+        entry.setPersistent();
         return this;
     }
 

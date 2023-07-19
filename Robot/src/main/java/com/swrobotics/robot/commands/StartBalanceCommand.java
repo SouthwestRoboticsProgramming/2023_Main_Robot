@@ -25,6 +25,6 @@ public class StartBalanceCommand extends DriveBlindCommand {
         // Stop the command when the robot is at an angle
         var tilt = drive.getTiltAsTranslation();
         double magnitude = tilt.getNorm();
-        return Math.abs(magnitude) > 4.0;
+        return Math.abs(magnitude) > 4.0; // FIXME: wrong number
     }
 }
