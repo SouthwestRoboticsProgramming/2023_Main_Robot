@@ -610,6 +610,22 @@ public final class Vec2d {
         return dest;
     }
 
+    public Vec2d xx() {
+        return new Vec2d(x, x);
+    }
+
+    public Vec2d xy() {
+        return new Vec2d(x, y);
+    }
+
+    public Vec2d yx() {
+        return new Vec2d(y, x);
+    }
+
+    public Vec2d yy() {
+        return new Vec2d(y, y);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
