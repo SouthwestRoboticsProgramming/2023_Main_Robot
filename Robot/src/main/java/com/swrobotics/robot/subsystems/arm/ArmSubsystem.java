@@ -7,6 +7,7 @@ import com.swrobotics.mathlib.MathUtil;
 import com.swrobotics.mathlib.Vec2d;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.config.CANAllocation;
+import com.swrobotics.robot.config.NTData;
 import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import edu.wpi.first.math.controller.PIDController;
@@ -20,6 +21,14 @@ import java.util.List;
 import static com.swrobotics.robot.subsystems.arm.ArmConstants.*;
 import static com.swrobotics.robot.config.NTData.*;
 
+// CanCoder calibration procedure:
+// 1. Disable the robot
+// 2. Set Arm/Brake Mode to false
+// 3. Move the arm such that the top and bottom joints are vertical
+// 4. Hold the intake such that the wrist motor's shaft is directly below the wrist axis
+// 5. Set Arm/Offsets/Calibrate to true
+// 6. Set Arm/Brake Mode to true
+// 6. Restart robot code to use the new offsets
 public final class ArmSubsystem extends SwitchableSubsystemBase {
     private static final NTEntry<Boolean> CALIBRATE_CANCODERS = new NTBoolean("Arm/Offsets/Calibrate", false);
 
@@ -58,6 +67,12 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         pathfinder = new ArmPathfinder(msg);
         movePid = NTUtil.tunablePID(ARM_MOVE_KP, ARM_MOVE_KI, ARM_MOVE_KD);
         targetPose = home;
+
+        ARM_BRAKE_MODE.nowAndOnChange((brake) -> {
+            bottom.setBrakeMode(brake);
+            top.setBrakeMode(brake);
+            wrist.setBrakeMode(brake);
+        });
     }
 
     public ArmPose getCurrentPose() {
@@ -79,14 +94,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
                 point.topAngle.ccw().rot() * ArmConstants.TOP_GEAR_RATIO);
     }
 
-//    int counter = 0;
     @Override
     public void periodic() {
-        boolean brake = true;
-        bottom.setBrakeMode(brake);
-        top.setBrakeMode(brake);
-        wrist.setBrakeMode(brake);
-
         if (CALIBRATE_CANCODERS.get()) {
             CALIBRATE_CANCODERS.set(false);
 
@@ -213,11 +222,6 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
         wristTarget = wristTarget.sub(wristRef).ccw().wrapDeg(-180, 180);
         wrist.setTargetAngle(wristTarget, wristFF);
-    }
-
-    // TODO: Don't have this, this allows the possibility of targeting invalid/unsafe positions
-    private void setTargetPose(ArmPose targetPose) {
-        this.targetPose = targetPose;
     }
 
     public void setTargetPosition(ArmPosition targetPosition) {

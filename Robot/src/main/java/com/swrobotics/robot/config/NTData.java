@@ -1,9 +1,6 @@
 package com.swrobotics.robot.config;
 
-import com.swrobotics.lib.net.NTAngle;
-import com.swrobotics.lib.net.NTDouble;
-import com.swrobotics.lib.net.NTEntry;
-import com.swrobotics.lib.net.NTVec2d;
+import com.swrobotics.lib.net.*;
 import com.swrobotics.mathlib.Angle;
 
 /**
@@ -46,6 +43,7 @@ public final class NTData {
     public static final NTEntry<Angle> ARM_FOLD_ANGLE_CUBE = new NTAngle("Arm/Fold Angle/Cube", 0, NTAngle.Mode.CCW_DEG).setPersistent();
     public static final NTEntry<Angle> ARM_FOLD_ANGLE_CONE = new NTAngle("Arm/Fold Angle/Cone", 0, NTAngle.Mode.CCW_DEG).setPersistent();
 
+    public static final NTEntry<Boolean> ARM_BRAKE_MODE = new NTBoolean("Arm/Brake Mode", true).setPersistent();
     public static final NTEntry<Double> ARM_WRIST_FULL_HOLD = new NTDouble("Arm/Wrist Full Hold Pct", 0.09).setPersistent();
 
     public static final NTEntry<Double> INTAKE_CONE_IN_SPEED = new NTDouble("Intake/Cone Intake Speed", 0).setPersistent();
