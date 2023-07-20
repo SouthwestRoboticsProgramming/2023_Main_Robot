@@ -79,8 +79,8 @@ public final class Input extends SubsystemBase {
     public Input(RobotContainer robot) {
         this.robot = robot;
 
-        driver = new XboxController(DRIVER_PORT);
-        manipulator = new XboxController(MANIPULATOR_PORT);
+        driver = new XboxController(DRIVER_PORT, DEADBAND);
+        manipulator = new XboxController(MANIPULATOR_PORT, DEADBAND);
 
         driver.start.onRising(robot.swerveDrive::zeroGyroscope);
 
@@ -113,16 +113,6 @@ public final class Input extends SubsystemBase {
                 });
     }
 
-    /**
-     * Pre-process inputs from joysticks
-     *
-     * @param val Joystick inputs
-     * @return Processed outputs
-     */
-    private double deadband(double val) {
-        return MathUtil.deadband(val, DEADBAND);
-    }
-
     // ---- Driver controls ----
 
     public Vec2d getDriveTranslation() {
@@ -133,14 +123,14 @@ public final class Input extends SubsystemBase {
 
         speed = limiter.calculate(speed);
 
-        double x = -deadband(driver.leftStickY.get()) * speed;
-        double y = -deadband(driver.leftStickX.get()) * speed;
+        double x = -driver.leftStickY.get() * speed;
+        double y = -driver.leftStickX.get() * speed;
 
         return new Vec2d(x, y);
     }
 
     public Angle getDriveRotation() {
-        return MAX_ROTATION.mul(deadband(driver.rightStickX.get()));
+        return MAX_ROTATION.mul(driver.rightStickX.get());
     }
 
     public boolean isRobotRelative() {
@@ -215,8 +205,8 @@ public final class Input extends SubsystemBase {
             ntArmTarget = inferDirection(gamePieceSet.scoreMid, angle, towardsGridAngle());
         }
 
-        Vec2d translationNudge = deadbandVec(manipulator.getLeftStick()).mul(NTData.INPUT_ARM_TRANSLATION_RATE.get()).mul(1, -1);
-        Angle wristNudge = NTData.INPUT_WRIST_ROTATION_RATE.get().mul(deadband(manipulator.rightStickY.get()));
+        Vec2d translationNudge = manipulator.getLeftStick().mul(NTData.INPUT_ARM_TRANSLATION_RATE.get()).mul(1, -1);
+        Angle wristNudge = NTData.INPUT_WRIST_ROTATION_RATE.get().mul(manipulator.rightStickY.get());
 
         // No shakey
         if (translationNudge.magnitudeSq() > 0)
@@ -243,15 +233,6 @@ public final class Input extends SubsystemBase {
 
         robot.arm.setTargetPosition(armTarget);
         robot.intake.set(intakeMode, effectiveGamePiece);
-    }
-
-    private Vec2d deadbandVec(Vec2d v) {
-        double rawMag = v.magnitude();
-        if (rawMag == 0)
-            return new Vec2d(0, 0); // Avoid NaN from division by zero
-
-        double mag = deadband(rawMag);
-        return v.normalize().mul(mag);
     }
 
     @Override

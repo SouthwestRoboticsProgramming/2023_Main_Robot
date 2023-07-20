@@ -1,5 +1,7 @@
 package com.swrobotics.lib.input;
 
+import com.swrobotics.mathlib.MathUtil;
+
 import java.util.function.Supplier;
 
 /**
@@ -9,6 +11,7 @@ import java.util.function.Supplier;
  */
 public final class InputAxis implements InputElement {
     private final Supplier<Double> getter;
+    private final double deadband;
     private double value;
 
     /**
@@ -16,17 +19,27 @@ public final class InputAxis implements InputElement {
      *
      * @param getter value getter
      */
-    public InputAxis(Supplier<Double> getter) {
+    public InputAxis(Supplier<Double> getter, double deadband) {
         this.getter = getter;
+        this.deadband = deadband;
         value = getter.get();
     }
 
     /**
-     * Gets the current position of this axis.
+     * Gets the current position of this axis with deadband applied.
      *
-     * @return value
+     * @return deadbanded value
      */
     public double get() {
+        return MathUtil.deadband(value, deadband);
+    }
+
+    /**
+     * Gets the current position of this axis without deadband applied.
+     *
+     * @return raw value
+     */
+    public double getRaw() {
         return value;
     }
 

@@ -10,6 +10,7 @@ import java.util.List;
 public final class XboxController extends InputSource {
     private final edu.wpi.first.wpilibj.XboxController xbox;
     private final List<InputElement> elements;
+    private final double deadband;
 
     public final InputButton a, b, x, y;
     public final InputButton back, start;
@@ -26,8 +27,9 @@ public final class XboxController extends InputSource {
      *
      * @param port port the controller is on
      */
-    public XboxController(int port) {
+    public XboxController(int port, double deadband) {
         xbox = new edu.wpi.first.wpilibj.XboxController(port);
+        this.deadband = deadband;
 
         a = new InputButton(xbox::getAButton);
         b = new InputButton(xbox::getBButton);
@@ -40,12 +42,12 @@ public final class XboxController extends InputSource {
         leftBumper = new InputButton(xbox::getLeftBumper);
         rightBumper = new InputButton(xbox::getRightBumper);
 
-        leftStickX = new InputAxis(xbox::getLeftX);
-        leftStickY = new InputAxis(xbox::getLeftY);
-        rightStickX = new InputAxis(xbox::getRightX);
-        rightStickY = new InputAxis(xbox::getRightY);
-        leftTrigger = new InputAxis(xbox::getLeftTriggerAxis);
-        rightTrigger = new InputAxis(xbox::getRightTriggerAxis);
+        leftStickX = new InputAxis(xbox::getLeftX, deadband);
+        leftStickY = new InputAxis(xbox::getLeftY, deadband);
+        rightStickX = new InputAxis(xbox::getRightX, deadband);
+        rightStickY = new InputAxis(xbox::getRightY, deadband);
+        leftTrigger = new InputAxis(xbox::getLeftTriggerAxis, deadband);
+        rightTrigger = new InputAxis(xbox::getRightTriggerAxis, deadband);
 
         dpad = new InputDpad(xbox::getPOV);
 
@@ -81,11 +83,11 @@ public final class XboxController extends InputSource {
     }
 
     public Vec2d getLeftStick() {
-        return new Vec2d(leftStickX.get(), leftStickY.get());
+        return new Vec2d(leftStickX.getRaw(), leftStickY.getRaw()).deadband(deadband);
     }
 
     public Vec2d getRightStick() {
-        return new Vec2d(leftStickX.get(), leftStickY.get());
+        return new Vec2d(leftStickX.getRaw(), leftStickY.getRaw()).deadband(deadband);
     }
 
     @Override

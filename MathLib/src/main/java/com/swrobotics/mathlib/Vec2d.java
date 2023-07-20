@@ -563,6 +563,24 @@ public final class Vec2d {
         return dest;
     }
 
+    public Vec2d deadband(double band) {
+        return deadband(band, this);
+    }
+
+    public Vec2d deadband(double band, Vec2d dest) {
+        double rawMag = magnitude();
+        if (rawMag == 0) {
+            dest.x = dest.y = 0;
+            return dest;
+        }
+
+        double mag = MathUtil.deadband(rawMag, band);
+        dest.x = x / rawMag * mag;
+        dest.y = y / rawMag * mag;
+
+        return dest;
+    }
+
     /**
      * Negates this vector.
      *
