@@ -67,6 +67,13 @@ public final class PathfinderTool extends ViewportTool {
         msg.addHandler(MSG_CALC, this::onCalc);
         msg.addHandler(MSG_PATH, this::onPath);
         msg.addHandler(MSG_INFO, this::onInfo);
+
+        msg.addDisconnectHandler(() -> {
+            info = null;
+            path.clear();
+            startPose.set(0, 0);
+            goalPose.set(0, 0);
+        });
     }
 
     private void onCalc(String type, MessageReader reader) {
