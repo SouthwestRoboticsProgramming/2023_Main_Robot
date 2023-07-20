@@ -7,8 +7,13 @@ import com.swrobotics.mathlib.CCWAngle;
 public final class ArmPositions {
     // TODO: All of these need proper defaults
     private static final ArmPosition UNSET_DEFAULT = new ArmPose(CCWAngle.deg(90), CCWAngle.deg(-80), Angle.ZERO).toPosition();
+
     public static final ArmPosition.NT DEFAULT =
             new ArmPosition.NT("Arm/Positions/Default", new ArmPose(CCWAngle.deg(90), CCWAngle.deg(-90), Angle.ZERO).toPosition());
+    static {
+        DEFAULT.setPersistent();
+    }
+
     public static final PositionSet CONE =
             new PositionSet(
                     new ArmPosition.NT(
@@ -85,6 +90,9 @@ public final class ArmPositions {
         public FrontBackPair(ArmPosition.NT front, ArmPosition.NT back) {
             this.front = front;
             this.back = back;
+
+            front.setPersistent();
+            back.setPersistent();
         }
     }
 
@@ -106,6 +114,8 @@ public final class ArmPositions {
             this.floorPickup = floorPickup;
             this.chutePickup = chutePickup;
             this.substationPickup = substationPickup;
+
+            scoreHighFront.setPersistent();
         }
     }
 }

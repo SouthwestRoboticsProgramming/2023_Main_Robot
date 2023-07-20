@@ -38,6 +38,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private final PIDController movePid;
     private ArmPose targetPose;
     private boolean inToleranceHysteresis;
+    private NTEntry<Angle> wristFold;
 
     private final ArmVisualizer currentVisualizer, stepTargetVisualizer, targetVisualizer;
 
@@ -72,6 +73,8 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             top.setBrakeMode(brake);
             wrist.setBrakeMode(brake);
         });
+
+        wristFold = ARM_FOLD_ANGLE_CUBE;
     }
 
     public ArmPose getCurrentPose() {
@@ -207,11 +210,16 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         Vec2d foldZone = ARM_FOLD_ZONE.get();
         Angle wristTarget = targetPose.wristAngle;
         Angle wristRef = targetPose.topAngle;
+        NTEntry<Angle> foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? ARM_FOLD_ANGLE_CUBE : ARM_FOLD_ANGLE_CONE;
         if (axisPos.x <= foldZone.x && axisPos.y <= foldZone.y) {
             // Set wrist to fold angle
-            NTEntry<Angle> foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? ARM_FOLD_ANGLE_CUBE : ARM_FOLD_ANGLE_CONE;
-            wristTarget = foldAngle.get();
+            wristTarget = wristFold.get();
             wristRef = currentPose.topAngle;
+        } else {
+            // Only update fold angle when not inside fold zone
+            // This is because switching fold angles causes intake to collide
+            // with drive base
+            wristFold = foldAngle;
         }
         Logger.getInstance().recordOutput("Wrist/Abs Target (ccw deg)", wristTarget.ccw().deg());
         Logger.getInstance().recordOutput("Wrist/Abs Current (ccw deg)", currentPose.wristAngle.ccw().deg());
