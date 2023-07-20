@@ -6,11 +6,11 @@ import com.swrobotics.shufflelog.tool.ConeOrCubeTool;
 import com.swrobotics.shufflelog.tool.MenuBarTool;
 import com.swrobotics.shufflelog.tool.PreMatchChecklistTool;
 import com.swrobotics.shufflelog.tool.Tool;
-import com.swrobotics.shufflelog.tool.arm.ArmDebugTool;
 import com.swrobotics.shufflelog.tool.data.DataLogTool;
 import com.swrobotics.shufflelog.tool.data.nt.NetworkTablesTool;
 import com.swrobotics.shufflelog.tool.field.FieldViewTool;
 import com.swrobotics.shufflelog.tool.messenger.MessengerTool;
+import com.swrobotics.shufflelog.tool.pathfinder.PathfinderTool;
 import com.swrobotics.shufflelog.tool.profile.ShuffleLogProfilerTool;
 import com.swrobotics.shufflelog.tool.taskmanager.RoboRIOFilesTool;
 import com.swrobotics.shufflelog.tool.taskmanager.TaskManagerTool;
@@ -39,6 +39,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class ShuffleLog extends PApplet {
+    public static boolean SIM_MODE;
+
     private static final String LAYOUT_FILE = "layout.ini";
     private static final String PERSISTENCE_FILE = "persistence.properties";
     private static final int THREAD_POOL_SIZE = 4;
@@ -144,9 +146,10 @@ public final class ShuffleLog extends PApplet {
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new RoboRIOFilesTool(this));
         tools.add(new FieldViewTool(this));
-        tools.add(new ArmDebugTool(this, messenger));
-        tools.add(new PreMatchChecklistTool(msg));
+        if (!SIM_MODE)
+            tools.add(new PreMatchChecklistTool(msg));
         tools.add(new ConeOrCubeTool(messenger));
+        tools.add(new PathfinderTool(this));
 
         startTime = System.currentTimeMillis();
     }
@@ -246,6 +249,7 @@ public final class ShuffleLog extends PApplet {
     }
 
     public static void main(String[] args) {
+        SIM_MODE = args.length >= 1 && args[0].equals("sim");
         PApplet.main(ShuffleLog.class);
     }
 }

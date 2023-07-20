@@ -2,6 +2,7 @@ package com.swrobotics.robot.commands;
 
 import com.swrobotics.lib.drive.swerve.StopPosition;
 import com.swrobotics.robot.RobotContainer;
+import com.swrobotics.robot.config.NTData;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,16 +28,16 @@ public class AutoBalanceCommand extends CommandBase {
 
     @Override
     public void execute() {
+        // FIXME: Why * -1?
         var tilt = drive.getTiltAsTranslation().times(-1);
         double magnitude = tilt.getNorm();
-        if (Math.abs(magnitude) < 1.5) {
+        if (Math.abs(magnitude) < NTData.BALANCE_STOP_TOL.get()) {
             return;
         }
 
         Rotation2d rotation = new Rotation2d(tilt.getX(), tilt.getY());
 
-        // double adjustmentAmount = pid.calculate(magnitude, 0.0);
-        double adjustmentAmount = -0.385; // ADJUST_AMOUNT.get();
+        double adjustmentAmount = NTData.BALANCE_ADJUST_AMT.get();
         Translation2d output = new Translation2d(adjustmentAmount, rotation);
         drive.addChassisSpeeds(new ChassisSpeeds(output.getX(), output.getY(), 0.0));
     }

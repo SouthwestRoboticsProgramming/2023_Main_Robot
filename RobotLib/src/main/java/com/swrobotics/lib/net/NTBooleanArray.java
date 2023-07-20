@@ -1,7 +1,7 @@
 package com.swrobotics.lib.net;
 
 /** Represents a {@code boolean[]} value stored in NetworkTables. */
-public final class NTBooleanArray extends NTEntry<boolean[]> {
+public final class NTBooleanArray extends NTPrimitive<boolean[]> {
     private final boolean[] defaultVals;
 
     public NTBooleanArray(String path, boolean... defaultVals) {

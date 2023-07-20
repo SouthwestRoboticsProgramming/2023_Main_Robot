@@ -23,7 +23,7 @@ public final class Repeater {
         if (lastTickTime == null) lastTickTime = Timestamp.now();
 
         Timestamp now = Timestamp.now();
-        double nanoDiff = now.difference(lastTickTime).getDurationNanos();
+        double nanoDiff = now.durationSince(lastTickTime).getDurationNanos();
         double nanoInt = interval.getDurationNanos();
 
         while (nanoDiff > nanoInt) {

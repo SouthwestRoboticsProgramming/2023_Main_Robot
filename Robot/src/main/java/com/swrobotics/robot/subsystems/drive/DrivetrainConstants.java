@@ -1,5 +1,7 @@
 package com.swrobotics.robot.subsystems.drive;
 
+import com.swrobotics.robot.config.CANAllocation;
+import com.swrobotics.robot.config.NTData;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
@@ -21,9 +23,9 @@ public final class DrivetrainConstants {
 
     /* Modules that could be hot-swapped into a location on the swerve drive */
     protected static final SwerveModuleInfo[] MODULES = new SwerveModuleInfo[] {
-            new SwerveModuleInfo("Front Left", 9, 5, 1, 38.41), // Default front left
-            new SwerveModuleInfo("Front Right", 10, 6, 2, 185.45), // Default front right
-            new SwerveModuleInfo("Back Left", 11, 7, 3, 132.63), // Default back left
-            new SwerveModuleInfo("Back Right", 12, 8, 4, 78.93) // Default back right
+            new SwerveModuleInfo("Front Left", CANAllocation.SWERVE_FL, NTData.SWERVE_OFFSET_FL), // Default front left
+            new SwerveModuleInfo("Front Right", CANAllocation.SWERVE_FR, NTData.SWERVE_OFFSET_FR), // Default front right
+            new SwerveModuleInfo("Back Left", CANAllocation.SWERVE_BL, NTData.SWERVE_OFFSET_BL), // Default back left
+            new SwerveModuleInfo("Back Right", CANAllocation.SWERVE_BR, NTData.SWERVE_OFFSET_BR) // Default back right
     };
 }

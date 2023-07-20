@@ -2,6 +2,7 @@ package com.swrobotics.lib.motor;
 
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.net.NTEntry;
+import com.swrobotics.lib.net.NTPrimitive;
 import com.swrobotics.mathlib.Angle;
 
 public interface FeedbackMotor extends Motor {
@@ -13,6 +14,14 @@ public interface FeedbackMotor extends Motor {
     void setPosition(Angle position);
 
     /**
+     * Sets the target position and adds an arbitrary feedforward percentage.
+     *
+     * @param position target position
+     * @param arbFF arbitrary added feedforward percentage (-1 to 1)
+     */
+    void setPositionArbFF(Angle position, double arbFF);
+
+    /**
      * Sets the target velocity in angle per second.
      *
      * @param velocity velocity in angle per second
@@ -21,7 +30,7 @@ public interface FeedbackMotor extends Motor {
 
     Encoder getIntegratedEncoder();
 
-    default void setIntegratedEncoder(Encoder encoder) {
+    default void useExternalEncoder(Encoder encoder) {
         throw new UnsupportedOperationException();
     }
 
@@ -43,9 +52,9 @@ public interface FeedbackMotor extends Motor {
     }
 
     default void setPID(NTEntry<Double> kP, NTEntry<Double> kI, NTEntry<Double> kD) {
-        kP.nowAndOnChange(() -> setP(kP.get()));
-        kI.nowAndOnChange(() -> setI(kI.get()));
-        kD.nowAndOnChange(() -> setD(kD.get()));
+        kP.nowAndOnChange(this::setP);
+        kI.nowAndOnChange(this::setI);
+        kD.nowAndOnChange(this::setD);
         setF(0);
     }
 
@@ -56,8 +65,8 @@ public interface FeedbackMotor extends Motor {
         setF(kF);
     }
 
-    default void setPIDF(NTEntry<Double> kP, NTEntry<Double> kI, NTEntry<Double> kD, NTEntry<Double> kF) {
+    default void setPIDF(NTPrimitive<Double> kP, NTPrimitive<Double> kI, NTPrimitive<Double> kD, NTPrimitive<Double> kF) {
         setPID(kP, kI, kD);
-        kF.nowAndOnChange(() -> setF(kF.get()));
+        kF.nowAndOnChange(this::setF);
     }
 }

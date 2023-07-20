@@ -1,22 +1,27 @@
 package com.swrobotics.robot.subsystems.intake;
 
-import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTEntry;
+import com.swrobotics.robot.config.NTData;
 
 public enum GamePiece {
     CONE(
-            new NTDouble("Intake/Cone Intake Speed", 1),
-            new NTDouble("Intake/Cone Outtake Speed", 0.4)),
+            NTData.INTAKE_CONE_IN_SPEED,
+            NTData.INTAKE_CONE_OUT_SPEED,
+            NTData.INTAKE_CONE_HOLD),
     CUBE(
-            new NTDouble("Intake/Cube Intake Speed", -0.6),
-            new NTDouble("Intake/Cube Outtake Speed", -0.4));
+            NTData.INTAKE_CUBE_IN_SPEED,
+            NTData.INTAKE_CUBE_OUT_SPEED,
+            NTData.INTAKE_CUBE_HOLD);
 
-    private final NTDouble intakeSpeed;
-    private final NTDouble outtakeSpeed;
+    private final NTEntry<Double> intakeSpeed;
+    private final NTEntry<Double> outtakeSpeed;
+    private final NTEntry<Double> holdSpeed;
 
     // Direction should be 1 (forward) or -1 (backward)
-    GamePiece(NTDouble intakeSpeed, NTDouble outtakeSpeed) {
+    GamePiece(NTEntry<Double> intakeSpeed, NTEntry<Double> outtakeSpeed, NTEntry<Double> holdSpeed) {
         this.intakeSpeed = intakeSpeed;
         this.outtakeSpeed = outtakeSpeed;
+        this.holdSpeed = holdSpeed;
     }
 
     public double getIntakeOutput() {
@@ -25,5 +30,9 @@ public enum GamePiece {
 
     public double getOuttakeOutput() {
         return outtakeSpeed.get();
+    }
+
+    public double getHoldOutput() {
+        return holdSpeed.get();
     }
 }

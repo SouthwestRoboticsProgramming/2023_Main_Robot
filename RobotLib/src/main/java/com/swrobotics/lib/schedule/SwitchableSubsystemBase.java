@@ -26,7 +26,7 @@ public abstract class SwitchableSubsystemBase implements Subsystem {
         enable = new NTBoolean(TABLE_NAME + name, true);
 
         isScheduled = false;
-        enable.nowAndOnChange(() -> updateEnabled(enable.get()));
+        enable.nowAndOnChange(this::updateEnabled);
     }
 
     /** Called when the subsystem is disabled. */

@@ -1,64 +1,60 @@
 package com.swrobotics.robot.subsystems.intake;
 
+import com.swrobotics.lib.motor.Motor;
+import com.swrobotics.lib.motor.rev.NEOMotor;
+import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
+import com.swrobotics.robot.config.CANAllocation;
 import org.littletonrobotics.junction.Logger;
 
-import com.swrobotics.lib.motor.Motor;
-import com.swrobotics.lib.motor.rev.PWMSparkMaxMotor;
-import com.swrobotics.lib.net.NTDouble;
-import com.swrobotics.lib.schedule.SwitchableSubsystemBase;
-import com.swrobotics.robot.RIOPorts;
-
 public final class IntakeSubsystem extends SwitchableSubsystemBase {
-    private static final NTDouble CONE_HOLD = new NTDouble("Intake/Cone Hold", 0.1);
-    private static final NTDouble CUBE_HOLD = new NTDouble("Intake/Cube Hold", -0.1);
+    public enum Mode {
+        INTAKE,
+        EJECT,
+        OFF
+    }
 
     private final Motor motor;
-
-    private GamePiece expectedPiece;
-    private boolean running;
+    private GamePiece heldPiece;
 
     public IntakeSubsystem() {
-        motor = new PWMSparkMaxMotor(RIOPorts.INTAKE_PWM);
+        motor = new NEOMotor(CANAllocation.INTAKE_MOTOR);
 
-        expectedPiece = GamePiece.CUBE;
-        running = false;
+        // TODO-Mason: Can we assume we'll always start with a cube?
+        heldPiece = GamePiece.CUBE;
     }
 
-    public void setExpectedPiece(GamePiece expectedPiece) {
-        this.expectedPiece = expectedPiece;
+    public void set(Mode mode, GamePiece gamePiece) {
+        if (!isEnabled())
+            return;
 
-        // Become more stopped
-        if (!running)
-            stop();
-    }
+        Logger.getInstance().recordOutput("Intake/Mode", mode.toString());
+        Logger.getInstance().recordOutput("Intake/Game Piece", gamePiece.toString());
+        Logger.getInstance().recordOutput("Intake/Held Piece", heldPiece.toString());
 
-    public void run() {
-        if (isEnabled()) {
-            motor.setPercentOut(expectedPiece.getIntakeOutput());
-            running = true;
+        double out = 0;
+        switch (mode) {
+            case INTAKE:
+                out = gamePiece.getIntakeOutput();
+                heldPiece = gamePiece;
+                break;
+            case EJECT:
+                out = gamePiece.getOuttakeOutput();
+                break;
+            case OFF:
+                out = gamePiece.getHoldOutput();
+                break;
         }
+        Logger.getInstance().recordOutput("Intake/Output", out);
+
+        motor.setPercentOut(out);
     }
 
-    public void eject() {
-        if (isEnabled()) {
-            motor.setPercentOut(-expectedPiece.getOuttakeOutput());
-            running = true;
-        }
-    }
-
-    public void stop() {
-        motor.setPercentOut(expectedPiece == GamePiece.CONE ? (CONE_HOLD.get()) : CUBE_HOLD.get());
-        running = false;
+    public GamePiece getHeldPiece() {
+        return heldPiece;
     }
 
     @Override
     public void onDisable() {
-        stop();
-    }
-
-    @Override
-    public void periodic() {
-//        Logger.getInstance().recordOutput("Intake/MotorOutput", motor.get());
-        Logger.getInstance().recordOutput("Intake/ExpectedPiece", expectedPiece.name());
+        motor.stop();
     }
 }

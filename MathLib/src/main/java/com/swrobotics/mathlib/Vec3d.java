@@ -396,6 +396,45 @@ public final class Vec3d {
         return dest;
     }
 
+    public Vec3d rotateX(Angle angle) {
+        CCWAngle ccw = angle.ccw();
+        double sin = ccw.sin();
+        double cos = ccw.cos();
+
+        double ny = y * cos - z * sin;
+        double nz = y * sin + z * cos;
+        y = ny;
+        z = nz;
+
+        return this;
+    }
+
+    public Vec3d rotateY(Angle angle) {
+        CCWAngle ccw = angle.ccw();
+        double sin = ccw.sin();
+        double cos = ccw.cos();
+
+        double nx = x * cos + z * sin;
+        double nz = -x * sin + z * cos;
+        x = nx;
+        z = nz;
+
+        return this;
+    }
+
+    public Vec3d rotateZ(Angle angle) {
+        CCWAngle ccw = angle.ccw();
+        double sin = ccw.sin();
+        double cos = ccw.cos();
+
+        double nx = x * cos - y * sin;
+        double ny = x * sin + y * cos;
+        x = nx;
+        y = ny;
+
+        return this;
+    }
+
     /**
      * Computes the magnitude of this vector, squared. This is more efficient than computing the
      * actual magnitude, so prefer this function if you only need to compare the magnitudes of
@@ -476,6 +515,14 @@ public final class Vec3d {
     public double distanceTo(Vec3d o) {
         return Math.sqrt(distanceToSq(o));
     }
+
+    public double[] components() {
+        return new double[] {x, y, z};
+    }
+
+//    public Vec3d rotateX(Angle a) {
+//
+//    }
 
     // TODO
 //    public double distanceToLineSegmentSq(Vec3d a, Vec3d b) {
@@ -601,6 +648,44 @@ public final class Vec3d {
         dest.z = Math.abs(z);
         return dest;
     }
+
+    public Vec2d xx() { return new Vec2d(x, x); }
+    public Vec2d xy() { return new Vec2d(x, y); }
+    public Vec2d xz() { return new Vec2d(x, z); }
+    public Vec2d yx() { return new Vec2d(y, x); }
+    public Vec2d yy() { return new Vec2d(y, y); }
+    public Vec2d yz() { return new Vec2d(y, z); }
+    public Vec2d zx() { return new Vec2d(z, x); }
+    public Vec2d zy() { return new Vec2d(z, y); }
+    public Vec2d zz() { return new Vec2d(z, z); }
+
+    public Vec3d xxx() { return new Vec3d(x, x, x); }
+    public Vec3d xxy() { return new Vec3d(x, x, y); }
+    public Vec3d xxz() { return new Vec3d(x, x, z); }
+    public Vec3d xyx() { return new Vec3d(x, y, x); }
+    public Vec3d xyy() { return new Vec3d(x, y, y); }
+    public Vec3d xyz() { return new Vec3d(x, y, z); }
+    public Vec3d xzx() { return new Vec3d(x, z, x); }
+    public Vec3d xzy() { return new Vec3d(x, z, y); }
+    public Vec3d xzz() { return new Vec3d(x, z, z); }
+    public Vec3d yxx() { return new Vec3d(y, x, x); }
+    public Vec3d yxy() { return new Vec3d(y, x, y); }
+    public Vec3d yxz() { return new Vec3d(y, x, z); }
+    public Vec3d yyx() { return new Vec3d(y, y, x); }
+    public Vec3d yyy() { return new Vec3d(y, y, y); }
+    public Vec3d yyz() { return new Vec3d(y, y, z); }
+    public Vec3d yzx() { return new Vec3d(y, z, x); }
+    public Vec3d yzy() { return new Vec3d(y, z, y); }
+    public Vec3d yzz() { return new Vec3d(y, z, z); }
+    public Vec3d zxx() { return new Vec3d(z, x, x); }
+    public Vec3d zxy() { return new Vec3d(z, x, y); }
+    public Vec3d zxz() { return new Vec3d(z, x, z); }
+    public Vec3d zyx() { return new Vec3d(z, y, x); }
+    public Vec3d zyy() { return new Vec3d(z, y, y); }
+    public Vec3d zyz() { return new Vec3d(z, y, z); }
+    public Vec3d zzx() { return new Vec3d(z, z, x); }
+    public Vec3d zzy() { return new Vec3d(z, z, y); }
+    public Vec3d zzz() { return new Vec3d(z, z, z); }
 
     @Override
     public boolean equals(Object o) {

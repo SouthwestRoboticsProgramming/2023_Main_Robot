@@ -11,7 +11,8 @@ import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
-import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTPrimitive;
+import com.swrobotics.robot.config.NTData;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -24,11 +25,7 @@ import static com.swrobotics.robot.subsystems.drive.DrivetrainConstants.*;
 public final class DrivetrainSubsystem extends SwerveDrive {
     public static final FieldInfo FIELD = FieldInfo.CHARGED_UP_2023;
 
-    private static final NTBoolean CALIBRATE = new NTBoolean("Swerve/Calibrate", false);
-
-    private static final NTDouble TURN_KP = new NTDouble("Swerve/Modules/Turn kP", 0.2);
-    private static final NTDouble TURN_KI = new NTDouble("Swerve/Modules/Turn kI", 0.0);
-    private static final NTDouble TURN_KD = new NTDouble("Swerve/Modules/Turn kD", 0.1);
+    private static final NTPrimitive<Boolean> CALIBRATE = new NTBoolean("Swerve/Calibrate", false);
 
     private final PigeonGyroscope gyro;
 
@@ -45,7 +42,7 @@ public final class DrivetrainSubsystem extends SwerveDrive {
         driveMotor.setInverted(true);
         turnMotor.setInverted(true);
 
-        turnMotor.setPID(TURN_KP, TURN_KI, TURN_KD);
+        turnMotor.setPID(NTData.SWERVE_TURN_KP, NTData.SWERVE_TURN_KI, NTData.SWERVE_TURN_KD);
 
         return new SwerveModule(
                 SwerveModuleAttributes.SDS_MK4I_L3, driveMotor, turnMotor, encoder, pos, info.offset);
@@ -68,12 +65,8 @@ public final class DrivetrainSubsystem extends SwerveDrive {
         setStopPosition(StopPosition.COAST);
     }
 
-    // FIXME: Correct for weird gyro mounting
-    // FIXME: This should probably be based on the up vector rather than raw angles
-    // FIXME: Not zero
     public Translation2d getTiltAsTranslation() {
-        return new Translation2d(0, 0);
-//        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
+        return gyro.getUpVector().xy().translation2d();
     }
 
     @Override
@@ -88,9 +81,10 @@ public final class DrivetrainSubsystem extends SwerveDrive {
         }
 
         // Log gyro data
-//        Logger.getInstance().recordOutput("Gyro/RawPitch", gyro.getPitch());
+        Logger.getInstance().recordOutput("Gyro/RawPitch", gyro.getPitch().ccw().deg());
         Logger.getInstance().recordOutput("Gyro/Angle", gyro.getAngle().ccw().deg());
-//        Logger.getInstance().recordOutput("Gyro/RawRoll", gyro.getRoll());
+        Logger.getInstance().recordOutput("Gyro/RawRoll", gyro.getRoll().ccw().deg());
+        Logger.getInstance().recordOutput("Gyro/Up Vector", gyro.getUpVector().components());
 //        Logger.getInstance().recordOutput("Gyro/OffsetAmountDeg", gyroOffset.getDegrees());
 
         Logger.getInstance().recordOutput("SwerveStates/Setpoints", getModuleTargetStates());

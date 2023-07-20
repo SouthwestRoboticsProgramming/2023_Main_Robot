@@ -8,14 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
  */
 public interface Angle {
     /** An angle with measure zero. */
-    Angle ZERO = AbsoluteAngle.rad(0);
-
-    /**
-     * Gets the absolute value of this angle.
-     *
-     * @return absolute value
-     */
-    AbsoluteAngle abs();
+    Angle ZERO = CCWAngle.rad(0);
 
     /**
      * Gets this angle as counterclockwise.
@@ -37,6 +30,11 @@ public interface Angle {
      * @return negated angle
      */
     Angle negate();
+
+    default Angle add(Angle o) { return ccw().add(o.ccw()); }
+    default Angle sub(Angle o) { return ccw().sub(o.ccw()); }
+    default Angle mul(double scalar) { return ccw().mul(scalar); }
+    default Angle div(double scalar) { return ccw().div(scalar); }
 
     static Angle fromRotation2d(Rotation2d rot) {
         return CCWAngle.rad(rot.getRadians());

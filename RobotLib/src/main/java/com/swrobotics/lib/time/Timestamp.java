@@ -30,7 +30,7 @@ public final class Timestamp {
      * @param prevTime previous time to compare
      * @return duration between previous time and this time
      */
-    public Duration difference(Timestamp prevTime) {
+    public Duration durationSince(Timestamp prevTime) {
         return new Duration(nanoTime - prevTime.nanoTime, TimeUnit.NANOSECONDS);
     }
 

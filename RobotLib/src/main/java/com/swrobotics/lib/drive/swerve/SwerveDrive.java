@@ -7,8 +7,6 @@ import com.swrobotics.lib.drive.Drivetrain;
 import com.swrobotics.lib.field.FieldInfo;
 import com.swrobotics.lib.field.FieldSymmetry;
 import com.swrobotics.lib.gyro.Gyroscope;
-import com.swrobotics.lib.net.NTDouble;
-import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.CCWAngle;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -47,6 +45,9 @@ public class SwerveDrive extends Drivetrain {
 
         stopPosition = StopPosition.FORWARD;
         setBrakeMode(true);
+
+        // Set initial odometry pose
+        setOdometryPose(new Pose2d(0, 0, new Rotation2d(0)));
     }
 
     private void setModuleStates(SwerveModuleState[] states) {
@@ -55,14 +56,7 @@ public class SwerveDrive extends Drivetrain {
         }
     }
 
-    private static final Pose2d IDENTITY_POSE = new Pose2d();
-
-    NTEntry<Double> test = new NTDouble("Log/Drive/Module 0 CANCoder", 1234).setTemporary();
-    @Override
-    public void periodic() {
-        super.periodic();
-        test.set(modules[0].encoder.getAngle().ccw().deg());
-    }
+    private static final Pose2d ZERO_POSE = new Pose2d();
 
     @Override
     protected void drive(ChassisSpeeds speeds) {
@@ -74,7 +68,7 @@ public class SwerveDrive extends Drivetrain {
                         speeds.vxMetersPerSecond * periodicTime,
                         speeds.vyMetersPerSecond * periodicTime,
                         Rotation2d.fromRadians(speeds.omegaRadiansPerSecond * periodicTime));
-        Twist2d twistVel = IDENTITY_POSE.log(robotPoseVel);
+        Twist2d twistVel = ZERO_POSE.log(robotPoseVel);
         speeds =
                 new ChassisSpeeds(
                         twistVel.dx / periodicTime,

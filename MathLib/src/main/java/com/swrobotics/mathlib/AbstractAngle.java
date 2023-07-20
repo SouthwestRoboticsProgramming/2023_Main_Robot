@@ -77,7 +77,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return sum
      */
     public T add(T o) {
-        return create(rad() + o.rad());
+        return create(rad + o.rad());
     }
 
     /**
@@ -87,7 +87,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return difference
      */
     public T sub(T o) {
-        return create(rad() - o.rad());
+        return create(rad - o.rad());
     }
 
     /**
@@ -97,7 +97,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return scaled angle
      */
     public T mul(double scalar) {
-        return create(rad() * scalar);
+        return create(rad * scalar);
     }
 
     /**
@@ -107,7 +107,18 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return scaled angle
      */
     public T div(double scalar) {
-        return create(rad() / scalar);
+        return create(rad / scalar);
+    }
+
+    /**
+     * Calculates the absolute value of this angle's measure. The
+     * returned angle will be the same direction as this angle, with
+     * a guaranteed >=0 measure.
+     *
+     * @return absolute value
+     */
+    public T abs() {
+        return create(Math.abs(rad));
     }
 
     /**
@@ -118,7 +129,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return wrapped angle
      */
     public T wrapRad(double min, double max) {
-        return create(MathUtil.wrap(rad(), min, max));
+        return create(MathUtil.wrap(rad, min, max));
     }
 
     /**
@@ -178,7 +189,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * Convenience method to wrap this angle around bounds centered at zero in degrees.
      *
      * @param range minimum and maximum distance from zero in rotations
-     * @return
+     * @return wrapped angle
      */
     public T wrapRot(double range) {
         return wrapRot(-range, range);
@@ -198,12 +209,13 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
 
     /**
      * Calculates the absolute difference between this angle and another.
+     * The returned angle has the same direction as this angle.
      *
      * @param o other angle
      * @return absolute difference
      */
-    public AbsoluteAngle getAbsDiff(T o) {
-        return AbsoluteAngle.rad(absDiffRad(o.rad()));
+    public T getAbsDiff(T o) {
+        return create(absDiffRad(o.rad()));
     }
 
     /**
@@ -214,7 +226,7 @@ public abstract class AbstractAngle<T extends AbstractAngle<T>> implements Angle
      * @return whether this angle is within tolerance of the other
      */
     public boolean inTolerance(T o, Angle tol) {
-        return absDiffRad(o.rad()) < tol.abs().rad();
+        return absDiffRad(o.rad()) < tol.ccw().abs().rad();
     }
 
     @Override

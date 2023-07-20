@@ -3,6 +3,7 @@ package com.swrobotics.mathlib;
 import edu.wpi.first.math.geometry.Translation2d;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 /** Represents a two-dimensional vector of {@code double}s. */
 public final class Vec2d {
@@ -361,6 +362,13 @@ public final class Vec2d {
         return dest;
     }
 
+    public Vec2d componentMap(Function<Double, Double> mapFn) { return componentMap(mapFn, this); }
+    public Vec2d componentMap(Function<Double, Double> mapFn, Vec2d dest) {
+        dest.x = mapFn.apply(x);
+        dest.y = mapFn.apply(y);
+        return dest;
+    }
+
     /**
      * Computes the magnitude of this vector, squared. This is more efficient than computing the
      * actual magnitude, so prefer this function if you only need to compare the magnitudes of
@@ -545,6 +553,11 @@ public final class Vec2d {
      */
     public Vec2d boxNormalize(Vec2d dest) {
         double max = Math.max(Math.abs(x), Math.abs(y));
+        if (max == 0) {
+            dest.x = 0;
+            dest.y = 0;
+            return dest;
+        }
         dest.x = x / max;
         dest.y = y / max;
         return dest;
@@ -595,6 +608,22 @@ public final class Vec2d {
         dest.x = Math.abs(x);
         dest.y = Math.abs(y);
         return dest;
+    }
+
+    public Vec2d xx() {
+        return new Vec2d(x, x);
+    }
+
+    public Vec2d xy() {
+        return new Vec2d(x, y);
+    }
+
+    public Vec2d yx() {
+        return new Vec2d(y, x);
+    }
+
+    public Vec2d yy() {
+        return new Vec2d(y, y);
     }
 
     @Override

@@ -5,9 +5,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.BiConsumer;
 
-import com.swrobotics.lib.gyro.PigeonGyroscope;
-import com.swrobotics.lib.net.NTDouble;
-import com.swrobotics.lib.net.NTEntry;
+import com.swrobotics.lib.ThreadUtils;
+import com.swrobotics.robot.config.Settings;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -16,8 +15,8 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-import com.swrobotics.robot.Settings.RobotType;
-import com.swrobotics.robot.Settings.Mode;
+import com.swrobotics.robot.config.Settings.RobotType;
+import com.swrobotics.robot.config.Settings.Mode;
 
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.Threads;
@@ -126,6 +125,8 @@ public class Robot extends LoggedRobot {
     public void robotPeriodic() {
         Threads.setCurrentThreadPriority(true, 99);
 
+        robotContainer.messenger.readMessages();
+        ThreadUtils.runMainThreadOperations();
         CommandScheduler.getInstance().run(); // Leave this alone
     }
 

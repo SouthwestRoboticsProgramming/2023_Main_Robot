@@ -36,7 +36,8 @@ public abstract class Gyroscope {
      * @param newAngle new current angle
      */
     public void setAngle(Angle newAngle) {
-        offset = getCurrentAngle().ccw().add(newAngle.ccw());
+        offset = newAngle.sub(getCurrentAngle());
+        System.out.println("GYRO NEW ANGLE: " + newAngle + " | " + getAngle());
     }
 
     private Angle getCurrentAngle() {

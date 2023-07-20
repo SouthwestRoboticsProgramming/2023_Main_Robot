@@ -4,16 +4,16 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
-import com.swrobotics.lib.drive.swerve.StopPosition;
 import com.swrobotics.lib.drive.swerve.commands.DriveBlindCommand;
-import com.swrobotics.lib.gyro.NavXGyroscope;
 import com.swrobotics.lib.gyro.PigeonGyroscope;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
+import com.swrobotics.robot.config.Settings;
 import com.swrobotics.robot.input.Input;
-import com.swrobotics.robot.positions.ArmPositions;
+import com.swrobotics.robot.subsystems.arm.ArmPosition;
+import com.swrobotics.robot.subsystems.arm.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -75,15 +76,14 @@ public class RobotContainer {
         DriverStation.silenceJoystickConnectionWarning(Settings.getMode() == Settings.Mode.REAL);
 
         // Initialize Messenger
-        messenger = new MessengerClient(
-                RobotBase.isSimulation() ? MESSENGER_HOST_SIM : MESSENGER_HOST_ROBOT,
-                MESSENGER_PORT,
-                MESSENGER_NAME);
+        String host = RobotBase.isSimulation() ? MESSENGER_HOST_SIM : MESSENGER_HOST_ROBOT;
+//        String host = MESSENGER_HOST_ROBOT;
+        messenger = new MessengerClient(host, MESSENGER_PORT, MESSENGER_NAME);
 
         new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
 
-        arm = new ArmSubsystem(messenger);
         intake = new IntakeSubsystem();
+        arm = new ArmSubsystem(messenger, intake);
 
         swerveDrive = new DrivetrainSubsystem(new PigeonGyroscope(PIGEON_CAN_ID));
         input = new Input(this);
@@ -95,11 +95,18 @@ public class RobotContainer {
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
-        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::getTranslation));
-        // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
-
-        // Allow for easy creation of autos using PathPlanner
+        putArmEvent(eventMap, "ARM_DEFAULT", ArmPositions.DEFAULT);
+        putArmEventSet(eventMap, "ARM_CONE", ArmPositions.CONE);
+        putArmEventSet(eventMap, "ARM_CUBE", ArmPositions.CUBE);
         swerveDrive.setAutoEvents(eventMap);
+
+        // Print out all the registered events for debugging
+        System.out.println("Registered auto events:");
+        List<String> sortedKeys = new ArrayList<>(eventMap.keySet());
+        sortedKeys.sort(String.CASE_INSENSITIVE_ORDER);
+        for (String key : sortedKeys) {
+            System.out.println("  - " + key);
+        }
 
         // Autos that don't do anything
         Command blankAuto = new InstantCommand();
@@ -178,6 +185,23 @@ public class RobotContainer {
         SmartDashboard.putData("Auto", autoSelector);
     }
 
+    private void putArmEvent(Map<String, Command> eventMap, String name, ArmPosition.NT pos) {
+        eventMap.put(name, new MoveArmToPositionCommand(this, pos));
+    }
+
+    private void putArmEventPair(Map<String, Command> eventMap, String prefix, ArmPositions.FrontBackPair pair) {
+        putArmEvent(eventMap, prefix + "_FRONT", pair.front);
+        putArmEvent(eventMap, prefix + "_BACK", pair.back);
+    }
+
+    private void putArmEventSet(Map<String, Command> eventMap, String prefix, ArmPositions.PositionSet set) {
+        putArmEvent(eventMap, prefix + "_HIGH_FRONT", set.scoreHighFront);
+        putArmEventPair(eventMap, prefix + "_MID", set.scoreMid);
+        putArmEventPair(eventMap, prefix + "_FLOOR", set.floorPickup);
+        putArmEventPair(eventMap, prefix + "_CHUTE", set.chutePickup);
+        putArmEventPair(eventMap, prefix + "_SUBSTATION", set.substationPickup);
+    }
+
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *
@@ -185,23 +209,5 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         return autoSelector.getSelected().get();
-    }
-
-    private static List<PathPlannerTrajectory> getPath(String name) {
-        List<PathPlannerTrajectory> path = PathPlanner.loadPathGroup(name, new PathConstraints(2.0, 1.0));
-        if (path != null) {
-            return path;
-        }
-
-        System.out.println("Could not find that path, using default path instead");
-
-        List<PathPoint> defaultPath = new ArrayList<>();
-        defaultPath.add(new PathPoint(new Translation2d(), new Rotation2d()));
-        defaultPath.add(new PathPoint(new Translation2d(1.0, 0), new Rotation2d()));
-
-        // Generate a blank path
-        path = new ArrayList<>();
-        path.add(PathPlanner.generatePath(new PathConstraints(1.0, 1.0), defaultPath));
-        return path;
     }
 }

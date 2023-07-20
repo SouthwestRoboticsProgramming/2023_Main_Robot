@@ -1,7 +1,7 @@
 package com.swrobotics.lib.net;
 
 /** Represents a {@code String[]} value stored in NetworkTables. */
-public final class NTStringArray extends NTEntry<String[]> {
+public final class NTStringArray extends NTPrimitive<String[]> {
     private final String[] defaultVals;
 
     public NTStringArray(String path, String... defaultVals) {
