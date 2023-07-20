@@ -249,7 +249,7 @@ public final class ShuffleLog extends PApplet {
     }
 
     public static void main(String[] args) {
-        SIM_MODE = args[0].equals("sim");
+        SIM_MODE = args.length >= 1 && args[0].equals("sim");
         PApplet.main(ShuffleLog.class);
     }
 }
