@@ -12,6 +12,7 @@ import com.swrobotics.robot.commands.DefaultDriveCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.config.Settings;
 import com.swrobotics.robot.input.Input;
+import com.swrobotics.robot.subsystems.arm.ArmPosition;
 import com.swrobotics.robot.subsystems.arm.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -74,8 +76,8 @@ public class RobotContainer {
         DriverStation.silenceJoystickConnectionWarning(Settings.getMode() == Settings.Mode.REAL);
 
         // Initialize Messenger
-//        String host = RobotBase.isSimulation() ? MESSENGER_HOST_SIM : MESSENGER_HOST_ROBOT;
-        String host = MESSENGER_HOST_ROBOT;
+        String host = RobotBase.isSimulation() ? MESSENGER_HOST_SIM : MESSENGER_HOST_ROBOT;
+//        String host = MESSENGER_HOST_ROBOT;
         messenger = new MessengerClient(host, MESSENGER_PORT, MESSENGER_NAME);
 
         new FileSystemAPI(messenger, "RoboRIO", Filesystem.getOperatingDirectory());
@@ -93,11 +95,18 @@ public class RobotContainer {
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
 
-        eventMap.put("ARM_DEFAULT", new MoveArmToPositionCommand(this, ArmPositions.DEFAULT::get));
-        // eventMap.put("ARM_DEFAULT", new PrintCommand("it work"));
-
-        // Allow for easy creation of autos using PathPlanner
+        putArmEvent(eventMap, "ARM_DEFAULT", ArmPositions.DEFAULT);
+        putArmEventSet(eventMap, "ARM_CONE", ArmPositions.CONE);
+        putArmEventSet(eventMap, "ARM_CUBE", ArmPositions.CUBE);
         swerveDrive.setAutoEvents(eventMap);
+
+        // Print out all the registered events for debugging
+        System.out.println("Registered auto events:");
+        List<String> sortedKeys = new ArrayList<>(eventMap.keySet());
+        sortedKeys.sort(String.CASE_INSENSITIVE_ORDER);
+        for (String key : sortedKeys) {
+            System.out.println("  - " + key);
+        }
 
         // Autos that don't do anything
         Command blankAuto = new InstantCommand();
@@ -174,6 +183,23 @@ public class RobotContainer {
         autoSelector.setDefaultOption("Taxi Smart", () -> taxiSmart);
 
         SmartDashboard.putData("Auto", autoSelector);
+    }
+
+    private void putArmEvent(Map<String, Command> eventMap, String name, ArmPosition.NT pos) {
+        eventMap.put(name, new MoveArmToPositionCommand(this, pos));
+    }
+
+    private void putArmEventPair(Map<String, Command> eventMap, String prefix, ArmPositions.FrontBackPair pair) {
+        putArmEvent(eventMap, prefix + "_FRONT", pair.front);
+        putArmEvent(eventMap, prefix + "_BACK", pair.back);
+    }
+
+    private void putArmEventSet(Map<String, Command> eventMap, String prefix, ArmPositions.PositionSet set) {
+        putArmEvent(eventMap, prefix + "_HIGH_FRONT", set.scoreHighFront);
+        putArmEventPair(eventMap, prefix + "_MID", set.scoreMid);
+        putArmEventPair(eventMap, prefix + "_FLOOR", set.floorPickup);
+        putArmEventPair(eventMap, prefix + "_CHUTE", set.chutePickup);
+        putArmEventPair(eventMap, prefix + "_SUBSTATION", set.substationPickup);
     }
 
     /**
