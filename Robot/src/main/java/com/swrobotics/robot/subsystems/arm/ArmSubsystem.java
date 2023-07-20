@@ -186,13 +186,19 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             // Magnitude to final target is used so movement only slows down
             // upon reaching the final target, not at each intermediate position
             double pidOut = -movePid.calculate(Math.sqrt(magSqToFinalTarget), 0);
-            pidOut = MathUtil.clamp(pidOut, 0, ARM_MAX_SPEED.get());
+            pidOut = Math.max(0, pidOut); // Remove any negative control
 
             // Apply bias to towardsTarget so that each axis takes equal time
             // This allows the assumption in the pathfinder that moving towards
             // a target travels in a straight line in state space
             towardsTarget.mul(ArmConstants.BOTTOM_GEAR_RATIO, ArmConstants.TOP_GEAR_RATIO)
-                    .boxNormalize().mul(pidOut);
+                    .mul(pidOut);
+
+            // Limit speeds
+            double scaleX = Math.min(1, ARM_MAX_SPEED_BOTTOM.get() / towardsTarget.x);
+            double scaleY = Math.min(1, ARM_MAX_SPEED_TOP.get() / towardsTarget.y);
+            double scale = Math.min(scaleX, scaleY);
+            towardsTarget.mul(scale);
 
             if (Double.isNaN(towardsTarget.x) || Double.isNaN(towardsTarget.y)) {
                 throw new RuntimeException("Towards target vector is NaN somehow");

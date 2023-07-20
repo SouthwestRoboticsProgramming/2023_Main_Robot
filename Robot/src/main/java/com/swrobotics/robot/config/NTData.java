@@ -32,7 +32,8 @@ public final class NTData {
     public static final NTEntry<Double> ARM_WRIST_KI = new NTDouble("Arm/Wrist PID/kI", 0).setPersistent();
     public static final NTEntry<Double> ARM_WRIST_KD = new NTDouble("Arm/Wrist PID/kD", 0).setPersistent();
 
-    public static final NTEntry<Double> ARM_MAX_SPEED = new NTDouble("Arm/Max Speed", 1.0).setPersistent();
+    public static final NTEntry<Double> ARM_MAX_SPEED_BOTTOM = new NTDouble("Arm/Max Speed Bottom", 1.0).setPersistent();
+    public static final NTEntry<Double> ARM_MAX_SPEED_TOP = new NTDouble("Arm/Max Speed Top", 0.75).setPersistent();
     public static final NTEntry<Double> ARM_STOP_TOL = new NTDouble("Arm/Stop Tolerance", 1.5).setPersistent();
     public static final NTEntry<Double> ARM_START_TOL = new NTDouble("Arm/Start Tolerance", 2.5).setPersistent();
 
