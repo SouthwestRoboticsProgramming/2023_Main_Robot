@@ -75,7 +75,9 @@ public final class SimMotor extends SubsystemBase implements FeedbackMotor {
 
     @Override
     public void periodic() {
-        rawAngle = rawAngle.add(caps.freeSpeed.mul(MathUtil.clamp(controlModeFn.get(), -1, 1) * flip * 0.02));
+        rawAngle = rawAngle.add(
+                caps.freeSpeed.mul(
+                        MathUtil.clamp(controlModeFn.get(), -1, 1) * flip * 0.02));
     }
 
     // Setpoint and measure are in native sensor units

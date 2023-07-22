@@ -39,6 +39,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
     private ArmPose targetPose;
     private boolean inToleranceHysteresis;
     private NTEntry<Angle> wristFold;
+    private boolean folded, prevEnterFold, prevExitFold;
 
     private final ArmVisualizer currentVisualizer, stepTargetVisualizer, targetVisualizer;
 
@@ -75,6 +76,7 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         });
 
         wristFold = ARM_FOLD_ANGLE_CUBE;
+        folded = prevEnterFold = prevExitFold = true; // Always folded; we start inside robot
     }
 
     public ArmPose getCurrentPose() {
@@ -186,19 +188,20 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
             // Magnitude to final target is used so movement only slows down
             // upon reaching the final target, not at each intermediate position
             double pidOut = -movePid.calculate(Math.sqrt(magSqToFinalTarget), 0);
-            pidOut = Math.max(0, pidOut); // Remove any negative control
+            pidOut = MathUtil.clamp(pidOut, 0, ARM_MAX_SPEED_BOTTOM.get()); // Remove any negative control
 
             // Apply bias to towardsTarget so that each axis takes equal time
             // This allows the assumption in the pathfinder that moving towards
             // a target travels in a straight line in state space
             towardsTarget.mul(ArmConstants.BOTTOM_GEAR_RATIO, ArmConstants.TOP_GEAR_RATIO)
+                    .boxNormalize()
                     .mul(pidOut);
 
-            // Limit speeds
-            double scaleX = Math.min(1, ARM_MAX_SPEED_BOTTOM.get() / towardsTarget.x);
-            double scaleY = Math.min(1, ARM_MAX_SPEED_TOP.get() / towardsTarget.y);
-            double scale = Math.min(scaleX, scaleY);
-            towardsTarget.mul(scale);
+//            // Limit speeds
+//            double scaleX = Math.min(1, ARM_MAX_SPEED_BOTTOM.get() / towardsTarget.x);
+//            double scaleY = Math.min(1, ARM_MAX_SPEED_TOP.get() / towardsTarget.y);
+//            double scale = Math.min(scaleX, scaleY);
+//            towardsTarget.mul(scale);
 
             if (Double.isNaN(towardsTarget.x) || Double.isNaN(towardsTarget.y)) {
                 throw new RuntimeException("Towards target vector is NaN somehow");
@@ -213,11 +216,27 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
         // reliably determine if we have one. This is fine without game
         // piece since the intake fits over the drive base at all angles.
         Vec2d axisPos = currentPose.getAxisPos().absolute();
-        Vec2d foldZone = ARM_FOLD_ZONE.get();
         Angle wristTarget = targetPose.wristAngle;
         Angle wristRef = targetPose.topAngle;
         NTEntry<Angle> foldAngle = intake.getHeldPiece() == GamePiece.CUBE ? ARM_FOLD_ANGLE_CUBE : ARM_FOLD_ANGLE_CONE;
-        if (axisPos.x <= foldZone.x && axisPos.y <= foldZone.y) {
+
+        // When entering ZONE_ENTER, fold = true
+        // When leaving ZONE_EXIT, fold = false
+        // Also when in ZONE_EXIT, in case arm never left ZONE_ENTER
+        boolean inEnter = inZone(ARM_FOLD_ZONE_ENTER.get(), axisPos);
+        boolean inExit = inZone(ARM_FOLD_ZONE_EXIT.get(), axisPos);
+        if ((inEnter && !prevEnterFold) || inExit)
+            folded = true;
+        if (!inExit && prevExitFold)
+            folded = false;
+        prevEnterFold = inEnter;
+        prevExitFold = inExit;
+
+        Logger.getInstance().recordOutput("Arm/Fold/Folded", folded);
+        Logger.getInstance().recordOutput("Arm/Fold/In Enter", inEnter);
+        Logger.getInstance().recordOutput("Arm/Fold/In Exit", inExit);
+
+        if (folded) {
             // Set wrist to fold angle
             wristTarget = wristFold.get();
             wristRef = currentPose.topAngle;
@@ -235,6 +254,10 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
         wristTarget = wristTarget.sub(wristRef).ccw().wrapDeg(-180, 180);
         wrist.setTargetAngle(wristTarget, wristFF);
+    }
+
+    private boolean inZone(Vec2d zone, Vec2d point) {
+        return Math.abs(point.x) <= zone.x && Math.abs(point.y) <= zone.y;
     }
 
     public void setTargetPosition(ArmPosition targetPosition) {
@@ -258,6 +281,18 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
 
     public boolean isInTolerance() {
         return inToleranceHysteresis;
+    }
+
+    // Recalculate tolerance now in case the target has changed during this periodic
+    public boolean isInToleranceImmediate() {
+        ArmPathfinder.PathPoint startPoint = ArmPathfinder.PathPoint.fromPose(getCurrentPose());
+        ArmPathfinder.PathPoint targetPoint = ArmPathfinder.PathPoint.fromPose(targetPose);
+        Vec2d biasedStart = bias(startPoint);
+        Vec2d biasedTarget = bias(targetPoint);
+        double magSqToFinalTarget = new Vec2d(biasedTarget).sub(biasedStart).magnitudeSq();
+
+        double startTol = ARM_START_TOL.get();
+        return magSqToFinalTarget <= startTol * startTol;
     }
 
     @Override

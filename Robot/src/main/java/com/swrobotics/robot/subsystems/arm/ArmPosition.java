@@ -1,5 +1,6 @@
 package com.swrobotics.robot.subsystems.arm;
 
+import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTDoubleArray;
 import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.Angle;
@@ -10,16 +11,17 @@ import com.swrobotics.mathlib.Vec2d;
 public final class ArmPosition {
     public static final class NT extends NTEntry<ArmPosition> {
         private final NTEntry<double[]> value;
+        private final NTEntry<Boolean> intermediate;
         private final ArmPosition defPos;
 
-        public NT(String path, double defX, double defY, Angle defWrist) {
-            value = new NTDoubleArray(path, defX, defY, defWrist.ccw().deg());
-//            super(path, defX, defY, defWrist.ccw().deg());
+        public NT(String path, double defX, double defY, Angle defWrist, boolean defIntermediate) {
+            value = new NTDoubleArray(path + "/Position", defX, defY, defWrist.ccw().deg());
+            intermediate = new NTBoolean(path + "/Use Intermediate", defIntermediate);
             defPos = new ArmPosition(new Vec2d(defX, defY), defWrist);
         }
 
-        public NT(String path, ArmPosition defPos) {
-            this(path, defPos.axisPos.x, defPos.axisPos.y, defPos.wristAngle);
+        public NT(String path, ArmPosition defPos, boolean defIntermediate) {
+            this(path, defPos.axisPos.x, defPos.axisPos.y, defPos.wristAngle, defIntermediate);
         }
 
         @Override
@@ -35,15 +37,21 @@ public final class ArmPosition {
             value.set(new double[] {tx.axisPos.x, tx.axisPos.y, tx.wristAngle.ccw().deg()});
         }
 
+        public boolean useIntermediate() {
+            return intermediate.get();
+        }
+
         @Override
         public NTEntry<ArmPosition> setPersistent() {
             value.setPersistent();
+            intermediate.setPersistent();
             return this;
         }
 
         @Override
         public void registerChangeListeners(Runnable fireFn) {
             value.registerChangeListeners(fireFn);
+            intermediate.registerChangeListeners(fireFn);
         }
     }
 

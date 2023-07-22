@@ -1,14 +1,12 @@
 package com.swrobotics.robot;
 
-import com.pathplanner.lib.PathConstraints;
-import com.pathplanner.lib.PathPlanner;
-import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.PathPoint;
 import com.swrobotics.lib.drive.swerve.commands.DriveBlindCommand;
 import com.swrobotics.lib.gyro.PigeonGyroscope;
+import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.messenger.client.MessengerClient;
 import com.swrobotics.robot.commands.BalanceSequenceCommand;
 import com.swrobotics.robot.commands.DefaultDriveCommand;
+import com.swrobotics.robot.commands.ScoreSequenceCommand;
 import com.swrobotics.robot.commands.arm.MoveArmToPositionCommand;
 import com.swrobotics.robot.config.Settings;
 import com.swrobotics.robot.input.Input;
@@ -16,11 +14,10 @@ import com.swrobotics.robot.subsystems.arm.ArmPosition;
 import com.swrobotics.robot.subsystems.arm.ArmPositions;
 import com.swrobotics.robot.subsystems.arm.ArmSubsystem;
 import com.swrobotics.robot.subsystems.drive.DrivetrainSubsystem;
+import com.swrobotics.robot.subsystems.intake.GamePiece;
 import com.swrobotics.robot.subsystems.intake.IntakeSubsystem;
 import com.swrobotics.taskmanager.filesystem.FileSystemAPI;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -94,6 +91,13 @@ public class RobotContainer {
         // Put your events from PathPlanner here
         eventMap.put("BALANCE", new BalanceSequenceCommand(this, false));
         eventMap.put("BALANCE_REVERSE", new BalanceSequenceCommand(this, true));
+
+        eventMap.put("SCORE_CUBE", new ScoreSequenceCommand(
+                this, GamePiece.CUBE, ArmPositions.CUBE.scoreHigh,
+                0.5, 1.0, CCWAngle.deg(100)));
+//        eventMap.put("SCORE_CUBE_MID", new ScoreSequenceCommand(this, GamePiece.CUBE, ArmPositions.CUBE.scoreMid.front));
+
+//        eventMap.put("SCORE_CONE", new ScoreSequenceCommand(this, GamePiece.CONE, ArmPositions.CONE.scoreHigh));
 
         putArmEvent(eventMap, "ARM_DEFAULT", ArmPositions.DEFAULT);
         putArmEventSet(eventMap, "ARM_CONE", ArmPositions.CONE);
@@ -195,7 +199,7 @@ public class RobotContainer {
     }
 
     private void putArmEventSet(Map<String, Command> eventMap, String prefix, ArmPositions.PositionSet set) {
-        putArmEvent(eventMap, prefix + "_HIGH_FRONT", set.scoreHighFront);
+        putArmEvent(eventMap, prefix + "_HIGH_FRONT", set.scoreHigh);
         putArmEventPair(eventMap, prefix + "_MID", set.scoreMid);
         putArmEventPair(eventMap, prefix + "_FLOOR", set.floorPickup);
         putArmEventPair(eventMap, prefix + "_CHUTE", set.chutePickup);

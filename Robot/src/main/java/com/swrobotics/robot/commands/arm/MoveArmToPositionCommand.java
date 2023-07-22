@@ -25,11 +25,14 @@ public final class MoveArmToPositionCommand extends CommandBase {
 
     @Override
     public void execute() {
+        System.out.println("a: " + arm.getTargetPose());
+
         arm.setTargetPosition(target.get());
+        System.out.println("t: " + arm.getTargetPose());
     }
 
     @Override
     public boolean isFinished() {
-        return arm.isInTolerance();
+        return arm.isInToleranceImmediate();
     }
 }

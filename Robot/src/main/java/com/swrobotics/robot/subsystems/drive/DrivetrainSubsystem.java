@@ -66,6 +66,7 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     }
 
     public Translation2d getTiltAsTranslation() {
+        // FIXME: account for difference from gyro angle to pose angle
         return gyro.getUpVector().xy().translation2d();
     }
 
