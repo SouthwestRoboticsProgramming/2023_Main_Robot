@@ -67,6 +67,12 @@ public abstract class Drivetrain extends SwitchableSubsystemBase {
         setOdometryPose(new Pose2d(getOdometryPose().getTranslation(), a.ccw().rotation2d()));
     }
 
+    public void zeroGyroscopeBackwards() {
+        Angle a = fieldInfo.getAllianceReverseAngle();
+        gyro.setAngle(a);
+        setOdometryPose(new Pose2d(getOdometryPose().getTranslation(), a.ccw().rotation2d()));
+    }
+
     /**
      * Adds control input to the drive base. All calls to this method each periodic are added
      * together to get the final speeds. If this is not a holonomic drive base, the horizontal

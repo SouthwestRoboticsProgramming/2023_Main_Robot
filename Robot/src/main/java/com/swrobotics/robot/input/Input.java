@@ -84,6 +84,7 @@ public final class Input extends SubsystemBase {
         manipulator = new XboxController(MANIPULATOR_PORT, DEADBAND);
 
         driver.start.onRising(robot.swerveDrive::zeroGyroscope);
+        driver.back.onRising(robot.swerveDrive::zeroGyroscopeBackwards);
 
         manipulator.leftBumper.onRising(
                 () -> {
