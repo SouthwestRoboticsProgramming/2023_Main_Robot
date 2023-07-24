@@ -81,6 +81,15 @@ public class SwerveModule {
     }
 
     /**
+     * Returns the maximum velocity in meters per second
+     * 
+     * @return Max velocity in meters per second
+     */
+    public double getMaxVelocity() {
+        return attribs.getMaxVelocity();
+    }
+
+    /**
      * Sets the target state and motor outputs to achieve that state.
      *
      * @param state new target state

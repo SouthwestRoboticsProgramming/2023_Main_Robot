@@ -51,6 +51,7 @@ public class SwerveDrive extends Drivetrain {
     }
 
     private void setModuleStates(SwerveModuleState[] states) {
+        System.out.println(states[0].speedMetersPerSecond);
         for (int i = 0; i < modules.length; i++) {
             modules[i].setState(states[i]);
         }
@@ -76,7 +77,7 @@ public class SwerveDrive extends Drivetrain {
                         twistVel.dtheta / periodicTime);
 
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, modules[0].getMaxVelocity());
 
         double vx = speeds.vxMetersPerSecond;
         double vy = speeds.vyMetersPerSecond;
