@@ -71,7 +71,7 @@ public abstract class SparkMaxMotor implements Motor {
         pidFeature = new PIDControlFeature() {
             @Override
             public void setPositionArbFF(Angle targetPos, double arbFF) {
-                pid.setReference(targetPos.ccw().rot(), CANSparkMax.ControlType.kPosition, 0, arbFF * 12);
+                pid.setReference(targetPos.ccw().rot(), CANSparkMax.ControlType.kPosition, 0, arbFF, SparkMaxPIDController.ArbFFUnits.kPercentOut);
             }
 
             @Override
@@ -80,7 +80,8 @@ public abstract class SparkMaxMotor implements Motor {
                         Units.radiansPerSecondToRotationsPerMinute(targetVel.ccw().rad()),
                         CANSparkMax.ControlType.kVelocity,
                         0,
-                        arbFF * 12);
+                        arbFF,
+                        SparkMaxPIDController.ArbFFUnits.kPercentOut);
             }
 
             @Override
