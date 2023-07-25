@@ -8,7 +8,7 @@ import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.field.FieldInfo;
 import com.swrobotics.lib.gyro.PigeonGyroscope;
-import com.swrobotics.lib.motor.FeedbackMotor;
+import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.lib.motor.ctre.TalonFXMotor;
 import com.swrobotics.lib.net.NTBoolean;
 import com.swrobotics.lib.net.NTPrimitive;
@@ -34,15 +34,15 @@ public final class DrivetrainSubsystem extends SwerveDrive {
     private final StateVisualizer stateVisualizer;
 
     private static SwerveModule makeModule(SwerveModuleInfo info, Translation2d pos) {
-        FeedbackMotor driveMotor = new TalonFXMotor(info.driveMotorID);
-        FeedbackMotor turnMotor = new TalonFXMotor(info.turnMotorID);
+        Motor driveMotor = new TalonFXMotor(info.driveMotorID);
+        Motor turnMotor = new TalonFXMotor(info.turnMotorID);
         Encoder encoder = new CanCoder(info.encoderID).getAbsolute();
 
         // MK4i is inverted
         driveMotor.setInverted(true);
         turnMotor.setInverted(true);
 
-        turnMotor.setPID(NTData.SWERVE_TURN_KP, NTData.SWERVE_TURN_KI, NTData.SWERVE_TURN_KD);
+        turnMotor.getPIDControl().setPID(NTData.SWERVE_TURN_KP, NTData.SWERVE_TURN_KI, NTData.SWERVE_TURN_KD);
 
         return new SwerveModule(
                 SwerveModuleAttributes.SDS_MK4I_L3, driveMotor, turnMotor, encoder, pos, info.offset);

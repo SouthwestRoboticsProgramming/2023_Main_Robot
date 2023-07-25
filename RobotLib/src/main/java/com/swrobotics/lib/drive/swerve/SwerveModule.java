@@ -1,7 +1,7 @@
 package com.swrobotics.lib.drive.swerve;
 
 import com.swrobotics.lib.encoder.Encoder;
-import com.swrobotics.lib.motor.FeedbackMotor;
+import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
@@ -17,8 +17,8 @@ import edu.wpi.first.wpilibj.RobotBase;
 public class SwerveModule {
     private final SwerveModuleAttributes attribs;
 
-    private final FeedbackMotor turn;
-    private final FeedbackMotor drive;
+    private final Motor turn;
+    private final Motor drive;
 
     public final Encoder encoder;
     private final Encoder turnEncoder;
@@ -41,16 +41,16 @@ public class SwerveModule {
      * forward
      *
      * @param attribs physical attributes of the module
-     * @param driveMotor motor for driving the wheel
-     * @param turnMotor motor for turning the wheel
+     * @param driveMotor motor for driving the wheel. Must support internal encoder
+     * @param turnMotor motor for turning the wheel. Must support PID control and internal encoder
      * @param encoder absolute encoder for calibration
      * @param position position relative to robot center, +X forward, +Y left
      * @param offset NetworkTables entry to store encoder offset
      */
     public SwerveModule(
             SwerveModuleAttributes attribs,
-            FeedbackMotor driveMotor,
-            FeedbackMotor turnMotor,
+            Motor driveMotor,
+            Motor turnMotor,
             Encoder encoder,
             Translation2d position,
             NTEntry<Angle> offset) {
@@ -67,6 +67,7 @@ public class SwerveModule {
         positionalOffset = MathUtil.wrap(position.getAngle().getDegrees(), -180, 180);
 
         // Wait to spread out CAN usage during initialization
+        // TODO: Don't
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {}
@@ -104,7 +105,7 @@ public class SwerveModule {
         simulatedDistance += outputState.speedMetersPerSecond * 0.02;
 
         Angle turnUnits = toNativeTurnUnits(outputState.angle);
-        turn.setPosition(turnUnits);
+        turn.getPIDControl().setPosition(turnUnits);
 //        turn.setPosition(CWAngle.rot((System.currentTimeMillis() % 1000) / 1000.0 * attribs.getTurnGearRatio()));
 
         double driveOutput = outputState.speedMetersPerSecond / attribs.getMaxVelocity();

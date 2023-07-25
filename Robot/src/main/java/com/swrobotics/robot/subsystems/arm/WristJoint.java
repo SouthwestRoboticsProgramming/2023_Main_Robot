@@ -8,7 +8,7 @@ import org.littletonrobotics.junction.Logger;
 public final class WristJoint extends ArmJoint {
     public WristJoint(int motorId, int canCoderId, double canCoderToArmRatio, double motorToArmRatio, NTEntry<Angle> absEncoderOffset, boolean invert) {
         super(motorId, canCoderId, canCoderToArmRatio, motorToArmRatio, absEncoderOffset, invert);
-        motor.setPID(NTData.ARM_WRIST_KP, NTData.ARM_WRIST_KI, NTData.ARM_WRIST_KD);
+        motor.getPIDControl().setPID(NTData.ARM_WRIST_KP, NTData.ARM_WRIST_KI, NTData.ARM_WRIST_KD);
     }
 
     @Override
@@ -17,7 +17,7 @@ public final class WristJoint extends ArmJoint {
     }
 
     public void setTargetAngle(Angle angle, double ff) {
-        motor.setPositionArbFF(angle.mul(motorToArmRatio), ff);
+        motor.getPIDControl().setPositionArbFF(angle.mul(motorToArmRatio), ff);
         Logger.getInstance().recordOutput("Wrist/Target ccw deg", angle.ccw().deg());
         Logger.getInstance().recordOutput("Wrist/Current ccw deg", getCurrentAngle().ccw().deg());
         Logger.getInstance().recordOutput("Wrist/Motor target ccw deg", angle.mul(motorToArmRatio).ccw().deg());

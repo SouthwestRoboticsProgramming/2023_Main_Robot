@@ -2,11 +2,10 @@ package com.swrobotics.lib.motor.rev;
 
 import com.revrobotics.*;
 import com.swrobotics.lib.encoder.Encoder;
-import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.Motor;
+import com.swrobotics.lib.motor.PIDControlFeature;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
-import com.swrobotics.mathlib.CWAngle;
 
 import edu.wpi.first.math.util.Units;
 
@@ -31,7 +30,7 @@ import edu.wpi.first.math.util.Units;
  * and <a href="https://docs.revrobotics.com/sparkmax/feature-description/data-port">Data Port Documentation</a>
  * for how to wire the encoders to the ports.
  */
-public abstract class SparkMaxMotor implements FeedbackMotor {
+public abstract class SparkMaxMotor implements Motor {
     public enum EncoderPort {
         PRIMARY,
         ALTERNATE,
@@ -75,20 +74,47 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
     }
 
     @Override
-    public void setPosition(Angle position) {
-        pid.setReference(position.ccw().rot(), CANSparkMax.ControlType.kPosition);
-    }
+    public PIDControlFeature getPIDControl() {
+        return new PIDControlFeature() {
+            @Override
+            public void setPositionArbFF(Angle targetPos, double arbFF) {
+                pid.setReference(targetPos.ccw().rot(), CANSparkMax.ControlType.kPosition, 0, arbFF * 12);
+            }
 
-    @Override
-    public void setPositionArbFF(Angle position, double arbFF) {
-        pid.setReference(position.ccw().rot(), CANSparkMax.ControlType.kPosition, 0, arbFF * 12);
-    }
+            @Override
+            public void setVelocityArbFF(Angle targetVel, double arbFF) {
+                pid.setReference(
+                        Units.radiansPerSecondToRotationsPerMinute(targetVel.ccw().rad()),
+                        CANSparkMax.ControlType.kVelocity,
+                        0,
+                        arbFF * 12);
+            }
 
-    @Override
-    public void setVelocity(Angle velocity) {
-        pid.setReference(
-                Units.radiansPerSecondToRotationsPerMinute(velocity.ccw().rad()),
-                CANSparkMax.ControlType.kVelocity);
+            @Override
+            public void resetIntegrator() {
+                pid.setIAccum(0);
+            }
+
+            @Override
+            public void setP(double kP) {
+                pid.setP(kP);
+            }
+
+            @Override
+            public void setI(double kI) {
+                pid.setI(kI);
+            }
+
+            @Override
+            public void setD(double kD) {
+                pid.setD(kD);
+            }
+
+            @Override
+            public void setF(double kF) {
+                pid.setFF(kF);
+            }
+        };
     }
 
     @Override
@@ -316,30 +342,5 @@ public abstract class SparkMaxMotor implements FeedbackMotor {
         }
 
         return this;
-    }
-
-    @Override
-    public void resetIntegrator() {
-        pid.setIAccum(0);
-    }
-
-    @Override
-    public void setP(double kP) {
-        pid.setP(kP);
-    }
-
-    @Override
-    public void setI(double kI) {
-        pid.setI(kI);
-    }
-
-    @Override
-    public void setD(double kD) {
-        pid.setD(kD);
-    }
-
-    @Override
-    public void setF(double kF) {
-        pid.setFF(kF);
     }
 }

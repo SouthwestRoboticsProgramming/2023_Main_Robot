@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 // FIXME: Do a proper simulation and fully implement
 //        This is currently assuming no motor load with no inertia
-public final class SimMotor extends SubsystemBase implements FeedbackMotor {
+public final class SimMotor extends SubsystemBase implements Motor {
     public static final class MotorCaps {
         public final Angle freeSpeed;
         public final double sensorUnitsPerRot;
@@ -106,28 +106,54 @@ public final class SimMotor extends SubsystemBase implements FeedbackMotor {
     }
 
     @Override
-    public void setPosition(Angle position) {
-        setPositionArbFF(position, 0);
-    }
+    public PIDControlFeature getPIDControl() {
+        return new PIDControlFeature() {
+            @Override
+            public void setPositionArbFF(Angle targetPos, double arbFF) {
+                if (controlMode != ControlMode.POSITION)
+                    resetIntegrator();
+                controlMode = ControlMode.POSITION;
+                controlModeFn = () -> arbFF + calcPID(
+                        integratedEncoder.getAngle().ccw().rot() * caps.sensorUnitsPerRot,
+                        targetPos.ccw().rot() * caps.sensorUnitsPerRot);
+            }
 
-    @Override
-    public void setPositionArbFF(Angle position, double arbFF) {
-        if (controlMode != ControlMode.POSITION)
-            resetIntegrator();
-        controlMode = ControlMode.POSITION;
-        controlModeFn = () -> arbFF + calcPID(
-                integratedEncoder.getAngle().ccw().rot() * caps.sensorUnitsPerRot,
-                position.ccw().rot() * caps.sensorUnitsPerRot);
-    }
+            @Override
+            public void setVelocityArbFF(Angle targetVel, double arbFF) {
+                if (controlMode != ControlMode.VELOCITY)
+                    resetIntegrator();
+                controlMode = ControlMode.VELOCITY;
+                controlModeFn = () -> arbFF + calcPID(
+                        integratedEncoder.getVelocity().ccw().rot() * caps.sensorUnitsPerRPS,
+                        targetVel.ccw().rot() * caps.sensorUnitsPerRPS);
+            }
 
-    @Override
-    public void setVelocity(Angle velocity) {
-        if (controlMode != ControlMode.VELOCITY)
-            resetIntegrator();
-        controlMode = ControlMode.VELOCITY;
-        controlModeFn = () -> calcPID(
-                integratedEncoder.getVelocity().ccw().rot() * caps.sensorUnitsPerRPS,
-                velocity.ccw().rot() * caps.sensorUnitsPerRPS);
+            @Override
+            public void resetIntegrator() {
+                integralAcc = 0;
+                prevError = 0;
+            }
+
+            @Override
+            public void setP(double p) {
+                kP = p;
+            }
+
+            @Override
+            public void setI(double i) {
+                kI = i;
+            }
+
+            @Override
+            public void setD(double d) {
+                kD = d;
+            }
+
+            @Override
+            public void setF(double f) {
+                kF = f;
+            }
+        };
     }
 
     /**
@@ -154,28 +180,7 @@ public final class SimMotor extends SubsystemBase implements FeedbackMotor {
     }
 
     @Override
-    public void resetIntegrator() {
-        integralAcc = 0;
-        prevError = 0;
-    }
-
-    @Override
-    public void setP(double kP) {
-        this.kP = kP;
-    }
-
-    @Override
-    public void setI(double kI) {
-        this.kI = kI;
-    }
-
-    @Override
-    public void setD(double kD) {
-        this.kD = kD;
-    }
-
-    @Override
-    public void setF(double kF) {
-        this.kF = kF;
+    public void setBrakeMode(boolean brake) {
+        // TODO
     }
 }

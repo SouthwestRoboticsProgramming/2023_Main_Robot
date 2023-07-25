@@ -3,18 +3,17 @@ package com.swrobotics.robot.subsystems.arm;
 import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
 import com.swrobotics.lib.encoder.SimEncoder;
-import com.swrobotics.lib.motor.FeedbackMotor;
+import com.swrobotics.lib.motor.Motor;
 import com.swrobotics.lib.motor.SimMotor;
 import com.swrobotics.lib.motor.rev.NEOMotor;
 import com.swrobotics.lib.net.NTEntry;
-import com.swrobotics.lib.net.NTPrimitive;
 import com.swrobotics.mathlib.Angle;
 import edu.wpi.first.wpilibj.RobotBase;
 
 // Note: "Horizontal" as a reference point here refers to true horizontal for
 //       the two segments and facing forward parallel to the top segment for the wrist
 public class ArmJoint {
-    protected final FeedbackMotor motor;
+    protected final Motor motor;
     protected final Encoder motorEncoder;
     private final Encoder absoluteEncoder;
 

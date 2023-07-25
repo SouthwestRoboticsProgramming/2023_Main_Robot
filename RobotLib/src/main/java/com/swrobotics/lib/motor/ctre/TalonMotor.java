@@ -6,16 +6,15 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.swrobotics.lib.encoder.CanCoder;
 import com.swrobotics.lib.encoder.Encoder;
-import com.swrobotics.lib.motor.FeedbackMotor;
 import com.swrobotics.lib.motor.Motor;
+import com.swrobotics.lib.motor.PIDControlFeature;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
-import com.swrobotics.mathlib.CWAngle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 
 /** Abstract motor implementation for CTRE Talon motors connected via CAN. */
-public abstract class TalonMotor implements FeedbackMotor {
+public abstract class TalonMotor implements Motor {
     /** Encoder implementation for the integrated encoder. */
     public static final class IntegratedEncoder implements Encoder {
         public final TalonMotor motor;
@@ -150,27 +149,49 @@ public abstract class TalonMotor implements FeedbackMotor {
     }
 
     @Override
-    public void setPosition(Angle position) {
-        if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
+    public PIDControlFeature getPIDControl() {
+        return new PIDControlFeature() {
+            @Override
+            public void setPositionArbFF(Angle targetPos, double arbFF) {
+                if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
 
-        talon.set(ControlMode.Position, position.ccw().rot() * encoderTicksPerRotation);
-        testSensorPhase();
-    }
+                talon.set(ControlMode.Position, targetPos.ccw().rot() * encoderTicksPerRotation, DemandType.ArbitraryFeedForward, arbFF);
+                testSensorPhase();
+            }
 
-    @Override
-    public void setPositionArbFF(Angle position, double arbFF) {
-        if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
+            @Override
+            public void setVelocityArbFF(Angle targetVel, double arbFF) {
+                if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
 
-        talon.set(ControlMode.Position, position.ccw().rot() * encoderTicksPerRotation, DemandType.ArbitraryFeedForward, arbFF);
-        testSensorPhase();
-    }
+                talon.set(ControlMode.Velocity, targetVel.ccw().rot() * encoderTicksPerRotation / 10, DemandType.ArbitraryFeedForward, arbFF);
+                testSensorPhase();
+            }
 
-    @Override
-    public void setVelocity(Angle velocity) {
-        if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
+            @Override
+            public void resetIntegrator() {
+                talon.setIntegralAccumulator(0);
+            }
 
-        talon.set(ControlMode.Velocity, velocity.ccw().rot() * encoderTicksPerRotation / 10);
-        testSensorPhase();
+            @Override
+            public void setP(double kP) {
+                talon.config_kP(0, kP);
+            }
+
+            @Override
+            public void setI(double kI) {
+                talon.config_kI(0, kI);
+            }
+
+            @Override
+            public void setD(double kD) {
+                talon.config_kD(0, kD);
+            }
+
+            @Override
+            public void setF(double kF) {
+                talon.config_kF(0, kF);
+            }
+        };
     }
 
     @Override
@@ -205,30 +226,5 @@ public abstract class TalonMotor implements FeedbackMotor {
         }
 
         talon.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0);
-    }
-
-    @Override
-    public void resetIntegrator() {
-        talon.setIntegralAccumulator(0);
-    }
-
-    @Override
-    public void setP(double kP) {
-        talon.config_kP(0, kP);
-    }
-
-    @Override
-    public void setI(double kI) {
-        talon.config_kI(0, kI);
-    }
-
-    @Override
-    public void setD(double kD) {
-        talon.config_kD(0, kD);
-    }
-
-    @Override
-    public void setF(double kF) {
-        talon.config_kF(0, kF);
     }
 }
