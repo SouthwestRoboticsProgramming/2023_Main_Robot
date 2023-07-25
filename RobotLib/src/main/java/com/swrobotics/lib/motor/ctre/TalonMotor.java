@@ -50,6 +50,7 @@ public abstract class TalonMotor implements Motor {
     }
 
     protected final BaseTalon talon;
+    private final PIDControlFeature pid;
     private final Faults faults;
 
     private Encoder integratedEncoder;
@@ -72,6 +73,49 @@ public abstract class TalonMotor implements Motor {
 
         integratedEncoder = null;
         updateInvertState();
+
+        pid = new PIDControlFeature() {
+            @Override
+            public void setPositionArbFF(Angle targetPos, double arbFF) {
+                if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
+
+                talon.set(ControlMode.Position, targetPos.ccw().rot() * encoderTicksPerRotation, DemandType.ArbitraryFeedForward, arbFF);
+                testSensorPhase();
+            }
+
+            @Override
+            public void setVelocityArbFF(Angle targetVel, double arbFF) {
+                if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
+
+                talon.set(ControlMode.Velocity, targetVel.ccw().rot() * encoderTicksPerRotation / 10, DemandType.ArbitraryFeedForward, arbFF);
+                testSensorPhase();
+            }
+
+            @Override
+            public void resetIntegrator() {
+                talon.setIntegralAccumulator(0);
+            }
+
+            @Override
+            public void setP(double kP) {
+                talon.config_kP(0, kP);
+            }
+
+            @Override
+            public void setI(double kI) {
+                talon.config_kI(0, kI);
+            }
+
+            @Override
+            public void setD(double kD) {
+                talon.config_kD(0, kD);
+            }
+
+            @Override
+            public void setF(double kF) {
+                talon.config_kF(0, kF);
+            }
+        };
     }
 
     /**
@@ -150,48 +194,7 @@ public abstract class TalonMotor implements Motor {
 
     @Override
     public PIDControlFeature getPIDControl() {
-        return new PIDControlFeature() {
-            @Override
-            public void setPositionArbFF(Angle targetPos, double arbFF) {
-                if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
-
-                talon.set(ControlMode.Position, targetPos.ccw().rot() * encoderTicksPerRotation, DemandType.ArbitraryFeedForward, arbFF);
-                testSensorPhase();
-            }
-
-            @Override
-            public void setVelocityArbFF(Angle targetVel, double arbFF) {
-                if (integratedEncoder == null) throw new IllegalStateException("No feedback encoder set");
-
-                talon.set(ControlMode.Velocity, targetVel.ccw().rot() * encoderTicksPerRotation / 10, DemandType.ArbitraryFeedForward, arbFF);
-                testSensorPhase();
-            }
-
-            @Override
-            public void resetIntegrator() {
-                talon.setIntegralAccumulator(0);
-            }
-
-            @Override
-            public void setP(double kP) {
-                talon.config_kP(0, kP);
-            }
-
-            @Override
-            public void setI(double kI) {
-                talon.config_kI(0, kI);
-            }
-
-            @Override
-            public void setD(double kD) {
-                talon.config_kD(0, kD);
-            }
-
-            @Override
-            public void setF(double kF) {
-                talon.config_kF(0, kF);
-            }
-        };
+        return pid;
     }
 
     @Override

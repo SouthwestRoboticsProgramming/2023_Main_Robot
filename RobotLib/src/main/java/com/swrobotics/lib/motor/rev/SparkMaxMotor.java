@@ -39,6 +39,7 @@ public abstract class SparkMaxMotor implements Motor {
 
     private final CANSparkMax spark;
     private final SparkMaxPIDController pid;
+    private final PIDControlFeature pidFeature;
 
     private EncoderPort feedbackEncoderPort;
     private Encoder primaryEncoder, alternateEncoder;
@@ -66,16 +67,8 @@ public abstract class SparkMaxMotor implements Motor {
 
         feedbackEncoderPort = EncoderPort.PRIMARY;
         primaryEncoder = alternateEncoder = absoluteEncoder;
-    }
 
-    @Override
-    public void setPercentOut(double percent) {
-        pid.setReference(percent, CANSparkMax.ControlType.kDutyCycle);
-    }
-
-    @Override
-    public PIDControlFeature getPIDControl() {
-        return new PIDControlFeature() {
+        pidFeature = new PIDControlFeature() {
             @Override
             public void setPositionArbFF(Angle targetPos, double arbFF) {
                 pid.setReference(targetPos.ccw().rot(), CANSparkMax.ControlType.kPosition, 0, arbFF * 12);
@@ -115,6 +108,16 @@ public abstract class SparkMaxMotor implements Motor {
                 pid.setFF(kF);
             }
         };
+    }
+
+    @Override
+    public void setPercentOut(double percent) {
+        pid.setReference(percent, CANSparkMax.ControlType.kDutyCycle);
+    }
+
+    @Override
+    public PIDControlFeature getPIDControl() {
+        return pidFeature;
     }
 
     @Override

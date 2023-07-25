@@ -43,6 +43,7 @@ public final class SimMotor extends SubsystemBase implements Motor {
 
     private final MotorCaps caps;
     private final SimEncoder integratedEncoder;
+    private final PIDControlFeature pid;
     private Angle rawAngle;
 
     private double flip;
@@ -71,43 +72,8 @@ public final class SimMotor extends SubsystemBase implements Motor {
         integralAcc = prevError = 0;
 
         stop();
-    }
 
-    @Override
-    public void periodic() {
-        rawAngle = rawAngle.add(
-                caps.freeSpeed.mul(
-                        MathUtil.clamp(controlModeFn.get(), -1, 1) * flip * 0.02));
-    }
-
-    // Setpoint and measure are in native sensor units
-    private double calcPID(double measure, double setpoint) {
-        double error = setpoint - measure;
-        double p = error * kP;
-
-        // error = inc per 0.02s, equivalent to (inc per period) * (period per 0.02s)
-        integralAcc += error * kI;
-
-        // (error - prevError) = delta per 0.02s
-        // (error - prevError) / 0.02 = delta per 1s
-        // (error - prevError) / 0.02 * caps.pidCalcInterval = delta per interval
-        double d = (error - prevError) / 0.02 * caps.pidCalcInterval * kD;
-        prevError = error;
-
-        double f = setpoint * kF;
-
-        return MathUtil.clamp((p + integralAcc + d + f) / caps.pidOutputScale, -1, 1);
-    }
-
-    @Override
-    public void setPercentOut(double percent) {
-        controlMode = ControlMode.PERCENT;
-        controlModeFn = () -> percent;
-    }
-
-    @Override
-    public PIDControlFeature getPIDControl() {
-        return new PIDControlFeature() {
+        pid = new PIDControlFeature() {
             @Override
             public void setPositionArbFF(Angle targetPos, double arbFF) {
                 if (controlMode != ControlMode.POSITION)
@@ -154,6 +120,43 @@ public final class SimMotor extends SubsystemBase implements Motor {
                 kF = f;
             }
         };
+    }
+
+    @Override
+    public void periodic() {
+        rawAngle = rawAngle.add(
+                caps.freeSpeed.mul(
+                        MathUtil.clamp(controlModeFn.get(), -1, 1) * flip * 0.02));
+    }
+
+    // Setpoint and measure are in native sensor units
+    private double calcPID(double measure, double setpoint) {
+        double error = setpoint - measure;
+        double p = error * kP;
+
+        // error = inc per 0.02s, equivalent to (inc per period) * (period per 0.02s)
+        integralAcc += error * kI;
+
+        // (error - prevError) = delta per 0.02s
+        // (error - prevError) / 0.02 = delta per 1s
+        // (error - prevError) / 0.02 * caps.pidCalcInterval = delta per interval
+        double d = (error - prevError) / 0.02 * caps.pidCalcInterval * kD;
+        prevError = error;
+
+        double f = setpoint * kF;
+
+        return MathUtil.clamp((p + integralAcc + d + f) / caps.pidOutputScale, -1, 1);
+    }
+
+    @Override
+    public void setPercentOut(double percent) {
+        controlMode = ControlMode.PERCENT;
+        controlModeFn = () -> percent;
+    }
+
+    @Override
+    public PIDControlFeature getPIDControl() {
+        return pid;
     }
 
     /**
