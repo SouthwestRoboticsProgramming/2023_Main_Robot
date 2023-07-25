@@ -50,14 +50,6 @@ public final class SimMotor extends SubsystemBase implements Motor {
     private ControlMode controlMode;
     private Supplier<Double> controlModeFn;
 
-    // PIDF constant units:
-    // kP: output per error
-    // kI: (output per error) per period
-    // kD: output per (error per period)
-    // kF: output per setpoint
-    private double kP, kI, kD, kF;
-    private double integralAcc, prevError;
-
     public SimMotor(MotorCaps caps) {
         if (!RobotBase.isSimulation()) {
             DriverStation.reportError("SimMotor used on real robot!", true);
@@ -68,12 +60,17 @@ public final class SimMotor extends SubsystemBase implements Motor {
         flip = 1;
         integratedEncoder = new SimEncoder(() -> rawAngle.mul(flip));
 
-        kP = kI = kD = kF = 0;
-        integralAcc = prevError = 0;
-
         stop();
 
         pid = new PIDControlFeature() {
+            // PIDF constant units:
+            // kP: output per error
+            // kI: (output per error) per period
+            // kD: output per (error per period)
+            // kF: output per setpoint
+            private double kP = 0, kI = 0, kD = 0, kF = 0;
+            private double integralAcc = 0, prevError = 0;
+
             @Override
             public void setPositionArbFF(Angle targetPos, double arbFF) {
                 if (controlMode != ControlMode.POSITION)
@@ -92,6 +89,25 @@ public final class SimMotor extends SubsystemBase implements Motor {
                 controlModeFn = () -> arbFF + calcPID(
                         integratedEncoder.getVelocity().ccw().rot() * caps.sensorUnitsPerRPS,
                         targetVel.ccw().rot() * caps.sensorUnitsPerRPS);
+            }
+
+            // Setpoint and measure are in native sensor units
+            private double calcPID(double measure, double setpoint) {
+                double error = setpoint - measure;
+                double p = error * kP;
+
+                // error = inc per 0.02s, equivalent to (inc per period) * (period per 0.02s)
+                integralAcc += error * kI;
+
+                // (error - prevError) = delta per 0.02s
+                // (error - prevError) / 0.02 = delta per 1s
+                // (error - prevError) / 0.02 * caps.pidCalcInterval = delta per interval
+                double d = (error - prevError) / 0.02 * caps.pidCalcInterval * kD;
+                prevError = error;
+
+                double f = setpoint * kF;
+
+                return MathUtil.clamp((p + integralAcc + d + f) / caps.pidOutputScale, -1, 1);
             }
 
             @Override
@@ -127,25 +143,6 @@ public final class SimMotor extends SubsystemBase implements Motor {
         rawAngle = rawAngle.add(
                 caps.freeSpeed.mul(
                         MathUtil.clamp(controlModeFn.get(), -1, 1) * flip * 0.02));
-    }
-
-    // Setpoint and measure are in native sensor units
-    private double calcPID(double measure, double setpoint) {
-        double error = setpoint - measure;
-        double p = error * kP;
-
-        // error = inc per 0.02s, equivalent to (inc per period) * (period per 0.02s)
-        integralAcc += error * kI;
-
-        // (error - prevError) = delta per 0.02s
-        // (error - prevError) / 0.02 = delta per 1s
-        // (error - prevError) / 0.02 * caps.pidCalcInterval = delta per interval
-        double d = (error - prevError) / 0.02 * caps.pidCalcInterval * kD;
-        prevError = error;
-
-        double f = setpoint * kF;
-
-        return MathUtil.clamp((p + integralAcc + d + f) / caps.pidOutputScale, -1, 1);
     }
 
     @Override
