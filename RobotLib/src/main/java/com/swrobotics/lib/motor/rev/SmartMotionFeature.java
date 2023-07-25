@@ -1,17 +1,29 @@
 package com.swrobotics.lib.motor.rev;
 
+import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkMaxPIDController;
 import com.swrobotics.mathlib.Angle;
 import edu.wpi.first.math.util.Units;
 
-public final class SmartMotionSlot {
+public final class SmartMotionFeature {
     private final SparkMaxPIDController pid;
     private final int index;
 
-    SmartMotionSlot(SparkMaxPIDController pid, int index) {
+    SmartMotionFeature(SparkMaxPIDController pid, int index) {
         this.pid = pid;
         this.index = index;
     }
+
+    public void setPosition(Angle targetPos) {
+        setPositionArbFF(targetPos, 0);
+    }
+
+    public void setPositionArbFF(Angle targetPos, double arbFF) {
+        pid.setReference(targetPos.ccw().rot(), CANSparkMax.ControlType.kSmartMotion, index, arbFF, SparkMaxPIDController.ArbFFUnits.kPercentOut);
+    }
+
+    // TODO-Mason: ControlType.kSmartVelocity also exists, is that related? I
+    //             can't find any documentation about it
 
     public void setAccelStrategy(SparkMaxPIDController.AccelStrategy strategy) {
         pid.setSmartMotionAccelStrategy(strategy, index);

@@ -31,8 +31,6 @@ import edu.wpi.first.math.util.Units;
  * for how to wire the encoders to the ports.
  */
 public abstract class SparkMaxMotor implements Motor {
-    private static final int SMART_MOTION_SLOT_COUNT = 4;
-
     public enum EncoderPort {
         PRIMARY,
         ALTERNATE,
@@ -42,7 +40,7 @@ public abstract class SparkMaxMotor implements Motor {
     private final CANSparkMax spark;
     private final SparkMaxPIDController pid;
     private final PIDControlFeature pidFeature;
-    private final SmartMotionSlot[] smartMotionSlots;
+    private final SmartMotionFeature smartMotion;
 
     private EncoderPort feedbackEncoderPort;
     private Encoder primaryEncoder, alternateEncoder;
@@ -113,10 +111,7 @@ public abstract class SparkMaxMotor implements Motor {
             }
         };
 
-        smartMotionSlots = new SmartMotionSlot[SMART_MOTION_SLOT_COUNT];
-        for (int i = 0; i < SMART_MOTION_SLOT_COUNT; i++) {
-            smartMotionSlots[i] = new SmartMotionSlot(pid, i);
-        }
+        smartMotion = new SmartMotionFeature(pid, 0);
     }
 
     @Override
@@ -130,13 +125,8 @@ public abstract class SparkMaxMotor implements Motor {
     }
 
     @Override
-    public int getSmartMotionSlotCount() {
-        return SMART_MOTION_SLOT_COUNT;
-    }
-
-    @Override
-    public SmartMotionSlot getSmartMotionSlot(int index) {
-        return smartMotionSlots[index];
+    public SmartMotionFeature getSmartMotion() {
+        return smartMotion;
     }
 
     @Override

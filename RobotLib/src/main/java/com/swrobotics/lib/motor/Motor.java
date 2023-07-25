@@ -1,7 +1,7 @@
 package com.swrobotics.lib.motor;
 
 import com.swrobotics.lib.encoder.Encoder;
-import com.swrobotics.lib.motor.rev.SmartMotionSlot;
+import com.swrobotics.lib.motor.rev.SmartMotionFeature;
 
 /**
  * Abstraction for a motor.
@@ -26,6 +26,5 @@ public interface Motor {
     }
     default PIDControlFeature getPIDControl() { throw new UnsupportedOperationException(); }
 
-    default int getSmartMotionSlotCount() { return 0; }
-    default SmartMotionSlot getSmartMotionSlot(int index) { throw new UnsupportedOperationException(); }
+    default SmartMotionFeature getSmartMotion() { throw new UnsupportedOperationException(); }
 }
