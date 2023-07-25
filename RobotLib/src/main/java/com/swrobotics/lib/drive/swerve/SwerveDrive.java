@@ -51,7 +51,6 @@ public class SwerveDrive extends Drivetrain {
     }
 
     private void setModuleStates(SwerveModuleState[] states) {
-        System.out.println(states[0].speedMetersPerSecond);
         for (int i = 0; i < modules.length; i++) {
             modules[i].setState(states[i]);
         }
