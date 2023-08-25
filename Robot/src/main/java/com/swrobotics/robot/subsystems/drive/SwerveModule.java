@@ -29,7 +29,7 @@ public class SwerveModule {
     private static final double DRIVE_MOTOR_GEAR_RATIO = 8.14; // 8.14 : 1
     private static final double TURN_MOTOR_GEAR_RATIO = 12.8; // 12.8 : 1
     private static final double WHEEL_DIAMETER_METERS =
-            Units.inchesToMeters(4.0); // FIXME: Slightly less than 4 inches -> Measure
+            Units.inchesToMeters(3.85);
     private static final double MAX_ACHIEVABLE_VELOCITY =
             4.11; // Meters / Second, Listed on SDS website
 
