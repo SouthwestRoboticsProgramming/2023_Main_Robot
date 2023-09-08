@@ -120,6 +120,7 @@ public class SwerveModule {
         calibrateWithAbsoluteEncoder();
 
         // Update PID constants if they are changed
+        updateTurnPID();
         TURN_KP.onChange(this::updateTurnPID);
         TURN_KI.onChange(this::updateTurnPID);
         TURN_KD.onChange(this::updateTurnPID);
