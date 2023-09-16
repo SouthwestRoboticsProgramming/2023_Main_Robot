@@ -239,7 +239,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
     // Keep this private - use getPose().getRotation() instead
     private Rotation2d getGyroscopeRotation() {
-        return Rotation2d.fromDegrees(gyro.getAngle()).plus(gyroOffset);
+        return getRawGyroscopeRotation().minus(gyroOffset);
 //        return gyro.getRotation2d().plus(gyroOffset);
     }
 
@@ -263,7 +263,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
      */
     private void setGyroscopeRotation(Rotation2d newRotation) {
         gyroOffset = getRawGyroscopeRotation().plus(newRotation);
-        //        resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
+            //    resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
@@ -500,6 +500,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
     @Override
     public void periodic() {
+
         // Check if it should use auto for some or all of the movement
         if (translation.getNorm() != 0.0) {
             speeds.vxMetersPerSecond = translation.getX();
