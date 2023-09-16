@@ -1,6 +1,5 @@
 package com.swrobotics.robot.subsystems.drive;
 
-import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
@@ -25,6 +24,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.ADIS16448_IMU;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.SPI.Port;
@@ -147,7 +147,9 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
                             -DRIVETRAIN_WHEELBASE_METERS / 2.0));
 
     // Initialize a NavX over MXP port
-    private final AHRS gyro = new AHRS(Port.kMXP);
+    private final ADIS16448_IMU gyro = new ADIS16448_IMU(
+            ADIS16448_IMU.IMUAxis.kZ, Port.kMXP, ADIS16448_IMU.CalibrationTime._4s);
+//    private final AHRS gyro = new AHRS(Port.kMXP);
     private Rotation2d gyroOffset = new Rotation2d(0); // Subtracted to get angle
 
     // Create a field sim to view where the odometry thinks we are
@@ -237,11 +239,14 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
     // Keep this private - use getPose().getRotation() instead
     private Rotation2d getGyroscopeRotation() {
-        return gyro.getRotation2d().plus(gyroOffset);
+        return getRawGyroscopeRotation().minus(gyroOffset);
+//        return gyro.getRotation2d().plus(gyroOffset);
     }
 
     public Translation2d getTiltAsTranslation() {
-        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
+        // FIXME: probably wrong
+        return new Translation2d(gyro.getGyroAngleX(), gyro.getGyroAngleY());
+//        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
     }
 
     private Rotation2d getRawGyroscopeRotation() {
@@ -258,7 +263,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
      */
     private void setGyroscopeRotation(Rotation2d newRotation) {
         gyroOffset = getRawGyroscopeRotation().plus(newRotation);
-        //        resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
+            //    resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
@@ -495,6 +500,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
     @Override
     public void periodic() {
+
         // Check if it should use auto for some or all of the movement
         if (translation.getNorm() != 0.0) {
             speeds.vxMetersPerSecond = translation.getX();

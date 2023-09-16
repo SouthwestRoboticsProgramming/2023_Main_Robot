@@ -1,15 +1,14 @@
 package com.swrobotics.robot.subsystems.drive;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.CANCoderConfiguration;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix.sensors.SensorTimeBase;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
 import com.swrobotics.lib.net.NTDouble;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,7 +22,7 @@ public class SwerveModule {
     private static final String NT_PATH =
             "Swerve/Modules/"; // All module constants will be in the Swerve/Module folder
 
-    private static final int TALON_FX_ENCODER_TICKS_PER_ROTATION = 2048;
+    private static final int ENCODER_TICKS_PER_ROTATION = 1;
 
     // Configured for an SDS MK4 L1 module
     private static final double DRIVE_MOTOR_GEAR_RATIO = 8.14; // 8.14 : 1
@@ -40,8 +39,11 @@ public class SwerveModule {
 
     // Currently, drive is open-loop so no constants are required
 
-    private final TalonFX turn;
-    private final TalonFX drive;
+    private final CANSparkMax turn;
+    private final SparkMaxPIDController turnPID;
+    private final RelativeEncoder turnEncoder;
+    private final CANSparkMax drive;
+    private final RelativeEncoder driveEncoder;
     private final CANCoder encoder;
 
     private final NTDouble offset;
@@ -69,27 +71,33 @@ public class SwerveModule {
                 new NTDouble(
                         "Swerve/Modules/" + moduleInfo.name + "/Offset Degrees", moduleInfo.offset);
 
-        TalonFXConfiguration turnConfig = new TalonFXConfiguration();
-        turnConfig.slot0.kP = TURN_KP.get();
-        turnConfig.slot0.kI = TURN_KI.get();
-        turnConfig.slot0.kD = TURN_KD.get();
-        turnConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
-
-        TalonFXConfiguration driveConfig = new TalonFXConfiguration();
-        driveConfig.slot0.kP = 0;
-        driveConfig.slot0.kI = 0;
-        driveConfig.slot0.kD = 0;
-        driveConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
-        // FIXME: Remove limits imposed to keep robot from breaking Mason's house FIXME: Break the
+//        TalonFXConfiguration turnConfig = new TalonFXConfiguration();
+//        turnConfig.slot0.kP = TURN_KP.get();
+//        turnConfig.slot0.kI = TURN_KI.get();
+//        turnConfig.slot0.kD = TURN_KD.get();
+//        turnConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
+//
+//        TalonFXConfiguration driveConfig = new TalonFXConfiguration();
+//        driveConfig.slot0.kP = 0;
+//        driveConfig.slot0.kI = 0;
+//        driveConfig.slot0.kD = 0;
+//        driveConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
+//        // FIXME: Remove limits imposed to keep robot from breaking Mason's house FIXME: Break the
         // house
         // driveConfig.peakOutputForward = 0.1;
         // driveConfig.peakOutputReverse = -0.1;
 
-        this.turn = new TalonFX(moduleInfo.turnMotorID);
-        this.turn.configAllSettings(turnConfig);
+//        this.turn = new TalonFX(moduleInfo.turnMotorID);
+//        this.turn.configAllSettings(turnConfig);
 
-        this.drive = new TalonFX(moduleInfo.driveMotorID);
-        this.drive.configAllSettings(driveConfig);
+//        this.drive = new TalonFX(moduleInfo.driveMotorID);
+//        this.drive.configAllSettings(driveConfig);
+
+        this.turn = new CANSparkMax(moduleInfo.turnMotorID, CANSparkMaxLowLevel.MotorType.kBrushless);
+        this.drive = new CANSparkMax(moduleInfo.driveMotorID, CANSparkMaxLowLevel.MotorType.kBrushless);
+        this.turnPID = turn.getPIDController();
+        this.turnEncoder = turn.getEncoder();
+        this.driveEncoder = drive.getEncoder();
 
         this.encoder = new CANCoder(moduleInfo.encoderID);
         this.encoder.configFactoryDefault();
@@ -104,13 +112,15 @@ public class SwerveModule {
         setState(new SwerveModuleState());
 
         turnEncoderToAngle =
-                TALON_FX_ENCODER_TICKS_PER_ROTATION * TURN_MOTOR_GEAR_RATIO / (Math.PI * 2);
+                ENCODER_TICKS_PER_ROTATION * TURN_MOTOR_GEAR_RATIO / (Math.PI * 2);
         // driveEncoderVelocityToMPS = ((600.0 / 2048.0) / DRIVE_MOTOR_GEAR_RATIO *
         // WHEEL_DIAMETER_METERS * Math.PI) / 60; // Copied from Citrus Circuits
-        driveEncoderVelocityToMPS = 1 / ((2048 * 10) * Math.PI * WHEEL_DIAMETER_METERS);
+//        driveEncoderVelocityToMPS = 1 / ((2048 * 10) * Math.PI * WHEEL_DIAMETER_METERS);
+        driveEncoderVelocityToMPS = (2 * Math.PI / 60.0) * WHEEL_DIAMETER_METERS/2.0; // RPM to Rad/s, Rad/s to meters
         calibrateWithAbsoluteEncoder();
 
         // Update PID constants if they are changed
+        updateTurnPID();
         TURN_KP.onChange(this::updateTurnPID);
         TURN_KI.onChange(this::updateTurnPID);
         TURN_KD.onChange(this::updateTurnPID);
@@ -127,15 +137,19 @@ public class SwerveModule {
 
         double turnUnits = toNativeTurnUnits(outputState.angle);
 
-        turn.set(TalonFXControlMode.Position, turnUnits);
+        turnPID.setReference(turnUnits, CANSparkMax.ControlType.kPosition);
+//        turn.set(TalonFXControlMode.Position, turnUnits);
 
         double driveOutput = outputState.speedMetersPerSecond / MAX_ACHIEVABLE_VELOCITY;
-        drive.set(TalonFXControlMode.PercentOutput, driveOutput);
+//        drive.set(TalonFXControlMode.PercentOutput, driveOutput);
+        drive.set(driveOutput);
     }
 
     public void stop() {
-        turn.set(TalonFXControlMode.PercentOutput, 0);
-        drive.set(TalonFXControlMode.PercentOutput, 0);
+        turn.set(0);
+        drive.set(0);
+//        turn.set(TalonFXControlMode.PercentOutput, 0);
+//        drive.set(TalonFXControlMode.PercentOutput, 0);
     }
 
     /**
@@ -156,14 +170,14 @@ public class SwerveModule {
             return targetState.angle;
         }
 
-        return fromNativeTurnUnits(turn.getSelectedSensorPosition());
+        return fromNativeTurnUnits(turnEncoder.getPosition());
     }
 
     public double getDistance() {
         if (RobotBase.isSimulation()) {
             return simulatedDistance;
         }
-        return fromNativeDrivePositionUnits(drive.getSelectedSensorPosition());
+        return fromNativeDrivePositionUnits(driveEncoder.getPosition());
     }
 
     public Rotation2d getAbsoluteAngle() {
@@ -181,11 +195,11 @@ public class SwerveModule {
     }
 
     public void setBrakeMode(boolean brake) {
-        NeutralMode mode = NeutralMode.Coast;
+        CANSparkMax.IdleMode mode = CANSparkMax.IdleMode.kCoast;
         if (brake) {
-            mode = NeutralMode.Brake;
+            mode = CANSparkMax.IdleMode.kBrake;
         }
-        drive.setNeutralMode(mode);
+        drive.setIdleMode(mode);
     }
 
     public double getDriveVelocity() {
@@ -193,11 +207,11 @@ public class SwerveModule {
             return targetState.speedMetersPerSecond;
         }
 
-        return fromNativeDriveVelocityUnits(drive.getSelectedSensorVelocity());
+        return fromNativeDriveVelocityUnits(driveEncoder.getVelocity());
     }
 
     private void calibrateWithAbsoluteEncoder() {
-        turn.setSelectedSensorPosition(toNativeTurnUnits(getAbsoluteAngle()));
+        turnEncoder.setPosition(toNativeTurnUnits(getAbsoluteAngle()));
     }
 
     private SwerveModuleState optimize(double velocity, double angleRad) {
@@ -238,9 +252,9 @@ public class SwerveModule {
     }
 
     private void updateTurnPID() {
-        turn.config_kP(0, TURN_KP.get());
-        turn.config_kI(0, TURN_KI.get());
-        turn.config_kD(0, TURN_KD.get());
+        turnPID.setP(TURN_KP.get());
+        turnPID.setI(TURN_KI.get());
+        turnPID.setD(TURN_KD.get());
     }
 
     private Rotation2d absDiffRad(Rotation2d angle1, Rotation2d angle2) {
@@ -270,15 +284,12 @@ public class SwerveModule {
         return new Rotation2d(units / turnEncoderToAngle);
     }
 
-    private double toNativeDriveUnits(double velocityMPS) {
-        return velocityMPS / driveEncoderVelocityToMPS;
-    }
-
     private double fromNativeDriveVelocityUnits(double units) {
-        return units / ((2048 / 10) * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
+        return units * driveEncoderVelocityToMPS;
     }
 
     private double fromNativeDrivePositionUnits(double units) {
-        return units / (2048 * DRIVE_MOTOR_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER_METERS));
+        // Rotations -> Radians -> distance
+        return units * (2 * Math.PI) * (WHEEL_DIAMETER_METERS / 2.0);
     }
 }
