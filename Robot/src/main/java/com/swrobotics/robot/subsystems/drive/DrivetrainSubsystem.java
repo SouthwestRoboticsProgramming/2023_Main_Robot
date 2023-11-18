@@ -268,7 +268,6 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
      */
     private void setGyroscopeRotation(Rotation2d newRotation) {
         gyroOffset = getRawGyroscopeRotation().plus(newRotation);
-//        resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
