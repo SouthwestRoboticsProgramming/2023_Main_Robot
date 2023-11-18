@@ -75,8 +75,9 @@ public final class NetworkTablesConnection {
 
     private NetworkTableRepr rootTable;
     private final AtomicInteger activeInstances;
+    private final NetworkTablesTool.AAAAAAA aaaaaaa;
 
-    public NetworkTablesConnection(ExecutorService threadPool) {
+    public NetworkTablesConnection(ExecutorService threadPool, NetworkTablesTool.AAAAAAA aaaaaaa) {
         this.threadPool = threadPool;
         instance = null;
         stopFuture = null;
@@ -84,6 +85,7 @@ public final class NetworkTablesConnection {
         params = null;
 
         activeInstances = new AtomicInteger(0);
+        this.aaaaaaa = aaaaaaa;
     }
 
     public void setServerParams(boolean isNt4, Params params) {
@@ -102,6 +104,8 @@ public final class NetworkTablesConnection {
 
             rootTable = new NetworkTableRepr(instance.getTable("/"));
             this.params = params;
+
+            aaaaaaa.onInit(instance);
         }
 
         // If the current client already satisfies the desired parameters,
@@ -119,6 +123,7 @@ public final class NetworkTablesConnection {
         // Save a reference to the current instance and clear instance variable so
         // the instance can't be used after closing
         NetworkTableInstance savedInstance = instance;
+        aaaaaaa.onStop();
         instance = null;
 
         // Stop on other thread because stopping the client can take around

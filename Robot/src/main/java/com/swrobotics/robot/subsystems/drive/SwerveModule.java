@@ -63,6 +63,12 @@ public class SwerveModule {
 
     public SwerveModule(
             SwerveModuleInfo moduleInfo, Translation2d position, double positionalOffset) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         this.position = position;
         this.positionalOffset = positionalOffset;
 
@@ -110,6 +116,12 @@ public class SwerveModule {
         this.encoder.configAllSettings(config);
 
         setState(new SwerveModuleState());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         turnEncoderToAngle =
                 ENCODER_TICKS_PER_ROTATION * TURN_MOTOR_GEAR_RATIO / (Math.PI * 2);
@@ -210,7 +222,7 @@ public class SwerveModule {
         return fromNativeDriveVelocityUnits(driveEncoder.getVelocity());
     }
 
-    private void calibrateWithAbsoluteEncoder() {
+    public void calibrateWithAbsoluteEncoder() {
         turnEncoder.setPosition(toNativeTurnUnits(getAbsoluteAngle()));
     }
 

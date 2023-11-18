@@ -16,6 +16,7 @@ import com.swrobotics.shufflelog.tool.taskmanager.RoboRIOFilesTool;
 import com.swrobotics.shufflelog.tool.taskmanager.TaskManagerTool;
 
 import edu.wpi.first.math.WPIMathJNI;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
@@ -139,14 +140,25 @@ public final class ShuffleLog extends PApplet {
         tools.add(msg);
         tools.add(new ShuffleLogProfilerTool(this));
         DataLogTool dataLog = new DataLogTool(this);
+        ConeOrCubeTool coneOrCubeTool = new ConeOrCubeTool(messenger);
         tools.add(dataLog);
-        tools.add(new NetworkTablesTool(threadPool));
+        tools.add(new NetworkTablesTool(threadPool, new NetworkTablesTool.AAAAAAA() {
+            @Override
+            public void onInit(NetworkTableInstance instance) {
+                coneOrCubeTool.updateNT(instance);
+            }
+
+            @Override
+            public void onStop() {
+                coneOrCubeTool.stopNT();
+            }
+        }));
         tools.add(new TaskManagerTool(this, "TaskManager"));
         tools.add(new RoboRIOFilesTool(this));
         tools.add(new FieldViewTool(this));
         tools.add(new ArmDebugTool(this, messenger));
         tools.add(new PreMatchChecklistTool(msg));
-        tools.add(new ConeOrCubeTool(messenger));
+        tools.add(coneOrCubeTool);
 
         startTime = System.currentTimeMillis();
     }
