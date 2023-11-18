@@ -72,7 +72,7 @@ public final class Input extends SubsystemBase {
 
     private static final double NUDGE_PER_PERIODIC = 0.25 * 0.02;
 
-    private static final NTBoolean L_IS_CONE = new NTBoolean("Is Cone", false);
+    private static final NTDouble L_IS_CONE = new NTDouble("Random stuffs/Is Cone v2", 0);
 
     private final RobotContainer robot;
 
@@ -105,13 +105,13 @@ public final class Input extends SubsystemBase {
                 () -> {
                     gamePiece = GamePiece.CUBE;
                     robot.messenger.prepare("Robot:GamePiece").addBoolean(false).send();
-                    L_IS_CONE.set(false);
+                    L_IS_CONE.set(0.0);
                 });
         manipulator.rightBumper.onRising(
                 () -> {
                     gamePiece = GamePiece.CONE;
                     robot.messenger.prepare("Robot:GamePiece").addBoolean(true).send();
-                    L_IS_CONE.set(true);
+                    L_IS_CONE.set(10000.0);
                 });
 
         snapDriveCmd = new PathfindToPointCommand(robot, null);
@@ -315,6 +315,8 @@ public final class Input extends SubsystemBase {
         setCommandEnabled(snapTurnCmd, angleDiff > SNAP_TURN_TOL);
     }
 
+    private long prevTime = System.currentTimeMillis();
+
     private void manipulatorPeriodic() {
         if (getGamePiece() == GamePiece.CONE) robot.lights.set(Lights.Color.YELLOW);
         else robot.lights.set(Lights.Color.BLUE);
@@ -357,6 +359,8 @@ public final class Input extends SubsystemBase {
         Translation2d armTarget =
                 ntArmTarget == null ? robot.arm.getHomeTarget() : ntArmTarget.getTranslation();
 
+        boolean isDefault = ntArmTarget == ArmPositions.DEFAULT;
+
         // If it is moving to a new target
         if (!armTarget.equals(prevArmTarget) && (isGrid || prevWasGrid)) {
             armNudge = new Translation2d(0, 0);
@@ -378,6 +382,14 @@ public final class Input extends SubsystemBase {
         }
 
         robot.arm.setTargetPosition(armTarget);
+
+        if (isDefault && robot.arm.isInTolerance()) {
+            long now = System.currentTimeMillis();
+            if (now - prevTime >= 1000) {
+                robot.arm.calibrateAbsolute();
+                prevTime = now;
+            }
+        }
     }
 
     @Override

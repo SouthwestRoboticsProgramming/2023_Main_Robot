@@ -158,6 +158,11 @@ public final class ArmSubsystem extends SwitchableSubsystemBase {
                 });
     }
 
+    // MUST only be called when arm is near home! Otherwise arm will probably break itself!
+    public void calibrateAbsolute() {
+        calibrateHome(new ArmPose(HOME_BOTTOM.get(), HOME_TOP.get()));
+    }
+
     private void calibrateHome(ArmPose homePose) {
         bottomJoint.calibrateHome(homePose.bottomAngle);
         topJoint.calibrateHome(homePose.topAngle);

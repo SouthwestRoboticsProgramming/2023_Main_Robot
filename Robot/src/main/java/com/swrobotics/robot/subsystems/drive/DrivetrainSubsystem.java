@@ -1,9 +1,12 @@
 package com.swrobotics.robot.subsystems.drive;
 
+import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.swrobotics.lib.net.NTBoolean;
+import com.swrobotics.lib.net.NTDouble;
+import com.swrobotics.lib.net.NTEntry;
 import com.swrobotics.mathlib.Angle;
 import com.swrobotics.mathlib.CCWAngle;
 import com.swrobotics.mathlib.CWAngle;
@@ -85,10 +88,10 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
     /* Modules that could be hot-swapped into a location on the swerve drive */
     private static final SwerveModuleInfo[] SELECTABLE_MODULES =
             new SwerveModuleInfo[] {
-                new SwerveModuleInfo("Module 0", 9, 5, 1, 38.41), // Default front left
-                new SwerveModuleInfo("Module 1", 10, 6, 2, 185.45), // Default front right
-                new SwerveModuleInfo("Module 2", 11, 7, 3, 132.63), // Default back left
-                new SwerveModuleInfo("Module 3", 12, 8, 4, 78.93) // Default back right
+                new SwerveModuleInfo("Module 0", 9, 5, 1, 44.121094), // Default front left
+                new SwerveModuleInfo("Module 1", 10, 6, 2, 219.111328), // Default front right
+                new SwerveModuleInfo("Module 2", 11, 7, 3, 3.515625), // Default back left
+                new SwerveModuleInfo("Module 3", 12, 8, 4, 76.201172) // Default back right
             };
     // Currently, no fifth module is built (not enough falcons)
 
@@ -147,9 +150,9 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
                             -DRIVETRAIN_WHEELBASE_METERS / 2.0));
 
     // Initialize a NavX over MXP port
-    private final ADIS16448_IMU gyro = new ADIS16448_IMU(
-            ADIS16448_IMU.IMUAxis.kZ, Port.kMXP, ADIS16448_IMU.CalibrationTime._4s);
-//    private final AHRS gyro = new AHRS(Port.kMXP);
+//    private final ADIS16448_IMU gyro = new ADIS16448_IMU(
+//            ADIS16448_IMU.IMUAxis.kZ, Port.kMXP, ADIS16448_IMU.CalibrationTime._4s);
+    private final AHRS gyro = new AHRS(Port.kMXP);
     private Rotation2d gyroOffset = new Rotation2d(0); // Subtracted to get angle
 
     // Create a field sim to view where the odometry thinks we are
@@ -224,7 +227,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
             printEncoderOffsets();
         }
 
-        gyro.calibrate();
+//        gyro.calibrate();
 
         // FIXME: Change back to getGyroscopeRotation
         odometry =
@@ -239,23 +242,25 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
 
     // Keep this private - use getPose().getRotation() instead
     private Rotation2d getGyroscopeRotation() {
-        return Rotation2d.fromDegrees(gyro.getAngle()).plus(gyroOffset);
-//        return gyro.getRotation2d().plus(gyroOffset);
+//        return Rotation2d.fromDegrees(gyro.getAngle()).plus(gyroOffset);
+        return gyro.getRotation2d().plus(gyroOffset);
     }
 
     public Translation2d getTiltAsTranslation() {
         // FIXME: probably wrong
-        return new Translation2d(gyro.getGyroAngleX(), gyro.getGyroAngleY());
-//        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
+//        return new Translation2d(gyro.getGyroAngleX(), gyro.getGyroAngleY());
+        return new Translation2d(gyro.getPitch(), -gyro.getRoll());
     }
 
     private Rotation2d getRawGyroscopeRotation() {
-        // return gyro.getRotation2d();
-        return Rotation2d.fromDegrees(gyro.getAngle());
+         return gyro.getRotation2d();
+//        return Rotation2d.fromDegrees(-gyro.getAngle());
     }
 
     public void zeroGyroscope() {
-        setGyroscopeRotation(new Rotation2d());
+        Pose2d currentPose = getPose();
+        resetPose(
+                new Pose2d(currentPose.getTranslation(), getAllianceForward().ccw().rotation2d()));
     }
 
     /**
@@ -263,7 +268,7 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
      */
     private void setGyroscopeRotation(Rotation2d newRotation) {
         gyroOffset = getRawGyroscopeRotation().plus(newRotation);
-        //        resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
+//        resetPose(new Pose2d(getPose().getTranslation(), getGyroscopeRotation()));
     }
 
     public void setChassisSpeeds(ChassisSpeeds speeds) {
@@ -498,8 +503,20 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
         }
     }
 
+    NTEntry<Double> LOG_ANGLE = new NTDouble("Log/Gyro Degrees CCW", 0).setTemporary();
+
+    long prevCalibTime = System.currentTimeMillis();
+
     @Override
     public void periodic() {
+        long now = System.currentTimeMillis();
+        if (now - prevCalibTime >= 1000) {
+            for (SwerveModule module : modules) {
+                module.calibrateWithAbsoluteEncoder();
+            }
+            prevCalibTime = now;
+        }
+
         // Check if it should use auto for some or all of the movement
         if (translation.getNorm() != 0.0) {
             speeds.vxMetersPerSecond = translation.getX();
@@ -509,6 +526,8 @@ public class DrivetrainSubsystem extends SwitchableSubsystemBase implements Stat
         if (rotation.getRadians() != 0.0) {
             speeds.omegaRadiansPerSecond = rotation.getRadians();
         }
+
+        LOG_ANGLE.set(getPose().getRotation().getDegrees());
 
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 4.0);

@@ -1,5 +1,6 @@
 package com.swrobotics.shufflelog.tool.data.nt;
 
+import com.swrobotics.shufflelog.tool.ConeOrCubeTool;
 import com.swrobotics.shufflelog.tool.Tool;
 import com.swrobotics.shufflelog.tool.data.DataLogTool;
 import com.swrobotics.shufflelog.tool.data.PlotDef;
@@ -62,14 +63,19 @@ public final class NetworkTablesTool implements Tool {
     private final ImDouble tempDouble = new ImDouble();
     private final ImString tempString = new ImString(1024);
 
-    public NetworkTablesTool(ExecutorService threadPool) {
+    public interface AAAAAAA {
+        void onInit(NetworkTableInstance instance);
+        void onStop();
+    }
+
+    public NetworkTablesTool(ExecutorService threadPool, AAAAAAA aaaaaaa) {
         version = new ImInt(DEFAULT_VERSION);
         connectionMode = new ImInt(DEFAULT_CONN_MODE);
         host = new ImString(64);
         host.set(DEFAULT_HOST);
         portOrTeamNumber = new ImInt(getDefaultPortOrTeamNumber());
 
-        connection = new NetworkTablesConnection(threadPool);
+        connection = new NetworkTablesConnection(threadPool, aaaaaaa);
     }
 
     // --- Server connection ---
@@ -548,8 +554,23 @@ public final class NetworkTablesTool implements Tool {
         }
     }
 
+    // FIXME: This is horrendously terrible
+    private void findIsCone(NetworkTableRepr repr) {
+        for (NetworkTableValueRepr value : repr.getValues()) {
+            if (value.getName().equals("Is Cone v2")) {
+                ConeOrCubeTool.VALUE = value.sub.getDouble(-1000);
+            }
+        }
+
+        for (NetworkTableRepr subtable : repr.getSubtables()) {
+            findIsCone(subtable);
+        }
+    }
+
     @Override
     public void process() {
+        if (connection.getRootTable() != null)
+            findIsCone(connection.getRootTable());
         if (ImGui.begin(TITLE)) {
             ImGui.text("Instances: " + connection.getActiveInstances());
             showConnectionInfo();
